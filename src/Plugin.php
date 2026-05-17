@@ -11,7 +11,12 @@ namespace DocSyncWP;
 
 use DocSyncWP\Admin\AdminPage;
 use DocSyncWP\Assets\AssetRegistry;
+use DocSyncWP\Auth\GoogleOAuthService;
 use DocSyncWP\Auth\TokenStore;
+use DocSyncWP\Google\DocumentIdParser;
+use DocSyncWP\Google\DriveClient;
+use DocSyncWP\Rest\DocumentController;
+use DocSyncWP\Rest\OAuthController;
 use DocSyncWP\Rest\RestServiceProvider;
 use DocSyncWP\Rest\SettingsController;
 use DocSyncWP\Security\EncryptionService;
@@ -90,6 +95,8 @@ final class Plugin {
 		$settings          = new SettingsRepository( $encryption );
 		$token_store       = new TokenStore( $encryption );
 		$source_repository = new SourceRepository( $settings );
+		$google_oauth      = new GoogleOAuthService( $settings, $token_store );
+		$drive_client      = new DriveClient( $google_oauth );
 
 		$plugin = new self(
 			new AdminPage(),
@@ -100,7 +107,12 @@ final class Plugin {
 				$settings
 			),
 			new RestServiceProvider(
-				new SettingsController( $settings )
+				new SettingsController( $settings ),
+				new OAuthController( $google_oauth ),
+				new DocumentController(
+					new DocumentIdParser(),
+					$drive_client
+				)
 			),
 			$token_store,
 			$source_repository
