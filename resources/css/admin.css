@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+@layer base {
+  #docsync-wp-admin-root {
+    margin-left: -20px;
+  }
+
+  #docsync-wp-admin-root * {
+    box-sizing: border-box;
+  }
+}

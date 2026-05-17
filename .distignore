@@ -1,0 +1,16 @@
+/.git
+/.github
+/.distignore
+/.editorconfig
+/node_modules
+/resources
+/tests
+/.phpunit.cache
+/.phpunit.result.cache
+/coverage
+/phpcs.xml.dist
+/tsconfig.json
+/vite.config.ts
+/package.json
+/pnpm-lock.yaml
+*.log
