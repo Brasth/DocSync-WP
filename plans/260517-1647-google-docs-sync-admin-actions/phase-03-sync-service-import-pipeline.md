@@ -3,7 +3,7 @@
 ## Overview
 
 Priority: P1  
-Status: Pending  
+Status: Completed
 Effort: 8h
 
 Build the service that attaches Google Docs to posts, creates new posts from Docs, exports content, sanitizes it, and stores sync state.
@@ -102,10 +102,10 @@ MVP policy:
 
 ## Todo
 
-- [ ] Add source REST controller.
-- [ ] Add sync service.
-- [ ] Add sync lock.
-- [ ] Add Markdown conversion.
-- [ ] Add source attach/detach.
-- [ ] Add create-new target flow.
-- [ ] Add sync metadata updates.
+- [x] Add source REST controller.
+- [x] Add sync service.
+- [x] Add sync lock.
+- [x] Add Markdown conversion.
+- [x] Add source attach/detach.
+- [x] Add create-new target flow.
+- [x] Add sync metadata updates.

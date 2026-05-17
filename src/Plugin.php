@@ -19,9 +19,13 @@ use DocSyncWP\Rest\DocumentController;
 use DocSyncWP\Rest\OAuthController;
 use DocSyncWP\Rest\RestServiceProvider;
 use DocSyncWP\Rest\SettingsController;
+use DocSyncWP\Rest\SourceController;
 use DocSyncWP\Security\EncryptionService;
 use DocSyncWP\Settings\SettingsRepository;
+use DocSyncWP\Sync\ContentConverter;
 use DocSyncWP\Sync\SourceRepository;
+use DocSyncWP\Sync\SyncLock;
+use DocSyncWP\Sync\SyncService;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -91,12 +95,19 @@ final class Plugin {
 	 * Boot the plugin.
 	 */
 	public static function boot(): void {
-		$encryption        = new EncryptionService();
-		$settings          = new SettingsRepository( $encryption );
-		$token_store       = new TokenStore( $encryption );
-		$source_repository = new SourceRepository( $settings );
-		$google_oauth      = new GoogleOAuthService( $settings, $token_store );
-		$drive_client      = new DriveClient( $google_oauth );
+		$encryption         = new EncryptionService();
+		$settings           = new SettingsRepository( $encryption );
+		$token_store        = new TokenStore( $encryption );
+		$source_repository  = new SourceRepository( $settings );
+		$google_oauth       = new GoogleOAuthService( $settings, $token_store );
+		$drive_client       = new DriveClient( $google_oauth );
+		$document_id_parser = new DocumentIdParser();
+		$sync_service       = new SyncService(
+			$source_repository,
+			$drive_client,
+			new ContentConverter(),
+			new SyncLock()
+		);
 
 		$plugin = new self(
 			new AdminPage(),
@@ -110,8 +121,13 @@ final class Plugin {
 				new SettingsController( $settings ),
 				new OAuthController( $google_oauth ),
 				new DocumentController(
-					new DocumentIdParser(),
+					$document_id_parser,
 					$drive_client
+				),
+				new SourceController(
+					$source_repository,
+					$sync_service,
+					$document_id_parser
 				)
 			),
 			$token_store,
