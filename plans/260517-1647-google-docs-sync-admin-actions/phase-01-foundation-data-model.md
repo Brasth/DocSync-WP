@@ -3,7 +3,7 @@
 ## Overview
 
 Priority: P1  
-Status: Pending  
+Status: Completed  
 Effort: 6h
 
 Create the backend foundation for settings, per-user Google token storage, post-linked source metadata, capabilities, and REST wiring.
@@ -102,10 +102,10 @@ Modify:
 
 ## Todo
 
-- [ ] Add settings repository.
-- [ ] Add encryption service.
-- [ ] Add token store.
-- [ ] Add source repository.
-- [ ] Add REST service provider.
-- [ ] Wire services in plugin bootstrap.
-- [ ] Update admin config shape.
+- [x] Add settings repository.
+- [x] Add encryption service.
+- [x] Add token store.
+- [x] Add source repository.
+- [x] Add REST service provider.
+- [x] Wire services in plugin bootstrap.
+- [x] Update admin config shape.

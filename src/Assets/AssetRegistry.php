@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace DocSyncWP\Assets;
 
 use DocSyncWP\Admin\AdminPage;
+use DocSyncWP\Settings\SettingsRepository;
 use JsonException;
 
 defined( 'ABSPATH' ) || exit;
@@ -42,16 +43,25 @@ final class AssetRegistry {
 	private string $version;
 
 	/**
+	 * Settings repository.
+	 *
+	 * @var SettingsRepository
+	 */
+	private SettingsRepository $settings;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param string $plugin_path Absolute plugin directory path.
-	 * @param string $plugin_url  Absolute plugin directory URL.
-	 * @param string $version     Plugin version.
+	 * @param string             $plugin_path Absolute plugin directory path.
+	 * @param string             $plugin_url  Absolute plugin directory URL.
+	 * @param string             $version     Plugin version.
+	 * @param SettingsRepository $settings    Settings repository.
 	 */
-	public function __construct( string $plugin_path, string $plugin_url, string $version ) {
+	public function __construct( string $plugin_path, string $plugin_url, string $version, SettingsRepository $settings ) {
 		$this->plugin_path = trailingslashit( $plugin_path );
 		$this->plugin_url  = trailingslashit( $plugin_url );
 		$this->version     = $version;
+		$this->settings    = $settings;
 	}
 
 	/**
@@ -81,7 +91,7 @@ final class AssetRegistry {
 		wp_enqueue_script(
 			$handle,
 			$this->plugin_url . 'build/' . ltrim( $entry['file'], '/' ),
-			array( 'wp-element' ),
+			array( 'wp-api-fetch', 'wp-element' ),
 			$this->assetVersion( $script_path ),
 			true
 		);
@@ -243,14 +253,24 @@ final class AssetRegistry {
 	/**
 	 * Build the config exposed to the admin app.
 	 *
-	 * @return array<string,string>
+	 * @return array<string,mixed>
 	 */
 	private function adminConfig(): array {
+		$settings = $this->settings->getPublicSettings();
+
 		return array(
-			'restUrl'   => esc_url_raw( rest_url( 'docsync-wp/v1' ) ),
-			'nonce'     => wp_create_nonce( 'wp_rest' ),
-			'pluginUrl' => esc_url_raw( $this->plugin_url ),
-			'version'   => $this->version,
+			'restUrl'             => esc_url_raw( rest_url( 'docsync-wp/v1' ) ),
+			'nonce'               => wp_create_nonce( 'wp_rest' ),
+			'pluginUrl'           => esc_url_raw( $this->plugin_url ),
+			'version'             => $this->version,
+			'currentUserId'       => get_current_user_id(),
+			'enabledPostTypes'    => $settings['enabled_post_types'],
+			'hasClientId'         => '' !== $settings['client_id'],
+			'hasClientSecret'     => (bool) $settings['has_client_secret'],
+			'hasPickerApiKey'     => '' !== $settings['picker_api_key'],
+			'hasPickerAppId'      => '' !== $settings['picker_app_id'],
+			'hasPickerSettings'   => '' !== $settings['picker_api_key'] && '' !== $settings['picker_app_id'],
+			'hasRequiredSettings' => '' !== $settings['client_id'] && (bool) $settings['has_client_secret'],
 		);
 	}
 

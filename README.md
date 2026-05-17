@@ -45,6 +45,7 @@ The Vite build writes hashed assets and `build/manifest.json`. WordPress reads t
 - React is provided by WordPress through the `wp-element` script handle.
 - Admin app source imports from `@wordpress/element`; it should not import runtime React from `react` or `react-dom`.
 - The REST namespace reserved for future features is `docsync-wp/v1`.
+- Google OAuth client secrets and user tokens are encrypted with WordPress salts. Rotating those salts invalidates stored DocSync WP credentials and tokens, so users must reconnect Google accounts afterward.
 
 ## Verification
 

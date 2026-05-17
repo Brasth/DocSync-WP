@@ -1,0 +1,445 @@
+<?php
+/**
+ * Site-level settings storage.
+ *
+ * @package DocSyncWP
+ */
+
+declare(strict_types=1);
+
+namespace DocSyncWP\Settings;
+
+use DocSyncWP\Security\EncryptionService;
+use WP_Error;
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Reads, validates, and stores DocSync WP settings.
+ */
+final class SettingsRepository {
+	public const OPTION_NAME = 'docsync_wp_settings';
+
+	private const DEFAULT_SCOPE_MODE    = 'drive_file';
+	private const DEFAULT_POST_STATUS   = 'draft';
+	private const DEFAULT_EXPORT_FORMAT = 'markdown';
+
+	/**
+	 * Encryption service.
+	 *
+	 * @var EncryptionService
+	 */
+	private EncryptionService $encryption;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param EncryptionService $encryption Encryption service.
+	 */
+	public function __construct( EncryptionService $encryption ) {
+		$this->encryption = $encryption;
+	}
+
+	/**
+	 * Get normalized settings.
+	 *
+	 * @return array<string,mixed>
+	 */
+	public function get(): array {
+		$stored = get_option( self::OPTION_NAME, array() );
+
+		if ( ! is_array( $stored ) ) {
+			$stored = array();
+		}
+
+		$settings = array_merge( $this->defaults(), $stored );
+		$settings = $this->sanitizeScalarSettings( $settings );
+
+		$enabled_post_types = $this->sanitizeEnabledPostTypes( $settings['enabled_post_types'], false );
+
+		if ( is_wp_error( $enabled_post_types ) ) {
+			$enabled_post_types = array( 'post' );
+		}
+
+		$settings['enabled_post_types'] = $enabled_post_types;
+
+		if ( ! $this->isValidScopeMode( $settings['scope_mode'] ) ) {
+			$settings['scope_mode'] = self::DEFAULT_SCOPE_MODE;
+		}
+
+		if ( ! $this->isValidPostStatus( $settings['default_post_status'] ) ) {
+			$settings['default_post_status'] = self::DEFAULT_POST_STATUS;
+		}
+
+		if ( ! $this->isValidExportFormat( $settings['default_export_format'] ) ) {
+			$settings['default_export_format'] = self::DEFAULT_EXPORT_FORMAT;
+		}
+
+		return $settings;
+	}
+
+	/**
+	 * Save settings.
+	 *
+	 * Accepted keys are internal snake_case settings plus client_secret for
+	 * a plaintext secret that should be encrypted before storage.
+	 *
+	 * @param array<string,mixed> $values Settings to save.
+	 * @return array<string,mixed>|WP_Error
+	 */
+	public function save( array $values ): array|WP_Error {
+		$unknown_keys = array_diff( array_keys( $values ), $this->writableKeys() );
+
+		if ( array() !== $unknown_keys ) {
+			return new WP_Error(
+				'docsync_wp_unknown_settings',
+				__( 'DocSync WP received unknown settings.', 'docsync-wp' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		$current  = $this->get();
+		$settings = $current;
+
+		foreach ( $this->scalarWritableKeys() as $key ) {
+			if ( array_key_exists( $key, $values ) ) {
+				$settings[ $key ] = $values[ $key ];
+			}
+		}
+
+		$settings = $this->sanitizeScalarSettings( $settings );
+
+		if ( array_key_exists( 'enabled_post_types', $values ) ) {
+			$enabled_post_types = $this->sanitizeEnabledPostTypes( $values['enabled_post_types'], true );
+
+			if ( is_wp_error( $enabled_post_types ) ) {
+				return $enabled_post_types;
+			}
+
+			$settings['enabled_post_types'] = $enabled_post_types;
+		}
+
+		if ( ! $this->isValidScopeMode( $settings['scope_mode'] ) ) {
+			return new WP_Error(
+				'docsync_wp_invalid_scope_mode',
+				__( 'DocSync WP received an unsupported Google scope mode.', 'docsync-wp' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		if ( ! $this->isValidPostStatus( $settings['default_post_status'] ) ) {
+			return new WP_Error(
+				'docsync_wp_invalid_post_status',
+				__( 'DocSync WP received an unsupported default post status.', 'docsync-wp' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		if ( ! $this->isValidExportFormat( $settings['default_export_format'] ) ) {
+			return new WP_Error(
+				'docsync_wp_invalid_export_format',
+				__( 'DocSync WP received an unsupported export format.', 'docsync-wp' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		if ( array_key_exists( 'client_secret', $values ) ) {
+			$client_secret = sanitize_text_field( (string) $values['client_secret'] );
+
+			if ( '' === $client_secret ) {
+				$settings['encrypted_client_secret'] = '';
+			} else {
+				$encrypted = $this->encryption->encrypt( $client_secret );
+
+				if ( is_wp_error( $encrypted ) ) {
+					return $encrypted;
+				}
+
+				$settings['encrypted_client_secret'] = $encrypted;
+			}
+		}
+
+		update_option( self::OPTION_NAME, $settings, false );
+
+		return $this->get();
+	}
+
+	/**
+	 * Get settings safe for REST responses or admin config.
+	 *
+	 * @return array<string,mixed>
+	 */
+	public function getPublicSettings(): array {
+		$settings = $this->get();
+
+		return array(
+			'client_id'             => $settings['client_id'],
+			'picker_api_key'        => $settings['picker_api_key'],
+			'picker_app_id'         => $settings['picker_app_id'],
+			'scope_mode'            => $settings['scope_mode'],
+			'enabled_post_types'    => $settings['enabled_post_types'],
+			'default_post_status'   => $settings['default_post_status'],
+			'default_export_format' => $settings['default_export_format'],
+			'has_client_secret'     => '' !== $settings['encrypted_client_secret'],
+		);
+	}
+
+	/**
+	 * Get the decrypted client secret.
+	 *
+	 * @return string|WP_Error
+	 */
+	public function getClientSecret(): string|WP_Error {
+		$settings = $this->get();
+
+		return $this->encryption->decrypt( (string) $settings['encrypted_client_secret'] );
+	}
+
+	/**
+	 * Get enabled post type names.
+	 *
+	 * @return array<int,string>
+	 */
+	public function getEnabledPostTypes(): array {
+		$settings = $this->get();
+
+		return is_array( $settings['enabled_post_types'] ) ? $settings['enabled_post_types'] : array( 'post' );
+	}
+
+	/**
+	 * Get public post types supported by DocSync WP.
+	 *
+	 * @return array<int,array{name:string,label:string}>
+	 */
+	public function getAvailablePostTypes(): array {
+		$post_types = get_post_types( array( 'public' => true ), 'objects' );
+		$available  = array();
+
+		foreach ( $post_types as $post_type => $object ) {
+			if ( ! is_string( $post_type ) || ! is_object( $object ) ) {
+				continue;
+			}
+
+			if ( ! $this->isSupportedPostTypeObject( $post_type, $object ) ) {
+				continue;
+			}
+
+			$available[ $post_type ] = array(
+				'name'  => $post_type,
+				'label' => isset( $object->labels->singular_name ) && is_string( $object->labels->singular_name )
+					? $object->labels->singular_name
+					: $object->label,
+			);
+		}
+
+		if ( ! isset( $available['post'] ) ) {
+			$post = get_post_type_object( 'post' );
+
+			if ( null !== $post ) {
+				$available['post'] = array(
+					'name'  => 'post',
+					'label' => isset( $post->labels->singular_name ) && is_string( $post->labels->singular_name )
+						? $post->labels->singular_name
+						: $post->label,
+				);
+			}
+		}
+
+		$post = isset( $available['post'] ) ? array( 'post' => $available['post'] ) : array();
+		unset( $available['post'] );
+		ksort( $available );
+
+		return array_values( array_merge( $post, $available ) );
+	}
+
+	/**
+	 * Whether a post type is available for syncing.
+	 *
+	 * @param string $post_type Post type name.
+	 */
+	public function isPostTypeAvailable( string $post_type ): bool {
+		$object = get_post_type_object( $post_type );
+
+		return null !== $object && $this->isSupportedPostTypeObject( $post_type, $object );
+	}
+
+	/**
+	 * Default settings.
+	 *
+	 * @return array<string,mixed>
+	 */
+	private function defaults(): array {
+		return array(
+			'client_id'               => '',
+			'encrypted_client_secret' => '',
+			'picker_api_key'          => '',
+			'picker_app_id'           => '',
+			'scope_mode'              => self::DEFAULT_SCOPE_MODE,
+			'enabled_post_types'      => array( 'post' ),
+			'default_post_status'     => self::DEFAULT_POST_STATUS,
+			'default_export_format'   => self::DEFAULT_EXPORT_FORMAT,
+		);
+	}
+
+	/**
+	 * Keys callers may save.
+	 *
+	 * @return array<int,string>
+	 */
+	private function writableKeys(): array {
+		return array_merge( $this->scalarWritableKeys(), array( 'client_secret', 'enabled_post_types' ) );
+	}
+
+	/**
+	 * Scalar keys callers may save directly.
+	 *
+	 * @return array<int,string>
+	 */
+	private function scalarWritableKeys(): array {
+		return array(
+			'client_id',
+			'picker_api_key',
+			'picker_app_id',
+			'scope_mode',
+			'default_post_status',
+			'default_export_format',
+		);
+	}
+
+	/**
+	 * Sanitize scalar settings.
+	 *
+	 * @param array<string,mixed> $settings Settings.
+	 * @return array<string,mixed>
+	 */
+	private function sanitizeScalarSettings( array $settings ): array {
+		$settings['client_id']               = sanitize_text_field( (string) $settings['client_id'] );
+		$settings['encrypted_client_secret'] = is_string( $settings['encrypted_client_secret'] ) ? $settings['encrypted_client_secret'] : '';
+		$settings['picker_api_key']          = sanitize_text_field( (string) $settings['picker_api_key'] );
+		$settings['picker_app_id']           = sanitize_text_field( (string) $settings['picker_app_id'] );
+		$settings['scope_mode']              = sanitize_key( (string) $settings['scope_mode'] );
+		$settings['default_post_status']     = sanitize_key( (string) $settings['default_post_status'] );
+		$settings['default_export_format']   = sanitize_key( (string) $settings['default_export_format'] );
+
+		return $settings;
+	}
+
+	/**
+	 * Sanitize and validate enabled post types.
+	 *
+	 * @param mixed $value  Candidate post types.
+	 * @param bool  $strict Whether invalid values should fail.
+	 * @return array<int,string>|WP_Error
+	 */
+	private function sanitizeEnabledPostTypes( mixed $value, bool $strict ): array|WP_Error {
+		if ( ! is_array( $value ) ) {
+			if ( $strict ) {
+				return new WP_Error(
+					'docsync_wp_invalid_post_types',
+					__( 'DocSync WP enabled post types must be an array.', 'docsync-wp' ),
+					array( 'status' => 400 )
+				);
+			}
+
+			$value = array( 'post' );
+		}
+
+		$post_types = array();
+
+		foreach ( $value as $post_type ) {
+			if ( ! is_string( $post_type ) ) {
+				if ( $strict ) {
+					return new WP_Error(
+						'docsync_wp_invalid_post_type',
+						__( 'DocSync WP received an invalid post type.', 'docsync-wp' ),
+						array( 'status' => 400 )
+					);
+				}
+
+				continue;
+			}
+
+			$post_types[] = sanitize_key( $post_type );
+		}
+
+		$post_types = array_values( array_unique( array_filter( $post_types ) ) );
+
+		if ( ! in_array( 'post', $post_types, true ) && $this->isPostTypeAvailable( 'post' ) ) {
+			array_unshift( $post_types, 'post' );
+		}
+
+		if ( array() === $post_types ) {
+			$post_types = array( 'post' );
+		}
+
+		foreach ( $post_types as $post_type ) {
+			if ( ! $this->isPostTypeAvailable( $post_type ) ) {
+				if ( $strict ) {
+					return new WP_Error(
+						'docsync_wp_unsupported_post_type',
+						sprintf(
+							/* translators: %s: post type name. */
+							__( 'The "%s" post type cannot be used for DocSync WP.', 'docsync-wp' ),
+							$post_type
+						),
+						array( 'status' => 400 )
+					);
+				}
+
+				$post_types = array_values(
+					array_filter(
+						$post_types,
+						static function ( string $candidate ) use ( $post_type ): bool {
+							return $candidate !== $post_type;
+						}
+					)
+				);
+			}
+		}
+
+		return array() === $post_types ? array( 'post' ) : $post_types;
+	}
+
+	/**
+	 * Whether a scope mode is supported.
+	 *
+	 * @param string $scope_mode Scope mode.
+	 */
+	private function isValidScopeMode( string $scope_mode ): bool {
+		return self::DEFAULT_SCOPE_MODE === $scope_mode;
+	}
+
+	/**
+	 * Whether a post status is supported as a default.
+	 *
+	 * @param string $post_status Post status.
+	 */
+	private function isValidPostStatus( string $post_status ): bool {
+		$post_stati = get_post_stati( array( 'internal' => false ), 'names' );
+
+		return in_array( $post_status, $post_stati, true );
+	}
+
+	/**
+	 * Whether an export format is supported.
+	 *
+	 * @param string $export_format Export format.
+	 */
+	private function isValidExportFormat( string $export_format ): bool {
+		return self::DEFAULT_EXPORT_FORMAT === $export_format;
+	}
+
+	/**
+	 * Whether the post type object is supported by DocSync WP.
+	 *
+	 * @param string $post_type        Post type name.
+	 * @param object $post_type_object Post type object.
+	 */
+	private function isSupportedPostTypeObject( string $post_type, object $post_type_object ): bool {
+		if ( 'post' === $post_type ) {
+			return true;
+		}
+
+		return ! empty( $post_type_object->public ) && empty( $post_type_object->_builtin );
+	}
+}
