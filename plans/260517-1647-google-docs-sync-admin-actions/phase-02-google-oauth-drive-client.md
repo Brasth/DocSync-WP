@@ -3,7 +3,7 @@
 ## Overview
 
 Priority: P1  
-Status: Pending  
+Status: Completed  
 Effort: 8h
 
 Implement Google OAuth connection, token refresh, Drive metadata/export calls, and document id parsing.
@@ -106,10 +106,10 @@ Output:
 
 ## Todo
 
-- [ ] Add OAuth URL endpoint.
-- [ ] Add OAuth callback.
-- [ ] Add token refresh.
-- [ ] Add Drive metadata request.
-- [ ] Add Drive export request.
-- [ ] Add document id parser.
-- [ ] Add typed REST errors.
+- [x] Add OAuth URL endpoint.
+- [x] Add OAuth callback.
+- [x] Add token refresh.
+- [x] Add Drive metadata request.
+- [x] Add Drive export request.
+- [x] Add document id parser.
+- [x] Add typed REST errors.
