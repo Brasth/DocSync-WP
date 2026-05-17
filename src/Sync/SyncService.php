@@ -1,0 +1,440 @@
+<?php
+/**
+ * Google Docs source attach and import service.
+ *
+ * @package DocSyncWP
+ */
+
+declare(strict_types=1);
+
+namespace DocSyncWP\Sync;
+
+use DocSyncWP\Google\DriveClient;
+use WP_Error;
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Coordinates source metadata, Google export, content conversion, and post updates.
+ */
+final class SyncService {
+	public const STATUS_LINKED  = 'linked';
+	public const STATUS_SYNCING = 'syncing';
+	public const STATUS_SYNCED  = 'synced';
+	public const STATUS_SKIPPED = 'skipped';
+	public const STATUS_ERROR   = 'error';
+
+	private const EXPORT_FORMAT_MARKDOWN = 'markdown';
+
+	/**
+	 * Source repository.
+	 *
+	 * @var SourceRepository
+	 */
+	private SourceRepository $source_repository;
+
+	/**
+	 * Drive client.
+	 *
+	 * @var DriveClient
+	 */
+	private DriveClient $drive_client;
+
+	/**
+	 * Content converter.
+	 *
+	 * @var ContentConverter
+	 */
+	private ContentConverter $content_converter;
+
+	/**
+	 * Sync lock.
+	 *
+	 * @var SyncLock
+	 */
+	private SyncLock $sync_lock;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param SourceRepository $source_repository Source repository.
+	 * @param DriveClient      $drive_client      Drive client.
+	 * @param ContentConverter $content_converter Content converter.
+	 * @param SyncLock         $sync_lock         Sync lock.
+	 */
+	public function __construct(
+		SourceRepository $source_repository,
+		DriveClient $drive_client,
+		ContentConverter $content_converter,
+		SyncLock $sync_lock
+	) {
+		$this->source_repository = $source_repository;
+		$this->drive_client      = $drive_client;
+		$this->content_converter = $content_converter;
+		$this->sync_lock         = $sync_lock;
+	}
+
+	/**
+	 * Attach a Google Doc source to an existing post without importing content.
+	 *
+	 * @param int    $post_id       Post ID.
+	 * @param int    $user_id       User ID.
+	 * @param string $file_id       Google Drive file ID.
+	 * @param string $export_format Export format.
+	 * @return array<string,mixed>|WP_Error
+	 */
+	public function attachSource( int $post_id, int $user_id, string $file_id, string $export_format = self::EXPORT_FORMAT_MARKDOWN ): array|WP_Error {
+		$export_format = $this->sanitizeExportFormat( $export_format );
+
+		if ( is_wp_error( $export_format ) ) {
+			return $export_format;
+		}
+
+		$metadata = $this->drive_client->getMetadata( $user_id, $file_id );
+
+		if ( is_wp_error( $metadata ) ) {
+			return $metadata;
+		}
+
+		$saved = $this->source_repository->saveSource(
+			$post_id,
+			array_merge(
+				$this->sourceFromMetadata( $metadata ),
+				array(
+					'last_hash'          => '',
+					'last_synced_at'     => '',
+					'sync_owner_user_id' => $user_id,
+					'export_format'      => $export_format,
+					'sync_status'        => self::STATUS_LINKED,
+					'sync_error'         => '',
+				)
+			)
+		);
+
+		if ( is_wp_error( $saved ) ) {
+			return $saved;
+		}
+
+		return $this->formatResult( $post_id, self::STATUS_LINKED, false );
+	}
+
+	/**
+	 * Create a draft post, attach the source, and immediately sync it.
+	 *
+	 * @param int    $user_id       User ID.
+	 * @param string $file_id       Google Drive file ID.
+	 * @param string $post_type     Post type.
+	 * @param string $export_format Export format.
+	 * @return array<string,mixed>|WP_Error
+	 */
+	public function createDraftFromSource( int $user_id, string $file_id, string $post_type, string $export_format = self::EXPORT_FORMAT_MARKDOWN ): array|WP_Error {
+		$export_format = $this->sanitizeExportFormat( $export_format );
+
+		if ( is_wp_error( $export_format ) ) {
+			return $export_format;
+		}
+
+		$metadata = $this->drive_client->getMetadata( $user_id, $file_id );
+
+		if ( is_wp_error( $metadata ) ) {
+			return $metadata;
+		}
+
+		$post_id = wp_insert_post(
+			wp_slash(
+				array(
+					'post_author'  => $user_id,
+					'post_content' => '',
+					'post_status'  => 'draft',
+					'post_title'   => $metadata['name'],
+					'post_type'    => $post_type,
+				)
+			),
+			true
+		);
+
+		if ( is_wp_error( $post_id ) ) {
+			return new WP_Error(
+				'docsync_wp_create_post_failed',
+				__( 'DocSync WP could not create a draft post for this Google Doc.', 'docsync-wp' ),
+				array( 'status' => 500 )
+			);
+		}
+
+		$saved = $this->source_repository->saveSource(
+			(int) $post_id,
+			array_merge(
+				$this->sourceFromMetadata( $metadata ),
+				array(
+					'last_hash'          => '',
+					'last_synced_at'     => '',
+					'sync_owner_user_id' => $user_id,
+					'export_format'      => $export_format,
+					'sync_status'        => self::STATUS_LINKED,
+					'sync_error'         => '',
+				)
+			)
+		);
+
+		if ( is_wp_error( $saved ) ) {
+			return $saved;
+		}
+
+		$synced = $this->syncPost( (int) $post_id, $user_id );
+
+		if ( is_wp_error( $synced ) ) {
+			$data = $synced->get_error_data();
+
+			if ( ! is_array( $data ) ) {
+				$data = array();
+			}
+
+			$data['postId'] = (int) $post_id;
+			$synced->add_data( $data );
+
+			return $synced;
+		}
+
+		$synced['created'] = true;
+
+		return $synced;
+	}
+
+	/**
+	 * Sync a linked post from Google Docs.
+	 *
+	 * @param int  $post_id Post ID.
+	 * @param int  $user_id User ID making the request.
+	 * @param bool $force   Whether to force import even if unchanged.
+	 * @return array<string,mixed>|WP_Error
+	 */
+	public function syncPost( int $post_id, int $user_id, bool $force = false ): array|WP_Error {
+		$source = $this->source_repository->getSource( $post_id );
+
+		if ( null === $source ) {
+			return new WP_Error(
+				'docsync_wp_source_not_found',
+				__( 'This post is not linked to a Google Doc.', 'docsync-wp' ),
+				array( 'status' => 404 )
+			);
+		}
+
+		if ( ! $this->sync_lock->acquire( $post_id ) ) {
+			return new WP_Error(
+				'docsync_wp_sync_locked',
+				__( 'This Google Doc sync is already running.', 'docsync-wp' ),
+				array( 'status' => 409 )
+			);
+		}
+
+		try {
+			$this->saveSourceState(
+				$post_id,
+				$source,
+				array(
+					'sync_status' => self::STATUS_SYNCING,
+					'sync_error'  => '',
+				)
+			);
+
+			$sync_user_id = $this->getSyncUserId( $source, $user_id );
+			$metadata     = $this->drive_client->getMetadata( $sync_user_id, (string) $source['google_file_id'] );
+
+			if ( is_wp_error( $metadata ) ) {
+				return $this->markError( $post_id, $source, $metadata );
+			}
+
+			$previous_source = $source;
+			$source          = array_merge( $source, $this->sourceFromMetadata( $metadata ) );
+
+			if (
+				! $force
+				&& '' !== (string) $source['last_hash']
+				&& (string) $previous_source['google_modified_time'] === (string) $metadata['modifiedTime']
+				&& (string) $previous_source['google_version'] === (string) $metadata['version']
+			) {
+				$this->saveSourceState(
+					$post_id,
+					$source,
+					array(
+						'last_synced_at'     => current_time( 'mysql', true ),
+						'sync_owner_user_id' => $sync_user_id,
+						'sync_status'        => self::STATUS_SKIPPED,
+						'sync_error'         => '',
+					)
+				);
+
+				return $this->formatResult( $post_id, self::STATUS_SKIPPED, false );
+			}
+
+			$markdown = $this->drive_client->exportMarkdown( $sync_user_id, (string) $source['google_file_id'] );
+
+			if ( is_wp_error( $markdown ) ) {
+				return $this->markError( $post_id, $source, $markdown );
+			}
+
+			$hash = hash( 'sha256', $markdown );
+
+			if ( ! $force && hash_equals( (string) $source['last_hash'], $hash ) ) {
+				$this->saveSourceState(
+					$post_id,
+					$source,
+					array(
+						'last_hash'          => $hash,
+						'last_synced_at'     => current_time( 'mysql', true ),
+						'sync_owner_user_id' => $sync_user_id,
+						'sync_status'        => self::STATUS_SKIPPED,
+						'sync_error'         => '',
+					)
+				);
+
+				return $this->formatResult( $post_id, self::STATUS_SKIPPED, false );
+			}
+
+			$html = $this->content_converter->convertMarkdown( $markdown );
+
+			if ( is_wp_error( $html ) ) {
+				return $this->markError( $post_id, $source, $html );
+			}
+
+			$updated = wp_update_post(
+				wp_slash(
+					array(
+						'ID'           => $post_id,
+						'post_content' => $html,
+					)
+				),
+				true
+			);
+
+			if ( is_wp_error( $updated ) ) {
+				return $this->markError(
+					$post_id,
+					$source,
+					new WP_Error(
+						'docsync_wp_update_post_failed',
+						__( 'DocSync WP could not update this post with Google Docs content.', 'docsync-wp' ),
+						array( 'status' => 500 )
+					)
+				);
+			}
+
+			$this->saveSourceState(
+				$post_id,
+				$source,
+				array(
+					'last_hash'          => $hash,
+					'last_synced_at'     => current_time( 'mysql', true ),
+					'sync_owner_user_id' => $sync_user_id,
+					'sync_status'        => self::STATUS_SYNCED,
+					'sync_error'         => '',
+				)
+			);
+
+			return $this->formatResult( $post_id, self::STATUS_SYNCED, true );
+		} finally {
+			$this->sync_lock->release( $post_id );
+		}
+	}
+
+	/**
+	 * Store source state updates.
+	 *
+	 * @param int                 $post_id Post ID.
+	 * @param array<string,mixed> $source  Current source.
+	 * @param array<string,mixed> $updates State updates.
+	 * @return bool|WP_Error
+	 */
+	private function saveSourceState( int $post_id, array $source, array $updates ): bool|WP_Error {
+		return $this->source_repository->saveSource(
+			$post_id,
+			array_merge( $source, $updates )
+		);
+	}
+
+	/**
+	 * Persist a sync error and return it.
+	 *
+	 * @param int                 $post_id Post ID.
+	 * @param array<string,mixed> $source  Current source.
+	 * @param WP_Error            $error   Error to store.
+	 */
+	private function markError( int $post_id, array $source, WP_Error $error ): WP_Error {
+		$this->saveSourceState(
+			$post_id,
+			$source,
+			array(
+				'last_synced_at' => current_time( 'mysql', true ),
+				'sync_status'    => self::STATUS_ERROR,
+				'sync_error'     => $error->get_error_message(),
+			)
+		);
+
+		return $error;
+	}
+
+	/**
+	 * Get the user whose Google token should run the sync.
+	 *
+	 * @param array<string,mixed> $source          Source.
+	 * @param int                 $fallback_user_id Fallback user ID.
+	 */
+	private function getSyncUserId( array $source, int $fallback_user_id ): int {
+		$owner_user_id = isset( $source['sync_owner_user_id'] ) ? absint( $source['sync_owner_user_id'] ) : 0;
+
+		return $owner_user_id > 0 ? $owner_user_id : $fallback_user_id;
+	}
+
+	/**
+	 * Convert Drive metadata to source metadata.
+	 *
+	 * @param array<string,string> $metadata Drive metadata.
+	 * @return array<string,string>
+	 */
+	private function sourceFromMetadata( array $metadata ): array {
+		return array(
+			'google_file_id'       => $metadata['fileId'],
+			'google_doc_url'       => $metadata['webViewLink'],
+			'google_title'         => $metadata['name'],
+			'google_modified_time' => $metadata['modifiedTime'],
+			'google_version'       => $metadata['version'],
+		);
+	}
+
+	/**
+	 * Format a sync response.
+	 *
+	 * @param int    $post_id Post ID.
+	 * @param string $status  Sync status.
+	 * @param bool   $changed Whether post content changed.
+	 * @return array<string,mixed>
+	 */
+	private function formatResult( int $post_id, string $status, bool $changed ): array {
+		return array(
+			'postId'  => $post_id,
+			'status'  => $status,
+			'changed' => $changed,
+			'source'  => $this->source_repository->formatSource( $post_id ),
+		);
+	}
+
+	/**
+	 * Validate export format.
+	 *
+	 * @param string $export_format Export format.
+	 * @return string|WP_Error
+	 */
+	private function sanitizeExportFormat( string $export_format ): string|WP_Error {
+		$export_format = sanitize_key( $export_format );
+
+		if ( self::EXPORT_FORMAT_MARKDOWN === $export_format ) {
+			return $export_format;
+		}
+
+		return new WP_Error(
+			'docsync_wp_invalid_export_format',
+			__( 'DocSync WP only supports Markdown exports.', 'docsync-wp' ),
+			array( 'status' => 400 )
+		);
+	}
+}

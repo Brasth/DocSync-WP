@@ -43,7 +43,7 @@ Implement one-way Google Docs -> WordPress sync for default posts and custom pos
 |---|-------|--------|--------|------|
 | 1 | Foundation and Data Model | Completed | 6h | [phase-01-foundation-data-model.md](./phase-01-foundation-data-model.md) |
 | 2 | Google OAuth and Drive Client | Completed | 8h | [phase-02-google-oauth-drive-client.md](./phase-02-google-oauth-drive-client.md) |
-| 3 | Sync Service and Import Pipeline | Pending | 8h | [phase-03-sync-service-import-pipeline.md](./phase-03-sync-service-import-pipeline.md) |
+| 3 | Sync Service and Import Pipeline | Completed | 8h | [phase-03-sync-service-import-pipeline.md](./phase-03-sync-service-import-pipeline.md) |
 | 4 | Post Edit and List Table Entry Points | Pending | 8h | [phase-04-admin-post-entry-points.md](./phase-04-admin-post-entry-points.md) |
 | 5 | Central Admin App, Scheduling, Logs | Pending | 6h | [phase-05-admin-app-scheduling-observability.md](./phase-05-admin-app-scheduling-observability.md) |
 | 6 | Verification and Release Hardening | Pending | 4h | [phase-06-verification-release-hardening.md](./phase-06-verification-release-hardening.md) |

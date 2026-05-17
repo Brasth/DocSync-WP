@@ -39,20 +39,30 @@ final class RestServiceProvider {
 	private DocumentController $document_controller;
 
 	/**
+	 * Source controller.
+	 *
+	 * @var SourceController
+	 */
+	private SourceController $source_controller;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param SettingsController $settings_controller Settings controller.
 	 * @param OAuthController    $oauth_controller    OAuth controller.
 	 * @param DocumentController $document_controller Document controller.
+	 * @param SourceController   $source_controller   Source controller.
 	 */
 	public function __construct(
 		SettingsController $settings_controller,
 		OAuthController $oauth_controller,
-		DocumentController $document_controller
+		DocumentController $document_controller,
+		SourceController $source_controller
 	) {
 		$this->settings_controller = $settings_controller;
 		$this->oauth_controller    = $oauth_controller;
 		$this->document_controller = $document_controller;
+		$this->source_controller   = $source_controller;
 	}
 
 	/**
@@ -69,5 +79,6 @@ final class RestServiceProvider {
 		$this->settings_controller->registerRoutes( self::NAMESPACE );
 		$this->oauth_controller->registerRoutes( self::NAMESPACE );
 		$this->document_controller->registerRoutes( self::NAMESPACE );
+		$this->source_controller->registerRoutes( self::NAMESPACE );
 	}
 }
