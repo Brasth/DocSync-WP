@@ -103,3 +103,4 @@ flowchart LR
 - 2026-05-18: PHP validation blocked because `php`, `composer`, `vendor/`, and `vendor/bin/phpcs` are unavailable in this checkout.
 - 2026-05-18: Source modal updated to Radix Dialog/Tabs primitives while keeping React runtime externalized to WordPress `wp.element`.
 - 2026-05-18: Inline PHPCS suppression comments removed from plugin source; lint guard added and narrow ruleset exceptions documented in `phpcs.xml.dist`.
+- 2026-05-18: GitHub artifact packaging fixed after WordPress rejected the nested artifact ZIP as having no valid plugins.

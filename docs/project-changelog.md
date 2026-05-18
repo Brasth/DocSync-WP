@@ -16,6 +16,12 @@ Updated the admin UI and coding guardrails:
 - changed encrypted binary payload storage from base64 fields to hex fields while retaining legacy decode support when Sodium is available
 - switched manifest loading to `wp_json_file_decode`
 
+## 2026-05-18 - Installable ZIP Artifact Fix
+
+Status: completed in codebase
+
+Fixed GitHub packaging artifacts so downloaded workflow artifacts are directly installable by WordPress instead of containing a nested plugin ZIP. Added a workflow validation gate for `docsync-wp/docsync-wp.php`, `vendor/autoload.php`, and `build/manifest.json`.
+
 ## 2026-05-18 - Google Docs Sync Admin Actions
 
 Status: completed in codebase

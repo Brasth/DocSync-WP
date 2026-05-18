@@ -55,21 +55,19 @@ jobs:
           rsync -a ./ "${STAGING_DIR}/${PLUGIN_SLUG}/" --exclude-from="${RSYNC_EXCLUDES}"
           echo "staging_dir=${STAGING_DIR}" >> "${GITHUB_OUTPUT}"
 
-      - name: Create plugin ZIP
-        id: archive
+      - name: Validate installable plugin layout
         run: |
           set -euo pipefail
           PLUGIN_SLUG="docsync-wp"
-          SHORT_SHA="${GITHUB_SHA::7}"
-          ARCHIVE_NAME="${PLUGIN_SLUG}-${GITHUB_REF_NAME}-${SHORT_SHA}.zip"
-          cd "${{ steps.stage.outputs.staging_dir }}"
-          zip -r "${ARCHIVE_NAME}" "${PLUGIN_SLUG}"
-          echo "archive_name=${ARCHIVE_NAME}" >> "${GITHUB_OUTPUT}"
-          echo "archive_path=${{ steps.stage.outputs.staging_dir }}/${ARCHIVE_NAME}" >> "${GITHUB_OUTPUT}"
+          STAGING_DIR="${{ steps.stage.outputs.staging_dir }}"
+          test -f "${STAGING_DIR}/${PLUGIN_SLUG}/${PLUGIN_SLUG}.php"
+          test -f "${STAGING_DIR}/${PLUGIN_SLUG}/vendor/autoload.php"
+          test -f "${STAGING_DIR}/${PLUGIN_SLUG}/build/manifest.json"
+          grep -q "Plugin Name:" "${STAGING_DIR}/${PLUGIN_SLUG}/${PLUGIN_SLUG}.php"
 
-      - name: Upload ZIP artifact
+      - name: Upload installable plugin artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.archive.outputs.archive_name }}
-          path: ${{ steps.archive.outputs.archive_path }}
+          name: docsync-wp-${{ github.ref_name }}-${{ github.sha }}
+          path: ${{ steps.stage.outputs.staging_dir }}/docsync-wp
           if-no-files-found: error
