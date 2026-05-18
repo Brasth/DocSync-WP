@@ -23,8 +23,11 @@ delete_metadata( 'user', 0, '_docsync_wp_google_token', '', true );
 if ( class_exists( DocSyncWP\Cron\SyncCron::class ) ) {
 	DocSyncWP\Cron\SyncCron::unschedule();
 } else {
-	while ( false !== ( $timestamp = wp_next_scheduled( 'docsync_wp_sync_sources' ) ) ) {
+	$timestamp = wp_next_scheduled( 'docsync_wp_sync_sources' );
+
+	while ( false !== $timestamp ) {
 		wp_unschedule_event( $timestamp, 'docsync_wp_sync_sources' );
+		$timestamp = wp_next_scheduled( 'docsync_wp_sync_sources' );
 	}
 }
 

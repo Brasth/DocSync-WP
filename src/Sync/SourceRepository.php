@@ -271,7 +271,7 @@ final class SourceRepository {
 			return array();
 		}
 
-		$query = $this->queryDueSourceIds( $post_types, $limit, $before, $exclude );
+		$query   = $this->queryDueSourceIds( $post_types, $limit, $before, $exclude );
 		$sources = array();
 
 		foreach ( $query->posts as $post_id ) {

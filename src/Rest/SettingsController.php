@@ -64,6 +64,7 @@ final class SettingsController {
 	/**
 	 * Permission callback for settings routes.
 	 *
+	 * @param WP_REST_Request $request REST request.
 	 * @return bool|WP_Error
 	 */
 	public function canManageSettings( WP_REST_Request $request ): bool|WP_Error {

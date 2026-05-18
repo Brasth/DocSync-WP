@@ -61,7 +61,7 @@ final class PostListActions {
 	 * Add row action for linked/unlinked posts.
 	 *
 	 * @param array<string,string> $actions Row actions.
-	 * @param WP_Post             $post    Current post.
+	 * @param WP_Post              $post    Current post.
 	 * @return array<string,string>
 	 */
 	public function addRowAction( array $actions, WP_Post $post ): array {

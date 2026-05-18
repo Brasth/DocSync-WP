@@ -306,7 +306,8 @@ final class SourceController {
 		$seen       = array();
 
 		do {
-			$post_ids = $this->source_repository->listDueSourcePostIds( $this->source_repository->getEnabledPostTypes(), $batch_size, $before, array_keys( $seen ) );
+			$post_ids       = $this->source_repository->listDueSourcePostIds( $this->source_repository->getEnabledPostTypes(), $batch_size, $before, array_keys( $seen ) );
+			$post_ids_count = count( $post_ids );
 
 			foreach ( $post_ids as $post_id ) {
 				$post_id = absint( $post_id );
@@ -334,7 +335,7 @@ final class SourceController {
 
 				$results[] = $result;
 			}
-		} while ( count( $post_ids ) === $batch_size );
+		} while ( $post_ids_count === $batch_size );
 
 		return rest_ensure_response(
 			array(
