@@ -22,6 +22,12 @@ Status: completed in codebase
 
 Fixed GitHub packaging artifacts so downloaded workflow artifacts are directly installable by WordPress instead of containing a nested plugin ZIP. Added a workflow validation gate for `docsync-wp/docsync-wp.php`, `vendor/autoload.php`, and `build/manifest.json`.
 
+## 2026-05-18 - PHPCS CI Fixes
+
+Status: completed in codebase
+
+Patched PHPCS findings from CI: missing REST request docblock, docblock spacing, assignment-in-condition warnings, assignment alignment warnings, and `count()` inside a loop condition.
+
 ## 2026-05-18 - Google Docs Sync Admin Actions
 
 Status: completed in codebase

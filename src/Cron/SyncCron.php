@@ -115,8 +115,11 @@ final class SyncCron {
 	 * Unschedule all DocSync cron events.
 	 */
 	public static function unschedule(): void {
-		while ( false !== ( $timestamp = wp_next_scheduled( self::HOOK ) ) ) {
+		$timestamp = wp_next_scheduled( self::HOOK );
+
+		while ( false !== $timestamp ) {
 			wp_unschedule_event( $timestamp, self::HOOK );
+			$timestamp = wp_next_scheduled( self::HOOK );
 		}
 	}
 
