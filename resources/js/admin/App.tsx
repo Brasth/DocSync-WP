@@ -1,6 +1,5 @@
 import {
   createElement,
-  Fragment,
   useMemo,
   useState
 } from '@wordpress/element';

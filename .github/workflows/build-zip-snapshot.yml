@@ -1,0 +1,77 @@
+name: Build Snapshot ZIP
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+permissions:
+  contents: read
+
+jobs:
+  build-zip:
+    name: Build And Package Snapshot
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.1"
+          coverage: none
+          tools: composer:v2
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+
+      - name: Install production PHP dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+      - name: Install Node dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build frontend assets
+        run: pnpm build
+
+      - name: Stage distribution files
+        id: stage
+        run: |
+          set -euo pipefail
+          PLUGIN_SLUG="docsync-wp"
+          STAGING_DIR="${RUNNER_TEMP}/${PLUGIN_SLUG}-package"
+          RSYNC_EXCLUDES="${RUNNER_TEMP}/distignore-rsync.txt"
+          mkdir -p "${STAGING_DIR}/${PLUGIN_SLUG}"
+          sed 's|^/||' .distignore > "${RSYNC_EXCLUDES}"
+          rsync -a ./ "${STAGING_DIR}/${PLUGIN_SLUG}/" --exclude-from="${RSYNC_EXCLUDES}"
+          echo "staging_dir=${STAGING_DIR}" >> "${GITHUB_OUTPUT}"
+
+      - name: Create plugin ZIP
+        id: archive
+        run: |
+          set -euo pipefail
+          PLUGIN_SLUG="docsync-wp"
+          SHORT_SHA="${GITHUB_SHA::7}"
+          ARCHIVE_NAME="${PLUGIN_SLUG}-${GITHUB_REF_NAME}-${SHORT_SHA}.zip"
+          cd "${{ steps.stage.outputs.staging_dir }}"
+          zip -r "${ARCHIVE_NAME}" "${PLUGIN_SLUG}"
+          echo "archive_name=${ARCHIVE_NAME}" >> "${GITHUB_OUTPUT}"
+          echo "archive_path=${{ steps.stage.outputs.staging_dir }}/${ARCHIVE_NAME}" >> "${GITHUB_OUTPUT}"
+
+      - name: Upload ZIP artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.archive.outputs.archive_name }}
+          path: ${{ steps.archive.outputs.archive_path }}
+          if-no-files-found: error
