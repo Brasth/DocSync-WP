@@ -1,126 +1,169 @@
-import {
-  createElement,
-  useMemo,
-  useState
-} from '@wordpress/element';
+import { createElement, useEffect, useMemo, useState } from '@wordpress/element';
 
+import {
+  disconnectGoogleAccount,
+  getGoogleAccount,
+  getGoogleAuthUrl,
+  getSettings,
+  listSources,
+  saveSettings,
+  syncAllSources,
+  syncSource,
+  type GoogleAccount,
+  type SettingsResponse,
+  type SourceRecord
+} from './api';
+import { AccountPanel } from './components/AccountPanel';
+import { SettingsPanel } from './components/SettingsPanel';
+import { SourcesTable } from './components/SourcesTable';
 import { getAdminConfig } from './config';
 
-type SummaryItem = {
-  label: string;
-  value: string;
-  detail: string;
+type Notice = {
+  type: 'success' | 'error';
+  message: string;
 };
 
-const summaryItems: SummaryItem[] = [
-  {
-    label: 'Sources',
-    value: '0',
-    detail: 'No connected sources'
-  },
-  {
-    label: 'Queue',
-    value: '0',
-    detail: 'No pending jobs'
-  },
-  {
-    label: 'Last sync',
-    value: 'Never',
-    detail: 'Waiting for the first run'
-  }
-];
+const emptyAccount: GoogleAccount = { connected: false };
+const sourcePageSize = 100;
 
 export const App = (): JSX.Element => {
-  const [selectedSource, setSelectedSource] = useState('WordPress Media Library');
   const config = useMemo(() => getAdminConfig(), []);
+  const [settings, setSettings] = useState<SettingsResponse | null>(null);
+  const [account, setAccount] = useState<GoogleAccount>(emptyAccount);
+  const [sources, setSources] = useState<SourceRecord[]>([]);
+  const [sourcePage, setSourcePage] = useState(1);
+  const [hasMoreSources, setHasMoreSources] = useState(false);
+  const [notice, setNotice] = useState<Notice | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const refresh = async () => {
+    const [settingsResponse, accountResponse, sourcesResponse] = await Promise.all([
+      getSettings(),
+      getGoogleAccount(),
+      listSources(undefined, 1, sourcePageSize)
+    ]);
+
+    setSettings(settingsResponse);
+    setAccount(accountResponse);
+    setSources(sourcesResponse.sources);
+    setSourcePage(1);
+    setHasMoreSources(Boolean(sourcesResponse.has_more ?? sourcesResponse.hasMore));
+  };
+
+  const loadMoreSources = async () => {
+    await runAction(async () => {
+      const nextPage = sourcePage + 1;
+      const response = await listSources(undefined, nextPage, sourcePageSize);
+
+      setSources((current) => [...current, ...response.sources]);
+      setSourcePage(nextPage);
+      setHasMoreSources(Boolean(response.has_more ?? response.hasMore));
+    });
+  };
+
+  useEffect(() => {
+    refresh().catch((caught) => {
+      setNotice({ type: 'error', message: caught instanceof Error ? caught.message : 'Could not load DocSync WP.' });
+    });
+  }, []);
+
+  const runAction = async (action: () => Promise<void>) => {
+    setBusy(true);
+    setNotice(null);
+
+    try {
+      await action();
+    } catch (caught) {
+      setNotice({ type: 'error', message: caught instanceof Error ? caught.message : 'Action failed.' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const connectGoogle = async () => {
+    await runAction(async () => {
+      const response = await getGoogleAuthUrl();
+      window.location.assign(response.authUrl);
+    });
+  };
+
+  const disconnectGoogle = async () => {
+    await runAction(async () => {
+      await disconnectGoogleAccount();
+      await refresh();
+      setNotice({ type: 'success', message: 'Google account disconnected.' });
+    });
+  };
+
+  const persistSettings = async (nextSettings: Partial<SettingsResponse> & { clientSecret?: string }) => {
+    await runAction(async () => {
+      const saved = await saveSettings(nextSettings);
+      setSettings(saved);
+      setNotice({ type: 'success', message: 'Settings saved.' });
+    });
+  };
+
+  const syncOne = async (postId: number) => {
+    await runAction(async () => {
+      const result = await syncSource(postId);
+      await refresh();
+      setNotice({ type: 'success', message: `Post ${postId} sync ${result.status}.` });
+    });
+  };
+
+  const syncAll = async () => {
+    await runAction(async () => {
+      const result = await syncAllSources();
+      await refresh();
+      setNotice({ type: 'success', message: `Sync attempted for ${result.count} source(s).` });
+    });
+  };
 
   return (
-    <main className="min-h-[calc(100vh-96px)] bg-slate-50 px-4 py-6 text-slate-950 sm:px-6 lg:px-8">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6">
-        <header className="flex flex-col gap-4 border-b border-slate-200 pb-5 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="text-sm font-medium text-cyan-700">DocSync WP</p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-normal text-slate-950">
-              Sync Control
-            </h1>
+    <main className="docsync-wp-admin-shell">
+      <header className="docsync-wp-hero">
+        <div>
+          <p>DocSync WP</p>
+          <h1>Google Docs Sync Control</h1>
+          <span>Version {config.version}</span>
+        </div>
+        <div className="docsync-wp-hero__status">
+          <strong>{sources.length}</strong>
+          <span>linked source{sources.length === 1 ? '' : 's'}</span>
+        </div>
+      </header>
+
+      {notice ? <div className={`notice notice-${notice.type}`}><p>{notice.message}</p></div> : null}
+
+      {!settings ? (
+        <section className="docsync-wp-card"><p>Loading settings...</p></section>
+      ) : (
+        <div className="docsync-wp-admin-grid">
+          <div className="docsync-wp-admin-grid__main">
+            <SourcesTable
+              busy={busy}
+              hasMore={hasMoreSources}
+              onLoadMore={loadMoreSources}
+              onRefresh={() => runAction(refresh)}
+              onSync={syncOne}
+              onSyncAll={syncAll}
+              sources={sources}
+            />
+            <SettingsPanel busy={busy} onSave={persistSettings} settings={settings} />
           </div>
-          <div className="rounded border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600">
-            Version {config.version}
-          </div>
-        </header>
-
-        <section className="grid gap-4 md:grid-cols-3" aria-label="Sync summary">
-          {summaryItems.map((item) => (
-            <article
-              className="rounded border border-slate-200 bg-white p-5 shadow-sm"
-              key={item.label}
-            >
-              <p className="text-sm font-medium text-slate-500">{item.label}</p>
-              <p className="mt-3 text-2xl font-semibold text-slate-950">{item.value}</p>
-              <p className="mt-2 text-sm text-slate-600">{item.detail}</p>
-            </article>
-          ))}
-        </section>
-
-        <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <div className="rounded border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h2 className="text-lg font-semibold text-slate-950">Sources</h2>
-                <p className="mt-1 text-sm text-slate-600">
-                  {selectedSource}
-                </p>
-              </div>
-              <select
-                className="h-10 rounded border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm focus:border-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-600/20"
-                onChange={(event) => setSelectedSource(event.currentTarget.value)}
-                value={selectedSource}
-              >
-                <option>WordPress Media Library</option>
-                <option>External provider</option>
-                <option>Local import folder</option>
-              </select>
-            </div>
-
-            <div className="mt-5 overflow-hidden rounded border border-slate-200">
-              <table className="w-full border-collapse text-left text-sm">
-                <thead className="bg-slate-100 text-slate-600">
-                  <tr>
-                    <th className="px-4 py-3 font-medium">Name</th>
-                    <th className="px-4 py-3 font-medium">Status</th>
-                    <th className="px-4 py-3 font-medium">Updated</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200 bg-white">
-                  <tr>
-                    <td className="px-4 py-4 text-slate-950">{selectedSource}</td>
-                    <td className="px-4 py-4">
-                      <span className="inline-flex rounded bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">
-                        Not configured
-                      </span>
-                    </td>
-                    <td className="px-4 py-4 text-slate-600">Never</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <aside className="rounded border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-semibold text-slate-950">API Context</h2>
-            <dl className="mt-4 space-y-4 text-sm">
-              <div>
-                <dt className="font-medium text-slate-500">REST namespace</dt>
-                <dd className="mt-1 break-all text-slate-900">{config.restUrl || 'Unavailable'}</dd>
-              </div>
-              <div>
-                <dt className="font-medium text-slate-500">Runtime</dt>
-                <dd className="mt-1 text-slate-900">wp-element</dd>
-              </div>
-            </dl>
+          <aside className="docsync-wp-admin-grid__side">
+            <AccountPanel account={account} busy={busy} onConnect={connectGoogle} onDisconnect={disconnectGoogle} />
+            <section className="docsync-wp-card">
+              <h2>Setup notes</h2>
+              <ul>
+                <li>Redirect URI: <code>{config.restUrl}/oauth/google/callback</code></li>
+                <li>Required APIs: Google Drive API and Google Picker API.</li>
+                <li>Pasted Docs must already be accessible to the connected app.</li>
+              </ul>
+            </section>
           </aside>
-        </section>
-      </div>
+        </div>
+      )}
     </main>
   );
 };

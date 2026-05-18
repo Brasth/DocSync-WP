@@ -1,0 +1,63 @@
+# Project Changelog
+
+Last updated: 2026-05-18
+
+## 2026-05-18 - Radix UI and PHPCS Hardening
+
+Status: completed in codebase
+
+Updated the admin UI and coding guardrails:
+
+- added Radix Dialog and Tabs primitives for the Google Doc source modal
+- kept React runtime externalized to WordPress `wp.element`
+- added a frontend lint guard that fails on inline PHPCS suppression comments in plugin source
+- removed existing inline PHPCS suppressions from PHP source
+- moved unavoidable WordPress standards exceptions into narrow `phpcs.xml.dist` rules
+- changed encrypted binary payload storage from base64 fields to hex fields while retaining legacy decode support when Sodium is available
+- switched manifest loading to `wp_json_file_decode`
+
+## 2026-05-18 - Google Docs Sync Admin Actions
+
+Status: completed in codebase
+
+Implemented the admin actions slice for Google Docs sync:
+
+- central DocSync admin dashboard
+- Google OAuth connect/disconnect flow
+- document inspection by Picker, URL, or file ID
+- post edit meta box with link, change, sync now, and detach actions
+- post list-table top action and inline row actions
+- source status column in list tables
+- `sync-all` support for changed sources
+- WP-Cron registration and batch sync execution
+- sync state and error persistence in post meta
+
+Architecture notes:
+
+- REST namespace is `docsync-wp/v1`
+- Google tokens are stored per user and encrypted
+- site settings are stored in `docsync_wp_settings`
+- source state lives in post meta on the linked post
+- Markdown is the only supported export format in this implementation
+
+Verification status:
+
+- code paths were reviewed against the current source tree
+- local PHP verification could not be executed in this checkout because `php` and `composer` are unavailable
+- `vendor/autoload.php` is absent until `composer install` is run
+
+Operational note:
+
+- WP-Cron is traffic-driven. Production sites still need a real server cron if sync timing matters.
+
+## 2026-05-18 - Docs Refresh
+
+Added practical docs for the shipped implementation:
+
+- `docs/codebase-summary.md`
+- `docs/system-architecture.md`
+- `docs/project-overview-pdr.md`
+- `docs/code-standards.md`
+- `docs/development-roadmap.md`
+
+These files replace the old research-only view with implementation-level notes.

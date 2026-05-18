@@ -19,7 +19,7 @@ defined( 'ABSPATH' ) || exit;
  */
 final class EncryptionService {
 	private const CIPHER  = 'aes-256-gcm';
-	private const VERSION = 1;
+	private const VERSION = 2;
 
 	/**
 	 * Whether the runtime can encrypt values.
@@ -85,12 +85,9 @@ final class EncryptionService {
 			array(
 				'v'      => self::VERSION,
 				'cipher' => self::CIPHER,
-				// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- Binary encryption fields must be encoded for JSON storage.
-				'iv'     => base64_encode( $iv ),
-				// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- Binary encryption fields must be encoded for JSON storage.
-				'tag'    => base64_encode( $tag ),
-				// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- Binary encryption fields must be encoded for JSON storage.
-				'data'   => base64_encode( $ciphertext ),
+				'iv'     => $this->encodeBinary( $iv ),
+				'tag'    => $this->encodeBinary( $tag ),
+				'data'   => $this->encodeBinary( $ciphertext ),
 			)
 		);
 
@@ -134,12 +131,10 @@ final class EncryptionService {
 			);
 		}
 
-		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode -- Binary encryption fields are encoded for JSON storage.
-		$iv = base64_decode( $decoded['iv'], true );
-		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode -- Binary encryption fields are encoded for JSON storage.
-		$tag = base64_decode( $decoded['tag'], true );
-		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode -- Binary encryption fields are encoded for JSON storage.
-		$ciphertext = base64_decode( $decoded['data'], true );
+		$version    = absint( $decoded['v'] );
+		$iv         = $this->decodeBinary( $decoded['iv'], $version );
+		$tag        = $this->decodeBinary( $decoded['tag'], $version );
+		$ciphertext = $this->decodeBinary( $decoded['data'], $version );
 
 		if ( false === $iv || false === $tag || false === $ciphertext ) {
 			return new WP_Error(
@@ -176,11 +171,53 @@ final class EncryptionService {
 	 */
 	private function isValidPayload( array $payload ): bool {
 		return isset( $payload['v'], $payload['cipher'], $payload['iv'], $payload['tag'], $payload['data'] )
-			&& self::VERSION === $payload['v']
+			&& in_array( $payload['v'], array( 1, self::VERSION ), true )
 			&& self::CIPHER === $payload['cipher']
 			&& is_string( $payload['iv'] )
 			&& is_string( $payload['tag'] )
 			&& is_string( $payload['data'] );
+	}
+
+	/**
+	 * Encode binary data for JSON storage.
+	 *
+	 * @param string $value Binary value.
+	 */
+	private function encodeBinary( string $value ): string {
+		return bin2hex( $value );
+	}
+
+	/**
+	 * Decode binary data from JSON storage.
+	 *
+	 * @param string $value Encoded binary value.
+	 * @param int    $version Payload schema version.
+	 * @return string|false
+	 */
+	private function decodeBinary( string $value, int $version ): string|false {
+		if ( 1 === $version ) {
+			return $this->decodeLegacyBinary( $value );
+		}
+
+		return hex2bin( $value );
+	}
+
+	/**
+	 * Decode legacy binary fields that were stored before hex encoding.
+	 *
+	 * @param string $value Legacy encoded value.
+	 * @return string|false
+	 */
+	private function decodeLegacyBinary( string $value ): string|false {
+		if ( ! function_exists( 'sodium_base642bin' ) || ! defined( 'SODIUM_BASE64_VARIANT_ORIGINAL' ) ) {
+			return false;
+		}
+
+		try {
+			return sodium_base642bin( $value, SODIUM_BASE64_VARIANT_ORIGINAL );
+		} catch ( Throwable $exception ) {
+			return false;
+		}
 	}
 
 	/**

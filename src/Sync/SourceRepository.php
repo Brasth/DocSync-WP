@@ -158,9 +158,26 @@ final class SourceRepository {
 	 *
 	 * @param array<int,string> $post_types Post types.
 	 * @param int               $user_id    User ID.
+	 * @param int               $limit      Maximum rows to return.
+	 * @param int               $page       Page number.
 	 * @return array<int,array<string,mixed>>
 	 */
-	public function listSources( array $post_types, int $user_id ): array {
+	public function listSources( array $post_types, int $user_id, int $limit = 100, int $page = 1 ): array {
+		$page = $this->listSourcesPage( $post_types, $user_id, $limit, $page );
+
+		return $page['sources'];
+	}
+
+	/**
+	 * List a page of linked sources.
+	 *
+	 * @param array<int,string> $post_types Post types.
+	 * @param int               $user_id    User ID.
+	 * @param int               $limit      Maximum rows to return.
+	 * @param int               $page       Page number.
+	 * @return array{sources:array<int,array<string,mixed>>,has_more:bool,page:int,per_page:int}
+	 */
+	public function listSourcesPage( array $post_types, int $user_id, int $limit = 100, int $page = 1 ): array {
 		$post_types = array_values(
 			array_filter(
 				array_map( 'sanitize_key', $post_types ),
@@ -171,20 +188,29 @@ final class SourceRepository {
 			)
 		);
 
+		$limit = max( 1, min( 100, $limit ) );
+		$page  = max( 1, $page );
+
 		if ( array() === $post_types ) {
-			return array();
+			return array(
+				'sources'  => array(),
+				'has_more' => false,
+				'page'     => $page,
+				'per_page' => $limit,
+			);
 		}
 
 		$query = new WP_Query(
 			array(
 				'fields'                 => 'ids',
-				'meta_key'               => self::META_FILE_ID, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'meta_key'               => self::META_FILE_ID,
 				'no_found_rows'          => true,
 				'order'                  => 'DESC',
 				'orderby'                => 'modified',
 				'post_status'            => 'any',
 				'post_type'              => $post_types,
-				'posts_per_page'         => -1,
+				'posts_per_page'         => $limit + 1,
+				'offset'                 => ( $page - 1 ) * $limit,
 				'update_post_meta_cache' => true,
 				'update_post_term_cache' => false,
 			)
@@ -206,7 +232,130 @@ final class SourceRepository {
 			}
 		}
 
+		$has_more = count( $query->posts ) > $limit;
+
+		if ( $has_more ) {
+			$sources = array_slice( $sources, 0, $limit );
+		}
+
+		return array(
+			'sources'  => $sources,
+			'has_more' => $has_more,
+			'page'     => $page,
+			'per_page' => $limit,
+		);
+	}
+
+	/**
+	 * List editable sources that were synced before a cutoff.
+	 *
+	 * @param array<int,string> $post_types Post types.
+	 * @param int               $user_id    User ID.
+	 * @param int               $limit      Maximum rows to return.
+	 * @param string            $before     UTC mysql timestamp cutoff.
+	 * @param array<int,int>    $exclude    Post IDs to exclude.
+	 * @return array<int,array<string,mixed>>
+	 */
+	public function listDueSources( array $post_types, int $user_id, int $limit, string $before, array $exclude = array() ): array {
+		$post_types = array_values(
+			array_filter(
+				array_map( 'sanitize_key', $post_types ),
+				function ( string $post_type ) use ( $user_id ): bool {
+					return $this->isPostTypeEnabled( $post_type )
+						&& $this->userCanEditPostType( $post_type, $user_id );
+				}
+			)
+		);
+
+		if ( array() === $post_types ) {
+			return array();
+		}
+
+		$query = $this->queryDueSourceIds( $post_types, $limit, $before, $exclude );
+		$sources = array();
+
+		foreach ( $query->posts as $post_id ) {
+			$post_id = absint( $post_id );
+
+			if ( ! $this->userCanSyncPost( $post_id, $user_id ) ) {
+				continue;
+			}
+
+			$source = $this->formatSource( $post_id );
+
+			if ( null !== $source ) {
+				$sources[] = $source;
+			}
+		}
+
 		return $sources;
+	}
+
+	/**
+	 * List due source post IDs without user filtering.
+	 *
+	 * @param array<int,string> $post_types Post types.
+	 * @param int               $limit      Maximum rows to return.
+	 * @param string            $before     UTC mysql timestamp cutoff.
+	 * @param array<int,int>    $exclude    Post IDs to exclude.
+	 * @return array<int,int>
+	 */
+	public function listDueSourcePostIds( array $post_types, int $limit, string $before, array $exclude = array() ): array {
+		$post_types = array_values(
+			array_filter(
+				array_map( 'sanitize_key', $post_types ),
+				array( $this, 'isPostTypeEnabled' )
+			)
+		);
+
+		if ( array() === $post_types ) {
+			return array();
+		}
+
+		$query = $this->queryDueSourceIds( $post_types, $limit, $before, $exclude );
+
+		return array_map( 'absint', $query->posts );
+	}
+
+	/**
+	 * Query source IDs due before a cutoff.
+	 *
+	 * @param array<int,string> $post_types Post types.
+	 * @param int               $limit      Maximum rows to return.
+	 * @param string            $before     UTC mysql timestamp cutoff.
+	 * @param array<int,int>    $exclude    Post IDs to exclude.
+	 */
+	private function queryDueSourceIds( array $post_types, int $limit, string $before, array $exclude ): WP_Query {
+		return new WP_Query(
+			array(
+				'fields'                 => 'ids',
+				'meta_query'             => array(
+					'relation'    => 'AND',
+					'has_source'  => array(
+						'key'     => self::META_FILE_ID,
+						'compare' => 'EXISTS',
+					),
+					'last_synced' => array(
+						'key'     => self::META_LAST_SYNCED,
+						'value'   => sanitize_text_field( $before ),
+						'compare' => '<=',
+						'type'    => 'CHAR',
+					),
+				),
+				'no_found_rows'          => true,
+				'orderby'                => array(
+					'last_synced' => 'ASC',
+					'modified'    => 'ASC',
+				),
+				'order'                  => 'ASC',
+				'post_status'            => 'any',
+				'post_type'              => $post_types,
+				'post__not_in'           => array_map( 'absint', $exclude ),
+				'posts_per_page'         => max( 1, min( 100, $limit ) ),
+				'update_post_meta_cache' => true,
+				'update_post_term_cache' => false,
+			)
+		);
 	}
 
 	/**

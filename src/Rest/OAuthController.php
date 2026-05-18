@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace DocSyncWP\Rest;
 
 use DocSyncWP\Auth\GoogleOAuthService;
+use DocSyncWP\Auth\TokenStore;
 use WP_Error;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -29,12 +30,21 @@ final class OAuthController {
 	private GoogleOAuthService $oauth;
 
 	/**
+	 * Token store.
+	 *
+	 * @var TokenStore
+	 */
+	private TokenStore $token_store;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param GoogleOAuthService $oauth Google OAuth service.
+	 * @param GoogleOAuthService $oauth       Google OAuth service.
+	 * @param TokenStore         $token_store Token store.
 	 */
-	public function __construct( GoogleOAuthService $oauth ) {
-		$this->oauth = $oauth;
+	public function __construct( GoogleOAuthService $oauth, TokenStore $token_store ) {
+		$this->oauth       = $oauth;
+		$this->token_store = $token_store;
 	}
 
 	/**
@@ -60,6 +70,23 @@ final class OAuthController {
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'handleCallback' ),
 				'permission_callback' => '__return_true',
+			)
+		);
+
+		register_rest_route(
+			$rest_namespace,
+			'/oauth/google/account',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'getAccount' ),
+					'permission_callback' => array( $this, 'canUseAuthenticatedRest' ),
+				),
+				array(
+					'methods'             => WP_REST_Server::DELETABLE,
+					'callback'            => array( $this, 'disconnectAccount' ),
+					'permission_callback' => array( $this, 'canUseAuthenticatedRest' ),
+				),
 			)
 		);
 	}
@@ -111,6 +138,48 @@ final class OAuthController {
 		return rest_ensure_response(
 			array(
 				'authUrl' => esc_url_raw( $auth_url ),
+			)
+		);
+	}
+
+	/**
+	 * Get the current user's Google account connection status.
+	 *
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function getAccount(): WP_REST_Response|WP_Error {
+		$token = $this->token_store->get( get_current_user_id() );
+
+		if ( is_wp_error( $token ) ) {
+			return $token;
+		}
+
+		if ( null === $token ) {
+			return rest_ensure_response(
+				array(
+					'connected' => false,
+				)
+			);
+		}
+
+		return rest_ensure_response(
+			array(
+				'connected'          => true,
+				'googleAccountEmail' => $token['google_account_email'],
+				'scope'              => $token['scope'],
+				'connectedAt'        => $token['connected_at'],
+				'expiresAt'          => $token['expires_at'],
+			)
+		);
+	}
+
+	/**
+	 * Disconnect the current user's Google account.
+	 */
+	public function disconnectAccount(): WP_REST_Response {
+		return rest_ensure_response(
+			array(
+				'disconnected' => $this->token_store->delete( get_current_user_id() ),
 			)
 		);
 	}

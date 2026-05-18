@@ -11,15 +11,20 @@ namespace DocSyncWP\Assets;
 
 use DocSyncWP\Admin\AdminPage;
 use DocSyncWP\Settings\SettingsRepository;
-use JsonException;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Enqueues compiled admin assets from Vite's manifest.
+ * Enqueues compiled admin assets from Vite manifests.
  */
 final class AssetRegistry {
-	private const ENTRY = 'resources/js/admin/main.tsx';
+	private const ADMIN_ENTRY          = 'resources/js/admin/main.tsx';
+	private const POST_SYNC_ENTRY      = 'resources/js/admin/post-sync-entry.tsx';
+	private const ADMIN_MANIFEST       = 'manifest.json';
+	private const POST_SYNC_MANIFEST   = 'manifest.post-sync.json';
+	private const ADMIN_HANDLE         = 'docsync-wp-admin';
+	private const POST_SYNC_HANDLE     = 'docsync-wp-post-sync';
+	private const POST_SYNC_HOOKS      = array( 'post.php', 'post-new.php', 'edit.php' );
 
 	/**
 	 * Absolute plugin directory path.
@@ -65,16 +70,90 @@ final class AssetRegistry {
 	}
 
 	/**
-	 * Enqueue the admin React application on the plugin screen.
+	 * Enqueue the right admin bundle for the current screen.
 	 *
 	 * @param string $hook Current admin page hook suffix.
 	 */
 	public function enqueueAdminApp( string $hook ): void {
-		if ( AdminPage::HOOK_SUFFIX !== $hook || ! current_user_can( 'manage_options' ) ) {
+		if ( AdminPage::HOOK_SUFFIX === $hook && current_user_can( 'manage_options' ) ) {
+			$this->enqueueEntry( self::ADMIN_ENTRY, self::ADMIN_MANIFEST, self::ADMIN_HANDLE );
 			return;
 		}
 
-		$entry = $this->getManifestEntry();
+		if ( $this->shouldEnqueuePostSyncEntry( $hook ) ) {
+			$this->enqueueEntry( self::POST_SYNC_ENTRY, self::POST_SYNC_MANIFEST, self::POST_SYNC_HANDLE );
+		}
+	}
+
+	/**
+	 * Render an admin notice when a required Vite build is missing.
+	 */
+	public function renderMissingBuildNotice(): void {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+
+		if ( ! $screen || ! current_user_can( 'edit_posts' ) ) {
+			return;
+		}
+
+		$missing_entry = null;
+
+		if ( AdminPage::HOOK_SUFFIX === $screen->id && current_user_can( 'manage_options' ) && ! $this->hasBuild( self::ADMIN_ENTRY, self::ADMIN_MANIFEST ) ) {
+			$missing_entry = 'DocSync WP admin';
+		}
+
+		if ( in_array( $screen->base, array( 'post', 'edit' ), true ) && ! $this->hasBuild( self::POST_SYNC_ENTRY, self::POST_SYNC_MANIFEST ) ) {
+			$missing_entry = 'DocSync WP post actions';
+		}
+
+		if ( null === $missing_entry ) {
+			return;
+		}
+
+		?>
+		<div class="notice notice-warning">
+			<p>
+				<?php
+				echo wp_kses(
+					sprintf(
+						/* translators: 1: asset group, 2: command to build frontend assets. */
+						__( '%1$s assets are not built yet. Run %2$s before using this screen.', 'docsync-wp' ),
+						esc_html( $missing_entry ),
+						'<code>pnpm build</code>'
+					),
+					array(
+						'code' => array(),
+					)
+				);
+				?>
+			</p>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Whether the configured Vite entry is built and readable.
+	 *
+	 * @param string $entry_name    Vite entry name.
+	 * @param string $manifest_file Manifest file name.
+	 */
+	public function hasBuild( string $entry_name = self::ADMIN_ENTRY, string $manifest_file = self::ADMIN_MANIFEST ): bool {
+		$entry = $this->getManifestEntry( $entry_name, $manifest_file );
+
+		return null !== $entry
+			&& ! empty( $entry['file'] )
+			&& is_string( $entry['file'] )
+			&& file_exists( $this->plugin_path . 'build/' . ltrim( $entry['file'], '/' ) );
+	}
+
+	/**
+	 * Enqueue a Vite manifest entry.
+	 *
+	 * @param string $entry_name    Vite entry name.
+	 * @param string $manifest_file Manifest file name.
+	 * @param string $handle        WordPress script handle.
+	 */
+	private function enqueueEntry( string $entry_name, string $manifest_file, string $handle ): void {
+		$entry = $this->getManifestEntry( $entry_name, $manifest_file );
 
 		if ( null === $entry || empty( $entry['file'] ) || ! is_string( $entry['file'] ) ) {
 			return;
@@ -85,8 +164,6 @@ final class AssetRegistry {
 		if ( ! file_exists( $script_path ) ) {
 			return;
 		}
-
-		$handle = 'docsync-wp-admin';
 
 		wp_enqueue_script(
 			$handle,
@@ -102,7 +179,7 @@ final class AssetRegistry {
 			'before'
 		);
 
-		foreach ( $this->getStylesheetFiles( $entry ) as $index => $css_file ) {
+		foreach ( $this->getStylesheetFiles( $entry, $manifest_file ) as $index => $css_file ) {
 			$style_path = $this->plugin_path . 'build/' . ltrim( $css_file, '/' );
 
 			if ( ! file_exists( $style_path ) ) {
@@ -119,71 +196,40 @@ final class AssetRegistry {
 	}
 
 	/**
-	 * Render an admin notice when the Vite build is missing.
+	 * Whether to load post sync controls on the current admin screen.
+	 *
+	 * @param string $hook Current admin page hook suffix.
 	 */
-	public function renderMissingBuildNotice(): void {
-		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
-
-		if (
-			! $screen
-			|| AdminPage::HOOK_SUFFIX !== $screen->id
-			|| ! current_user_can( 'manage_options' )
-			|| $this->hasBuild()
-		) {
-			return;
+	private function shouldEnqueuePostSyncEntry( string $hook ): bool {
+		if ( ! in_array( $hook, self::POST_SYNC_HOOKS, true ) || ! is_user_logged_in() ) {
+			return false;
 		}
 
-		?>
-		<div class="notice notice-warning">
-			<p>
-				<?php
-				echo wp_kses(
-					sprintf(
-						/* translators: %s: command to build frontend assets. */
-						__( 'DocSync WP admin assets are not built yet. Run %s before using this screen.', 'docsync-wp' ),
-						'<code>pnpm build</code>'
-					),
-					array(
-						'code' => array(),
-					)
-				);
-				?>
-			</p>
-		</div>
-		<?php
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+
+		if ( ! $screen || empty( $screen->post_type ) ) {
+			return false;
+		}
+
+		return in_array( (string) $screen->post_type, $this->settings->getEnabledPostTypes(), true );
 	}
 
 	/**
-	 * Whether the configured Vite entry is built and readable.
-	 */
-	public function hasBuild(): bool {
-		$entry = $this->getManifestEntry();
-
-		return null !== $entry
-			&& ! empty( $entry['file'] )
-			&& is_string( $entry['file'] )
-			&& file_exists( $this->plugin_path . 'build/' . ltrim( $entry['file'], '/' ) );
-	}
-
-	/**
-	 * Get the manifest entry for the admin app.
+	 * Get a manifest entry.
 	 *
+	 * @param string $entry_name    Vite entry name.
+	 * @param string $manifest_file Manifest file name.
 	 * @return array<string,mixed>|null
 	 */
-	private function getManifestEntry(): ?array {
-		$manifest = $this->readManifest();
+	private function getManifestEntry( string $entry_name, string $manifest_file ): ?array {
+		$manifest = $this->readManifest( $manifest_file );
 
-		if ( isset( $manifest[ self::ENTRY ] ) && is_array( $manifest[ self::ENTRY ] ) ) {
-			return $manifest[ self::ENTRY ];
+		if ( isset( $manifest[ $entry_name ] ) && is_array( $manifest[ $entry_name ] ) ) {
+			return $manifest[ $entry_name ];
 		}
 
 		foreach ( $manifest as $entry ) {
-			if (
-				is_array( $entry )
-				&& ! empty( $entry['isEntry'] )
-				&& isset( $entry['src'] )
-				&& self::ENTRY === $entry['src']
-			) {
+			if ( is_array( $entry ) && ! empty( $entry['isEntry'] ) && isset( $entry['src'] ) && $entry_name === $entry['src'] ) {
 				return $entry;
 			}
 		}
@@ -194,10 +240,11 @@ final class AssetRegistry {
 	/**
 	 * Get stylesheet files referenced by the manifest.
 	 *
-	 * @param array<string,mixed> $entry Main JavaScript manifest entry.
+	 * @param array<string,mixed> $entry         JavaScript manifest entry.
+	 * @param string              $manifest_file Manifest file name.
 	 * @return array<int,string>
 	 */
-	private function getStylesheetFiles( array $entry ): array {
+	private function getStylesheetFiles( array $entry, string $manifest_file ): array {
 		$css_files = array();
 
 		if ( ! empty( $entry['css'] ) && is_array( $entry['css'] ) ) {
@@ -208,13 +255,8 @@ final class AssetRegistry {
 			}
 		}
 
-		foreach ( $this->readManifest() as $manifest_entry ) {
-			if (
-				is_array( $manifest_entry )
-				&& isset( $manifest_entry['file'] )
-				&& is_string( $manifest_entry['file'] )
-				&& str_ends_with( $manifest_entry['file'], '.css' )
-			) {
+		foreach ( $this->readManifest( $manifest_file ) as $manifest_entry ) {
+			if ( is_array( $manifest_entry ) && isset( $manifest_entry['file'] ) && is_string( $manifest_entry['file'] ) && str_ends_with( $manifest_entry['file'], '.css' ) ) {
 				$css_files[] = $manifest_entry['file'];
 			}
 		}
@@ -223,35 +265,25 @@ final class AssetRegistry {
 	}
 
 	/**
-	 * Read Vite's build manifest.
+	 * Read a Vite build manifest.
 	 *
+	 * @param string $manifest_file Manifest file name.
 	 * @return array<string,array<string,mixed>>
 	 */
-	private function readManifest(): array {
-		$manifest_path = $this->plugin_path . 'build/manifest.json';
+	private function readManifest( string $manifest_file ): array {
+		$manifest_path = $this->plugin_path . 'build/' . $manifest_file;
 
 		if ( ! is_readable( $manifest_path ) ) {
 			return array();
 		}
 
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading a local build manifest.
-		$contents = file_get_contents( $manifest_path );
-
-		if ( false === $contents ) {
-			return array();
-		}
-
-		try {
-			$manifest = json_decode( $contents, true, 512, JSON_THROW_ON_ERROR );
-		} catch ( JsonException $exception ) {
-			return array();
-		}
+		$manifest = wp_json_file_decode( $manifest_path, array( 'associative' => true ) );
 
 		return is_array( $manifest ) ? $manifest : array();
 	}
 
 	/**
-	 * Build the config exposed to the admin app.
+	 * Build the config exposed to admin scripts.
 	 *
 	 * @return array<string,mixed>
 	 */
@@ -264,7 +296,13 @@ final class AssetRegistry {
 			'pluginUrl'           => esc_url_raw( $this->plugin_url ),
 			'version'             => $this->version,
 			'currentUserId'       => get_current_user_id(),
+			'clientId'            => $settings['client_id'],
+			'pickerApiKey'        => $settings['picker_api_key'],
+			'pickerAppId'         => $settings['picker_app_id'],
 			'enabledPostTypes'    => $settings['enabled_post_types'],
+			'availablePostTypes'  => $this->settings->getAvailablePostTypes(),
+			'defaultExportFormat' => $settings['default_export_format'],
+			'syncInterval'        => $settings['sync_interval'],
 			'hasClientId'         => '' !== $settings['client_id'],
 			'hasClientSecret'     => (bool) $settings['has_client_secret'],
 			'hasPickerApiKey'     => '' !== $settings['picker_api_key'],

@@ -3,7 +3,7 @@
 ## Overview
 
 Priority: P1  
-Status: Pending  
+Status: Completed  
 Effort: 8h
 
 Add the requested admin entry points: post detail sync button, post list "Add Sync Doc", and inline row actions for each post item.
@@ -96,11 +96,18 @@ Modify:
 
 ## Todo
 
-- [ ] Add meta box.
-- [ ] Add list table actions.
-- [ ] Add status column.
-- [ ] Add secondary Vite entry.
-- [ ] Add modal component.
-- [ ] Add Google Picker helper.
-- [ ] Add REST client helper.
-- [ ] Wire row action events.
+- [x] Add meta box.
+- [x] Add list table actions.
+- [x] Add status column.
+- [x] Add secondary Vite entry.
+- [x] Add modal component.
+- [x] Add Google Picker helper.
+- [x] Add REST client helper.
+- [x] Wire row action events.
+
+## Sync-Back Notes
+
+- Implemented `PostSyncMetaBox` and `PostListActions`.
+- Added `post-sync` Vite bundle and shared source modal.
+- Added Picker/URL/file ID selection paths through existing REST contracts.
+- Row sync/link actions update through REST without page reload.

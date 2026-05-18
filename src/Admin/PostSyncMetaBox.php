@@ -1,0 +1,95 @@
+<?php
+/**
+ * Post edit screen DocSync controls.
+ *
+ * @package DocSyncWP
+ */
+
+declare(strict_types=1);
+
+namespace DocSyncWP\Admin;
+
+use DocSyncWP\Sync\SourceRepository;
+use WP_Post;
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Renders a lightweight React mount for post-level sync controls.
+ */
+final class PostSyncMetaBox {
+	private const BOX_ID = 'docsync-wp-post-sync';
+
+	/**
+	 * Source repository.
+	 *
+	 * @var SourceRepository
+	 */
+	private SourceRepository $source_repository;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param SourceRepository $source_repository Source repository.
+	 */
+	public function __construct( SourceRepository $source_repository ) {
+		$this->source_repository = $source_repository;
+	}
+
+	/**
+	 * Register hooks.
+	 */
+	public function register(): void {
+		add_action( 'add_meta_boxes', array( $this, 'registerMetaBox' ), 10, 2 );
+	}
+
+	/**
+	 * Register the DocSync meta box for enabled post types.
+	 *
+	 * @param string  $post_type Current post type.
+	 * @param WP_Post $post      Current post.
+	 */
+	public function registerMetaBox( string $post_type, WP_Post $post ): void {
+		if ( ! $this->source_repository->isPostTypeEnabled( $post_type ) ) {
+			return;
+		}
+
+		if ( ! current_user_can( 'edit_post', $post->ID ) ) {
+			return;
+		}
+
+		add_meta_box(
+			self::BOX_ID,
+			esc_html__( 'DocSync WP', 'docsync-wp' ),
+			array( $this, 'render' ),
+			$post_type,
+			'side',
+			'high'
+		);
+	}
+
+	/**
+	 * Render the React mount point.
+	 *
+	 * @param WP_Post $post Current post.
+	 */
+	public function render( WP_Post $post ): void {
+		$source = $this->source_repository->formatSource( $post->ID );
+		$json   = wp_json_encode( $source );
+
+		if ( ! is_string( $json ) ) {
+			$json = 'null';
+		}
+
+		?>
+		<div
+			id="docsync-wp-post-sync-root"
+			data-post-id="<?php echo esc_attr( (string) $post->ID ); ?>"
+			data-post-type="<?php echo esc_attr( $post->post_type ); ?>"
+			data-source="<?php echo esc_attr( $json ); ?>"
+		>
+			<p><?php esc_html_e( 'Loading DocSync controls...', 'docsync-wp' ); ?></p>
+		</div>
+		<?php
+	}
+}

@@ -11,4 +11,44 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	exit;
 }
 
-// No persistent plugin data is created by the scaffold.
+$docsync_wp_autoload = __DIR__ . '/vendor/autoload.php';
+
+if ( file_exists( $docsync_wp_autoload ) ) {
+	require_once $docsync_wp_autoload;
+}
+
+delete_option( 'docsync_wp_settings' );
+delete_metadata( 'user', 0, '_docsync_wp_google_token', '', true );
+
+if ( class_exists( DocSyncWP\Cron\SyncCron::class ) ) {
+	DocSyncWP\Cron\SyncCron::unschedule();
+} else {
+	while ( false !== ( $timestamp = wp_next_scheduled( 'docsync_wp_sync_sources' ) ) ) {
+		wp_unschedule_event( $timestamp, 'docsync_wp_sync_sources' );
+	}
+}
+
+$full_cleanup = defined( 'DOCSYNC_WP_FULL_UNINSTALL' ) && DOCSYNC_WP_FULL_UNINSTALL;
+$full_cleanup = (bool) apply_filters( 'docsync_wp_full_uninstall', $full_cleanup );
+
+if ( ! $full_cleanup ) {
+	return;
+}
+
+foreach (
+	array(
+		'_docsync_wp_google_file_id',
+		'_docsync_wp_google_doc_url',
+		'_docsync_wp_google_title',
+		'_docsync_wp_google_modified_time',
+		'_docsync_wp_google_version',
+		'_docsync_wp_last_hash',
+		'_docsync_wp_last_synced_at',
+		'_docsync_wp_sync_owner_user_id',
+		'_docsync_wp_export_format',
+		'_docsync_wp_sync_status',
+		'_docsync_wp_sync_error',
+	) as $meta_key
+) {
+	delete_metadata( 'post', 0, $meta_key, '', true );
+}

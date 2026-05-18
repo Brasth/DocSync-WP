@@ -97,6 +97,16 @@ final class SourceController {
 
 		register_rest_route(
 			$rest_namespace,
+			'/sources/sync-all',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'syncAllSources' ),
+				'permission_callback' => array( $this, 'canUseAuthenticatedRest' ),
+			)
+		);
+
+		register_rest_route(
+			$rest_namespace,
 			'/sources/(?P<postId>[\d]+)/sync',
 			array(
 				'methods'             => WP_REST_Server::CREATABLE,
@@ -167,11 +177,19 @@ final class SourceController {
 			);
 		}
 
-		return rest_ensure_response(
-			array(
-				'sources' => $this->source_repository->listSources( $post_types, $user_id ),
-			)
-		);
+		$per_page = absint( $request->get_param( 'per_page' ) );
+
+		if ( $per_page <= 0 ) {
+			$per_page = 100;
+		}
+
+		$page = absint( $request->get_param( 'page' ) );
+
+		if ( $page <= 0 ) {
+			$page = 1;
+		}
+
+		return rest_ensure_response( $this->source_repository->listSourcesPage( $post_types, $user_id, $per_page, $page ) );
 	}
 
 	/**
@@ -273,6 +291,57 @@ final class SourceController {
 		}
 
 		return rest_ensure_response( $result );
+	}
+
+	/**
+	 * Sync all editable linked sources for the current user.
+	 *
+	 * @return WP_REST_Response
+	 */
+	public function syncAllSources(): WP_REST_Response {
+		$user_id    = get_current_user_id();
+		$batch_size = 20;
+		$before     = gmdate( 'Y-m-d H:i:s', time() - 1 );
+		$results    = array();
+		$seen       = array();
+
+		do {
+			$post_ids = $this->source_repository->listDueSourcePostIds( $this->source_repository->getEnabledPostTypes(), $batch_size, $before, array_keys( $seen ) );
+
+			foreach ( $post_ids as $post_id ) {
+				$post_id = absint( $post_id );
+
+				if ( $post_id <= 0 ) {
+					continue;
+				}
+
+				$seen[ $post_id ] = true;
+
+				if ( ! $this->source_repository->userCanSyncPost( $post_id, $user_id ) ) {
+					continue;
+				}
+
+				$result = $this->sync_service->syncPost( $post_id, $user_id );
+
+				if ( is_wp_error( $result ) ) {
+					$results[] = array(
+						'postId'  => $post_id,
+						'status'  => 'error',
+						'message' => $result->get_error_message(),
+					);
+					continue;
+				}
+
+				$results[] = $result;
+			}
+		} while ( count( $post_ids ) === $batch_size );
+
+		return rest_ensure_response(
+			array(
+				'results' => $results,
+				'count'   => count( $results ),
+			)
+		);
 	}
 
 	/**
