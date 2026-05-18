@@ -27,6 +27,7 @@ The Google Docs Sync Admin Actions implementation is complete in code.
 - per-post sync state and error tracking
 - scheduled sync hooks
 - uninstall cleanup for settings, tokens, and cron events
+- installable GitHub workflow artifact layout validation
 
 ## Remaining Work
 
@@ -42,5 +43,6 @@ The implementation is usable, but a few follow-ups remain open for future iterat
 
 - repository snapshot and docs are aligned with the current code
 - frontend lint blocks inline PHPCS suppression comments in plugin source
+- workflow packaging now uploads installer-ready artifact contents instead of a nested ZIP
 - local verification is blocked here because PHP and Composer are missing
 - production validation still needs the normal PHP toolchain before release packaging

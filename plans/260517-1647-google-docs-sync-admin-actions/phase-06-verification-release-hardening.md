@@ -96,6 +96,7 @@ Decide cleanup policy before implementation:
 - [ ] Run PHP validation. Blocked: `php`, `composer`, `vendor/`, and `vendor/bin/phpcs` unavailable.
 - [x] Run frontend validation.
 - [x] Add lint guard for inline PHPCS suppression comments.
+- [x] Fix GitHub artifact layout to avoid nested ZIP uploads.
 - [ ] Manual QA post edit flow. Requires WordPress runtime with Composer dependencies installed.
 - [ ] Manual QA list-table flow. Requires WordPress runtime with Composer dependencies installed.
 - [ ] Manual QA CPT flow. Requires WordPress runtime with Composer dependencies installed.
@@ -107,6 +108,8 @@ Decide cleanup policy before implementation:
 - Passed: `pnpm typecheck`, `pnpm lint`, `pnpm build`.
 - Added: Radix Dialog/Tabs primitives for source modal accessibility while preserving WordPress `wp-element` as the React runtime.
 - Added: no-inline-PHPCS-suppression guard through `pnpm lint`; existing source suppressions removed.
+- Fixed: workflow artifacts now upload installer-ready plugin contents and validate `docsync-wp.php`, `vendor/autoload.php`, and Vite manifest presence.
+- Local installable copy created: `/Users/huynguyen/Downloads/docsync-wp-installable-3bd9e00.zip`.
 - Blocked: `composer validate`, `composer dump-autoload -o`, `vendor/bin/phpcs`, PHP syntax checks.
 - Reason: local shell has no `php` or `composer`; checkout has no `vendor/autoload.php`.
 - Static code review findings were patched and final focused review reported no remaining blockers.

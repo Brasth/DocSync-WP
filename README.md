@@ -110,3 +110,5 @@ pnpm build
 ```
 
 Create the release ZIP from the plugin directory after dependencies and assets are present, excluding files listed in `.distignore`. The ZIP should include `vendor/`, `build/`, `docsync-wp.php`, `src/`, `uninstall.php`, and `README.md`.
+
+GitHub workflow artifacts are uploaded as installer-ready plugin contents. If an older downloaded artifact contains a single nested `.zip` file, extract it first and upload the inner ZIP to WordPress.
