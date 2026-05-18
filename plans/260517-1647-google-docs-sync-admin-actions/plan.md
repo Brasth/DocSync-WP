@@ -1,7 +1,7 @@
 ---
 title: "Google Docs Sync Admin Actions"
 description: "Add Google OAuth backed document sync to posts and custom post types with post edit and list-table entry points."
-status: pending
+status: in-progress
 priority: P1
 effort: 40h
 issue: null
@@ -44,9 +44,9 @@ Implement one-way Google Docs -> WordPress sync for default posts and custom pos
 | 1 | Foundation and Data Model | Completed | 6h | [phase-01-foundation-data-model.md](./phase-01-foundation-data-model.md) |
 | 2 | Google OAuth and Drive Client | Completed | 8h | [phase-02-google-oauth-drive-client.md](./phase-02-google-oauth-drive-client.md) |
 | 3 | Sync Service and Import Pipeline | Completed | 8h | [phase-03-sync-service-import-pipeline.md](./phase-03-sync-service-import-pipeline.md) |
-| 4 | Post Edit and List Table Entry Points | Pending | 8h | [phase-04-admin-post-entry-points.md](./phase-04-admin-post-entry-points.md) |
-| 5 | Central Admin App, Scheduling, Logs | Pending | 6h | [phase-05-admin-app-scheduling-observability.md](./phase-05-admin-app-scheduling-observability.md) |
-| 6 | Verification and Release Hardening | Pending | 4h | [phase-06-verification-release-hardening.md](./phase-06-verification-release-hardening.md) |
+| 4 | Post Edit and List Table Entry Points | Completed | 8h | [phase-04-admin-post-entry-points.md](./phase-04-admin-post-entry-points.md) |
+| 5 | Central Admin App, Scheduling, Logs | Completed | 6h | [phase-05-admin-app-scheduling-observability.md](./phase-05-admin-app-scheduling-observability.md) |
+| 6 | Verification and Release Hardening | Blocked: PHP toolchain unavailable | 4h | [phase-06-verification-release-hardening.md](./phase-06-verification-release-hardening.md) |
 
 ## Architecture
 
@@ -95,3 +95,11 @@ flowchart LR
 - Manual sync creates/updates WordPress content and sync metadata.
 - REST endpoints enforce nonce and post-type/post capability checks.
 - Verification commands pass: `composer validate`, `composer dump-autoload -o`, `vendor/bin/phpcs`, `pnpm typecheck`, `pnpm build`.
+
+## Implementation Sync-Back
+
+- 2026-05-18: Phases 4 and 5 implemented.
+- 2026-05-18: `pnpm typecheck`, `pnpm lint`, and `pnpm build` passed.
+- 2026-05-18: PHP validation blocked because `php`, `composer`, `vendor/`, and `vendor/bin/phpcs` are unavailable in this checkout.
+- 2026-05-18: Source modal updated to Radix Dialog/Tabs primitives while keeping React runtime externalized to WordPress `wp.element`.
+- 2026-05-18: Inline PHPCS suppression comments removed from plugin source; lint guard added and narrow ruleset exceptions documented in `phpcs.xml.dist`.

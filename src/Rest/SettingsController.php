@@ -66,16 +66,30 @@ final class SettingsController {
 	 *
 	 * @return bool|WP_Error
 	 */
-	public function canManageSettings(): bool|WP_Error {
-		if ( current_user_can( 'manage_options' ) ) {
-			return true;
+	public function canManageSettings( WP_REST_Request $request ): bool|WP_Error {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return new WP_Error(
+				'docsync_wp_forbidden',
+				__( 'You do not have permission to manage DocSync WP settings.', 'docsync-wp' ),
+				array( 'status' => 403 )
+			);
 		}
 
-		return new WP_Error(
-			'docsync_wp_forbidden',
-			__( 'You do not have permission to manage DocSync WP settings.', 'docsync-wp' ),
-			array( 'status' => 403 )
-		);
+		$nonce = (string) $request->get_header( 'X-WP-Nonce' );
+
+		if ( '' === $nonce ) {
+			$nonce = (string) $request->get_param( '_wpnonce' );
+		}
+
+		if ( ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
+			return new WP_Error(
+				'docsync_wp_rest_nonce_required',
+				__( 'DocSync WP requires a valid REST nonce.', 'docsync-wp' ),
+				array( 'status' => 403 )
+			);
+		}
+
+		return true;
 	}
 
 	/**
@@ -137,6 +151,7 @@ final class SettingsController {
 			'enabledPostTypes',
 			'defaultPostStatus',
 			'defaultExportFormat',
+			'syncInterval',
 		);
 
 		$unknown_keys = array_diff( array_keys( $params ), $allowed_keys );
@@ -183,6 +198,10 @@ final class SettingsController {
 			$mapped['default_export_format'] = $params['defaultExportFormat'];
 		}
 
+		if ( array_key_exists( 'syncInterval', $params ) ) {
+			$mapped['sync_interval'] = $params['syncInterval'];
+		}
+
 		return $mapped;
 	}
 
@@ -202,6 +221,7 @@ final class SettingsController {
 			'enabledPostTypes'    => $settings['enabled_post_types'],
 			'defaultPostStatus'   => $settings['default_post_status'],
 			'defaultExportFormat' => $settings['default_export_format'],
+			'syncInterval'        => $settings['sync_interval'],
 			'hasClientSecret'     => $settings['has_client_secret'],
 			'availablePostTypes'  => $this->settings->getAvailablePostTypes(),
 		);

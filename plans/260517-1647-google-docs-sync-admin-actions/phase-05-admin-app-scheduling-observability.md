@@ -3,7 +3,7 @@
 ## Overview
 
 Priority: P2  
-Status: Pending  
+Status: Completed  
 Effort: 6h
 
 Upgrade the existing DocSync top-level admin screen into a control center and add basic scheduled sync and observability.
@@ -75,10 +75,18 @@ MVP does not need a full log table. Add custom table only if audit history becom
 
 ## Todo
 
-- [ ] Replace placeholder dashboard.
-- [ ] Add settings panel.
-- [ ] Add account panel.
-- [ ] Add sources table.
-- [ ] Add sync all action.
-- [ ] Add WP-Cron service.
-- [ ] Add deactivation unschedule.
+- [x] Replace placeholder dashboard.
+- [x] Add settings panel.
+- [x] Add account panel.
+- [x] Add sources table.
+- [x] Add sync all action.
+- [x] Add WP-Cron service.
+- [x] Add deactivation unschedule.
+
+## Sync-Back Notes
+
+- Replaced placeholder admin app with settings, account, source table, sync-one, and sync-all controls.
+- Added account status/disconnect REST route.
+- Added bounded, paginated source listing.
+- Added schedule setting and `SyncCron`, with deactivation/uninstall unschedule.
+- Added latest status/log visibility through source metadata and `/sync-log`.

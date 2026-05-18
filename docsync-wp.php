@@ -114,6 +114,22 @@ function docsync_wp_activate(): void {
 }
 register_activation_hook( __FILE__, 'docsync_wp_activate' );
 
+/**
+ * Deactivation callback.
+ */
+function docsync_wp_deactivate(): void {
+	$autoload = DOCSYNC_WP_PATH . 'vendor/autoload.php';
+
+	if ( file_exists( $autoload ) ) {
+		require_once $autoload;
+	}
+
+	if ( class_exists( DocSyncWP\Cron\SyncCron::class ) ) {
+		DocSyncWP\Cron\SyncCron::unschedule();
+	}
+}
+register_deactivation_hook( __FILE__, 'docsync_wp_deactivate' );
+
 if ( ! docsync_wp_runtime_is_supported() ) {
 	add_action( 'admin_notices', 'docsync_wp_render_runtime_notice' );
 	return;

@@ -3,7 +3,7 @@
 ## Overview
 
 Priority: P1  
-Status: Pending  
+Status: Blocked by missing PHP toolchain  
 Effort: 4h
 
 Verify security, capability behavior, build quality, and release readiness.
@@ -12,14 +12,14 @@ Verify security, capability behavior, build quality, and release readiness.
 
 Modify:
 
-- [/Volumes/500GB/Projects/DocSync-WP/README.md](/Volumes/500GB/Projects/DocSync-WP/README.md)
-- [/Volumes/500GB/Projects/DocSync-WP/uninstall.php](/Volumes/500GB/Projects/DocSync-WP/uninstall.php)
-- [/Volumes/500GB/Projects/DocSync-WP/composer.json](/Volumes/500GB/Projects/DocSync-WP/composer.json)
-- [/Volumes/500GB/Projects/DocSync-WP/package.json](/Volumes/500GB/Projects/DocSync-WP/package.json)
+- [/Volumes/1TB/Projects/DocSync-WP/README.md](/Volumes/1TB/Projects/DocSync-WP/README.md)
+- [/Volumes/1TB/Projects/DocSync-WP/uninstall.php](/Volumes/1TB/Projects/DocSync-WP/uninstall.php)
+- [/Volumes/1TB/Projects/DocSync-WP/composer.json](/Volumes/1TB/Projects/DocSync-WP/composer.json)
+- [/Volumes/1TB/Projects/DocSync-WP/package.json](/Volumes/1TB/Projects/DocSync-WP/package.json)
 
 Create if test stack is added:
 
-- [/Volumes/500GB/Projects/DocSync-WP/tests/](/Volumes/500GB/Projects/DocSync-WP/tests/)
+- [/Volumes/1TB/Projects/DocSync-WP/tests/](/Volumes/1TB/Projects/DocSync-WP/tests/)
 
 ## Verification Matrix
 
@@ -50,6 +50,7 @@ Build:
 composer validate
 composer dump-autoload -o
 vendor/bin/phpcs
+pnpm lint
 pnpm typecheck
 pnpm build
 ```
@@ -92,10 +93,20 @@ Decide cleanup policy before implementation:
 
 ## Todo
 
-- [ ] Run PHP validation.
-- [ ] Run frontend validation.
-- [ ] Manual QA post edit flow.
-- [ ] Manual QA list-table flow.
-- [ ] Manual QA CPT flow.
-- [ ] Update README.
-- [ ] Review uninstall behavior.
+- [ ] Run PHP validation. Blocked: `php`, `composer`, `vendor/`, and `vendor/bin/phpcs` unavailable.
+- [x] Run frontend validation.
+- [x] Add lint guard for inline PHPCS suppression comments.
+- [ ] Manual QA post edit flow. Requires WordPress runtime with Composer dependencies installed.
+- [ ] Manual QA list-table flow. Requires WordPress runtime with Composer dependencies installed.
+- [ ] Manual QA CPT flow. Requires WordPress runtime with Composer dependencies installed.
+- [x] Update README.
+- [x] Review uninstall behavior.
+
+## Sync-Back Notes
+
+- Passed: `pnpm typecheck`, `pnpm lint`, `pnpm build`.
+- Added: Radix Dialog/Tabs primitives for source modal accessibility while preserving WordPress `wp-element` as the React runtime.
+- Added: no-inline-PHPCS-suppression guard through `pnpm lint`; existing source suppressions removed.
+- Blocked: `composer validate`, `composer dump-autoload -o`, `vendor/bin/phpcs`, PHP syntax checks.
+- Reason: local shell has no `php` or `composer`; checkout has no `vendor/autoload.php`.
+- Static code review findings were patched and final focused review reported no remaining blockers.

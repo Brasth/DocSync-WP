@@ -36,7 +36,45 @@ Watch frontend assets during development:
 pnpm dev
 ```
 
-The Vite build writes hashed assets and `build/manifest.json`. WordPress reads that manifest and enqueues the admin bundle only on the DocSync WP admin page.
+The Vite build writes hashed assets plus `build/manifest.json` and `build/manifest.post-sync.json`. WordPress reads those manifests and enqueues the central admin bundle on the DocSync WP page and the post sync bundle on post edit/list screens.
+
+## Google Cloud Setup
+
+1. Create or select a Google Cloud project.
+2. Enable the Google Drive API and Google Picker API.
+3. Configure the OAuth consent screen for the WordPress site users.
+4. Create an OAuth 2.0 Web application client.
+5. Add this authorized redirect URI:
+
+```text
+https://example.com/wp-json/docsync-wp/v1/oauth/google/callback
+```
+
+Replace `https://example.com` with the WordPress site URL.
+
+In WordPress admin, open **DocSync WP** and save:
+
+- OAuth client ID
+- OAuth client secret
+- Picker API key
+- Picker app ID
+- Enabled post types
+- Optional WP-Cron sync interval
+
+Each WordPress user must connect their own Google account before inspecting or syncing documents.
+
+## Sync Behavior
+
+- Google Docs is the source of truth. Manual sync overwrites WordPress post content while preserving normal WordPress revisions.
+- The MVP exports Google Docs as Markdown, converts it to sanitized HTML, then updates the target post.
+- Default Google scope is `https://www.googleapis.com/auth/drive.file`.
+- Google Picker is the preferred source selection path because it grants this app access to the selected file.
+- Pasted Google Doc URLs or raw file IDs work only when the connected Google account and app already have access. If Google denies access, choose the document with Picker.
+- Supported targets are `post` plus enabled public custom post types that the current WordPress user can edit/create.
+
+## Scheduling
+
+DocSync WP uses WP-Cron for scheduled sync. WP-Cron runs only when WordPress receives traffic, so low-traffic sites should use a real server cron hitting `wp-cron.php` for reliable schedules.
 
 ## Runtime Notes
 
@@ -44,8 +82,11 @@ The Vite build writes hashed assets and `build/manifest.json`. WordPress reads t
 - The plugin slug and text domain are `docsync-wp`.
 - React is provided by WordPress through the `wp-element` script handle.
 - Admin app source imports from `@wordpress/element`; it should not import runtime React from `react` or `react-dom`.
+- Radix UI primitives are allowed for focused admin accessibility work. React and React DOM are build-time peer dependencies only; Vite maps their runtime imports and JSX runtime helpers back to `wp.element`.
 - The REST namespace reserved for future features is `docsync-wp/v1`.
 - Google OAuth client secrets and user tokens are encrypted with WordPress salts. Rotating those salts invalidates stored DocSync WP credentials and tokens, so users must reconnect Google accounts afterward.
+- Uninstall removes plugin settings, encrypted user Google tokens, and scheduled cron events. Linked post metadata is kept by default; define `DOCSYNC_WP_FULL_UNINSTALL` or return true from `docsync_wp_full_uninstall` to remove DocSync post meta. Synced posts are never deleted.
+- Inline PHPCS suppression comments are prohibited in plugin source. Use code changes first; if a WordPress standards exception is unavoidable, keep it narrow in `phpcs.xml.dist`.
 
 ## Verification
 
@@ -53,6 +94,7 @@ The Vite build writes hashed assets and `build/manifest.json`. WordPress reads t
 composer validate
 composer dump-autoload -o
 vendor/bin/phpcs
+pnpm lint
 pnpm typecheck
 pnpm build
 ```

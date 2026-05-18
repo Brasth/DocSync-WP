@@ -23,6 +23,7 @@ final class SettingsRepository {
 	private const DEFAULT_SCOPE_MODE    = 'drive_file';
 	private const DEFAULT_POST_STATUS   = 'draft';
 	private const DEFAULT_EXPORT_FORMAT = 'markdown';
+	private const DEFAULT_SYNC_INTERVAL = 'off';
 
 	/**
 	 * Encryption service.
@@ -73,6 +74,10 @@ final class SettingsRepository {
 
 		if ( ! $this->isValidExportFormat( $settings['default_export_format'] ) ) {
 			$settings['default_export_format'] = self::DEFAULT_EXPORT_FORMAT;
+		}
+
+		if ( ! $this->isValidSyncInterval( $settings['sync_interval'] ) ) {
+			$settings['sync_interval'] = self::DEFAULT_SYNC_INTERVAL;
 		}
 
 		return $settings;
@@ -143,6 +148,14 @@ final class SettingsRepository {
 			);
 		}
 
+		if ( ! $this->isValidSyncInterval( $settings['sync_interval'] ) ) {
+			return new WP_Error(
+				'docsync_wp_invalid_sync_interval',
+				__( 'DocSync WP received an unsupported sync schedule.', 'docsync-wp' ),
+				array( 'status' => 400 )
+			);
+		}
+
 		if ( array_key_exists( 'client_secret', $values ) ) {
 			$client_secret = sanitize_text_field( (string) $values['client_secret'] );
 
@@ -180,6 +193,7 @@ final class SettingsRepository {
 			'enabled_post_types'    => $settings['enabled_post_types'],
 			'default_post_status'   => $settings['default_post_status'],
 			'default_export_format' => $settings['default_export_format'],
+			'sync_interval'         => $settings['sync_interval'],
 			'has_client_secret'     => '' !== $settings['encrypted_client_secret'],
 		);
 	}
@@ -278,6 +292,7 @@ final class SettingsRepository {
 			'enabled_post_types'      => array( 'post' ),
 			'default_post_status'     => self::DEFAULT_POST_STATUS,
 			'default_export_format'   => self::DEFAULT_EXPORT_FORMAT,
+			'sync_interval'           => self::DEFAULT_SYNC_INTERVAL,
 		);
 	}
 
@@ -303,6 +318,7 @@ final class SettingsRepository {
 			'scope_mode',
 			'default_post_status',
 			'default_export_format',
+			'sync_interval',
 		);
 	}
 
@@ -320,6 +336,7 @@ final class SettingsRepository {
 		$settings['scope_mode']              = sanitize_key( (string) $settings['scope_mode'] );
 		$settings['default_post_status']     = sanitize_key( (string) $settings['default_post_status'] );
 		$settings['default_export_format']   = sanitize_key( (string) $settings['default_export_format'] );
+		$settings['sync_interval']           = sanitize_key( (string) $settings['sync_interval'] );
 
 		return $settings;
 	}
@@ -427,6 +444,15 @@ final class SettingsRepository {
 	 */
 	private function isValidExportFormat( string $export_format ): bool {
 		return self::DEFAULT_EXPORT_FORMAT === $export_format;
+	}
+
+	/**
+	 * Whether a sync interval is supported by WP-Cron.
+	 *
+	 * @param string $sync_interval Sync interval.
+	 */
+	private function isValidSyncInterval( string $sync_interval ): bool {
+		return in_array( $sync_interval, array( 'off', 'hourly', 'twicedaily', 'daily' ), true );
 	}
 
 	/**

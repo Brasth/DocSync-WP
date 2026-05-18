@@ -23,6 +23,22 @@
 	</rule>
 	<rule ref="PHPCompatibilityWP"/>
 
+	<!-- Sync locks require compare-and-swap SQL against the options table to avoid duplicate imports. -->
+	<rule ref="WordPress.DB.DirectDatabaseQuery.DirectQuery">
+		<exclude-pattern>src/Sync/SyncLock.php</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.DB.DirectDatabaseQuery.NoCaching">
+		<exclude-pattern>src/Sync/SyncLock.php</exclude-pattern>
+	</rule>
+
+	<!-- Source listings intentionally query postmeta because linked Google Docs are stored as post metadata. -->
+	<rule ref="WordPress.DB.SlowDBQuery.slow_db_query_meta_key">
+		<exclude-pattern>src/Sync/SourceRepository.php</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.DB.SlowDBQuery.slow_db_query_meta_query">
+		<exclude-pattern>src/Sync/SourceRepository.php</exclude-pattern>
+	</rule>
+
 	<rule ref="WordPress.WP.I18n">
 		<properties>
 			<property name="text_domain" type="array">
