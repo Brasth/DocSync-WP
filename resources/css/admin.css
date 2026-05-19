@@ -229,6 +229,17 @@
     max-width: 100%;
   }
 
+  .docsync-wp-copy-field {
+    display: block;
+    margin-top: 12px;
+  }
+
+  .docsync-wp-copy-field > span {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
   .docsync-wp-settings-grid {
     display: grid;
     gap: 16px;
@@ -337,6 +348,19 @@
     margin: 0 8px 0 0 !important;
   }
 
+  .docsync-wp-inline-notice {
+    border-left: 4px solid #00a32a;
+    display: inline-block;
+    margin-left: 8px;
+    padding: 5px 9px;
+    vertical-align: middle;
+  }
+
+  .docsync-wp-inline-notice.is-error {
+    border-left-color: #d63638;
+    color: #b42318;
+  }
+
   .docsync-wp-post-box p {
     margin: 0 0 10px;
   }
@@ -440,6 +464,10 @@
   .docsync-wp-picker-panel strong {
     display: block;
     margin-bottom: 4px;
+  }
+
+  .docsync-wp-picker-origin {
+    margin-top: 8px !important;
   }
 
   .docsync-wp-advanced-toggle {

@@ -2,17 +2,24 @@ import { createElement, useEffect, useMemo, useState } from '@wordpress/element'
 
 import type { SettingsResponse } from '../api';
 import { GoogleSetupCloudSteps } from './google-setup-cloud-steps';
+import { GoogleSetupTargetsStep } from './google-setup-targets-step';
 import { GoogleSetupTestResult } from './google-setup-test-result';
-import { buildSetupChecks, samePostTypes, type SetupCheck } from './google-setup-utils';
+import {
+  buildSetupChecks,
+  pickerAppIdHelpUrl,
+  samePostTypes,
+  type SetupCheck
+} from './google-setup-utils';
 
 type Props = {
   settings: SettingsResponse;
   busy: boolean;
   redirectUri: string;
+  javascriptOrigin: string;
   onSave: (settings: Partial<SettingsResponse> & { clientSecret?: string }) => Promise<void>;
 };
 
-export const SettingsPanel = ({ settings, busy, redirectUri, onSave }: Props): JSX.Element => {
+export const SettingsPanel = ({ settings, busy, redirectUri, javascriptOrigin, onSave }: Props): JSX.Element => {
   const [clientId, setClientId] = useState(settings.clientId);
   const [clientSecret, setClientSecret] = useState('');
   const [pickerApiKey, setPickerApiKey] = useState(settings.pickerApiKey);
@@ -56,19 +63,19 @@ export const SettingsPanel = ({ settings, busy, redirectUri, onSave }: Props): J
     });
   };
 
-  const copyRedirectUri = async () => {
+  const copyValue = async (value: string, label: string) => {
     setCopyMessage('');
 
     if (!navigator.clipboard) {
-      setCopyMessage('Copy the redirect URI from the field.');
+      setCopyMessage(`Copy the ${label} from the field.`);
       return;
     }
 
     try {
-      await navigator.clipboard.writeText(redirectUri);
-      setCopyMessage('Redirect URI copied.');
+      await navigator.clipboard.writeText(value);
+      setCopyMessage(`${label} copied.`);
     } catch {
-      setCopyMessage('Copy the redirect URI from the field.');
+      setCopyMessage(`Copy the ${label} from the field.`);
     }
   };
 
@@ -111,7 +118,12 @@ export const SettingsPanel = ({ settings, busy, redirectUri, onSave }: Props): J
       </div>
 
       <ol className="docsync-wp-setup-steps">
-        <GoogleSetupCloudSteps copyMessage={copyMessage} onCopyRedirectUri={copyRedirectUri} redirectUri={redirectUri} />
+        <GoogleSetupCloudSteps
+          copyMessage={copyMessage}
+          javascriptOrigin={javascriptOrigin}
+          onCopyValue={copyValue}
+          redirectUri={redirectUri}
+        />
 
         <li>
           <div className="docsync-wp-step-heading">
@@ -143,43 +155,20 @@ export const SettingsPanel = ({ settings, busy, redirectUri, onSave }: Props): J
             <label>
               <span>Picker app ID</span>
               <input className="regular-text" onChange={(event) => setPickerAppId(event.currentTarget.value)} type="text" value={pickerAppId} />
+              <span className="description">
+                Use the Google Cloud project number. <a href={pickerAppIdHelpUrl} rel="noreferrer" target="_blank">Open IAM &amp; Admin settings</a>.
+              </span>
             </label>
           </div>
         </li>
 
-        <li>
-          <div className="docsync-wp-step-heading">
-            <span>4</span>
-            <div>
-              <h3>Choose WordPress targets</h3>
-              <p>Post is always enabled. Add public custom post types that should accept synced drafts.</p>
-            </div>
-          </div>
-          <fieldset className="docsync-wp-post-types">
-            <legend>Enabled post types</legend>
-            {settings.availablePostTypes.map((postType) => (
-              <label key={postType.name}>
-                <input
-                  checked={enabledPostTypes.includes(postType.name)}
-                  disabled={postType.name === 'post'}
-                  onChange={() => togglePostType(postType.name)}
-                  type="checkbox"
-                />
-                {postType.label}
-              </label>
-            ))}
-          </fieldset>
-
-          <label className="docsync-wp-field docsync-wp-field--compact">
-            <span>Scheduled sync</span>
-            <select onChange={(event) => setSyncInterval(event.currentTarget.value)} value={syncInterval}>
-              <option value="off">Off</option>
-              <option value="hourly">Hourly</option>
-              <option value="twicedaily">Twice daily</option>
-              <option value="daily">Daily</option>
-            </select>
-          </label>
-        </li>
+        <GoogleSetupTargetsStep
+          availablePostTypes={settings.availablePostTypes}
+          enabledPostTypes={enabledPostTypes}
+          onSyncIntervalChange={setSyncInterval}
+          onTogglePostType={togglePostType}
+          syncInterval={syncInterval}
+        />
       </ol>
 
       <div className="docsync-wp-settings-actions">

@@ -33,6 +33,14 @@ const NoticeBlock = ({ notice }: { notice: Notice | null }): JSX.Element | null 
   return <div className={`notice notice-${notice.type} inline`}><p>{notice.message}</p></div>;
 };
 
+const InlineNotice = ({ notice }: { notice: Notice | null }): JSX.Element | null => {
+  if (!notice) {
+    return null;
+  }
+
+  return <span className={`docsync-wp-inline-notice is-${notice.type}`}>{notice.message}</span>;
+};
+
 const sourceLabel = (source: SourceRecord | null): string => {
   if (!source) {
     return 'No Google Doc linked.';
@@ -151,7 +159,7 @@ const ListEntryApp = ({ postType }: { postType: string }): JSX.Element => {
       <button className="button button-primary docsync-wp-add-sync-doc" onClick={() => setModalTarget({ mode: 'new', postType })} type="button">
         Add Sync Doc
       </button>
-      <NoticeBlock notice={notice} />
+      <InlineNotice notice={notice} />
       <DocSourceModal
         isOpen={modalTarget !== null}
         onClose={() => setModalTarget(null)}

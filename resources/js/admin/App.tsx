@@ -29,6 +29,7 @@ const sourcePageSize = 100;
 export const App = (): JSX.Element => {
   const config = useMemo(() => getAdminConfig(), []);
   const redirectUri = useMemo(() => `${config.restUrl.replace(/\/$/, '')}/oauth/google/callback`, [config.restUrl]);
+  const javascriptOrigin = useMemo(() => window.location.origin, []);
   const [settings, setSettings] = useState<SettingsResponse | null>(null);
   const [account, setAccount] = useState<GoogleAccount>(emptyAccount);
   const [sources, setSources] = useState<SourceRecord[]>([]);
@@ -155,7 +156,13 @@ export const App = (): JSX.Element => {
               onSyncAll={syncAll}
               sources={sources}
             />
-            <SettingsPanel busy={busy} onSave={persistSettings} redirectUri={redirectUri} settings={settings} />
+            <SettingsPanel
+              busy={busy}
+              javascriptOrigin={javascriptOrigin}
+              onSave={persistSettings}
+              redirectUri={redirectUri}
+              settings={settings}
+            />
           </div>
           <aside className="docsync-wp-admin-grid__side">
             <AccountPanel
