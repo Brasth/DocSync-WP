@@ -52,7 +52,9 @@ https://example.com/wp-json/docsync-wp/v1/oauth/google/callback
 
 Replace `https://example.com` with the WordPress site URL.
 
-In WordPress admin, open **DocSync WP** and save:
+In WordPress admin, open **DocSync WP** and follow the Google setup wizard. It shows setup progress, provides the exact redirect URI to copy, links to the required Google Cloud screens, and tests whether the saved plugin settings are complete.
+
+Save:
 
 - OAuth client ID
 - OAuth client secret
@@ -69,7 +71,7 @@ Each WordPress user must connect their own Google account before inspecting or s
 - The MVP exports Google Docs as Markdown, converts it to sanitized HTML, then updates the target post.
 - Default Google scope is `https://www.googleapis.com/auth/drive.file`.
 - Google Picker is the preferred source selection path because it grants this app access to the selected file.
-- Pasted Google Doc URLs or raw file IDs work only when the connected Google account and app already have access. If Google denies access, choose the document with Picker.
+- Picker is the default linking path. Pasted Google Doc URLs or raw file IDs are available under advanced linking and work only when the connected Google account and app already have access. If Google denies access, choose the document with Picker.
 - Supported targets are `post` plus enabled public custom post types that the current WordPress user can edit/create.
 
 ## Scheduling

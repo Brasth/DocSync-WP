@@ -9,9 +9,12 @@ import {
 type Props = {
   sourceMode: SourceMode;
   onChange: (mode: SourceMode) => void;
+  modes?: SourceMode[];
 };
 
-export const DocSourceTabs = ({ sourceMode, onChange }: Props): JSX.Element => {
+export const DocSourceTabs = ({ sourceMode, onChange, modes }: Props): JSX.Element => {
+  const availableModes = modes ?? (Object.keys(docSourceLabels) as SourceMode[]);
+
   return (
     <Tabs.Root
       className="docsync-wp-source-tabs"
@@ -19,7 +22,7 @@ export const DocSourceTabs = ({ sourceMode, onChange }: Props): JSX.Element => {
       value={sourceMode}
     >
       <Tabs.List aria-label="Document source" className="docsync-wp-source-tabs__list">
-        {(Object.keys(docSourceLabels) as SourceMode[]).map((mode) => (
+        {availableModes.map((mode) => (
           <Tabs.Trigger
             className="docsync-wp-source-tabs__trigger"
             key={mode}

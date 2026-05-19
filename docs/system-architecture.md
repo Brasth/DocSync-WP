@@ -1,6 +1,6 @@
 # System Architecture
 
-Last updated: 2026-05-18
+Last updated: 2026-05-19
 
 ## Overview
 
@@ -45,10 +45,11 @@ flowchart LR
 Responsibilities:
 
 - configure Google OAuth and Picker settings
+- guide self-managed Google Cloud setup with saved-state checks
 - connect or disconnect the current WordPress user
 - list linked sources across enabled post types
 - trigger single-source sync and sync-all-changed actions
-- show setup notes and current connection state
+- show current connection mode and account readiness
 
 ### Post Edit Screen
 
@@ -57,7 +58,7 @@ Responsibilities:
 
 Responsibilities:
 
-- link a Google Doc to the current post
+- link a Google Doc to the current post, with Picker as default and pasted URL/file ID under advanced linking
 - change or detach the source
 - trigger immediate sync
 - show last sync and error state
@@ -107,7 +108,7 @@ Common permission model:
 ### Site Options
 
 - `docsync_wp_settings`
-- stores Google client id, encrypted client secret, Picker key/app id, enabled post types, default post status, default export format, and sync interval
+- stores Google connection mode, client id, encrypted client secret, Picker key/app id, enabled post types, default post status, default export format, and sync interval
 
 ### User Meta
 
@@ -131,7 +132,7 @@ Common permission model:
 ## Sync Flow
 
 1. User connects Google from the admin dashboard.
-2. User inspects a Doc through Picker, pasted URL, or raw file ID.
+2. User inspects a Doc through Picker by default, or through advanced pasted URL/raw file ID entry.
 3. `DocumentController` validates the input and fetches Drive metadata.
 4. `SourceController` attaches the source to an existing post or creates a new draft.
 5. `SyncService` acquires a per-post lock.
@@ -166,6 +167,7 @@ Skip behavior:
 
 - WP-Cron only runs on site traffic; low-traffic sites need real server cron for reliable schedules
 - Google Picker is the preferred selection path for least-privilege access
+- the current connection mode is `self_managed`; a later managed connector can own the verified Google app without proxying document content by default
 - pasted Docs or raw file IDs only work when the connected Google account already has access
 - Vite externalizes Radix React peer imports to `wp.element` and aliases Radix JSX runtime imports to the local WordPress JSX runtime shim; avoid direct app imports from `react` or `react-dom`
 - Inline PHPCS suppression comments are blocked by the frontend lint guard; unavoidable standards exceptions must live in `phpcs.xml.dist`

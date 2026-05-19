@@ -20,10 +20,11 @@ defined( 'ABSPATH' ) || exit;
 final class SettingsRepository {
 	public const OPTION_NAME = 'docsync_wp_settings';
 
-	private const DEFAULT_SCOPE_MODE    = 'drive_file';
-	private const DEFAULT_POST_STATUS   = 'draft';
-	private const DEFAULT_EXPORT_FORMAT = 'markdown';
-	private const DEFAULT_SYNC_INTERVAL = 'off';
+	private const DEFAULT_SCOPE_MODE      = 'drive_file';
+	private const DEFAULT_POST_STATUS     = 'draft';
+	private const DEFAULT_EXPORT_FORMAT   = 'markdown';
+	private const DEFAULT_SYNC_INTERVAL   = 'off';
+	private const DEFAULT_CONNECTION_MODE = 'self_managed';
 
 	/**
 	 * Encryption service.
@@ -78,6 +79,10 @@ final class SettingsRepository {
 
 		if ( ! $this->isValidSyncInterval( $settings['sync_interval'] ) ) {
 			$settings['sync_interval'] = self::DEFAULT_SYNC_INTERVAL;
+		}
+
+		if ( ! $this->isValidConnectionMode( $settings['connection_mode'] ) ) {
+			$settings['connection_mode'] = self::DEFAULT_CONNECTION_MODE;
 		}
 
 		return $settings;
@@ -156,6 +161,14 @@ final class SettingsRepository {
 			);
 		}
 
+		if ( ! $this->isValidConnectionMode( $settings['connection_mode'] ) ) {
+			return new WP_Error(
+				'docsync_wp_invalid_connection_mode',
+				__( 'DocSync WP received an unsupported Google connection mode.', 'docsync-wp' ),
+				array( 'status' => 400 )
+			);
+		}
+
 		if ( array_key_exists( 'client_secret', $values ) ) {
 			$client_secret = sanitize_text_field( (string) $values['client_secret'] );
 
@@ -194,7 +207,13 @@ final class SettingsRepository {
 			'default_post_status'   => $settings['default_post_status'],
 			'default_export_format' => $settings['default_export_format'],
 			'sync_interval'         => $settings['sync_interval'],
+			'connection_mode'       => $settings['connection_mode'],
+			'has_client_id'         => '' !== $settings['client_id'],
 			'has_client_secret'     => '' !== $settings['encrypted_client_secret'],
+			'has_picker_api_key'    => '' !== $settings['picker_api_key'],
+			'has_picker_app_id'     => '' !== $settings['picker_app_id'],
+			'has_picker_settings'   => '' !== $settings['picker_api_key'] && '' !== $settings['picker_app_id'],
+			'has_required_settings' => '' !== $settings['client_id'] && '' !== $settings['encrypted_client_secret'],
 		);
 	}
 
@@ -293,6 +312,7 @@ final class SettingsRepository {
 			'default_post_status'     => self::DEFAULT_POST_STATUS,
 			'default_export_format'   => self::DEFAULT_EXPORT_FORMAT,
 			'sync_interval'           => self::DEFAULT_SYNC_INTERVAL,
+			'connection_mode'         => self::DEFAULT_CONNECTION_MODE,
 		);
 	}
 
@@ -319,6 +339,7 @@ final class SettingsRepository {
 			'default_post_status',
 			'default_export_format',
 			'sync_interval',
+			'connection_mode',
 		);
 	}
 
@@ -337,6 +358,7 @@ final class SettingsRepository {
 		$settings['default_post_status']     = sanitize_key( (string) $settings['default_post_status'] );
 		$settings['default_export_format']   = sanitize_key( (string) $settings['default_export_format'] );
 		$settings['sync_interval']           = sanitize_key( (string) $settings['sync_interval'] );
+		$settings['connection_mode']         = sanitize_key( (string) $settings['connection_mode'] );
 
 		return $settings;
 	}
@@ -453,6 +475,15 @@ final class SettingsRepository {
 	 */
 	private function isValidSyncInterval( string $sync_interval ): bool {
 		return in_array( $sync_interval, array( 'off', 'hourly', 'twicedaily', 'daily' ), true );
+	}
+
+	/**
+	 * Whether a Google connection mode is supported.
+	 *
+	 * @param string $connection_mode Connection mode.
+	 */
+	private function isValidConnectionMode( string $connection_mode ): bool {
+		return self::DEFAULT_CONNECTION_MODE === $connection_mode;
 	}
 
 	/**

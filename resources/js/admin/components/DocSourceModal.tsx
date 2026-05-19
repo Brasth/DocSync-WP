@@ -4,13 +4,12 @@ import { createElement, useEffect, useMemo, useState } from '@wordpress/element'
 import { createSource, inspectDocument, type DocumentMetadata, type SyncResult } from '../api';
 import { getAdminConfig } from '../config';
 import { chooseGoogleDoc } from '../google-picker';
-import { DocSourceTabs } from './DocSourceTabs';
+import { DocSourceAdvancedPanel } from './doc-source-advanced-panel';
 import { docSourceHelp, type SourceMode } from './doc-source-modal-options';
 
 type Target =
   | { mode: 'existing'; postId: number; postType?: string }
   | { mode: 'new'; postType: string };
-
 type Props = {
   isOpen: boolean;
   target: Target | null;
@@ -24,7 +23,10 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
   const [metadata, setMetadata] = useState<DocumentMetadata | null>(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const config = useMemo(() => getAdminConfig(), []);
+  const pickerReady = Boolean(config.hasClientId && config.hasPickerSettings);
+  const advancedSourceMode: Exclude<SourceMode, 'picker'> = sourceMode === 'file_id' ? 'file_id' : 'url';
 
   useEffect(() => {
     if (!isOpen) {
@@ -33,6 +35,7 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
       setMetadata(null);
       setError('');
       setBusy(false);
+      setAdvancedOpen(false);
     }
   }, [isOpen]);
 
@@ -61,6 +64,21 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
     } finally {
       setBusy(false);
     }
+  };
+
+  const toggleAdvanced = () => {
+    const nextOpen = !advancedOpen;
+    setAdvancedOpen(nextOpen);
+    setMetadata(null);
+    setError('');
+
+    if (nextOpen) {
+      setSourceMode('url');
+      return;
+    }
+
+    setSourceMode('picker');
+    setDocumentInput('');
   };
 
   const attach = async () => {
@@ -118,29 +136,28 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
             </Dialog.Close>
           </div>
 
-          <DocSourceTabs
-            onChange={(mode) => {
-              setSourceMode(mode);
-              setMetadata(null);
-              setError('');
-            }}
-            sourceMode={sourceMode}
-          />
-
           <div className="docsync-wp-modal__body">
-            <p className="description">{docSourceHelp[sourceMode]}</p>
+            <div className="docsync-wp-picker-panel">
+              <strong>Choose with Google Picker</strong>
+              <p>{docSourceHelp.picker}</p>
+              {!pickerReady ? <p className="docsync-wp-inline-warning">Finish Picker API key, Picker app ID, and OAuth client ID setup first.</p> : null}
+            </div>
 
-            {sourceMode !== 'picker' ? (
-              <label className="docsync-wp-field">
-                <span>{sourceMode === 'url' ? 'Google Docs URL' : 'Google Drive file ID'}</span>
-                <input
-                  className="regular-text"
-                  onChange={(event) => setDocumentInput(event.currentTarget.value)}
-                  placeholder={sourceMode === 'url' ? 'https://docs.google.com/document/d/...' : '1AbC...'}
-                  type="text"
-                  value={documentInput}
-                />
-              </label>
+            <button className="button-link docsync-wp-advanced-toggle" onClick={toggleAdvanced} type="button">
+              {advancedOpen ? 'Use Google Picker instead' : 'Advanced: paste URL or file ID'}
+            </button>
+
+            {advancedOpen ? (
+              <DocSourceAdvancedPanel
+                documentInput={documentInput}
+                onInputChange={setDocumentInput}
+                onModeChange={(mode) => {
+                  setSourceMode(mode);
+                  setMetadata(null);
+                  setError('');
+                }}
+                sourceMode={advancedSourceMode}
+              />
             ) : null}
 
             {error ? <div className="notice notice-error inline"><p>{error}</p></div> : null}
@@ -161,11 +178,11 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
             </Dialog.Close>
             <button
               className="button button-secondary"
-              disabled={busy || (sourceMode !== 'picker' && documentInput.trim() === '')}
+              disabled={busy || (sourceMode === 'picker' ? !pickerReady : documentInput.trim() === '')}
               onClick={inspect}
               type="button"
             >
-              {sourceMode === 'picker' ? 'Choose and inspect' : 'Inspect'}
+              {sourceMode === 'picker' ? 'Choose with Picker' : 'Inspect'}
             </button>
             <button
               className="button button-primary"

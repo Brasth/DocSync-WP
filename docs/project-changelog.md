@@ -1,6 +1,27 @@
 # Project Changelog
 
-Last updated: 2026-05-18
+Last updated: 2026-05-19
+
+## 2026-05-19 - Google Setup Onboarding
+
+Status: completed in codebase
+
+Improved the standalone Google onboarding path:
+
+- replaced the raw Google settings card with a setup wizard
+- added setup progress, redirect URI copy, Google Cloud links, and saved-setting checks
+- exposed saved setup readiness through settings REST responses and admin config
+- added `connection_mode` with current `self_managed` support
+- blocked `Connect Google` until OAuth client ID and client secret are saved
+- kept Picker as the default document linking path
+- moved pasted Google Docs URL and raw file ID inputs into advanced linking
+
+Verification status:
+
+- `pnpm typecheck` passes
+- `pnpm lint` passes
+- `pnpm build` passes
+- local PHP verification is blocked because `php` and `composer` are unavailable
 
 ## 2026-05-18 - Radix UI and PHPCS Hardening
 
