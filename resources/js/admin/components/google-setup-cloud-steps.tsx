@@ -4,11 +4,12 @@ import { googleCloudLinks } from './google-setup-utils';
 
 type Props = {
   redirectUri: string;
+  javascriptOrigin: string;
   copyMessage: string;
-  onCopyRedirectUri: () => void;
+  onCopyValue: (value: string, label: string) => void;
 };
 
-export const GoogleSetupCloudSteps = ({ redirectUri, copyMessage, onCopyRedirectUri }: Props): JSX.Element => {
+export const GoogleSetupCloudSteps = ({ redirectUri, javascriptOrigin, copyMessage, onCopyValue }: Props): JSX.Element => {
   return (
     <>
       <li>
@@ -32,16 +33,28 @@ export const GoogleSetupCloudSteps = ({ redirectUri, copyMessage, onCopyRedirect
         <div className="docsync-wp-step-heading">
           <span>2</span>
           <div>
-            <h3>Add the authorized redirect URI</h3>
-            <p>Paste this exact URI into the Google OAuth web client.</p>
+            <h3>Add OAuth URLs</h3>
+            <p>Paste both values into the Google OAuth web client.</p>
           </div>
         </div>
-        <div className="docsync-wp-copy-row">
-          <input className="regular-text code" readOnly type="text" value={redirectUri} />
-          <button className="button" onClick={onCopyRedirectUri} type="button">
-            Copy
-          </button>
-        </div>
+        <label className="docsync-wp-copy-field">
+          <span>Authorized JavaScript origin</span>
+          <div className="docsync-wp-copy-row">
+            <input className="regular-text code" readOnly type="text" value={javascriptOrigin} />
+            <button className="button" onClick={() => onCopyValue(javascriptOrigin, 'JavaScript origin')} type="button">
+              Copy
+            </button>
+          </div>
+        </label>
+        <label className="docsync-wp-copy-field">
+          <span>Authorized redirect URI</span>
+          <div className="docsync-wp-copy-row">
+            <input className="regular-text code" readOnly type="text" value={redirectUri} />
+            <button className="button" onClick={() => onCopyValue(redirectUri, 'Redirect URI')} type="button">
+              Copy
+            </button>
+          </div>
+        </label>
         {copyMessage ? <p className="description">{copyMessage}</p> : null}
       </li>
     </>

@@ -13,6 +13,9 @@ Improved the standalone Google onboarding path:
 - exposed saved setup readiness through settings REST responses and admin config
 - added `connection_mode` with current `self_managed` support
 - blocked `Connect Google` until OAuth client ID and client secret are saved
+- linked Picker app ID help to Google Cloud IAM & Admin settings
+- added Authorized JavaScript origin guidance for Google Picker sign-in
+- cleaned up advanced source modal controls and list-table inline notices
 - kept Picker as the default document linking path
 - moved pasted Google Docs URL and raw file ID inputs into advanced linking
 

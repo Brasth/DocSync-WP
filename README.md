@@ -44,13 +44,19 @@ The Vite build writes hashed assets plus `build/manifest.json` and `build/manife
 2. Enable the Google Drive API and Google Picker API.
 3. Configure the OAuth consent screen for the WordPress site users.
 4. Create an OAuth 2.0 Web application client.
-5. Add this authorized redirect URI:
+5. Add the WordPress site origin to **Authorized JavaScript origins**:
+
+```text
+https://example.com
+```
+
+6. Add this authorized redirect URI:
 
 ```text
 https://example.com/wp-json/docsync-wp/v1/oauth/google/callback
 ```
 
-Replace `https://example.com` with the WordPress site URL.
+Replace `https://example.com` with the WordPress site URL. Picker fails with Google's `no registered origin` error when the JavaScript origin is missing.
 
 In WordPress admin, open **DocSync WP** and follow the Google setup wizard. It shows setup progress, provides the exact redirect URI to copy, links to the required Google Cloud screens, and tests whether the saved plugin settings are complete.
 
@@ -59,7 +65,7 @@ Save:
 - OAuth client ID
 - OAuth client secret
 - Picker API key
-- Picker app ID
+- Picker app ID, which is the Google Cloud project number from **IAM & Admin → Settings**
 - Enabled post types
 - Optional WP-Cron sync interval
 

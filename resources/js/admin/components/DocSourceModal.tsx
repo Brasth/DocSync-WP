@@ -5,17 +5,11 @@ import { createSource, inspectDocument, type DocumentMetadata, type SyncResult }
 import { getAdminConfig } from '../config';
 import { chooseGoogleDoc } from '../google-picker';
 import { DocSourceAdvancedPanel } from './doc-source-advanced-panel';
-import { docSourceHelp, type SourceMode } from './doc-source-modal-options';
+import { type SourceMode } from './doc-source-modal-options';
+import { DocSourcePickerPanel } from './doc-source-picker-panel';
 
-type Target =
-  | { mode: 'existing'; postId: number; postType?: string }
-  | { mode: 'new'; postType: string };
-type Props = {
-  isOpen: boolean;
-  target: Target | null;
-  onClose: () => void;
-  onCompleted: (result: SyncResult) => void;
-};
+type Target = { mode: 'existing'; postId: number; postType?: string } | { mode: 'new'; postType: string };
+type Props = { isOpen: boolean; target: Target | null; onClose: () => void; onCompleted: (result: SyncResult) => void };
 
 export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props): JSX.Element | null => {
   const [sourceMode, setSourceMode] = useState<SourceMode>('picker');
@@ -25,6 +19,7 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
   const [busy, setBusy] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const config = useMemo(() => getAdminConfig(), []);
+  const javascriptOrigin = useMemo(() => window.location.origin, []);
   const pickerReady = Boolean(config.hasClientId && config.hasPickerSettings);
   const advancedSourceMode: Exclude<SourceMode, 'picker'> = sourceMode === 'file_id' ? 'file_id' : 'url';
 
@@ -137,14 +132,15 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
           </div>
 
           <div className="docsync-wp-modal__body">
-            <div className="docsync-wp-picker-panel">
-              <strong>Choose with Google Picker</strong>
-              <p>{docSourceHelp.picker}</p>
-              {!pickerReady ? <p className="docsync-wp-inline-warning">Finish Picker API key, Picker app ID, and OAuth client ID setup first.</p> : null}
-            </div>
+            <DocSourcePickerPanel javascriptOrigin={javascriptOrigin} pickerReady={pickerReady} />
 
-            <button className="button-link docsync-wp-advanced-toggle" onClick={toggleAdvanced} type="button">
-              {advancedOpen ? 'Use Google Picker instead' : 'Advanced: paste URL or file ID'}
+            <button
+              aria-expanded={advancedOpen}
+              className="button button-secondary docsync-wp-advanced-toggle"
+              onClick={toggleAdvanced}
+              type="button"
+            >
+              {advancedOpen ? 'Use Google Picker' : 'Paste URL or file ID'}
             </button>
 
             {advancedOpen ? (
