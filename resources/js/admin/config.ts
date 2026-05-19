@@ -12,6 +12,7 @@ export type DocSyncWPAdminConfig = {
   clientId: string;
   pickerApiKey: string;
   pickerAppId: string;
+  connectionMode: string;
   enabledPostTypes: string[];
   availablePostTypes: AvailablePostType[];
   defaultExportFormat: string;
@@ -39,6 +40,7 @@ const fallbackConfig: DocSyncWPAdminConfig = {
   clientId: '',
   pickerApiKey: '',
   pickerAppId: '',
+  connectionMode: 'self_managed',
   enabledPostTypes: ['post'],
   availablePostTypes: [{ name: 'post', label: 'Post' }],
   defaultExportFormat: 'markdown',

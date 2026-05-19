@@ -153,6 +153,7 @@ final class SettingsController {
 			'defaultPostStatus',
 			'defaultExportFormat',
 			'syncInterval',
+			'connectionMode',
 		);
 
 		$unknown_keys = array_diff( array_keys( $params ), $allowed_keys );
@@ -203,6 +204,10 @@ final class SettingsController {
 			$mapped['sync_interval'] = $params['syncInterval'];
 		}
 
+		if ( array_key_exists( 'connectionMode', $params ) ) {
+			$mapped['connection_mode'] = $params['connectionMode'];
+		}
+
 		return $mapped;
 	}
 
@@ -223,7 +228,13 @@ final class SettingsController {
 			'defaultPostStatus'   => $settings['default_post_status'],
 			'defaultExportFormat' => $settings['default_export_format'],
 			'syncInterval'        => $settings['sync_interval'],
+			'connectionMode'      => $settings['connection_mode'],
+			'hasClientId'         => $settings['has_client_id'],
 			'hasClientSecret'     => $settings['has_client_secret'],
+			'hasPickerApiKey'     => $settings['has_picker_api_key'],
+			'hasPickerAppId'      => $settings['has_picker_app_id'],
+			'hasPickerSettings'   => $settings['has_picker_settings'],
+			'hasRequiredSettings' => $settings['has_required_settings'],
 			'availablePostTypes'  => $this->settings->getAvailablePostTypes(),
 		);
 	}

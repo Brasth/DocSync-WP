@@ -9,7 +9,13 @@ export type SettingsResponse = {
   defaultPostStatus: string;
   defaultExportFormat: string;
   syncInterval: string;
+  connectionMode: string;
+  hasClientId: boolean;
   hasClientSecret: boolean;
+  hasPickerApiKey: boolean;
+  hasPickerAppId: boolean;
+  hasPickerSettings: boolean;
+  hasRequiredSettings: boolean;
   availablePostTypes: AvailablePostType[];
 };
 

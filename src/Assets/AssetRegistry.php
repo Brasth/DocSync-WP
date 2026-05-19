@@ -299,16 +299,17 @@ final class AssetRegistry {
 			'clientId'            => $settings['client_id'],
 			'pickerApiKey'        => $settings['picker_api_key'],
 			'pickerAppId'         => $settings['picker_app_id'],
+			'connectionMode'      => $settings['connection_mode'],
 			'enabledPostTypes'    => $settings['enabled_post_types'],
 			'availablePostTypes'  => $this->settings->getAvailablePostTypes(),
 			'defaultExportFormat' => $settings['default_export_format'],
 			'syncInterval'        => $settings['sync_interval'],
-			'hasClientId'         => '' !== $settings['client_id'],
+			'hasClientId'         => (bool) $settings['has_client_id'],
 			'hasClientSecret'     => (bool) $settings['has_client_secret'],
-			'hasPickerApiKey'     => '' !== $settings['picker_api_key'],
-			'hasPickerAppId'      => '' !== $settings['picker_app_id'],
-			'hasPickerSettings'   => '' !== $settings['picker_api_key'] && '' !== $settings['picker_app_id'],
-			'hasRequiredSettings' => '' !== $settings['client_id'] && (bool) $settings['has_client_secret'],
+			'hasPickerApiKey'     => (bool) $settings['has_picker_api_key'],
+			'hasPickerAppId'      => (bool) $settings['has_picker_app_id'],
+			'hasPickerSettings'   => (bool) $settings['has_picker_settings'],
+			'hasRequiredSettings' => (bool) $settings['has_required_settings'],
 		);
 	}
 

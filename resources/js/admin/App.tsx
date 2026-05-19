@@ -28,6 +28,7 @@ const sourcePageSize = 100;
 
 export const App = (): JSX.Element => {
   const config = useMemo(() => getAdminConfig(), []);
+  const redirectUri = useMemo(() => `${config.restUrl.replace(/\/$/, '')}/oauth/google/callback`, [config.restUrl]);
   const [settings, setSettings] = useState<SettingsResponse | null>(null);
   const [account, setAccount] = useState<GoogleAccount>(emptyAccount);
   const [sources, setSources] = useState<SourceRecord[]>([]);
@@ -81,6 +82,11 @@ export const App = (): JSX.Element => {
   };
 
   const connectGoogle = async () => {
+    if (!settings?.hasRequiredSettings) {
+      setNotice({ type: 'error', message: 'Save OAuth client ID and client secret before connecting Google.' });
+      return;
+    }
+
     await runAction(async () => {
       const response = await getGoogleAuthUrl();
       window.location.assign(response.authUrl);
@@ -149,16 +155,23 @@ export const App = (): JSX.Element => {
               onSyncAll={syncAll}
               sources={sources}
             />
-            <SettingsPanel busy={busy} onSave={persistSettings} settings={settings} />
+            <SettingsPanel busy={busy} onSave={persistSettings} redirectUri={redirectUri} settings={settings} />
           </div>
           <aside className="docsync-wp-admin-grid__side">
-            <AccountPanel account={account} busy={busy} onConnect={connectGoogle} onDisconnect={disconnectGoogle} />
+            <AccountPanel
+              account={account}
+              busy={busy}
+              canConnect={settings.hasRequiredSettings}
+              onConnect={connectGoogle}
+              onDisconnect={disconnectGoogle}
+              pickerReady={settings.hasPickerSettings}
+            />
             <section className="docsync-wp-card">
-              <h2>Setup notes</h2>
+              <h2>Connection mode</h2>
               <ul>
-                <li>Redirect URI: <code>{config.restUrl}/oauth/google/callback</code></li>
-                <li>Required APIs: Google Drive API and Google Picker API.</li>
-                <li>Pasted Docs must already be accessible to the connected app.</li>
+                <li>Current mode: self-managed Google Cloud app.</li>
+                <li>Each WordPress user connects their own Google account.</li>
+                <li>Managed connector support can be added later without proxying document content.</li>
               </ul>
             </section>
           </aside>

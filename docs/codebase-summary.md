@@ -1,10 +1,10 @@
 # DocSync WP Codebase Summary
 
-Last updated: 2026-05-18
+Last updated: 2026-05-19
 
 ## Snapshot
 
-DocSync WP is a WordPress plugin for one-way Google Docs -> WordPress sync. This checkout now includes the admin actions implementation: Google OAuth, document inspection, post-level linking and sync, list-table actions, a central admin dashboard, and WP-Cron scheduling.
+DocSync WP is a WordPress plugin for one-way Google Docs -> WordPress sync. This checkout now includes the admin actions implementation: Google OAuth, document inspection, post-level linking and sync, list-table actions, a central admin dashboard, a self-managed Google setup wizard, and WP-Cron scheduling.
 
 Summary reflects the current source tree after the Google Docs Sync admin actions implementation.
 
@@ -44,10 +44,10 @@ Summary reflects the current source tree after the Google Docs Sync admin action
 ## Key Frontend Modules
 
 - `resources/js/admin/App.tsx` - central admin dashboard.
-- `resources/js/admin/components/SettingsPanel.tsx` - Google settings form.
+- `resources/js/admin/components/SettingsPanel.tsx` - Google setup wizard and settings form.
 - `resources/js/admin/components/AccountPanel.tsx` - current user Google account state.
 - `resources/js/admin/components/SourcesTable.tsx` - linked source table and bulk sync action.
-- `resources/js/admin/components/DocSourceModal.tsx` - Radix-backed picker, URL, and file ID attach flow.
+- `resources/js/admin/components/DocSourceModal.tsx` - Radix-backed Picker-first attach flow with advanced URL and file ID inputs.
 - `resources/js/admin/components/DocSourceTabs.tsx` - Radix-backed source mode tabs.
 - `resources/js/admin/google-picker.ts` - Google Picker bootstrap.
 - `resources/js/admin/post-sync-entry.tsx` - post edit meta box and list-table mount logic.
