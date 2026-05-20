@@ -176,7 +176,7 @@
   }
 
   .docsync-wp-setup-steps > li,
-  .docsync-wp-picker-panel,
+  .docsync-wp-drive-browser,
   .docsync-wp-advanced-source,
   .docsync-wp-setup-test {
     border: 1px solid #d9e2e1;
@@ -205,7 +205,7 @@
 
   .docsync-wp-step-heading h3,
   .docsync-wp-step-heading p,
-  .docsync-wp-picker-panel p,
+  .docsync-wp-drive-browser p,
   .docsync-wp-setup-test p {
     margin: 0;
   }
@@ -503,18 +503,73 @@
     justify-content: flex-end;
   }
 
-  .docsync-wp-picker-panel {
+  .docsync-wp-drive-browser {
     background: #f0f6f4;
     margin-bottom: 12px;
   }
 
-  .docsync-wp-picker-panel strong {
+  .docsync-wp-drive-browser strong {
     display: block;
     margin-bottom: 4px;
   }
 
-  .docsync-wp-picker-origin {
-    margin-top: 8px !important;
+  .docsync-wp-drive-browser__search {
+    align-items: end;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    margin-top: 14px;
+  }
+
+  .docsync-wp-drive-browser__search label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .docsync-wp-drive-browser__list {
+    border: 1px solid #d9e2e1;
+    border-radius: 8px;
+    list-style: none;
+    margin: 14px 0 0;
+    max-height: 260px;
+    overflow: auto;
+    padding: 0;
+  }
+
+  .docsync-wp-drive-browser__list li + li {
+    border-top: 1px solid #d9e2e1;
+  }
+
+  .docsync-wp-drive-browser__list button {
+    background: #fff;
+    border: 0;
+    cursor: pointer;
+    display: block;
+    padding: 10px 12px;
+    text-align: left;
+    width: 100%;
+  }
+
+  .docsync-wp-drive-browser__list button:hover,
+  .docsync-wp-drive-browser__list button:focus-visible {
+    background: #f6f7f7;
+  }
+
+  .docsync-wp-drive-browser__list button.is-selected {
+    background: #e8f3ee;
+    box-shadow: inset 4px 0 0 #0f766e;
+  }
+
+  .docsync-wp-drive-browser__list button span {
+    color: #646970;
+    display: block;
+    margin-top: 4px;
+  }
+
+  .docsync-wp-drive-browser__more {
+    margin-top: 12px;
+    text-align: center;
   }
 
   .docsync-wp-advanced-toggle {
@@ -532,6 +587,7 @@
   @media (max-width: 960px) {
     .docsync-wp-admin-grid,
     .docsync-wp-settings-grid,
+    .docsync-wp-drive-browser__search,
     .docsync-wp-source-filters,
     .docsync-wp-setup-test ul {
       grid-template-columns: 1fr;

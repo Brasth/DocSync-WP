@@ -41,29 +41,16 @@ The Vite build writes hashed assets plus `build/manifest.json` and `build/manife
 ## Google Cloud Setup
 
 1. Create or select a Google Cloud project.
-2. Enable the Google Drive API and Google Picker API.
+2. Enable the Google Drive API.
 3. Configure the OAuth consent screen for the WordPress site users.
 4. Create an OAuth 2.0 Web application client.
-5. Add the WordPress site origin to **Authorized JavaScript origins**:
-
-```text
-https://example.com
-```
-
-6. Add this authorized redirect URI:
+5. Add this authorized redirect URI:
 
 ```text
 https://example.com/wp-json/docsync-wp/v1/oauth/google/callback
 ```
 
-Replace `https://example.com` with the WordPress site URL. Picker fails with Google's `no registered origin` error when the JavaScript origin is missing.
-
-### Google Picker troubleshooting
-
-- `invalid_client` plus `no registered origin` means the OAuth web client does not have the exact WordPress origin saved in **Authorized JavaScript origins**.
-- The JavaScript origin is only the scheme and host, with port if present. Do not include a path or trailing slash.
-- The OAuth callback URL belongs in **Authorized redirect URIs** and must include `/wp-json/docsync-wp/v1/oauth/google/callback`.
-- The Picker app ID is the Google Cloud project number, not the OAuth client ID.
+Replace `https://example.com` with the WordPress site URL. The OAuth callback URL belongs in **Authorized redirect URIs** and must include `/wp-json/docsync-wp/v1/oauth/google/callback`.
 
 In WordPress admin, open **DocSync WP** and follow the Google setup wizard. It shows setup progress, provides the exact redirect URI to copy, links to the required Google Cloud screens, and tests whether the saved plugin settings are complete.
 
@@ -71,8 +58,6 @@ Save:
 
 - OAuth client ID
 - OAuth client secret
-- Picker API key
-- Picker app ID, which is the Google Cloud project number from **IAM & Admin → Settings**
 - Enabled post types. `post` is always enabled; `page` and public custom post types are optional.
 - Optional WP-Cron sync interval
 
@@ -82,9 +67,9 @@ Each WordPress user must connect their own Google account before inspecting or s
 
 - Google Docs is the source of truth. Manual sync overwrites WordPress post content while preserving normal WordPress revisions.
 - Sync exports Google Docs as an HTML ZIP package, imports local images into the WordPress Media Library, rewrites image URLs, sanitizes HTML, then updates the target post.
-- Default Google scope is `https://www.googleapis.com/auth/drive.file`.
-- Google Picker is the preferred source selection path because it grants this app access to the selected file.
-- Picker is the default linking path. Pasted Google Doc URLs or raw file IDs are available under advanced linking and work only when the connected Google account and app already have access. If Google denies access, choose the document with Picker.
+- Default Google scope is `https://www.googleapis.com/auth/drive.readonly`.
+- Source selection uses DocSync WP's custom Google Drive document browser. Pasted Google Doc URLs or raw file IDs remain available under advanced linking.
+- Existing Google connections created with the old `drive.file` scope must reconnect before browsing or syncing Docs.
 - Supported targets are `post`, optional `page`, plus enabled public custom post types that the current WordPress user can edit/create.
 
 ## Scheduling

@@ -6,7 +6,6 @@ import { GoogleSetupTargetsStep } from './google-setup-targets-step';
 import { GoogleSetupTestResult } from './google-setup-test-result';
 import {
   buildSetupChecks,
-  pickerAppIdHelpUrl,
   samePostTypes,
   type SetupCheck
 } from './google-setup-utils';
@@ -15,15 +14,12 @@ type Props = {
   settings: SettingsResponse;
   busy: boolean;
   redirectUri: string;
-  javascriptOrigin: string;
   onSave: (settings: Partial<SettingsResponse> & { clientSecret?: string }) => Promise<void>;
 };
 
-export const SettingsPanel = ({ settings, busy, redirectUri, javascriptOrigin, onSave }: Props): JSX.Element => {
+export const SettingsPanel = ({ settings, busy, redirectUri, onSave }: Props): JSX.Element => {
   const [clientId, setClientId] = useState(settings.clientId);
   const [clientSecret, setClientSecret] = useState('');
-  const [pickerApiKey, setPickerApiKey] = useState(settings.pickerApiKey);
-  const [pickerAppId, setPickerAppId] = useState(settings.pickerAppId);
   const [enabledPostTypes, setEnabledPostTypes] = useState(settings.enabledPostTypes);
   const [syncInterval, setSyncInterval] = useState(settings.syncInterval);
   const [copyMessage, setCopyMessage] = useState('');
@@ -34,16 +30,12 @@ export const SettingsPanel = ({ settings, busy, redirectUri, javascriptOrigin, o
   const hasUnsavedChanges =
     clientId !== settings.clientId ||
     clientSecret.trim() !== '' ||
-    pickerApiKey !== settings.pickerApiKey ||
-    pickerAppId !== settings.pickerAppId ||
     syncInterval !== settings.syncInterval ||
     !samePostTypes(enabledPostTypes, settings.enabledPostTypes);
 
   useEffect(() => {
     setClientId(settings.clientId);
     setClientSecret('');
-    setPickerApiKey(settings.pickerApiKey);
-    setPickerAppId(settings.pickerAppId);
     setEnabledPostTypes(settings.enabledPostTypes);
     setSyncInterval(settings.syncInterval);
     setTestChecks(null);
@@ -83,8 +75,6 @@ export const SettingsPanel = ({ settings, busy, redirectUri, javascriptOrigin, o
     await onSave({
       clientId,
       ...(clientSecret ? { clientSecret } : {}),
-      pickerApiKey,
-      pickerAppId,
       enabledPostTypes,
       syncInterval,
       connectionMode: settings.connectionMode || 'self_managed',
@@ -120,7 +110,6 @@ export const SettingsPanel = ({ settings, busy, redirectUri, javascriptOrigin, o
       <ol className="docsync-wp-setup-steps">
         <GoogleSetupCloudSteps
           copyMessage={copyMessage}
-          javascriptOrigin={javascriptOrigin}
           onCopyValue={copyValue}
           redirectUri={redirectUri}
         />
@@ -129,8 +118,8 @@ export const SettingsPanel = ({ settings, busy, redirectUri, javascriptOrigin, o
           <div className="docsync-wp-step-heading">
             <span>3</span>
             <div>
-              <h3>Save OAuth and Picker credentials</h3>
-              <p>Picker is the default document selection path; URL and file ID entry stay available under advanced linking.</p>
+              <h3>Save OAuth credentials</h3>
+              <p>The custom document browser uses these server-side credentials and the connected user's Drive read-only grant.</p>
             </div>
           </div>
           <div className="docsync-wp-settings-grid">
@@ -147,17 +136,6 @@ export const SettingsPanel = ({ settings, busy, redirectUri, javascriptOrigin, o
                 type="password"
                 value={clientSecret}
               />
-            </label>
-            <label>
-              <span>Picker API key</span>
-              <input className="regular-text" onChange={(event) => setPickerApiKey(event.currentTarget.value)} type="text" value={pickerApiKey} />
-            </label>
-            <label>
-              <span>Picker app ID</span>
-              <input className="regular-text" onChange={(event) => setPickerAppId(event.currentTarget.value)} type="text" value={pickerAppId} />
-              <span className="description">
-                Use the Google Cloud project number. <a href={pickerAppIdHelpUrl} rel="noreferrer" target="_blank">Open IAM &amp; Admin settings</a>.
-              </span>
             </label>
           </div>
         </li>

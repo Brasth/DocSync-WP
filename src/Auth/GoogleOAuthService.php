@@ -19,7 +19,7 @@ defined( 'ABSPATH' ) || exit;
  * Handles Google authorization URLs, callbacks, and access token refreshes.
  */
 final class GoogleOAuthService {
-	public const DRIVE_FILE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
+	public const DRIVE_READONLY_SCOPE = 'https://www.googleapis.com/auth/drive.readonly';
 
 	private const AUTH_ENDPOINT           = 'https://accounts.google.com/o/oauth2/v2/auth';
 	private const TOKEN_ENDPOINT          = 'https://oauth2.googleapis.com/token';
@@ -93,7 +93,7 @@ final class GoogleOAuthService {
 				'client_id'              => $credentials['client_id'],
 				'redirect_uri'           => $this->getRedirectUri(),
 				'response_type'          => 'code',
-				'scope'                  => self::DRIVE_FILE_SCOPE,
+				'scope'                  => self::DRIVE_READONLY_SCOPE,
 				'access_type'            => 'offline',
 				'include_granted_scopes' => 'true',
 				'prompt'                 => 'consent',
@@ -176,6 +176,14 @@ final class GoogleOAuthService {
 			return new WP_Error(
 				'docsync_wp_not_connected',
 				__( 'Connect a Google account before inspecting documents.', 'docsync-wp' ),
+				array( 'status' => 401 )
+			);
+		}
+
+		if ( ! self::hasRequiredScope( (string) $token['scope'] ) ) {
+			return new WP_Error(
+				'docsync_wp_google_reconnect_required',
+				__( 'Reconnect Google Drive so DocSync WP can browse and sync Google Docs with Drive read-only access.', 'docsync-wp' ),
 				array( 'status' => 401 )
 			);
 		}
@@ -282,7 +290,7 @@ final class GoogleOAuthService {
 		}
 
 		$expires_in = isset( $token['expires_in'] ) ? absint( $token['expires_in'] ) : 3600;
-		$scope      = isset( $token['scope'] ) && is_string( $token['scope'] ) ? $token['scope'] : self::DRIVE_FILE_SCOPE;
+		$scope      = isset( $token['scope'] ) && is_string( $token['scope'] ) ? $token['scope'] : self::DRIVE_READONLY_SCOPE;
 
 		return $this->token_store->save(
 			$user_id,
@@ -295,6 +303,21 @@ final class GoogleOAuthService {
 				'connected_at'         => isset( $token['connected_at'] ) ? (string) $token['connected_at'] : current_time( 'mysql', true ),
 			)
 		);
+	}
+
+	/**
+	 * Whether an OAuth scope string includes the scope required by this version.
+	 *
+	 * @param string $scope OAuth scope string from Google.
+	 */
+	public static function hasRequiredScope( string $scope ): bool {
+		$scopes = preg_split( '/\s+/', trim( $scope ) );
+
+		if ( ! is_array( $scopes ) ) {
+			return false;
+		}
+
+		return in_array( self::DRIVE_READONLY_SCOPE, $scopes, true );
 	}
 
 	/**

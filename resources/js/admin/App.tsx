@@ -23,7 +23,7 @@ type Notice = {
   message: string;
 };
 
-const emptyAccount: GoogleAccount = { connected: false };
+const emptyAccount: GoogleAccount = { connected: false, hasRequiredScope: false };
 const sourcePageSize = 100;
 const defaultSourceFilters: SourceListFilters = { search: '', postType: '', status: '' };
 
@@ -32,7 +32,6 @@ type AdminView = 'setup' | 'sources';
 export const App = ({ view }: { view: AdminView }): JSX.Element => {
   const config = useMemo(() => getAdminConfig(), []);
   const redirectUri = useMemo(() => `${config.restUrl.replace(/\/$/, '')}/oauth/google/callback`, [config.restUrl]);
-  const javascriptOrigin = useMemo(() => window.location.origin, []);
   const [settings, setSettings] = useState<SettingsResponse | null>(null);
   const [account, setAccount] = useState<GoogleAccount>(emptyAccount);
   const [sources, setSources] = useState<SourceRecord[]>([]);
@@ -204,7 +203,6 @@ export const App = ({ view }: { view: AdminView }): JSX.Element => {
             <div className="docsync-wp-admin-grid__main">
               <SettingsPanel
                 busy={busy}
-                javascriptOrigin={javascriptOrigin}
                 onSave={persistSettings}
                 redirectUri={redirectUri}
                 settings={settings}
@@ -217,7 +215,6 @@ export const App = ({ view }: { view: AdminView }): JSX.Element => {
                 canConnect={settings.hasRequiredSettings}
                 onConnect={connectGoogle}
                 onDisconnect={disconnectGoogle}
-                pickerReady={settings.hasPickerSettings}
               />
               <section className="docsync-wp-card">
                 <h2>Connection mode</h2>

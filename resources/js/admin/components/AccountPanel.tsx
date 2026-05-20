@@ -6,12 +6,13 @@ type Props = {
   account: GoogleAccount;
   busy: boolean;
   canConnect: boolean;
-  pickerReady: boolean;
   onConnect: () => Promise<void>;
   onDisconnect: () => Promise<void>;
 };
 
-export const AccountPanel = ({ account, busy, canConnect, pickerReady, onConnect, onDisconnect }: Props): JSX.Element => {
+export const AccountPanel = ({ account, busy, canConnect, onConnect, onDisconnect }: Props): JSX.Element => {
+  const needsReconnect = account.connected && !account.hasRequiredScope;
+
   return (
     <section className="docsync-wp-card">
       <div className="docsync-wp-card__header">
@@ -22,11 +23,16 @@ export const AccountPanel = ({ account, busy, canConnect, pickerReady, onConnect
       {account.connected ? (
         <div className="docsync-wp-account">
           <strong>{account.googleAccountEmail || 'Google account connected'}</strong>
-          <span>{account.scope || 'Drive file scope'}</span>
+          <span>{account.scope || 'Drive read-only scope'}</span>
+          {needsReconnect ? (
+            <button className="button button-primary" disabled={busy || !canConnect} onClick={onConnect} type="button">
+              Reconnect Google
+            </button>
+          ) : null}
           <button className="button" disabled={busy} onClick={onDisconnect} type="button">
             Disconnect
           </button>
-          {!pickerReady ? <span className="docsync-wp-inline-warning">Finish Picker setup before choosing Docs.</span> : null}
+          {needsReconnect ? <span className="docsync-wp-inline-warning">Reconnect to grant Drive read-only access before browsing Docs.</span> : null}
         </div>
       ) : (
         <div className="docsync-wp-account">
@@ -35,7 +41,6 @@ export const AccountPanel = ({ account, busy, canConnect, pickerReady, onConnect
           <button className="button button-primary" disabled={busy || !canConnect} onClick={onConnect} type="button">
             Connect Google
           </button>
-          {canConnect && !pickerReady ? <span className="docsync-wp-inline-warning">Picker setup is still incomplete.</span> : null}
         </div>
       )}
     </section>

@@ -2,6 +2,27 @@
 
 Last updated: 2026-05-20
 
+## 2026-05-20 - Custom Drive Document Browser
+
+Status: completed in codebase
+
+Replaced Google Picker with a DocSync WP Drive browser:
+
+- added `GET /docsync-wp/v1/documents` for server-side Google Docs listing
+- switched OAuth requests to `https://www.googleapis.com/auth/drive.readonly`
+- added account reconnect state for users still connected with the old scope
+- replaced the Picker modal action with search, pagination, selected-row state, and visible Doc preview
+- kept pasted Google Docs URL and raw file ID under advanced linking
+- removed the frontend Google Picker token helper
+- removed Picker API key/app ID from setup requirements while keeping legacy settings fields in REST/config responses
+
+Verification status:
+
+- `pnpm typecheck` passes
+- `pnpm lint` passes
+- `pnpm build` passes
+- local PHP verification is blocked because `php` and `composer` are unavailable
+
 ## 2026-05-20 - Google Picker Origin Troubleshooting
 
 Status: completed in codebase

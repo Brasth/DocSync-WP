@@ -25,6 +25,8 @@ export type GoogleAccount = {
   scope?: string;
   connectedAt?: string;
   expiresAt?: number;
+  hasRequiredScope: boolean;
+  requiredScope?: string;
 };
 
 export type DocumentMetadata = {
@@ -34,6 +36,20 @@ export type DocumentMetadata = {
   modifiedTime: string;
   version: string;
   webViewLink: string;
+};
+
+export type DriveDocumentSummary = DocumentMetadata;
+
+export type DriveDocumentsResponse = {
+  documents: DriveDocumentSummary[];
+  nextPageToken?: string;
+  incompleteSearch?: boolean;
+};
+
+export type DriveDocumentFilters = {
+  search?: string;
+  pageToken?: string;
+  pageSize?: number;
 };
 
 export type SourceRecord = {
@@ -146,11 +162,27 @@ export const disconnectGoogleAccount = (): Promise<{ disconnected: boolean }> =>
 
 export const getGoogleAuthUrl = (): Promise<{ authUrl: string }> => request<{ authUrl: string }>('oauth/google/url');
 
-export const inspectDocument = (document: string, source: 'picker' | 'url' | 'file_id'): Promise<DocumentMetadata> => {
+export const inspectDocument = (document: string, source: 'url' | 'file_id'): Promise<DocumentMetadata> => {
   return request<DocumentMetadata>('documents/inspect', {
     method: 'POST',
     data: { document, source }
   });
+};
+
+export const listDriveDocuments = (filters: DriveDocumentFilters = {}): Promise<DriveDocumentsResponse> => {
+  const params = new URLSearchParams({
+    page_size: String(filters.pageSize ?? 20)
+  });
+
+  if (filters.search) {
+    params.set('search', filters.search);
+  }
+
+  if (filters.pageToken) {
+    params.set('page_token', filters.pageToken);
+  }
+
+  return request<DriveDocumentsResponse>(`documents?${params.toString()}`);
 };
 
 export const listSources = (filters: SourceFilters = {}): Promise<SourcesResponse> => {

@@ -22,10 +22,13 @@ final class DriveClient {
 
 	private const API_BASE_URL            = 'https://www.googleapis.com/drive/v3';
 	private const METADATA_FIELDS         = 'id,name,mimeType,modifiedTime,version,webViewLink';
+	private const DOCUMENT_LIST_FIELDS    = 'nextPageToken,incompleteSearch,files(id,name,mimeType,modifiedTime,version,webViewLink)';
 	private const HTML_ZIP_MIME_TYPE      = 'application/zip';
 	private const MARKDOWN_MIME_TYPE      = 'text/markdown';
 	private const REQUEST_TIMEOUT_SECONDS = 20;
 	private const MAX_EXPORT_BYTES        = 10485760;
+	private const DEFAULT_LIST_PAGE_SIZE  = 20;
+	private const MAX_LIST_PAGE_SIZE      = 50;
 
 	/**
 	 * OAuth service.
@@ -80,6 +83,82 @@ final class DriveClient {
 			'modifiedTime' => $response['modifiedTime'],
 			'version'      => $response['version'],
 			'webViewLink'  => $response['webViewLink'],
+		);
+	}
+
+	/**
+	 * List Google Docs visible to the connected Google account.
+	 *
+	 * @param int    $user_id    User ID.
+	 * @param string $search     Optional name search.
+	 * @param string $page_token Optional Drive pagination token.
+	 * @param int    $page_size  Requested page size.
+	 * @return array{documents:array<int,array<string,string>>,nextPageToken:string,incompleteSearch:bool}|WP_Error
+	 */
+	public function listGoogleDocs( int $user_id, string $search = '', string $page_token = '', int $page_size = self::DEFAULT_LIST_PAGE_SIZE ): array|WP_Error {
+		$page_size = min( self::MAX_LIST_PAGE_SIZE, max( 1, $page_size ) );
+		$query     = "mimeType = '" . self::GOOGLE_DOC_MIME_TYPE . "' and trashed = false";
+		$search    = trim( $search );
+
+		if ( '' !== $search ) {
+			$query .= " and name contains '" . $this->escapeDriveQueryValue( $search ) . "'";
+		}
+
+		$args = array(
+			'fields'   => self::DOCUMENT_LIST_FIELDS,
+			'orderBy'  => 'modifiedTime desc,name',
+			'pageSize' => $page_size,
+			'q'        => $query,
+			'spaces'   => 'drive',
+		);
+
+		if ( '' !== $page_token ) {
+			$args['pageToken'] = $page_token;
+		}
+
+		$response = $this->requestJson(
+			$user_id,
+			add_query_arg(
+				$args,
+				self::API_BASE_URL . '/files'
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		if ( ! isset( $response['files'] ) || ! is_array( $response['files'] ) ) {
+			return $this->badGoogleResponseError();
+		}
+
+		$documents = array();
+
+		foreach ( $response['files'] as $file ) {
+			if ( ! is_array( $file ) || ! $this->hasMetadataFields( $file ) ) {
+				continue;
+			}
+
+			$metadata = $this->formatMetadataResponse( $file );
+
+			if ( self::GOOGLE_DOC_MIME_TYPE !== $metadata['mimeType'] ) {
+				continue;
+			}
+
+			$documents[] = array(
+				'fileId'       => $metadata['id'],
+				'name'         => $metadata['name'],
+				'mimeType'     => $metadata['mimeType'],
+				'modifiedTime' => $metadata['modifiedTime'],
+				'version'      => $metadata['version'],
+				'webViewLink'  => $metadata['webViewLink'],
+			);
+		}
+
+		return array(
+			'documents'        => $documents,
+			'nextPageToken'    => isset( $response['nextPageToken'] ) && is_scalar( $response['nextPageToken'] ) ? sanitize_text_field( (string) $response['nextPageToken'] ) : '',
+			'incompleteSearch' => ! empty( $response['incompleteSearch'] ),
 		);
 	}
 
@@ -162,6 +241,27 @@ final class DriveClient {
 	 * @return array{id:string,name:string,mimeType:string,modifiedTime:string,version:string,webViewLink:string}|WP_Error
 	 */
 	private function request( int $user_id, string $url ): array|WP_Error {
+		$data = $this->requestJson( $user_id, $url );
+
+		if ( is_wp_error( $data ) ) {
+			return $data;
+		}
+
+		if ( ! $this->hasMetadataFields( $data ) ) {
+			return $this->badGoogleResponseError();
+		}
+
+		return $this->formatMetadataResponse( $data );
+	}
+
+	/**
+	 * Perform an authenticated JSON request.
+	 *
+	 * @param int    $user_id User ID.
+	 * @param string $url     Request URL.
+	 * @return array<string,mixed>|WP_Error
+	 */
+	private function requestJson( int $user_id, string $url ): array|WP_Error {
 		$access_token = $this->oauth->getAccessToken( $user_id );
 
 		if ( is_wp_error( $access_token ) ) {
@@ -192,10 +292,20 @@ final class DriveClient {
 
 		$data = json_decode( $body, true );
 
-		if ( ! is_array( $data ) || ! $this->hasMetadataFields( $data ) ) {
+		if ( ! is_array( $data ) ) {
 			return $this->badGoogleResponseError();
 		}
 
+		return $data;
+	}
+
+	/**
+	 * Format a Drive metadata object for internal use.
+	 *
+	 * @param array<mixed> $data Metadata response.
+	 * @return array{id:string,name:string,mimeType:string,modifiedTime:string,version:string,webViewLink:string}
+	 */
+	private function formatMetadataResponse( array $data ): array {
 		return array(
 			'id'           => sanitize_text_field( (string) $data['id'] ),
 			'name'         => sanitize_text_field( (string) $data['name'] ),
@@ -204,6 +314,15 @@ final class DriveClient {
 			'version'      => sanitize_text_field( (string) $data['version'] ),
 			'webViewLink'  => esc_url_raw( (string) $data['webViewLink'] ),
 		);
+	}
+
+	/**
+	 * Escape a user search term for the Drive query language.
+	 *
+	 * @param string $value Raw query value.
+	 */
+	private function escapeDriveQueryValue( string $value ): string {
+		return str_replace( array( '\\', "'" ), array( '\\\\', "\\'" ), $value );
 	}
 
 	/**
@@ -224,7 +343,7 @@ final class DriveClient {
 		if ( in_array( $status, array( 401, 403, 404 ), true ) ) {
 			return new WP_Error(
 				'docsync_wp_access_denied',
-				__( 'DocSync WP cannot access this Google Doc. Choose it with Google Picker, then try again.', 'docsync-wp' ),
+				__( 'DocSync WP cannot access this Google Doc. Reconnect Google Drive or choose a document your account can open, then try again.', 'docsync-wp' ),
 				array( 'status' => 403 )
 			);
 		}

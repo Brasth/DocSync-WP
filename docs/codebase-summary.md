@@ -6,9 +6,9 @@ Last updated: 2026-05-20
 
 DocSync WP is a WordPress plugin for one-way Google Docs -> WordPress sync. This checkout includes Google OAuth, document inspection, post/page linking and sync, list-table actions, a setup admin page, a dedicated Sources submenu, HTML ZIP media import, and WP-Cron scheduling.
 
-Summary reflects the current source tree after the Sources submenu and media sync implementation.
+Summary reflects the current source tree after the custom Drive document browser implementation.
 
-- Total files tracked by `rg --files`: 73
+- Total files tracked by `rg --files`: 72
 - Main languages: PHP, TypeScript, CSS
 
 ## Top-Level Structure
@@ -26,7 +26,7 @@ Summary reflects the current source tree after the Sources submenu and media syn
 2. `DocSyncWP\Plugin::boot()` wires settings, OAuth, Drive client, source repository, sync service, cron, REST, and admin UI.
 3. The central admin screen mounts the React app from `resources/js/admin/main.tsx`.
 4. Post/page edit and list-table screens mount `resources/js/admin/post-sync-entry.tsx`.
-5. REST controllers handle settings, OAuth, document inspection, source management, sync logs, and sync triggers.
+5. REST controllers handle settings, OAuth, Drive document browsing, document inspection, source management, sync logs, and sync triggers.
 6. `SyncService` reads Google metadata, exports an HTML ZIP package, imports local images into Media Library, updates the target post, and persists sync state.
 
 ## Key Backend Modules
@@ -34,7 +34,7 @@ Summary reflects the current source tree after the Sources submenu and media syn
 - `src/Settings/SettingsRepository.php` - site settings, enabled post types, encrypted client secret storage.
 - `src/Auth/GoogleOAuthService.php` - OAuth URL generation, callback handling, token refresh.
 - `src/Auth/TokenStore.php` - per-user encrypted Google token storage.
-- `src/Google/DriveClient.php` - Google metadata and export requests.
+- `src/Google/DriveClient.php` - Google Docs listing, metadata, and export requests.
 - `src/Sync/SourceRepository.php` - post meta source records and capability checks.
 - `src/Sync/SyncService.php` - attach, create draft, sync, skip-on-unchanged, error handling.
 - `src/Sync/HtmlZipImporter.php` - coordinates HTML ZIP import and sanitization.
@@ -50,9 +50,9 @@ Summary reflects the current source tree after the Sources submenu and media syn
 - `resources/js/admin/components/SettingsPanel.tsx` - Google setup wizard and settings form.
 - `resources/js/admin/components/AccountPanel.tsx` - current user Google account state.
 - `resources/js/admin/components/SourcesTable.tsx` - filterable linked source table and bulk sync action.
-- `resources/js/admin/components/DocSourceModal.tsx` - Radix-backed Picker-first attach flow with advanced URL and file ID inputs.
+- `resources/js/admin/components/DocSourceModal.tsx` - Radix-backed attach flow with Drive document browser and advanced URL/file ID inputs.
 - `resources/js/admin/components/DocSourceTabs.tsx` - Radix-backed source mode tabs.
-- `resources/js/admin/google-picker.ts` - Google Picker bootstrap.
+- `resources/js/admin/components/doc-source-drive-browser-panel.tsx` - custom Google Drive document browser panel.
 - `resources/js/admin/post-sync-entry.tsx` - post/page edit meta box and list-table mount logic.
 
 ## Local Toolchain Status

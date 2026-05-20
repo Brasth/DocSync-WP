@@ -69,7 +69,7 @@ Rules:
 - Encrypt access and refresh tokens with WordPress salts.
 - Do not expose token values to the admin app.
 - Treat exported Google content as untrusted until sanitized.
-- Do not assume Picker or pasted file IDs are safe without access checks.
+- Do not assume Drive browser selections, pasted URLs, or pasted file IDs are safe without server-side access checks.
 
 ## Verification Standards
 

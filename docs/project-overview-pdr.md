@@ -9,8 +9,8 @@ DocSync WP syncs Google Docs into WordPress posts, pages, and enabled public cus
 ## Delivered Scope
 
 - Google OAuth connection per WordPress user
-- site-level Google client settings and Picker settings
-- document inspection by Picker, URL, or raw file ID
+- site-level Google OAuth client settings
+- document browsing through Drive API plus advanced URL or raw file ID inspection
 - attach source to an existing WordPress target
 - create a synced draft from a Google Doc
 - post/page edit screen actions: link, change, sync now, detach
@@ -27,7 +27,7 @@ DocSync WP syncs Google Docs into WordPress posts, pages, and enabled public cus
 - OAuth client credentials are configured per site.
 - Tokens are stored per WordPress user.
 - Default export format is `html_zip`.
-- Google Picker is preferred because it grants app access to the selected file.
+- DocSync WP uses `drive.readonly` and a custom Drive browser so users can search and select visible Google Docs without Google Picker.
 - Supported targets are `post`, optional `page`, plus enabled public custom post types the current user can edit.
 - Uninstall keeps synced posts by default.
 
@@ -37,7 +37,7 @@ DocSync WP syncs Google Docs into WordPress posts, pages, and enabled public cus
 | --- | --- |
 | Connect Google account | Implemented |
 | Disconnect Google account | Implemented |
-| Inspect Docs via Picker, URL, or file ID | Implemented |
+| Browse Docs via Drive API, inspect URL or file ID | Implemented |
 | Link Doc to existing post | Implemented |
 | Create synced draft from Doc | Implemented |
 | Sync linked post now | Implemented |
@@ -60,7 +60,7 @@ DocSync WP syncs Google Docs into WordPress posts, pages, and enabled public cus
 
 ## Completion Criteria
 
-- admin can configure Google credentials and Picker settings
+- admin can configure Google OAuth credentials
 - user can connect their Google account
 - user can link or create a synced post from Doc source selection
 - post/page edit and list-table entry points work
@@ -81,4 +81,4 @@ Local verification in this checkout is blocked because:
 
 - Decide whether to add automated PHP and JS tests.
 - Decide whether to add richer sync history beyond last status and last error.
-- Decide whether to add broader Drive scope as an optional future setting.
+- Decide whether to add a managed Google connector service for simpler setup.

@@ -48,7 +48,7 @@ flowchart LR
 
 Responsibilities:
 
-- configure Google OAuth and Picker settings
+- configure Google OAuth settings
 - guide self-managed Google Cloud setup with saved-state checks
 - connect or disconnect the current WordPress user
 - show current connection mode and account readiness
@@ -73,7 +73,7 @@ Responsibilities:
 
 Responsibilities:
 
-- link a Google Doc to the current target, with Picker as default and pasted URL/file ID under advanced linking
+- link a Google Doc to the current target with the custom Drive browser, with pasted URL/file ID under advanced linking
 - change or detach the source
 - trigger immediate sync
 - show last sync and error state
@@ -103,6 +103,7 @@ Implemented routes:
 - `GET /oauth/google/account`
 - `DELETE /oauth/google/account`
 - `GET /oauth/google/callback`
+- `GET /documents` with `search`, `page_token`, and `page_size` filters
 - `POST /documents/inspect`
 - `GET /sources` with `search`, `post_type`, `status`, `page`, and `per_page` filters
 - `POST /sources`
@@ -123,7 +124,7 @@ Common permission model:
 ### Site Options
 
 - `docsync_wp_settings`
-- stores Google connection mode, client id, encrypted client secret, Picker key/app id, enabled post types, default post status, default export format, and sync interval
+- stores Google connection mode, client id, encrypted client secret, legacy Picker key/app id fields, enabled post types, default post status, default export format, and sync interval
 
 ### User Meta
 
@@ -155,8 +156,8 @@ These identify images imported from a Google Docs HTML ZIP export so re-sync can
 ## Sync Flow
 
 1. User connects Google from the admin dashboard.
-2. User inspects a Doc through Picker by default, or through advanced pasted URL/raw file ID entry.
-3. `DocumentController` validates the input and fetches Drive metadata.
+2. User selects a Doc through the custom Drive browser, or inspects advanced pasted URL/raw file ID entry.
+3. `DocumentController` lists Docs server-side and validates advanced input through Drive metadata.
 4. `SourceController` attaches the source to an existing target or creates a new draft.
 5. `SyncService` acquires a per-post lock.
 6. `DriveClient` reads metadata and exports an HTML ZIP package.
@@ -192,7 +193,7 @@ Skip behavior:
 ## Operational Notes
 
 - WP-Cron only runs on site traffic; low-traffic sites need real server cron for reliable schedules
-- Google Picker is the preferred selection path for least-privilege access
+- source selection uses `drive.readonly` and a server-side custom Drive document browser
 - the current connection mode is `self_managed`; a later managed connector can own the verified Google app without proxying document content by default
 - pasted Docs or raw file IDs only work when the connected Google account already has access
 - Vite externalizes Radix React peer imports to `wp.element` and aliases Radix JSX runtime imports to the local WordPress JSX runtime shim; avoid direct app imports from `react` or `react-dom`
