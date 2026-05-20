@@ -34,11 +34,11 @@ export const GoogleSetupCloudSteps = ({ redirectUri, javascriptOrigin, copyMessa
           <span>2</span>
           <div>
             <h3>Add OAuth URLs</h3>
-            <p>Paste both values into the Google OAuth web client.</p>
+            <p>Paste and save both values in the same Google OAuth web client used by DocSync WP.</p>
           </div>
         </div>
         <label className="docsync-wp-copy-field">
-          <span>Authorized JavaScript origin</span>
+          <span>Authorized JavaScript origin in the OAuth client</span>
           <div className="docsync-wp-copy-row">
             <input className="regular-text code" readOnly type="text" value={javascriptOrigin} />
             <button className="button" onClick={() => onCopyValue(javascriptOrigin, 'JavaScript origin')} type="button">
@@ -47,7 +47,7 @@ export const GoogleSetupCloudSteps = ({ redirectUri, javascriptOrigin, copyMessa
           </div>
         </label>
         <label className="docsync-wp-copy-field">
-          <span>Authorized redirect URI</span>
+          <span>Authorized redirect URI in the OAuth client</span>
           <div className="docsync-wp-copy-row">
             <input className="regular-text code" readOnly type="text" value={redirectUri} />
             <button className="button" onClick={() => onCopyValue(redirectUri, 'Redirect URI')} type="button">

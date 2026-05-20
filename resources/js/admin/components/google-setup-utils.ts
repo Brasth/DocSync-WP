@@ -37,7 +37,7 @@ export const buildSetupChecks = (settings: SettingsResponse): SetupCheck[] => [
   {
     id: 'picker-key',
     label: 'Picker API key',
-    description: 'Required for the default Google Picker document chooser. Also add the site origin to the OAuth client.',
+    description: 'Required for the default Google Picker document chooser. Save the site origin in the OAuth client Authorized JavaScript origins.',
     complete: settings.hasPickerApiKey
   },
   {
