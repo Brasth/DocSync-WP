@@ -11,6 +11,7 @@ namespace DocSyncWP\Sync;
 
 use DOMDocument;
 use DOMElement;
+use DOMXPath;
 use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
@@ -192,7 +193,13 @@ final class HtmlDocumentImageRewriter {
 
 		$html = '';
 
-		foreach ( $body->childNodes as $child ) {
+		$children = ( new DOMXPath( $document ) )->query( '/html/body/node()' );
+
+		if ( false === $children ) {
+			return (string) $document->saveHTML();
+		}
+
+		foreach ( $children as $child ) {
 			$html .= $document->saveHTML( $child );
 		}
 
