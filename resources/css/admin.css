@@ -79,6 +79,10 @@
     max-width: 1180px;
   }
 
+  .docsync-wp-admin-grid--single {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .docsync-wp-admin-grid__main,
   .docsync-wp-admin-grid__side {
     display: flex;
@@ -319,6 +323,49 @@
     padding: 14px;
   }
 
+  .docsync-wp-post-types label {
+    align-items: center;
+    display: inline-flex;
+    gap: 6px;
+  }
+
+  .docsync-wp-post-types label > span {
+    background: #e8f3ee;
+    border-radius: 999px;
+    color: #175a44;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 7px;
+    text-transform: uppercase;
+  }
+
+  .docsync-wp-source-filters {
+    align-items: end;
+    display: grid;
+    gap: 12px;
+    grid-template-columns: minmax(220px, 1fr) minmax(160px, 220px) minmax(150px, 190px) auto;
+    margin-bottom: 16px;
+  }
+
+  .docsync-wp-source-filters label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .docsync-wp-source-filters__actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .docsync-wp-table-scroll {
+    overflow-x: auto;
+  }
+
+  .docsync-wp-sources-table {
+    min-width: 760px;
+  }
+
   .docsync-wp-sources-table small {
     color: #646970;
     display: block;
@@ -485,6 +532,7 @@
   @media (max-width: 960px) {
     .docsync-wp-admin-grid,
     .docsync-wp-settings-grid,
+    .docsync-wp-source-filters,
     .docsync-wp-setup-test ul {
       grid-template-columns: 1fr;
     }

@@ -33,7 +33,7 @@ final class SourceRepository {
 	public const META_SYNC_STATUS   = '_docsync_wp_sync_status';
 	public const META_SYNC_ERROR    = '_docsync_wp_sync_error';
 
-	private const EXPORT_FORMAT_MARKDOWN = 'markdown';
+	private const EXPORT_FORMAT_HTML_ZIP = 'html_zip';
 
 	/**
 	 * Settings repository.
@@ -175,9 +175,11 @@ final class SourceRepository {
 	 * @param int               $user_id    User ID.
 	 * @param int               $limit      Maximum rows to return.
 	 * @param int               $page       Page number.
+	 * @param string            $search Search term.
+	 * @param string            $status Sync status.
 	 * @return array{sources:array<int,array<string,mixed>>,has_more:bool,page:int,per_page:int}
 	 */
-	public function listSourcesPage( array $post_types, int $user_id, int $limit = 100, int $page = 1 ): array {
+	public function listSourcesPage( array $post_types, int $user_id, int $limit = 100, int $page = 1, string $search = '', string $status = '' ): array {
 		$post_types = array_values(
 			array_filter(
 				array_map( 'sanitize_key', $post_types ),
@@ -190,6 +192,8 @@ final class SourceRepository {
 
 		$limit = max( 1, min( 100, $limit ) );
 		$page  = max( 1, $page );
+		$search = trim( sanitize_text_field( $search ) );
+		$status = sanitize_key( $status );
 
 		if ( array() === $post_types ) {
 			return array(
@@ -200,20 +204,57 @@ final class SourceRepository {
 			);
 		}
 
+		$matching_ids = array();
+
+		if ( '' !== $search ) {
+			$matching_ids = $this->findSourceIdsBySearch( $post_types, $search );
+
+			if ( array() === $matching_ids ) {
+				return array(
+					'sources'  => array(),
+					'has_more' => false,
+					'page'     => $page,
+					'per_page' => $limit,
+				);
+			}
+		}
+
+		$meta_query = array(
+			'relation'   => 'AND',
+			'has_source' => array(
+				'key'     => self::META_FILE_ID,
+				'compare' => 'EXISTS',
+			),
+		);
+
+		if ( '' !== $status ) {
+			$meta_query['sync_status'] = array(
+				'key'     => self::META_SYNC_STATUS,
+				'value'   => $status,
+				'compare' => '=',
+			);
+		}
+
+		$query_args = array(
+			'fields'                 => 'ids',
+			'meta_query'             => $meta_query,
+			'no_found_rows'          => true,
+			'order'                  => 'DESC',
+			'orderby'                => 'modified',
+			'post_status'            => 'any',
+			'post_type'              => $post_types,
+			'posts_per_page'         => $limit + 1,
+			'offset'                 => ( $page - 1 ) * $limit,
+			'update_post_meta_cache' => true,
+			'update_post_term_cache' => false,
+		);
+
+		if ( array() !== $matching_ids ) {
+			$query_args['post__in'] = $matching_ids;
+		}
+
 		$query = new WP_Query(
-			array(
-				'fields'                 => 'ids',
-				'meta_key'               => self::META_FILE_ID,
-				'no_found_rows'          => true,
-				'order'                  => 'DESC',
-				'orderby'                => 'modified',
-				'post_status'            => 'any',
-				'post_type'              => $post_types,
-				'posts_per_page'         => $limit + 1,
-				'offset'                 => ( $page - 1 ) * $limit,
-				'update_post_meta_cache' => true,
-				'update_post_term_cache' => false,
-			)
+			$query_args
 		);
 
 		$sources = array();
@@ -244,6 +285,68 @@ final class SourceRepository {
 			'page'     => $page,
 			'per_page' => $limit,
 		);
+	}
+
+	/**
+	 * Find source post IDs matching post title/content or Google source metadata.
+	 *
+	 * @param array<int,string> $post_types Post types.
+	 * @param string            $search     Search term.
+	 * @return array<int,int>
+	 */
+	private function findSourceIdsBySearch( array $post_types, string $search ): array {
+		$post_matches = get_posts(
+			array(
+				'fields'                 => 'ids',
+				'meta_key'               => self::META_FILE_ID,
+				'no_found_rows'          => true,
+				'post_status'            => 'any',
+				'post_type'              => $post_types,
+				'posts_per_page'         => -1,
+				's'                      => $search,
+				'update_post_meta_cache' => false,
+				'update_post_term_cache' => false,
+			)
+		);
+
+		$source_matches = get_posts(
+			array(
+				'fields'                 => 'ids',
+				'meta_query'             => array(
+					'relation'   => 'AND',
+					'has_source' => array(
+						'key'     => self::META_FILE_ID,
+						'compare' => 'EXISTS',
+					),
+					'search'     => array(
+						'relation' => 'OR',
+						array(
+							'key'     => self::META_TITLE,
+							'value'   => $search,
+							'compare' => 'LIKE',
+						),
+						array(
+							'key'     => self::META_FILE_ID,
+							'value'   => $search,
+							'compare' => 'LIKE',
+						),
+						array(
+							'key'     => self::META_DOC_URL,
+							'value'   => $search,
+							'compare' => 'LIKE',
+						),
+					),
+				),
+				'no_found_rows'          => true,
+				'post_status'            => 'any',
+				'post_type'              => $post_types,
+				'posts_per_page'         => -1,
+				'update_post_meta_cache' => false,
+				'update_post_term_cache' => false,
+			)
+		);
+
+		return array_values( array_unique( array_map( 'absint', array_merge( $post_matches, $source_matches ) ) ) );
 	}
 
 	/**
@@ -500,7 +603,7 @@ final class SourceRepository {
 	private function sanitizeExportFormat( mixed $export_format ): string {
 		$export_format = sanitize_key( (string) $export_format );
 
-		return self::EXPORT_FORMAT_MARKDOWN === $export_format ? $export_format : self::EXPORT_FORMAT_MARKDOWN;
+		return self::EXPORT_FORMAT_HTML_ZIP === $export_format ? $export_format : self::EXPORT_FORMAT_HTML_ZIP;
 	}
 
 	/**

@@ -10,9 +10,11 @@ import { App } from './App';
 const rootElement = document.getElementById('docsync-wp-admin-root');
 
 if (rootElement) {
+  const view = rootElement.dataset.view === 'sources' ? 'sources' : 'setup';
+
   createRoot(rootElement).render(
     <Fragment>
-      <App />
+      <App view={view} />
     </Fragment>
   );
 }

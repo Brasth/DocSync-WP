@@ -1,4 +1,4 @@
-import { createElement, useEffect, useMemo, useState } from '@wordpress/element';
+import { createElement, Fragment, useEffect, useMemo, useState } from '@wordpress/element';
 
 import {
   disconnectGoogleAccount,
@@ -15,7 +15,7 @@ import {
 } from './api';
 import { AccountPanel } from './components/AccountPanel';
 import { SettingsPanel } from './components/SettingsPanel';
-import { SourcesTable } from './components/SourcesTable';
+import { SourcesTable, type SourceListFilters } from './components/SourcesTable';
 import { getAdminConfig } from './config';
 
 type Notice = {
@@ -25,8 +25,11 @@ type Notice = {
 
 const emptyAccount: GoogleAccount = { connected: false };
 const sourcePageSize = 100;
+const defaultSourceFilters: SourceListFilters = { search: '', postType: '', status: '' };
 
-export const App = (): JSX.Element => {
+type AdminView = 'setup' | 'sources';
+
+export const App = ({ view }: { view: AdminView }): JSX.Element => {
   const config = useMemo(() => getAdminConfig(), []);
   const redirectUri = useMemo(() => `${config.restUrl.replace(/\/$/, '')}/oauth/google/callback`, [config.restUrl]);
   const javascriptOrigin = useMemo(() => window.location.origin, []);
@@ -34,32 +37,51 @@ export const App = (): JSX.Element => {
   const [account, setAccount] = useState<GoogleAccount>(emptyAccount);
   const [sources, setSources] = useState<SourceRecord[]>([]);
   const [sourcePage, setSourcePage] = useState(1);
+  const [sourceFilters, setSourceFilters] = useState<SourceListFilters>(defaultSourceFilters);
   const [hasMoreSources, setHasMoreSources] = useState(false);
   const [notice, setNotice] = useState<Notice | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const refresh = async () => {
-    const [settingsResponse, accountResponse, sourcesResponse] = await Promise.all([
+  const refreshSetup = async () => {
+    const [settingsResponse, accountResponse] = await Promise.all([
       getSettings(),
-      getGoogleAccount(),
-      listSources(undefined, 1, sourcePageSize)
+      getGoogleAccount()
     ]);
 
     setSettings(settingsResponse);
     setAccount(accountResponse);
-    setSources(sourcesResponse.sources);
-    setSourcePage(1);
+  };
+
+  const refreshSources = async (filters = sourceFilters, page = 1, append = false) => {
+    const [settingsResponse, sourcesResponse] = await Promise.all([
+      getSettings(),
+      listSources({
+        ...filters,
+        page,
+        perPage: sourcePageSize
+      })
+    ]);
+
+    setSettings(settingsResponse);
+    setSourceFilters(filters);
+    setSources((current) => append ? [...current, ...sourcesResponse.sources] : sourcesResponse.sources);
+    setSourcePage(page);
     setHasMoreSources(Boolean(sourcesResponse.has_more ?? sourcesResponse.hasMore));
+  };
+
+  const refresh = async () => {
+    if (view === 'sources') {
+      await refreshSources(sourceFilters, 1);
+      return;
+    }
+
+    await refreshSetup();
   };
 
   const loadMoreSources = async () => {
     await runAction(async () => {
       const nextPage = sourcePage + 1;
-      const response = await listSources(undefined, nextPage, sourcePageSize);
-
-      setSources((current) => [...current, ...response.sources]);
-      setSourcePage(nextPage);
-      setHasMoreSources(Boolean(response.has_more ?? response.hasMore));
+      await refreshSources(sourceFilters, nextPage, true);
     });
   };
 
@@ -67,7 +89,7 @@ export const App = (): JSX.Element => {
     refresh().catch((caught) => {
       setNotice({ type: 'error', message: caught instanceof Error ? caught.message : 'Could not load DocSync WP.' });
     });
-  }, []);
+  }, [view]);
 
   const runAction = async (action: () => Promise<void>) => {
     setBusy(true);
@@ -114,7 +136,7 @@ export const App = (): JSX.Element => {
     await runAction(async () => {
       const result = await syncSource(postId);
       await refresh();
-      setNotice({ type: 'success', message: `Post ${postId} sync ${result.status}.` });
+      setNotice({ type: 'success', message: `Source ${postId} sync ${result.status}.` });
     });
   };
 
@@ -126,17 +148,32 @@ export const App = (): JSX.Element => {
     });
   };
 
+  const applySourceFilters = async (filters: SourceListFilters) => {
+    await runAction(async () => {
+      await refreshSources(filters, 1);
+    });
+  };
+
   return (
     <main className="docsync-wp-admin-shell">
       <header className="docsync-wp-hero">
         <div>
           <p>DocSync WP</p>
-          <h1>Google Docs Sync Control</h1>
+          <h1>{view === 'sources' ? 'Sources' : 'Google Setup'}</h1>
           <span>Version {config.version}</span>
         </div>
         <div className="docsync-wp-hero__status">
-          <strong>{sources.length}</strong>
-          <span>linked source{sources.length === 1 ? '' : 's'}</span>
+          {view === 'sources' ? (
+            <>
+              <strong>{sources.length}</strong>
+              <span>shown source{sources.length === 1 ? '' : 's'}</span>
+            </>
+          ) : (
+            <>
+              <strong>{settings?.hasRequiredSettings ? 'Ready' : 'Setup'}</strong>
+              <span>Google connection</span>
+            </>
+          )}
         </div>
       </header>
 
@@ -145,44 +182,54 @@ export const App = (): JSX.Element => {
       {!settings ? (
         <section className="docsync-wp-card"><p>Loading settings...</p></section>
       ) : (
-        <div className="docsync-wp-admin-grid">
-          <div className="docsync-wp-admin-grid__main">
-            <SourcesTable
-              busy={busy}
-              hasMore={hasMoreSources}
-              onLoadMore={loadMoreSources}
-              onRefresh={() => runAction(refresh)}
-              onSync={syncOne}
-              onSyncAll={syncAll}
-              sources={sources}
-            />
-            <SettingsPanel
-              busy={busy}
-              javascriptOrigin={javascriptOrigin}
-              onSave={persistSettings}
-              redirectUri={redirectUri}
-              settings={settings}
-            />
+        view === 'sources' ? (
+          <div className="docsync-wp-admin-grid docsync-wp-admin-grid--single">
+            <div className="docsync-wp-admin-grid__main">
+              <SourcesTable
+                availablePostTypes={settings.availablePostTypes.filter((postType) => settings.enabledPostTypes.includes(postType.name))}
+                busy={busy}
+                filters={sourceFilters}
+                hasMore={hasMoreSources}
+                onFiltersChange={applySourceFilters}
+                onLoadMore={loadMoreSources}
+                onRefresh={() => runAction(refresh)}
+                onSync={syncOne}
+                onSyncAll={syncAll}
+                sources={sources}
+              />
+            </div>
           </div>
-          <aside className="docsync-wp-admin-grid__side">
-            <AccountPanel
-              account={account}
-              busy={busy}
-              canConnect={settings.hasRequiredSettings}
-              onConnect={connectGoogle}
-              onDisconnect={disconnectGoogle}
-              pickerReady={settings.hasPickerSettings}
-            />
-            <section className="docsync-wp-card">
-              <h2>Connection mode</h2>
-              <ul>
-                <li>Current mode: self-managed Google Cloud app.</li>
-                <li>Each WordPress user connects their own Google account.</li>
-                <li>Managed connector support can be added later without proxying document content.</li>
-              </ul>
-            </section>
-          </aside>
-        </div>
+        ) : (
+          <div className="docsync-wp-admin-grid">
+            <div className="docsync-wp-admin-grid__main">
+              <SettingsPanel
+                busy={busy}
+                javascriptOrigin={javascriptOrigin}
+                onSave={persistSettings}
+                redirectUri={redirectUri}
+                settings={settings}
+              />
+            </div>
+            <aside className="docsync-wp-admin-grid__side">
+              <AccountPanel
+                account={account}
+                busy={busy}
+                canConnect={settings.hasRequiredSettings}
+                onConnect={connectGoogle}
+                onDisconnect={disconnectGoogle}
+                pickerReady={settings.hasPickerSettings}
+              />
+              <section className="docsync-wp-card">
+                <h2>Connection mode</h2>
+                <ul>
+                  <li>Current mode: self-managed Google Cloud app.</li>
+                  <li>Each WordPress user connects their own Google account.</li>
+                  <li>Managed connector support can be added later without proxying document content.</li>
+                </ul>
+              </section>
+            </aside>
+          </div>
+        )
       )}
     </main>
   );

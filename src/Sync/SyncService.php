@@ -24,7 +24,7 @@ final class SyncService {
 	public const STATUS_SKIPPED = 'skipped';
 	public const STATUS_ERROR   = 'error';
 
-	private const EXPORT_FORMAT_MARKDOWN = 'markdown';
+	private const EXPORT_FORMAT_HTML_ZIP = 'html_zip';
 
 	/**
 	 * Source repository.
@@ -41,11 +41,11 @@ final class SyncService {
 	private DriveClient $drive_client;
 
 	/**
-	 * Content converter.
+	 * HTML ZIP importer.
 	 *
-	 * @var ContentConverter
+	 * @var HtmlZipImporter
 	 */
-	private ContentConverter $content_converter;
+	private HtmlZipImporter $html_zip_importer;
 
 	/**
 	 * Sync lock.
@@ -59,18 +59,18 @@ final class SyncService {
 	 *
 	 * @param SourceRepository $source_repository Source repository.
 	 * @param DriveClient      $drive_client      Drive client.
-	 * @param ContentConverter $content_converter Content converter.
+	 * @param HtmlZipImporter  $html_zip_importer HTML ZIP importer.
 	 * @param SyncLock         $sync_lock         Sync lock.
 	 */
 	public function __construct(
 		SourceRepository $source_repository,
 		DriveClient $drive_client,
-		ContentConverter $content_converter,
+		HtmlZipImporter $html_zip_importer,
 		SyncLock $sync_lock
 	) {
 		$this->source_repository = $source_repository;
 		$this->drive_client      = $drive_client;
-		$this->content_converter = $content_converter;
+		$this->html_zip_importer = $html_zip_importer;
 		$this->sync_lock         = $sync_lock;
 	}
 
@@ -83,7 +83,7 @@ final class SyncService {
 	 * @param string $export_format Export format.
 	 * @return array<string,mixed>|WP_Error
 	 */
-	public function attachSource( int $post_id, int $user_id, string $file_id, string $export_format = self::EXPORT_FORMAT_MARKDOWN ): array|WP_Error {
+	public function attachSource( int $post_id, int $user_id, string $file_id, string $export_format = self::EXPORT_FORMAT_HTML_ZIP ): array|WP_Error {
 		$export_format = $this->sanitizeExportFormat( $export_format );
 
 		if ( is_wp_error( $export_format ) ) {
@@ -127,7 +127,7 @@ final class SyncService {
 	 * @param string $export_format Export format.
 	 * @return array<string,mixed>|WP_Error
 	 */
-	public function createDraftFromSource( int $user_id, string $file_id, string $post_type, string $export_format = self::EXPORT_FORMAT_MARKDOWN ): array|WP_Error {
+	public function createDraftFromSource( int $user_id, string $file_id, string $post_type, string $export_format = self::EXPORT_FORMAT_HTML_ZIP ): array|WP_Error {
 		$export_format = $this->sanitizeExportFormat( $export_format );
 
 		if ( is_wp_error( $export_format ) ) {
@@ -267,13 +267,19 @@ final class SyncService {
 				return $this->formatResult( $post_id, self::STATUS_SKIPPED, false );
 			}
 
-			$markdown = $this->drive_client->exportMarkdown( $sync_user_id, (string) $source['google_file_id'] );
+			$zip_bytes = $this->drive_client->exportHtmlZip( $sync_user_id, (string) $source['google_file_id'] );
 
-			if ( is_wp_error( $markdown ) ) {
-				return $this->markError( $post_id, $source, $markdown );
+			if ( is_wp_error( $zip_bytes ) ) {
+				return $this->markError( $post_id, $source, $zip_bytes );
 			}
 
-			$hash = hash( 'sha256', $markdown );
+			$html = $this->html_zip_importer->import( $zip_bytes, (string) $source['google_file_id'], $post_id, $sync_user_id );
+
+			if ( is_wp_error( $html ) ) {
+				return $this->markError( $post_id, $source, $html );
+			}
+
+			$hash = hash( 'sha256', $html );
 
 			if ( ! $force && hash_equals( (string) $source['last_hash'], $hash ) ) {
 				$this->saveSourceState(
@@ -289,12 +295,6 @@ final class SyncService {
 				);
 
 				return $this->formatResult( $post_id, self::STATUS_SKIPPED, false );
-			}
-
-			$html = $this->content_converter->convertMarkdown( $markdown );
-
-			if ( is_wp_error( $html ) ) {
-				return $this->markError( $post_id, $source, $html );
 			}
 
 			$updated = wp_update_post(
@@ -427,13 +427,13 @@ final class SyncService {
 	private function sanitizeExportFormat( string $export_format ): string|WP_Error {
 		$export_format = sanitize_key( $export_format );
 
-		if ( self::EXPORT_FORMAT_MARKDOWN === $export_format ) {
-			return $export_format;
+		if ( self::EXPORT_FORMAT_HTML_ZIP === $export_format || 'markdown' === $export_format ) {
+			return self::EXPORT_FORMAT_HTML_ZIP;
 		}
 
 		return new WP_Error(
 			'docsync_wp_invalid_export_format',
-			__( 'DocSync WP only supports Markdown exports.', 'docsync-wp' ),
+			__( 'DocSync WP only supports HTML ZIP exports.', 'docsync-wp' ),
 			array( 'status' => 400 )
 		);
 	}

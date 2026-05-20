@@ -1,14 +1,15 @@
 # System Architecture
 
-Last updated: 2026-05-19
+Last updated: 2026-05-20
 
 ## Overview
 
-DocSync WP is a WordPress plugin with two admin surfaces and one shared sync backend:
+DocSync WP is a WordPress plugin with three admin surfaces and one shared sync backend:
 
-- central DocSync WP admin dashboard
-- post edit meta box and list-table actions
-- REST API and sync services shared by both surfaces
+- `DocSync WP > Setup` for Google connection settings
+- `DocSync WP > Sources` for linked source operations
+- post/page edit meta boxes and list-table actions
+- REST API and sync services shared by all surfaces
 
 The implemented sync model is one-way Google Docs -> WordPress. Google Docs remains source of truth.
 
@@ -16,18 +17,21 @@ The implemented sync model is one-way Google Docs -> WordPress. Google Docs rema
 
 ```mermaid
 flowchart LR
-  AdminApp["Central admin React app"] --> REST["REST controllers"]
-  PostUI["Post edit meta box / list actions"] --> REST
+  SetupApp["Setup React app"] --> REST["REST controllers"]
+  SourcesApp["Sources submenu React app"] --> REST
+  TargetUI["Post/page edit meta box / list actions"] --> REST
   REST --> Settings["SettingsRepository"]
   REST --> OAuth["GoogleOAuthService + TokenStore"]
   REST --> Docs["DocumentIdParser + DriveClient"]
   REST --> Sources["SourceRepository"]
   REST --> Sync["SyncService"]
-  Sync --> Drive["Google Drive export + metadata"]
-  Sync --> Convert["ContentConverter"]
+  Sync --> Drive["Google Drive metadata + HTML ZIP export"]
+  Sync --> Import["HtmlZipImporter"]
   Sync --> Lock["SyncLock"]
-  Convert --> WP["wp_update_post / wp_insert_post"]
+  Import --> Media["Media Library attachments"]
+  Import --> WP["wp_update_post / wp_insert_post"]
   WP --> Meta["Post meta sync state"]
+  Media --> AttachmentMeta["Attachment asset dedupe meta"]
   OAuth --> Tokens["Encrypted user meta"]
   Settings --> Opts["Encrypted site option"]
   Cron["SyncCron"] --> Sources
@@ -36,7 +40,7 @@ flowchart LR
 
 ## Core Surfaces
 
-### Central Admin Dashboard
+### Setup Admin Page
 
 - Entry point: `src/Admin/AdminPage.php`
 - React mount: `resources/js/admin/main.tsx`
@@ -47,25 +51,36 @@ Responsibilities:
 - configure Google OAuth and Picker settings
 - guide self-managed Google Cloud setup with saved-state checks
 - connect or disconnect the current WordPress user
-- list linked sources across enabled post types
-- trigger single-source sync and sync-all-changed actions
 - show current connection mode and account readiness
 
-### Post Edit Screen
+### Sources Admin Page
+
+- Entry point: `src/Admin/AdminPage.php`
+- Menu slug: `docsync-wp-sources`
+- React mount: `resources/js/admin/main.tsx`
+
+Responsibilities:
+
+- list linked sources across enabled WordPress targets
+- filter by search, post type, and sync status
+- paginate source results
+- trigger single-source sync and global sync-all-changed actions
+
+### Post/Page Edit Screen
 
 - Entry point: `src/Admin/PostSyncMetaBox.php`
 - React mount: `resources/js/admin/post-sync-entry.tsx`
 
 Responsibilities:
 
-- link a Google Doc to the current post, with Picker as default and pasted URL/file ID under advanced linking
+- link a Google Doc to the current target, with Picker as default and pasted URL/file ID under advanced linking
 - change or detach the source
 - trigger immediate sync
 - show last sync and error state
 
 The Google Doc source modal uses Radix UI Dialog and Tabs primitives for focus management, escape handling, and keyboard tab navigation. The project still uses WordPress `wp-element` as the runtime React provider.
 
-### Post List Table
+### Post/Page List Table
 
 - Entry point: `src/Admin/PostListActions.php`
 - Same post-sync React bundle as the edit screen
@@ -89,7 +104,7 @@ Implemented routes:
 - `DELETE /oauth/google/account`
 - `GET /oauth/google/callback`
 - `POST /documents/inspect`
-- `GET /sources`
+- `GET /sources` with `search`, `post_type`, `status`, `page`, and `per_page` filters
 - `POST /sources`
 - `DELETE /sources/{postId}`
 - `POST /sources/{postId}/sync`
@@ -129,16 +144,24 @@ Common permission model:
 - `_docsync_wp_sync_status`
 - `_docsync_wp_sync_error`
 
+### Attachment Meta
+
+- `_docsync_wp_google_asset_file_id`
+- `_docsync_wp_google_asset_path`
+- `_docsync_wp_google_asset_hash`
+
+These identify images imported from a Google Docs HTML ZIP export so re-sync can reuse existing Media Library attachments.
+
 ## Sync Flow
 
 1. User connects Google from the admin dashboard.
 2. User inspects a Doc through Picker by default, or through advanced pasted URL/raw file ID entry.
 3. `DocumentController` validates the input and fetches Drive metadata.
-4. `SourceController` attaches the source to an existing post or creates a new draft.
+4. `SourceController` attaches the source to an existing target or creates a new draft.
 5. `SyncService` acquires a per-post lock.
-6. `DriveClient` reads metadata and exports Markdown.
-7. `ContentConverter` converts Markdown to sanitized HTML.
-8. WordPress post content is updated.
+6. `DriveClient` reads metadata and exports an HTML ZIP package.
+7. `HtmlZipImporter` extracts the package, imports local images into Media Library, rewrites image URLs, and sanitizes HTML.
+8. WordPress post content is updated only after export and import succeed.
 9. Source state is saved back to post meta.
 10. Result state becomes `linked`, `syncing`, `synced`, `skipped`, or `error`.
 
@@ -146,6 +169,7 @@ Skip behavior:
 
 - if Google `modifiedTime`, `version`, and last hash show no change, sync is marked `skipped`
 - lock prevents duplicate concurrent syncs for the same post
+- legacy `markdown` export metadata is normalized to `html_zip` the next time source state is saved
 
 ## Scheduling
 
@@ -161,6 +185,8 @@ Skip behavior:
 - REST requests require nonce verification
 - post-level actions still require `edit_post` or post-type capability checks
 - imported content is sanitized before write
+- local exported images are validated as image files before Media Library import
+- image import failure marks sync `error` before target content is overwritten
 - plugin never deletes synced posts on uninstall by default
 
 ## Operational Notes

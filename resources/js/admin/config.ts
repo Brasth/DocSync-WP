@@ -43,7 +43,7 @@ const fallbackConfig: DocSyncWPAdminConfig = {
   connectionMode: 'self_managed',
   enabledPostTypes: ['post'],
   availablePostTypes: [{ name: 'post', label: 'Post' }],
-  defaultExportFormat: 'markdown',
+  defaultExportFormat: 'html_zip',
   syncInterval: 'off',
   hasClientId: false,
   hasClientSecret: false,

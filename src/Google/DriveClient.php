@@ -22,6 +22,7 @@ final class DriveClient {
 
 	private const API_BASE_URL            = 'https://www.googleapis.com/drive/v3';
 	private const METADATA_FIELDS         = 'id,name,mimeType,modifiedTime,version,webViewLink';
+	private const HTML_ZIP_MIME_TYPE      = 'application/zip';
 	private const MARKDOWN_MIME_TYPE      = 'text/markdown';
 	private const REQUEST_TIMEOUT_SECONDS = 20;
 	private const MAX_EXPORT_BYTES        = 10485760;
@@ -90,6 +91,29 @@ final class DriveClient {
 	 * @return string|WP_Error
 	 */
 	public function exportMarkdown( int $user_id, string $file_id ): string|WP_Error {
+		return $this->exportFile( $user_id, $file_id, self::MARKDOWN_MIME_TYPE );
+	}
+
+	/**
+	 * Export a Google Docs file as an HTML ZIP package.
+	 *
+	 * @param int    $user_id User ID.
+	 * @param string $file_id Google Drive file ID.
+	 * @return string|WP_Error
+	 */
+	public function exportHtmlZip( int $user_id, string $file_id ): string|WP_Error {
+		return $this->exportFile( $user_id, $file_id, self::HTML_ZIP_MIME_TYPE );
+	}
+
+	/**
+	 * Export a Google Docs file.
+	 *
+	 * @param int    $user_id   User ID.
+	 * @param string $file_id   Google Drive file ID.
+	 * @param string $mime_type Export MIME type.
+	 * @return string|WP_Error
+	 */
+	private function exportFile( int $user_id, string $file_id, string $mime_type ): string|WP_Error {
 		$access_token = $this->oauth->getAccessToken( $user_id );
 
 		if ( is_wp_error( $access_token ) ) {
@@ -99,7 +123,7 @@ final class DriveClient {
 		$response = wp_remote_get(
 			add_query_arg(
 				array(
-					'mimeType' => self::MARKDOWN_MIME_TYPE,
+					'mimeType' => $mime_type,
 				),
 				self::API_BASE_URL . '/files/' . rawurlencode( $file_id ) . '/export'
 			),
@@ -107,7 +131,7 @@ final class DriveClient {
 				'timeout' => self::REQUEST_TIMEOUT_SECONDS,
 				'headers' => array(
 					'Authorization' => 'Bearer ' . $access_token,
-					'Accept'        => self::MARKDOWN_MIME_TYPE,
+					'Accept'        => $mime_type,
 				),
 			)
 		);
@@ -249,7 +273,7 @@ final class DriveClient {
 	private function exportTooLargeError(): WP_Error {
 		return new WP_Error(
 			'docsync_wp_export_too_large',
-			__( 'This Google Doc is too large to export as Markdown.', 'docsync-wp' ),
+			__( 'This Google Doc is too large to export for DocSync WP.', 'docsync-wp' ),
 			array( 'status' => 413 )
 		);
 	}

@@ -23,7 +23,7 @@ export const GoogleSetupTargetsStep = ({
         <span>4</span>
         <div>
           <h3>Choose WordPress targets</h3>
-          <p>Post is always enabled. Add public custom post types that should accept synced drafts.</p>
+          <p>Post is required. Page and public custom post types can also accept synced drafts.</p>
         </div>
       </div>
       <fieldset className="docsync-wp-post-types">
@@ -37,6 +37,7 @@ export const GoogleSetupTargetsStep = ({
               type="checkbox"
             />
             {postType.label}
+            {postType.name === 'post' ? <span>Required</span> : null}
           </label>
         ))}
       </fieldset>

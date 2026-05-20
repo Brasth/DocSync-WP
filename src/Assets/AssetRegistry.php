@@ -75,7 +75,7 @@ final class AssetRegistry {
 	 * @param string $hook Current admin page hook suffix.
 	 */
 	public function enqueueAdminApp( string $hook ): void {
-		if ( AdminPage::HOOK_SUFFIX === $hook && current_user_can( 'manage_options' ) ) {
+		if ( in_array( $hook, array( AdminPage::HOOK_SUFFIX, AdminPage::SOURCES_HOOK_SUFFIX ), true ) && current_user_can( 'manage_options' ) ) {
 			$this->enqueueEntry( self::ADMIN_ENTRY, self::ADMIN_MANIFEST, self::ADMIN_HANDLE );
 			return;
 		}
@@ -97,7 +97,7 @@ final class AssetRegistry {
 
 		$missing_entry = null;
 
-		if ( AdminPage::HOOK_SUFFIX === $screen->id && current_user_can( 'manage_options' ) && ! $this->hasBuild( self::ADMIN_ENTRY, self::ADMIN_MANIFEST ) ) {
+		if ( in_array( $screen->id, array( AdminPage::HOOK_SUFFIX, AdminPage::SOURCES_HOOK_SUFFIX ), true ) && current_user_can( 'manage_options' ) && ! $this->hasBuild( self::ADMIN_ENTRY, self::ADMIN_MANIFEST ) ) {
 			$missing_entry = 'DocSync WP admin';
 		}
 
