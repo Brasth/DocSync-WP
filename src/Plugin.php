@@ -26,7 +26,10 @@ use DocSyncWP\Rest\SourceController;
 use DocSyncWP\Rest\SyncLogController;
 use DocSyncWP\Security\EncryptionService;
 use DocSyncWP\Settings\SettingsRepository;
-use DocSyncWP\Sync\ContentConverter;
+use DocSyncWP\Sync\HtmlDocumentImageRewriter;
+use DocSyncWP\Sync\HtmlZipImporter;
+use DocSyncWP\Sync\HtmlZipPackageExtractor;
+use DocSyncWP\Sync\MediaAssetImporter;
 use DocSyncWP\Sync\SourceRepository;
 use DocSyncWP\Sync\SyncLock;
 use DocSyncWP\Sync\SyncService;
@@ -136,10 +139,14 @@ final class Plugin {
 		$google_oauth       = new GoogleOAuthService( $settings, $token_store );
 		$drive_client       = new DriveClient( $google_oauth );
 		$document_id_parser = new DocumentIdParser();
+		$media_assets       = new MediaAssetImporter();
 		$sync_service       = new SyncService(
 			$source_repository,
 			$drive_client,
-			new ContentConverter(),
+			new HtmlZipImporter(
+				new HtmlZipPackageExtractor(),
+				new HtmlDocumentImageRewriter( $media_assets )
+			),
 			new SyncLock()
 		);
 

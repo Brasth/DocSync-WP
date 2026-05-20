@@ -1,21 +1,23 @@
 # Project Overview and PDR
 
-Last updated: 2026-05-18
+Last updated: 2026-05-20
 
 ## Purpose
 
-DocSync WP syncs Google Docs into WordPress posts. The completed implementation centers on admin-driven linking and sync, not bidirectional collaboration.
+DocSync WP syncs Google Docs into WordPress posts, pages, and enabled public custom post types. The completed implementation centers on admin-driven linking and sync, not bidirectional collaboration.
 
 ## Delivered Scope
 
 - Google OAuth connection per WordPress user
 - site-level Google client settings and Picker settings
 - document inspection by Picker, URL, or raw file ID
-- attach source to an existing post
+- attach source to an existing WordPress target
 - create a synced draft from a Google Doc
-- post edit screen actions: link, change, sync now, detach
+- post/page edit screen actions: link, change, sync now, detach
 - list-table actions: add sync doc, inline link/sync, status column
-- central admin dashboard for settings, account state, source list, and bulk sync
+- setup admin page for settings and account state
+- dedicated Sources submenu for source list, filters, and bulk sync
+- HTML ZIP import with Media Library image sideloading and URL rewriting
 - scheduled sync with WP-Cron
 - sync status and error persistence in post meta
 
@@ -24,9 +26,9 @@ DocSync WP syncs Google Docs into WordPress posts. The completed implementation 
 - Google Docs is the source of truth.
 - OAuth client credentials are configured per site.
 - Tokens are stored per WordPress user.
-- Default export format is Markdown.
+- Default export format is `html_zip`.
 - Google Picker is preferred because it grants app access to the selected file.
-- Supported targets are `post` plus enabled public custom post types the current user can edit.
+- Supported targets are `post`, optional `page`, plus enabled public custom post types the current user can edit.
 - Uninstall keeps synced posts by default.
 
 ## Functional Requirements
@@ -43,6 +45,7 @@ DocSync WP syncs Google Docs into WordPress posts. The completed implementation 
 | Scheduled sync | Implemented |
 | Source status visibility in admin | Implemented |
 | Capability checks on post actions | Implemented |
+| Imported Google Docs images in Media Library | Implemented |
 
 ## Non-Functional Requirements
 
@@ -60,8 +63,9 @@ DocSync WP syncs Google Docs into WordPress posts. The completed implementation 
 - admin can configure Google credentials and Picker settings
 - user can connect their Google account
 - user can link or create a synced post from Doc source selection
-- post edit and list-table entry points work
+- post/page edit and list-table entry points work
 - manual sync updates post content and sync state
+- synced images use local WordPress attachment URLs
 - scheduled sync is registered only when enabled
 - local verification blockers are documented
 

@@ -36,7 +36,7 @@ Watch frontend assets during development:
 pnpm dev
 ```
 
-The Vite build writes hashed assets plus `build/manifest.json` and `build/manifest.post-sync.json`. WordPress reads those manifests and enqueues the central admin bundle on the DocSync WP page and the post sync bundle on post edit/list screens.
+The Vite build writes hashed assets plus `build/manifest.json` and `build/manifest.post-sync.json`. WordPress reads those manifests and enqueues the central admin bundle on the DocSync WP setup and sources pages, plus the post sync bundle on enabled post/page edit and list screens.
 
 ## Google Cloud Setup
 
@@ -66,7 +66,7 @@ Save:
 - OAuth client secret
 - Picker API key
 - Picker app ID, which is the Google Cloud project number from **IAM & Admin → Settings**
-- Enabled post types
+- Enabled post types. `post` is always enabled; `page` and public custom post types are optional.
 - Optional WP-Cron sync interval
 
 Each WordPress user must connect their own Google account before inspecting or syncing documents.
@@ -74,11 +74,11 @@ Each WordPress user must connect their own Google account before inspecting or s
 ## Sync Behavior
 
 - Google Docs is the source of truth. Manual sync overwrites WordPress post content while preserving normal WordPress revisions.
-- The MVP exports Google Docs as Markdown, converts it to sanitized HTML, then updates the target post.
+- Sync exports Google Docs as an HTML ZIP package, imports local images into the WordPress Media Library, rewrites image URLs, sanitizes HTML, then updates the target post.
 - Default Google scope is `https://www.googleapis.com/auth/drive.file`.
 - Google Picker is the preferred source selection path because it grants this app access to the selected file.
 - Picker is the default linking path. Pasted Google Doc URLs or raw file IDs are available under advanced linking and work only when the connected Google account and app already have access. If Google denies access, choose the document with Picker.
-- Supported targets are `post` plus enabled public custom post types that the current WordPress user can edit/create.
+- Supported targets are `post`, optional `page`, plus enabled public custom post types that the current WordPress user can edit/create.
 
 ## Scheduling
 

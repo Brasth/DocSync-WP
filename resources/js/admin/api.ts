@@ -72,6 +72,14 @@ export type SourcesResponse = {
   perPage?: number;
 };
 
+export type SourceFilters = {
+  search?: string;
+  postType?: string;
+  status?: string;
+  page?: number;
+  perPage?: number;
+};
+
 type ApiFetchOptions = {
   method?: string;
   data?: unknown;
@@ -145,14 +153,22 @@ export const inspectDocument = (document: string, source: 'picker' | 'url' | 'fi
   });
 };
 
-export const listSources = (postType?: string, page = 1, perPage = 100): Promise<SourcesResponse> => {
+export const listSources = (filters: SourceFilters = {}): Promise<SourcesResponse> => {
   const params = new URLSearchParams({
-    page: String(page),
-    per_page: String(perPage)
+    page: String(filters.page ?? 1),
+    per_page: String(filters.perPage ?? 100)
   });
 
-  if (postType) {
-    params.set('post_type', postType);
+  if (filters.postType) {
+    params.set('post_type', filters.postType);
+  }
+
+  if (filters.search) {
+    params.set('search', filters.search);
+  }
+
+  if (filters.status) {
+    params.set('status', filters.status);
   }
 
   return request<SourcesResponse>(`sources?${params.toString()}`);

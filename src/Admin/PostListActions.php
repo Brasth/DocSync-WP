@@ -52,6 +52,12 @@ final class PostListActions {
 		add_filter( 'page_row_actions', array( $this, 'addRowAction' ), 10, 2 );
 
 		foreach ( $this->source_repository->getEnabledPostTypes() as $post_type ) {
+			if ( 'page' === $post_type ) {
+				add_filter( 'manage_pages_columns', array( $this, 'addStatusColumn' ) );
+				add_action( 'manage_pages_custom_column', array( $this, 'renderStatusColumn' ), 10, 2 );
+				continue;
+			}
+
 			add_filter( "manage_{$post_type}_posts_columns", array( $this, 'addStatusColumn' ) );
 			add_action( "manage_{$post_type}_posts_custom_column", array( $this, 'renderStatusColumn' ), 10, 2 );
 		}

@@ -91,7 +91,7 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
         target: target.mode === 'existing'
           ? { mode: 'existing', postId: target.postId }
           : { mode: 'new', postType: target.postType },
-        exportFormat: config.defaultExportFormat || 'markdown'
+        exportFormat: config.defaultExportFormat || 'html_zip'
       });
 
       onCompleted(result);
@@ -186,7 +186,7 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
               onClick={attach}
               type="button"
             >
-              {target.mode === 'new' ? 'Create synced draft' : 'Link to post'}
+              {target.mode === 'new' ? 'Create synced draft' : 'Link source'}
             </button>
           </div>
         </Dialog.Content>

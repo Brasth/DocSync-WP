@@ -22,7 +22,7 @@ final class SettingsRepository {
 
 	private const DEFAULT_SCOPE_MODE      = 'drive_file';
 	private const DEFAULT_POST_STATUS     = 'draft';
-	private const DEFAULT_EXPORT_FORMAT   = 'markdown';
+	private const DEFAULT_EXPORT_FORMAT   = 'html_zip';
 	private const DEFAULT_SYNC_INTERVAL   = 'off';
 	private const DEFAULT_CONNECTION_MODE = 'self_managed';
 
@@ -278,11 +278,31 @@ final class SettingsRepository {
 			}
 		}
 
-		$post = isset( $available['post'] ) ? array( 'post' => $available['post'] ) : array();
-		unset( $available['post'] );
+		if ( ! isset( $available['page'] ) ) {
+			$page = get_post_type_object( 'page' );
+
+			if ( null !== $page ) {
+				$available['page'] = array(
+					'name'  => 'page',
+					'label' => isset( $page->labels->singular_name ) && is_string( $page->labels->singular_name )
+						? $page->labels->singular_name
+						: $page->label,
+				);
+			}
+		}
+
+		$ordered = array();
+
+		foreach ( array( 'post', 'page' ) as $required_post_type ) {
+			if ( isset( $available[ $required_post_type ] ) ) {
+				$ordered[ $required_post_type ] = $available[ $required_post_type ];
+				unset( $available[ $required_post_type ] );
+			}
+		}
+
 		ksort( $available );
 
-		return array_values( array_merge( $post, $available ) );
+		return array_values( array_merge( $ordered, $available ) );
 	}
 
 	/**
@@ -493,7 +513,7 @@ final class SettingsRepository {
 	 * @param object $post_type_object Post type object.
 	 */
 	private function isSupportedPostTypeObject( string $post_type, object $post_type_object ): bool {
-		if ( 'post' === $post_type ) {
+		if ( in_array( $post_type, array( 'post', 'page' ), true ) ) {
 			return true;
 		}
 

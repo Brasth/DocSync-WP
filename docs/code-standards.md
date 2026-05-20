@@ -1,6 +1,6 @@
 # Code Standards
 
-Last updated: 2026-05-18
+Last updated: 2026-05-20
 
 ## Purpose
 
@@ -32,6 +32,7 @@ Standards here match the current DocSync WP implementation. Keep new work aligne
 - Site settings: `docsync_wp_settings`
 - User tokens: `_docsync_wp_google_token`
 - Post source state: `_docsync_wp_*` source meta keys
+- Imported image dedupe: `_docsync_wp_google_asset_*` attachment meta keys
 
 Rules:
 
@@ -54,10 +55,12 @@ Rules:
 ## Sync Behavior Standards
 
 - Google Docs is source of truth.
+- Current export format is `html_zip`; legacy `markdown` metadata should normalize on source save.
 - Do not sync if metadata and content hash show no change.
 - Use a per-post lock during sync.
 - Record `linked`, `syncing`, `synced`, `skipped`, or `error`.
 - Preserve user capability checks even when a source already exists.
+- Upload exported local images through WordPress Media Library APIs and reuse matching attachments.
 
 ## Security Standards
 

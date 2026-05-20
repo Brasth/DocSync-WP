@@ -140,7 +140,7 @@ const ListEntryApp = ({ postType }: { postType: string }): JSX.Element => {
       if (link.dataset.mode === 'sync') {
         try {
           const result = await syncSource(postId);
-          setNotice({ type: 'success', message: `Post ${postId} sync ${result.status}.` });
+          setNotice({ type: 'success', message: `Source ${postId} sync ${result.status}.` });
         } catch (caught) {
           setNotice({ type: 'error', message: caught instanceof Error ? caught.message : 'Sync failed.' });
         }

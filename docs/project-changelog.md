@@ -1,6 +1,30 @@
 # Project Changelog
 
-Last updated: 2026-05-19
+Last updated: 2026-05-20
+
+## 2026-05-20 - Sources Submenu and Media Sync
+
+Status: completed in codebase
+
+Implemented the Sources and media sync slice:
+
+- moved linked sources to `DocSync WP > Sources`
+- kept `DocSync WP > Setup` focused on Google account and settings
+- added source search, post type, sync status, and pagination filters
+- added selectable `page` target support while keeping `post` required
+- added page-specific list table column hooks
+- switched source sync to Google Drive HTML ZIP export
+- imported local exported images into WordPress Media Library
+- rewrote synced content image URLs to local attachment URLs
+- deduped attachments by Google file ID, asset path, and image hash
+- normalized legacy `markdown` source metadata to `html_zip` on future source saves
+
+Verification status:
+
+- `pnpm typecheck` passes
+- `pnpm lint` passes
+- `pnpm build` passes
+- local PHP verification is blocked because `php` and `composer` are unavailable
 
 ## 2026-05-19 - Google Setup Onboarding
 
@@ -74,7 +98,7 @@ Architecture notes:
 - Google tokens are stored per user and encrypted
 - site settings are stored in `docsync_wp_settings`
 - source state lives in post meta on the linked post
-- Markdown is the only supported export format in this implementation
+- Markdown was the only supported export format in this implementation. Superseded on 2026-05-20 by HTML ZIP import.
 
 Verification status:
 

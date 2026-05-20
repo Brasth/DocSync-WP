@@ -157,6 +157,16 @@ final class SourceController {
 	public function listSources( WP_REST_Request $request ): WP_REST_Response|WP_Error {
 		$user_id   = get_current_user_id();
 		$post_type = sanitize_key( (string) $request->get_param( 'post_type' ) );
+		$search    = sanitize_text_field( (string) $request->get_param( 'search' ) );
+		$status    = sanitize_key( (string) $request->get_param( 'status' ) );
+
+		if ( '' !== $status && ! in_array( $status, $this->sourceStatuses(), true ) ) {
+			return new WP_Error(
+				'docsync_wp_invalid_source_status',
+				__( 'DocSync WP received an unsupported source status filter.', 'docsync-wp' ),
+				array( 'status' => 400 )
+			);
+		}
 
 		if ( '' !== $post_type ) {
 			$allowed = $this->validateEditablePostType( $post_type, $user_id );
@@ -189,7 +199,7 @@ final class SourceController {
 			$page = 1;
 		}
 
-		return rest_ensure_response( $this->source_repository->listSourcesPage( $post_types, $user_id, $per_page, $page ) );
+		return rest_ensure_response( $this->source_repository->listSourcesPage( $post_types, $user_id, $per_page, $page, $search, $status ) );
 	}
 
 	/**
@@ -222,7 +232,7 @@ final class SourceController {
 		}
 
 		$mode          = sanitize_key( (string) ( $target['mode'] ?? '' ) );
-		$export_format = isset( $params['exportFormat'] ) ? sanitize_key( (string) $params['exportFormat'] ) : 'markdown';
+		$export_format = isset( $params['exportFormat'] ) ? sanitize_key( (string) $params['exportFormat'] ) : 'html_zip';
 		$user_id       = get_current_user_id();
 
 		if ( 'existing' === $mode ) {
@@ -503,5 +513,20 @@ final class SourceController {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Source statuses available for filtering.
+	 *
+	 * @return array<int,string>
+	 */
+	private function sourceStatuses(): array {
+		return array(
+			SyncService::STATUS_LINKED,
+			SyncService::STATUS_SYNCING,
+			SyncService::STATUS_SYNCED,
+			SyncService::STATUS_SKIPPED,
+			SyncService::STATUS_ERROR,
+		);
 	}
 }
