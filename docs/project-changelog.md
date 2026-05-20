@@ -2,6 +2,23 @@
 
 Last updated: 2026-05-20
 
+## 2026-05-20 - Google Picker Origin Troubleshooting
+
+Status: completed in codebase
+
+Improved the Picker origin mismatch UX:
+
+- surfaced Google Identity Services token errors in the Picker modal
+- added an explicit Authorized JavaScript origins hint for `invalid_client` origin mismatches
+- clarified setup copy that the JavaScript origin and redirect URI must be saved in the same OAuth web client
+- added README troubleshooting for `invalid_client` plus `no registered origin`
+
+Verification status:
+
+- `pnpm typecheck` passes
+- `pnpm lint` passes
+- `pnpm build` passes
+
 ## 2026-05-20 - Sources Submenu and Media Sync
 
 Status: completed in codebase

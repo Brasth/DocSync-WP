@@ -9,6 +9,7 @@ type PickerDocument = {
 type TokenResponse = {
   access_token?: string;
   error?: string;
+  error_description?: string;
 };
 
 type TokenClient = {
@@ -60,6 +61,15 @@ declare global {
 
 const DRIVE_FILE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
 const GOOGLE_DOC_MIME = 'application/vnd.google-apps.document';
+
+const buildTokenErrorMessage = (response: TokenResponse): string => {
+  const details = [response.error, response.error_description].filter(Boolean).join(': ');
+  const originMismatch = response.error === 'invalid_client' || response.error_description?.toLowerCase().includes('origin');
+  return [
+    `Google did not grant Picker access${details ? ` (${details})` : ''}.`,
+    originMismatch ? `Add ${window.location.origin} to the OAuth client Authorized JavaScript origins.` : ''
+  ].filter(Boolean).join(' ');
+};
 
 const loadScript = (id: string, src: string): Promise<void> => {
   const existing = document.getElementById(id);
@@ -116,7 +126,7 @@ const requestPickerToken = async (clientId: string): Promise<string> => {
       prompt: '',
       callback: (response) => {
         if (response.error || !response.access_token) {
-          reject(new Error('Google did not grant Picker access.'));
+          reject(new Error(buildTokenErrorMessage(response)));
           return;
         }
 

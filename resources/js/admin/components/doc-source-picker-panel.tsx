@@ -13,7 +13,7 @@ export const DocSourcePickerPanel = ({ javascriptOrigin, pickerReady }: Props): 
       <strong>Choose with Google Picker</strong>
       <p>{docSourceHelp.picker}</p>
       <p className="docsync-wp-picker-origin">
-        If Google says no registered origin, add <code>{javascriptOrigin}</code> to the OAuth client Authorized JavaScript origins.
+        If Google says invalid client or no registered origin, save <code>{javascriptOrigin}</code> in the OAuth client Authorized JavaScript origins.
       </p>
       {!pickerReady ? <p className="docsync-wp-inline-warning">Finish Picker API key, Picker app ID, and OAuth client ID setup first.</p> : null}
     </div>

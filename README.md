@@ -58,6 +58,13 @@ https://example.com/wp-json/docsync-wp/v1/oauth/google/callback
 
 Replace `https://example.com` with the WordPress site URL. Picker fails with Google's `no registered origin` error when the JavaScript origin is missing.
 
+### Google Picker troubleshooting
+
+- `invalid_client` plus `no registered origin` means the OAuth web client does not have the exact WordPress origin saved in **Authorized JavaScript origins**.
+- The JavaScript origin is only the scheme and host, with port if present. Do not include a path or trailing slash.
+- The OAuth callback URL belongs in **Authorized redirect URIs** and must include `/wp-json/docsync-wp/v1/oauth/google/callback`.
+- The Picker app ID is the Google Cloud project number, not the OAuth client ID.
+
 In WordPress admin, open **DocSync WP** and follow the Google setup wizard. It shows setup progress, provides the exact redirect URI to copy, links to the required Google Cloud screens, and tests whether the saved plugin settings are complete.
 
 Save:
