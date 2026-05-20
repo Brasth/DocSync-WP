@@ -157,7 +157,9 @@ final class HtmlZipPackageExtractor {
 	 * @return true|WP_Error
 	 */
 	private function validateZipPaths( ZipArchive $zip ): true|WP_Error {
-		for ( $index = 0; $index < $zip->numFiles; $index++ ) {
+		$file_count = count( $zip );
+
+		for ( $index = 0; $index < $file_count; $index++ ) {
 			$name = (string) $zip->getNameIndex( $index );
 
 			if ( '' === $name || str_starts_with( $name, '/' ) || str_contains( $name, '\\' ) || preg_match( '#(^|/)\.\.(/|$)#', $name ) || preg_match( '/^[A-Za-z]:/', $name ) ) {

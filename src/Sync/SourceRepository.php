@@ -190,8 +190,8 @@ final class SourceRepository {
 			)
 		);
 
-		$limit = max( 1, min( 100, $limit ) );
-		$page  = max( 1, $page );
+		$limit  = max( 1, min( 100, $limit ) );
+		$page   = max( 1, $page );
 		$search = trim( sanitize_text_field( $search ) );
 		$status = sanitize_key( $status );
 
