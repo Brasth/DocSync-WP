@@ -4,12 +4,11 @@ import { googleCloudLinks } from './google-setup-utils';
 
 type Props = {
   redirectUri: string;
-  javascriptOrigin: string;
   copyMessage: string;
   onCopyValue: (value: string, label: string) => void;
 };
 
-export const GoogleSetupCloudSteps = ({ redirectUri, javascriptOrigin, copyMessage, onCopyValue }: Props): JSX.Element => {
+export const GoogleSetupCloudSteps = ({ redirectUri, copyMessage, onCopyValue }: Props): JSX.Element => {
   return (
     <>
       <li>
@@ -17,7 +16,7 @@ export const GoogleSetupCloudSteps = ({ redirectUri, javascriptOrigin, copyMessa
           <span>1</span>
           <div>
             <h3>Create the Google Cloud pieces</h3>
-            <p>Use one Google Cloud project for Drive, Picker, OAuth consent, and credentials.</p>
+            <p>Use one Google Cloud project for Drive API, OAuth consent, and OAuth web credentials.</p>
           </div>
         </div>
         <div className="docsync-wp-cloud-links">
@@ -34,18 +33,9 @@ export const GoogleSetupCloudSteps = ({ redirectUri, javascriptOrigin, copyMessa
           <span>2</span>
           <div>
             <h3>Add OAuth URLs</h3>
-            <p>Paste and save both values in the same Google OAuth web client used by DocSync WP.</p>
+            <p>Paste and save this callback in the Google OAuth web client used by DocSync WP.</p>
           </div>
         </div>
-        <label className="docsync-wp-copy-field">
-          <span>Authorized JavaScript origin in the OAuth client</span>
-          <div className="docsync-wp-copy-row">
-            <input className="regular-text code" readOnly type="text" value={javascriptOrigin} />
-            <button className="button" onClick={() => onCopyValue(javascriptOrigin, 'JavaScript origin')} type="button">
-              Copy
-            </button>
-          </div>
-        </label>
         <label className="docsync-wp-copy-field">
           <span>Authorized redirect URI in the OAuth client</span>
           <div className="docsync-wp-copy-row">

@@ -4,7 +4,7 @@ Last updated: 2026-05-20
 
 ## Status
 
-The Google Docs Sync Admin Actions implementation is complete in code. The self-managed Google onboarding, dedicated Sources submenu, page target support, source filters, and HTML ZIP media import are also complete in code.
+The Google Docs Sync Admin Actions implementation is complete in code. The self-managed Google onboarding, custom Drive document browser, dedicated Sources submenu, page target support, source filters, and HTML ZIP media import are also complete in code.
 
 ## Phase Summary
 
@@ -17,6 +17,7 @@ The Google Docs Sync Admin Actions implementation is complete in code. The self-
 | 5 | Central Admin App, Scheduling, Logs | Complete |
 | 6 | Verification and Release Hardening | Complete in code, local PHP validation blocked |
 | 7 | Sources Submenu and Media Sync | Complete in code, local PHP validation blocked |
+| 8 | Custom Drive Document Browser | Complete in code, local PHP validation blocked |
 
 ## What Is Shipped
 
@@ -27,7 +28,7 @@ The Google Docs Sync Admin Actions implementation is complete in code. The self-
 - self-managed Google setup wizard with redirect URI copy, setup checks, and Google Cloud links
 - post/page edit and list-table entry points
 - optional `page` target support while keeping `post` always enabled
-- Radix-backed source modal with Picker-first linking and advanced URL/file ID entry
+- Radix-backed source modal with custom Drive browser, search, pagination, selection preview, and advanced URL/file ID entry
 - HTML ZIP import that sideloads exported images into Media Library and rewrites content URLs
 - attachment dedupe by Google file ID, asset path, and image hash
 - per-post sync state and error tracking
@@ -41,7 +42,6 @@ The implementation is usable, but a few follow-ups remain open for future iterat
 
 - add automated PHP and JS tests
 - add richer sync history if support needs increase
-- decide whether to support broader Drive scopes
 - decide whether to add block-perfect conversion beyond sanitized HTML import
 - decide whether to add a separate audit log table
 - decide whether to add a managed Google connector service for true nontechnical one-click onboarding

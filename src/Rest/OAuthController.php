@@ -157,10 +157,14 @@ final class OAuthController {
 		if ( null === $token ) {
 			return rest_ensure_response(
 				array(
-					'connected' => false,
+					'connected'        => false,
+					'hasRequiredScope' => false,
+					'requiredScope'    => GoogleOAuthService::DRIVE_READONLY_SCOPE,
 				)
 			);
 		}
+
+		$has_required_scope = GoogleOAuthService::hasRequiredScope( (string) $token['scope'] );
 
 		return rest_ensure_response(
 			array(
@@ -169,6 +173,8 @@ final class OAuthController {
 				'scope'              => $token['scope'],
 				'connectedAt'        => $token['connected_at'],
 				'expiresAt'          => $token['expires_at'],
+				'hasRequiredScope'   => $has_required_scope,
+				'requiredScope'      => GoogleOAuthService::DRIVE_READONLY_SCOPE,
 			)
 		);
 	}

@@ -1,31 +1,27 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import { createElement, useEffect, useMemo, useState } from '@wordpress/element';
 
-import { createSource, inspectDocument, type DocumentMetadata, type SyncResult } from '../api';
+import { createSource, inspectDocument, type DocumentMetadata, type DriveDocumentSummary, type SyncResult } from '../api';
 import { getAdminConfig } from '../config';
-import { chooseGoogleDoc } from '../google-picker';
+import { DocSourceDriveBrowserPanel } from './doc-source-drive-browser-panel';
 import { DocSourceAdvancedPanel } from './doc-source-advanced-panel';
 import { type SourceMode } from './doc-source-modal-options';
-import { DocSourcePickerPanel } from './doc-source-picker-panel';
 
 type Target = { mode: 'existing'; postId: number; postType?: string } | { mode: 'new'; postType: string };
 type Props = { isOpen: boolean; target: Target | null; onClose: () => void; onCompleted: (result: SyncResult) => void };
 
 export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props): JSX.Element | null => {
-  const [sourceMode, setSourceMode] = useState<SourceMode>('picker');
+  const [sourceMode, setSourceMode] = useState<SourceMode>('url');
   const [documentInput, setDocumentInput] = useState('');
   const [metadata, setMetadata] = useState<DocumentMetadata | null>(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const config = useMemo(() => getAdminConfig(), []);
-  const javascriptOrigin = useMemo(() => window.location.origin, []);
-  const pickerReady = Boolean(config.hasClientId && config.hasPickerSettings);
-  const advancedSourceMode: Exclude<SourceMode, 'picker'> = sourceMode === 'file_id' ? 'file_id' : 'url';
 
   useEffect(() => {
     if (!isOpen) {
-      setSourceMode('picker');
+      setSourceMode('url');
       setDocumentInput('');
       setMetadata(null);
       setError('');
@@ -43,14 +39,6 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
     setError('');
 
     try {
-      if (sourceMode === 'picker') {
-        const picked = await chooseGoogleDoc(config);
-        const inspected = await inspectDocument(picked.id, 'picker');
-        setMetadata(inspected);
-        setDocumentInput(picked.url || picked.id);
-        return;
-      }
-
       const inspected = await inspectDocument(documentInput, sourceMode);
       setMetadata(inspected);
     } catch (caught) {
@@ -72,13 +60,19 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
       return;
     }
 
-    setSourceMode('picker');
+    setSourceMode('url');
     setDocumentInput('');
+  };
+
+  const selectDocument = (document: DriveDocumentSummary | null) => {
+    setMetadata(document);
+    setDocumentInput(document?.webViewLink || document?.fileId || '');
+    setError('');
   };
 
   const attach = async () => {
     if (!metadata) {
-      setError('Inspect a Google Doc before linking it.');
+      setError('Select or inspect a Google Doc before linking it.');
       return;
     }
 
@@ -132,7 +126,13 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
           </div>
 
           <div className="docsync-wp-modal__body">
-            <DocSourcePickerPanel javascriptOrigin={javascriptOrigin} pickerReady={pickerReady} />
+            {!advancedOpen ? (
+              <DocSourceDriveBrowserPanel
+                busy={busy}
+                onSelect={selectDocument}
+                selectedDocument={metadata}
+              />
+            ) : null}
 
             <button
               aria-expanded={advancedOpen}
@@ -140,7 +140,7 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
               onClick={toggleAdvanced}
               type="button"
             >
-              {advancedOpen ? 'Use Google Picker' : 'Paste URL or file ID'}
+              {advancedOpen ? 'Browse Google Docs' : 'Paste URL or file ID'}
             </button>
 
             {advancedOpen ? (
@@ -152,7 +152,7 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
                   setMetadata(null);
                   setError('');
                 }}
-                sourceMode={advancedSourceMode}
+                sourceMode={sourceMode}
               />
             ) : null}
 
@@ -160,6 +160,7 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
 
             {metadata ? (
               <div className="docsync-wp-doc-preview">
+                <span>Selected Google Doc</span>
                 <strong>{metadata.name}</strong>
                 <span>{metadata.webViewLink || metadata.fileId}</span>
               </div>
@@ -172,14 +173,16 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
                 Cancel
               </button>
             </Dialog.Close>
-            <button
-              className="button button-secondary"
-              disabled={busy || (sourceMode === 'picker' ? !pickerReady : documentInput.trim() === '')}
-              onClick={inspect}
-              type="button"
-            >
-              {sourceMode === 'picker' ? 'Choose with Picker' : 'Inspect'}
-            </button>
+            {advancedOpen ? (
+              <button
+                className="button button-secondary"
+                disabled={busy || documentInput.trim() === ''}
+                onClick={inspect}
+                type="button"
+              >
+                Inspect
+              </button>
+            ) : null}
             <button
               className="button button-primary"
               disabled={busy || !metadata}

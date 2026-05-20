@@ -4,10 +4,10 @@ import { DocSourceTabs } from './DocSourceTabs';
 import { docSourceHelp, type SourceMode } from './doc-source-modal-options';
 
 type Props = {
-  sourceMode: Exclude<SourceMode, 'picker'>;
+  sourceMode: SourceMode;
   documentInput: string;
   onInputChange: (value: string) => void;
-  onModeChange: (mode: Exclude<SourceMode, 'picker'>) => void;
+  onModeChange: (mode: SourceMode) => void;
 };
 
 export const DocSourceAdvancedPanel = ({ sourceMode, documentInput, onInputChange, onModeChange }: Props): JSX.Element => {
@@ -15,7 +15,7 @@ export const DocSourceAdvancedPanel = ({ sourceMode, documentInput, onInputChang
     <div className="docsync-wp-advanced-source">
       <DocSourceTabs
         modes={['url', 'file_id']}
-        onChange={(mode) => onModeChange(mode as Exclude<SourceMode, 'picker'>)}
+        onChange={onModeChange}
         sourceMode={sourceMode}
       />
       <p className="description">{docSourceHelp[sourceMode]}</p>

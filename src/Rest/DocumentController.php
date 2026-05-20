@@ -55,6 +55,16 @@ final class DocumentController {
 	public function registerRoutes( string $rest_namespace ): void {
 		register_rest_route(
 			$rest_namespace,
+			'/documents',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'listDocuments' ),
+				'permission_callback' => array( $this, 'canUseAuthenticatedRest' ),
+			)
+		);
+
+		register_rest_route(
+			$rest_namespace,
 			'/documents/inspect',
 			array(
 				'methods'             => WP_REST_Server::CREATABLE,
@@ -94,6 +104,33 @@ final class DocumentController {
 		}
 
 		return true;
+	}
+
+	/**
+	 * List Google Docs available to the connected account.
+	 *
+	 * @param WP_REST_Request $request REST request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function listDocuments( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$page_size = absint( $request->get_param( 'page_size' ) );
+
+		if ( $page_size <= 0 ) {
+			$page_size = 20;
+		}
+
+		$documents = $this->drive_client->listGoogleDocs(
+			get_current_user_id(),
+			sanitize_text_field( (string) $request->get_param( 'search' ) ),
+			sanitize_text_field( (string) $request->get_param( 'page_token' ) ),
+			$page_size
+		);
+
+		if ( is_wp_error( $documents ) ) {
+			return $documents;
+		}
+
+		return rest_ensure_response( $documents );
 	}
 
 	/**
