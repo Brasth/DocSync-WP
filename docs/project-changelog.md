@@ -1,6 +1,26 @@
 # Project Changelog
 
-Last updated: 2026-05-20
+Last updated: 2026-05-21
+
+## 2026-05-21 - Drive-Like Document Browser
+
+Status: completed in codebase
+
+Improved the source selection browser into a My Drive file-manager view:
+
+- added `GET /docsync-wp/v1/drive/items` for folder-scoped Drive browsing
+- listed Google Drive folders and Google Docs only; unsupported file types remain hidden
+- kept `GET /documents` and `POST /documents/inspect` behavior unchanged for compatibility and advanced linking
+- added folder navigation, breadcrumb backtracking, current-folder search, refresh, table rows, empty/loading/error states, and pagination
+- kept folders non-selectable and Google Docs selectable for `Link source` / `Create synced draft`
+- split the browser table and helpers into focused TypeScript modules to keep the main panel small
+
+Verification status:
+
+- `pnpm typecheck` passes
+- `pnpm lint` passes
+- `pnpm build` passes
+- local PHP verification is blocked because `php` and `composer` are unavailable
 
 ## 2026-05-20 - Custom Drive Document Browser
 

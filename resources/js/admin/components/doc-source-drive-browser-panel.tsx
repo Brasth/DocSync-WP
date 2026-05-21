@@ -1,112 +1,141 @@
 import { createElement, useEffect, useState } from '@wordpress/element';
 
-import { listDriveDocuments, type DriveDocumentSummary } from '../api';
+import { listDriveItems, type DocumentMetadata, type DriveItemSummary } from '../api';
+import { DocSourceDriveBrowserTable } from './doc-source-drive-browser-table';
+import { driveBrowserPageSize, driveItemToDocumentMetadata, rootDriveBreadcrumb, type DriveBrowserBreadcrumb } from './doc-source-drive-browser-utils';
 
 type Props = {
   busy: boolean;
-  selectedDocument: DriveDocumentSummary | null;
-  onSelect: (document: DriveDocumentSummary | null) => void;
-};
-
-const pageSize = 20;
-
-const formatModifiedTime = (value: string): string => {
-  if (!value) {
-    return 'Modified time unavailable';
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return `Modified ${new Intl.DateTimeFormat(undefined, {
-    dateStyle: 'medium',
-    timeStyle: 'short'
-  }).format(date)}`;
+  selectedDocument: DocumentMetadata | null;
+  onSelect: (document: DocumentMetadata | null) => void;
 };
 
 export const DocSourceDriveBrowserPanel = ({ busy, selectedDocument, onSelect }: Props): JSX.Element => {
+  const [folderId, setFolderId] = useState(rootDriveBreadcrumb.fileId);
+  const [breadcrumbs, setBreadcrumbs] = useState<DriveBrowserBreadcrumb[]>([rootDriveBreadcrumb]);
   const [searchInput, setSearchInput] = useState('');
   const [activeSearch, setActiveSearch] = useState('');
-  const [documents, setDocuments] = useState<DriveDocumentSummary[]>([]);
+  const [items, setItems] = useState<DriveItemSummary[]>([]);
   const [nextPageToken, setNextPageToken] = useState('');
   const [incompleteSearch, setIncompleteSearch] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const loadDocuments = async (search: string, pageToken = '') => {
+  const currentFolderName = breadcrumbs[breadcrumbs.length - 1]?.name ?? rootDriveBreadcrumb.name;
+
+  const loadItems = async (nextFolderId: string, search: string, pageToken = '') => {
     setLoading(true);
     setError('');
 
     if (!pageToken) {
-      setDocuments([]);
+      setItems([]);
       setNextPageToken('');
       setIncompleteSearch(false);
     }
 
     try {
-      const response = await listDriveDocuments({
+      const response = await listDriveItems({
+        folderId: nextFolderId,
         search,
         pageToken,
-        pageSize
+        pageSize: driveBrowserPageSize
       });
 
-      setDocuments((current) => pageToken ? [...current, ...response.documents] : response.documents);
+      setFolderId(response.folderId || nextFolderId);
+      setItems((current) => pageToken ? [...current, ...response.items] : response.items);
       setNextPageToken(response.nextPageToken ?? '');
       setIncompleteSearch(Boolean(response.incompleteSearch));
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Could not load Google Docs.');
+      setError(caught instanceof Error ? caught.message : 'Could not load Google Drive items.');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadDocuments('').catch(() => undefined);
+    loadItems(rootDriveBreadcrumb.fileId, '').catch(() => undefined);
   }, []);
 
   const submitSearch = async () => {
     const search = searchInput.trim();
     setActiveSearch(search);
     onSelect(null);
-    await loadDocuments(search);
+    await loadItems(folderId, search);
   };
 
   const clearSearch = async () => {
     setSearchInput('');
     setActiveSearch('');
     onSelect(null);
-    await loadDocuments('');
+    await loadItems(folderId, '');
+  };
+
+  const refreshFolder = async () => {
+    await loadItems(folderId, activeSearch);
+  };
+
+  const openFolder = async (item: DriveItemSummary) => {
+    setBreadcrumbs((current) => [...current, { fileId: item.fileId, name: item.name }]);
+    setSearchInput('');
+    setActiveSearch('');
+    onSelect(null);
+    await loadItems(item.fileId, '');
+  };
+
+  const openBreadcrumb = async (breadcrumb: DriveBrowserBreadcrumb, index: number) => {
+    if (breadcrumb.fileId === folderId) {
+      return;
+    }
+
+    setBreadcrumbs((current) => current.slice(0, index + 1));
+    setSearchInput('');
+    setActiveSearch('');
+    onSelect(null);
+    await loadItems(breadcrumb.fileId, '');
+  };
+
+  const activateItem = async (item: DriveItemSummary) => {
+    if (item.itemType === 'folder') {
+      await openFolder(item);
+      return;
+    }
+
+    onSelect(driveItemToDocumentMetadata(item));
+    setError('');
   };
 
   return (
     <div className="docsync-wp-drive-browser">
-      <div>
-        <strong>Choose from Google Drive</strong>
-        <p>Browse Google Docs visible to your connected account, select one, then link it explicitly.</p>
+      <div className="docsync-wp-drive-browser__heading">
+        <div>
+          <strong>Choose from Google Drive</strong>
+          <p>Browse My Drive folders and Google Docs visible to your connected account.</p>
+        </div>
+        <span>Current: {currentFolderName}</span>
       </div>
 
       <form
-        className="docsync-wp-drive-browser__search"
+        className="docsync-wp-drive-browser__toolbar"
         onSubmit={(event) => {
           event.preventDefault();
           submitSearch().catch(() => undefined);
         }}
       >
         <label>
-          <span>Search Docs</span>
+          <span>Search this folder</span>
           <input
             className="regular-text"
             onChange={(event) => setSearchInput(event.currentTarget.value)}
-            placeholder="Document name"
+            placeholder="Folder or document name"
             type="search"
             value={searchInput}
           />
         </label>
         <button className="button" disabled={busy || loading} type="submit">
           Search
+        </button>
+        <button className="button" disabled={busy || loading} onClick={() => refreshFolder().catch(() => undefined)} type="button">
+          Refresh
         </button>
         {activeSearch ? (
           <button className="button button-link" disabled={busy || loading} onClick={() => clearSearch().catch(() => undefined)} type="button">
@@ -115,40 +144,52 @@ export const DocSourceDriveBrowserPanel = ({ busy, selectedDocument, onSelect }:
         ) : null}
       </form>
 
+      <nav aria-label="Google Drive folder path" className="docsync-wp-drive-browser__breadcrumb">
+        {breadcrumbs.map((breadcrumb, index) => {
+          const isCurrent = breadcrumb.fileId === folderId;
+
+          return (
+            <span key={breadcrumb.fileId}>
+              {index > 0 ? <span aria-hidden="true">/</span> : null}
+              <button
+                aria-current={isCurrent ? 'page' : undefined}
+                className={isCurrent ? 'is-current' : ''}
+                disabled={busy || loading || isCurrent}
+                onClick={() => openBreadcrumb(breadcrumb, index).catch(() => undefined)}
+                type="button"
+              >
+                {breadcrumb.name}
+              </button>
+            </span>
+          );
+        })}
+      </nav>
+
       {error ? <div className="notice notice-error inline"><p>{error}</p></div> : null}
-      {loading && documents.length === 0 ? <p className="description">Loading Google Docs...</p> : null}
-      {!loading && !error && documents.length === 0 ? <p className="description">No Google Docs found.</p> : null}
+      {loading && items.length === 0 ? <div className="docsync-wp-drive-browser__state">Loading Drive items...</div> : null}
+      {!loading && !error && items.length === 0 ? (
+        <div className="docsync-wp-drive-browser__state">
+          {activeSearch ? `No folders or Google Docs found for "${activeSearch}".` : 'This folder has no folders or Google Docs.'}
+        </div>
+      ) : null}
 
-      {documents.length > 0 ? (
-        <ul className="docsync-wp-drive-browser__list">
-          {documents.map((document) => {
-            const selected = selectedDocument?.fileId === document.fileId;
-
-            return (
-              <li key={document.fileId}>
-                <button
-                  aria-pressed={selected}
-                  className={selected ? 'is-selected' : ''}
-                  disabled={busy}
-                  onClick={() => onSelect(document)}
-                  type="button"
-                >
-                  <strong>{document.name}</strong>
-                  <span>{formatModifiedTime(document.modifiedTime)}</span>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+      {items.length > 0 ? (
+        <DocSourceDriveBrowserTable
+          busy={busy}
+          items={items}
+          loading={loading}
+          onActivate={activateItem}
+          selectedDocument={selectedDocument}
+        />
       ) : null}
 
       {incompleteSearch ? (
-        <p className="docsync-wp-inline-warning">Google could not search every Drive location. Narrow the search if the Doc is missing.</p>
+        <p className="docsync-wp-inline-warning">Google could not search every Drive item. Narrow the search if the Doc is missing.</p>
       ) : null}
 
       {nextPageToken ? (
         <div className="docsync-wp-drive-browser__more">
-          <button className="button" disabled={busy || loading} onClick={() => loadDocuments(activeSearch, nextPageToken).catch(() => undefined)} type="button">
+          <button className="button" disabled={busy || loading} onClick={() => loadItems(folderId, activeSearch, nextPageToken).catch(() => undefined)} type="button">
             {loading ? 'Loading...' : 'Load more'}
           </button>
         </div>

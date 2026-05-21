@@ -40,10 +40,38 @@ export type DocumentMetadata = {
 
 export type DriveDocumentSummary = DocumentMetadata;
 
+export type DriveItemType = 'folder' | 'document';
+
+export type DriveItemSummary = {
+  fileId: string;
+  name: string;
+  mimeType: string;
+  itemType: DriveItemType;
+  modifiedTime: string;
+  webViewLink: string;
+  iconLink?: string;
+  version?: string;
+  selectable: boolean;
+};
+
+export type DriveItemsResponse = {
+  items: DriveItemSummary[];
+  nextPageToken?: string;
+  incompleteSearch?: boolean;
+  folderId: string;
+};
+
 export type DriveDocumentsResponse = {
   documents: DriveDocumentSummary[];
   nextPageToken?: string;
   incompleteSearch?: boolean;
+};
+
+export type DriveItemFilters = {
+  folderId?: string;
+  search?: string;
+  pageToken?: string;
+  pageSize?: number;
 };
 
 export type DriveDocumentFilters = {
@@ -167,6 +195,23 @@ export const inspectDocument = (document: string, source: 'url' | 'file_id'): Pr
     method: 'POST',
     data: { document, source }
   });
+};
+
+export const listDriveItems = (filters: DriveItemFilters = {}): Promise<DriveItemsResponse> => {
+  const params = new URLSearchParams({
+    folder_id: filters.folderId || 'root',
+    page_size: String(filters.pageSize ?? 20)
+  });
+
+  if (filters.search) {
+    params.set('search', filters.search);
+  }
+
+  if (filters.pageToken) {
+    params.set('page_token', filters.pageToken);
+  }
+
+  return request<DriveItemsResponse>(`drive/items?${params.toString()}`);
 };
 
 export const listDriveDocuments = (filters: DriveDocumentFilters = {}): Promise<DriveDocumentsResponse> => {
