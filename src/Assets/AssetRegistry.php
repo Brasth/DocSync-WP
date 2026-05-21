@@ -18,8 +18,8 @@ defined( 'ABSPATH' ) || exit;
  * Enqueues compiled admin assets from Vite manifests.
  */
 final class AssetRegistry {
-	private const ADMIN_ENTRY        = 'resources/js/admin/main.tsx';
-	private const POST_SYNC_ENTRY    = 'resources/js/admin/post-sync-entry.tsx';
+	private const ADMIN_ENTRY        = 'resources/js/admin/entries/admin-entry.tsx';
+	private const POST_SYNC_ENTRY    = 'resources/js/admin/entries/post-sync-entry.tsx';
 	private const ADMIN_MANIFEST     = 'manifest.json';
 	private const POST_SYNC_MANIFEST = 'manifest.post-sync.json';
 	private const ADMIN_HANDLE       = 'docsync-wp-admin';
