@@ -1,0 +1,11 @@
+@layer base {
+  #docsync-wp-admin-root {
+    margin-left: -20px;
+  }
+
+  #docsync-wp-admin-root *,
+  #docsync-wp-post-sync-root *,
+  #docsync-wp-list-sync-root * {
+    box-sizing: border-box;
+  }
+}

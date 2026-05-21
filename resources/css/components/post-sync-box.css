@@ -1,0 +1,28 @@
+@layer components {
+  .docsync-wp-add-sync-doc {
+    margin: 0 8px 0 0 !important;
+  }
+
+  .docsync-wp-inline-notice {
+    border-left: 4px solid #00a32a;
+    display: inline-block;
+    margin-left: 8px;
+    padding: 5px 9px;
+    vertical-align: middle;
+  }
+
+  .docsync-wp-inline-notice.is-error {
+    border-left-color: #d63638;
+    color: #b42318;
+  }
+
+  .docsync-wp-row-action[aria-busy="true"] {
+    color: #646970;
+    cursor: progress;
+    pointer-events: none;
+  }
+
+  .docsync-wp-post-box p {
+    margin: 0 0 10px;
+  }
+}

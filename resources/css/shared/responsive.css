@@ -1,0 +1,30 @@
+@layer components {
+  @media (max-width: 960px) {
+    .docsync-wp-admin-grid,
+    .docsync-wp-settings-grid,
+    .docsync-wp-drive-browser__toolbar,
+    .docsync-wp-source-filters,
+    .docsync-wp-setup-test ul {
+      grid-template-columns: 1fr;
+    }
+
+    .docsync-wp-drive-browser__heading {
+      flex-direction: column;
+    }
+
+    .docsync-wp-setup-summary {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .docsync-wp-setup-progress {
+      width: 100%;
+    }
+
+    .docsync-wp-hero {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 16px;
+    }
+  }
+}

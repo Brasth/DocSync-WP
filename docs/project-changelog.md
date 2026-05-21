@@ -2,6 +2,26 @@
 
 Last updated: 2026-05-21
 
+## 2026-05-21 - Admin Frontend Structure Refactor
+
+Status: completed in codebase
+
+Restructured the admin frontend for maintenance without changing sync behavior:
+
+- kept Radix Dialog/Tabs for the Google Doc source modal
+- added WordPress package integration for REST fetch, i18n, URL helpers, a11y announcements, and simple UI components
+- moved Vite entrypoints, REST API modules, feature components, hooks, and shared UI atoms into focused folders
+- kept old component import paths as thin re-exports while new code lives under `features/`, `app/`, `api/`, `entries/`, and `shared/ui/`
+- split large admin, Drive browser, source modal, and post-sync files so each TypeScript/TSX file stays under 200 lines
+- updated enqueue dependencies and Vite externals for the WordPress globals used by the admin bundles
+
+Verification status:
+
+- `pnpm typecheck` passes
+- `pnpm lint` passes
+- `pnpm build` passes
+- local PHP verification is blocked because `php` and `composer` are unavailable
+
 ## 2026-05-21 - Drive-Like Document Browser
 
 Status: completed in codebase
@@ -9,11 +29,15 @@ Status: completed in codebase
 Improved the source selection browser into a My Drive file-manager view:
 
 - added `GET /docsync-wp/v1/drive/items` for folder-scoped Drive browsing
+- added `GET /docsync-wp/v1/drive/shared-drives` and a Drive location selector for shared drives
 - listed Google Drive folders and Google Docs only; unsupported file types remain hidden
 - kept `GET /documents` and `POST /documents/inspect` behavior unchanged for compatibility and advanced linking
-- added folder navigation, breadcrumb backtracking, current-folder search, refresh, table rows, empty/loading/error states, and pagination
-- kept folders non-selectable and Google Docs selectable for `Link source` / `Create synced draft`
+- added folder navigation, breadcrumb backtracking, current-folder search, refresh, table rows, explicit row actions, empty/loading/error states, and pagination
+- kept folders as `Open` actions and Google Docs as explicit `Select` actions for `Link source` / `Create synced draft`
+- fixed sticky table headers so row content no longer bleeds under the header while scrolling
+- updated post list-table row actions/status cells after link/sync and auto-refreshes after creating a new synced draft
 - split the browser table and helpers into focused TypeScript modules to keep the main panel small
+- split admin source CSS into entry-specific files and shared/component partials for easier maintenance
 
 Verification status:
 

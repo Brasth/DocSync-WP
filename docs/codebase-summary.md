@@ -6,16 +6,18 @@ Last updated: 2026-05-21
 
 DocSync WP is a WordPress plugin for one-way Google Docs -> WordPress sync. This checkout includes Google OAuth, document inspection, post/page linking and sync, list-table actions, a setup admin page, a dedicated Sources submenu, HTML ZIP media import, and WP-Cron scheduling.
 
-Summary reflects the current source tree after the Drive-like document browser implementation.
+Summary reflects the current source tree after the Radix plus WordPress-native admin frontend refactor.
 
-- Total files tracked by `rg --files`: 74
+- Total files tracked by `rg --files`: 125
 - Main languages: PHP, TypeScript, CSS
 
 ## Top-Level Structure
 
 - `src/` - PHP plugin runtime
 - `resources/js/admin/` - React admin app and post-level controls
-- `resources/css/admin.css` - shared admin styles
+- `resources/css/admin-entry.css` - setup and Sources admin styles
+- `resources/css/post-sync-entry.css` - post edit/list-table source modal styles
+- `resources/css/shared/` and `resources/css/components/` - reusable CSS partials
 - `docs/` - project documentation and research
 - `plans/` - implementation plans and phase notes
 - `build/` - Vite output used by WordPress admin screens
@@ -24,9 +26,9 @@ Summary reflects the current source tree after the Drive-like document browser i
 
 1. WordPress loads `docsync-wp.php`.
 2. `DocSyncWP\Plugin::boot()` wires settings, OAuth, Drive client, source repository, sync service, cron, REST, and admin UI.
-3. The central admin screen mounts the React app from `resources/js/admin/main.tsx`.
-4. Post/page edit and list-table screens mount `resources/js/admin/post-sync-entry.tsx`.
-5. REST controllers handle settings, OAuth, Drive folder/document browsing, document inspection, source management, sync logs, and sync triggers.
+3. The central admin screen mounts the React app through `resources/js/admin/entries/admin-entry.tsx`.
+4. Post/page edit and list-table screens mount through `resources/js/admin/entries/post-sync-entry.tsx`.
+5. REST controllers handle settings, OAuth, My Drive/shared drive folder browsing, document inspection, source management, sync logs, and sync triggers.
 6. `SyncService` reads Google metadata, exports an HTML ZIP package, imports local images into Media Library, updates the target post, and persists sync state.
 
 ## Key Backend Modules
@@ -34,7 +36,7 @@ Summary reflects the current source tree after the Drive-like document browser i
 - `src/Settings/SettingsRepository.php` - site settings, enabled post types, encrypted client secret storage.
 - `src/Auth/GoogleOAuthService.php` - OAuth URL generation, callback handling, token refresh.
 - `src/Auth/TokenStore.php` - per-user encrypted Google token storage.
-- `src/Google/DriveClient.php` - Google Drive folder/Doc listing, Docs metadata, and export requests.
+- `src/Google/DriveClient.php` - My Drive/shared drive folder and Doc listing, Docs metadata, and export requests.
 - `src/Sync/SourceRepository.php` - post meta source records and capability checks.
 - `src/Sync/SyncService.php` - attach, create draft, sync, skip-on-unchanged, error handling.
 - `src/Sync/HtmlZipImporter.php` - coordinates HTML ZIP import and sanitization.
@@ -46,16 +48,23 @@ Summary reflects the current source tree after the Drive-like document browser i
 
 ## Key Frontend Modules
 
-- `resources/js/admin/App.tsx` - setup page and Sources submenu shell.
-- `resources/js/admin/components/SettingsPanel.tsx` - Google setup wizard and settings form.
-- `resources/js/admin/components/AccountPanel.tsx` - current user Google account state.
-- `resources/js/admin/components/SourcesTable.tsx` - filterable linked source table and bulk sync action.
-- `resources/js/admin/components/DocSourceModal.tsx` - Radix-backed attach flow with Drive document browser and advanced URL/file ID inputs.
-- `resources/js/admin/components/DocSourceTabs.tsx` - Radix-backed source mode tabs.
-- `resources/js/admin/components/doc-source-drive-browser-panel.tsx` - Google Drive folder browser panel.
-- `resources/js/admin/components/doc-source-drive-browser-table.tsx` - table rows for folder navigation and Doc selection.
-- `resources/js/admin/components/doc-source-drive-browser-utils.ts` - Drive browser formatting and selection helpers.
-- `resources/js/admin/post-sync-entry.tsx` - post/page edit meta box and list-table mount logic.
+- `resources/js/admin/entries/` - Vite entrypoints for admin and post-sync bundles.
+- `resources/js/admin/app/` - central setup/Sources shell and app state hook.
+- `resources/js/admin/api/` - REST client, typed API modules, and shared wire types.
+- `resources/js/admin/features/drive-browser/` - Google Drive browser hook, toolbar, breadcrumb, table, and panel.
+- `resources/js/admin/features/doc-source-modal/` - Radix-backed source modal, mode tabs, advanced input, and modal hook.
+- `resources/js/admin/features/google-setup/` - setup wizard, account panel, target settings, and setup checks.
+- `resources/js/admin/features/post-sync/` - post edit meta box, list-table action mount, row DOM helpers, and sync action hook.
+- `resources/js/admin/features/sources/` - filterable linked source table and bulk sync action.
+- `resources/js/admin/shared/ui/` - small WordPress-backed DocSync UI atoms such as buttons, notices, loading states, and status pills.
+- `resources/js/admin/components/` - thin compatibility re-exports for older local imports.
+
+## Frontend Style Modules
+
+- `resources/css/admin.css` remains a compatibility wrapper that imports `admin-entry.css`.
+- `resources/css/admin-entry.css` imports shared primitives plus setup, admin shell, and Sources table partials.
+- `resources/css/post-sync-entry.css` imports shared primitives plus post sync box, modal, tabs, Drive browser, and advanced source partials.
+- Component-level CSS lives under `resources/css/components/`; cross-entry primitives and responsive rules live under `resources/css/shared/`.
 
 ## Local Toolchain Status
 
@@ -68,5 +77,5 @@ Summary reflects the current source tree after the Drive-like document browser i
 - The repo uses `docsync-wp` as the plugin slug and text domain.
 - REST namespace: `docsync-wp/v1`.
 - Google tokens and the OAuth client secret are encrypted with WordPress salts.
-- The admin app depends on `wp-api-fetch` and `wp-element`; Radix React peer and JSX runtime imports are mapped back to WordPress element APIs.
+- The admin app depends on WordPress packages for REST, i18n, a11y, URL helpers, components, and element runtime; Radix Dialog/Tabs remain the complex interaction primitives.
 - Frontend lint blocks inline PHPCS suppression comments in plugin source.

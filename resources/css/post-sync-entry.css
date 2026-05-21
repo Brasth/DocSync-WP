@@ -1,0 +1,9 @@
+@import "tailwindcss";
+@import "./shared/base.css";
+@import "./shared/primitives.css";
+@import "./components/post-sync-box.css";
+@import "./components/doc-source-modal.css";
+@import "./components/doc-source-tabs.css";
+@import "./components/drive-browser.css";
+@import "./components/advanced-source.css";
+@import "./shared/responsive.css";

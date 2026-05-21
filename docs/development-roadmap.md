@@ -4,7 +4,7 @@ Last updated: 2026-05-21
 
 ## Status
 
-The Google Docs Sync Admin Actions implementation is complete in code. The self-managed Google onboarding, Drive-like My Drive document browser, dedicated Sources submenu, page target support, source filters, and HTML ZIP media import are also complete in code.
+The Google Docs Sync Admin Actions implementation is complete in code. The self-managed Google onboarding, Drive-like My Drive/shared drive document browser, dedicated Sources submenu, page target support, source filters, HTML ZIP media import, and admin frontend structure refactor are also complete in code.
 
 ## Phase Summary
 
@@ -19,6 +19,8 @@ The Google Docs Sync Admin Actions implementation is complete in code. The self-
 | 7 | Sources Submenu and Media Sync | Complete in code, local PHP validation blocked |
 | 8 | Custom Drive Document Browser | Complete in code, local PHP validation blocked |
 | 9 | Drive-Like Browser Navigation | Complete in code, local PHP validation blocked |
+| 10 | Shared Drive Browser and List Refresh | Complete in code, local PHP validation blocked |
+| 11 | Radix and WordPress-Native Frontend Refactor | Complete in code, local PHP validation blocked |
 
 ## What Is Shipped
 
@@ -29,7 +31,10 @@ The Google Docs Sync Admin Actions implementation is complete in code. The self-
 - self-managed Google setup wizard with redirect URI copy, setup checks, and Google Cloud links
 - post/page edit and list-table entry points
 - optional `page` target support while keeping `post` always enabled
-- Radix-backed source modal with Drive-like My Drive folder navigation, current-folder search, pagination, selection preview, and advanced URL/file ID entry
+- Radix-backed source modal with Drive-like My Drive/shared drive folder navigation, current-folder search, pagination, explicit selection controls, selection preview, and advanced URL/file ID entry
+- feature-first admin frontend structure with split API modules, feature hooks, shared UI atoms, and WordPress-native REST/i18n/a11y/component integration
+- post list-table actions update visible source status after link/sync and auto-refresh after new draft creation
+- entry-specific CSS files with shared and component partials for admin setup, Sources, and post sync UI maintenance
 - HTML ZIP import that sideloads exported images into Media Library and rewrites content URLs
 - attachment dedupe by Google file ID, asset path, and image hash
 - per-post sync state and error tracking

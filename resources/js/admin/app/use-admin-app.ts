@@ -1,0 +1,178 @@
+import { speak } from '@wordpress/a11y';
+import { useMemo, useState } from '@wordpress/element';
+import { __, sprintf } from '@wordpress/i18n';
+
+import {
+  disconnectGoogleAccount,
+  getGoogleAccount,
+  getGoogleAuthUrl,
+  getSettings,
+  listSources,
+  saveSettings,
+  syncAllSources,
+  syncSource,
+  type GoogleAccount,
+  type SettingsResponse,
+  type SourceRecord
+} from '../api';
+import { getAdminConfig } from '../config';
+import type { SourceListFilters } from '../features/sources/sources-table';
+import type { AdminNoticeState } from '../shared/ui/admin-notice';
+
+const emptyAccount: GoogleAccount = { connected: false, hasRequiredScope: false };
+const sourcePageSize = 100;
+const defaultSourceFilters: SourceListFilters = { search: '', postType: '', status: '' };
+
+export type AdminView = 'setup' | 'sources';
+
+export const useAdminApp = (view: AdminView) => {
+  const config = useMemo(() => getAdminConfig(), []);
+  const redirectUri = useMemo(() => `${config.restUrl.replace(/\/$/, '')}/oauth/google/callback`, [config.restUrl]);
+  const [settings, setSettings] = useState<SettingsResponse | null>(null);
+  const [account, setAccount] = useState<GoogleAccount>(emptyAccount);
+  const [sources, setSources] = useState<SourceRecord[]>([]);
+  const [sourcePage, setSourcePage] = useState(1);
+  const [sourceFilters, setSourceFilters] = useState<SourceListFilters>(defaultSourceFilters);
+  const [hasMoreSources, setHasMoreSources] = useState(false);
+  const [notice, setNotice] = useState<AdminNoticeState | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const refreshSetup = async () => {
+    const [settingsResponse, accountResponse] = await Promise.all([
+      getSettings(),
+      getGoogleAccount()
+    ]);
+
+    setSettings(settingsResponse);
+    setAccount(accountResponse);
+  };
+
+  const refreshSources = async (filters = sourceFilters, page = 1, append = false) => {
+    const [settingsResponse, sourcesResponse] = await Promise.all([
+      getSettings(),
+      listSources({
+        ...filters,
+        page,
+        perPage: sourcePageSize
+      })
+    ]);
+
+    setSettings(settingsResponse);
+    setSourceFilters(filters);
+    setSources((current) => append ? [...current, ...sourcesResponse.sources] : sourcesResponse.sources);
+    setSourcePage(page);
+    setHasMoreSources(Boolean(sourcesResponse.has_more ?? sourcesResponse.hasMore));
+  };
+
+  const refresh = async () => {
+    if (view === 'sources') {
+      await refreshSources(sourceFilters, 1);
+      return;
+    }
+
+    await refreshSetup();
+  };
+
+  const runAction = async (action: () => Promise<void>) => {
+    setBusy(true);
+    setNotice(null);
+
+    try {
+      await action();
+    } catch (caught) {
+      const message = caught instanceof Error ? caught.message : __('Action failed.', 'docsync-wp');
+      setNotice({ type: 'error', message });
+      speak(message, 'assertive');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const loadMoreSources = async () => {
+    await runAction(async () => {
+      const nextPage = sourcePage + 1;
+      await refreshSources(sourceFilters, nextPage, true);
+    });
+  };
+
+  const connectGoogle = async () => {
+    if (!settings?.hasRequiredSettings) {
+      const message = __('Save OAuth client ID and client secret before connecting Google.', 'docsync-wp');
+      setNotice({ type: 'error', message });
+      speak(message, 'assertive');
+      return;
+    }
+
+    await runAction(async () => {
+      const response = await getGoogleAuthUrl();
+      window.location.assign(response.authUrl);
+    });
+  };
+
+  const disconnectGoogle = async () => {
+    await runAction(async () => {
+      await disconnectGoogleAccount();
+      await refresh();
+      const message = __('Google account disconnected.', 'docsync-wp');
+      setNotice({ type: 'success', message });
+      speak(message);
+    });
+  };
+
+  const persistSettings = async (nextSettings: Partial<SettingsResponse> & { clientSecret?: string }) => {
+    await runAction(async () => {
+      const saved = await saveSettings(nextSettings);
+      const message = __('Settings saved.', 'docsync-wp');
+      setSettings(saved);
+      setNotice({ type: 'success', message });
+      speak(message);
+    });
+  };
+
+  const syncOne = async (postId: number) => {
+    await runAction(async () => {
+      const result = await syncSource(postId);
+      const message = sprintf(__('Source %d sync %s.', 'docsync-wp'), postId, result.status);
+      await refresh();
+      setNotice({ type: 'success', message });
+      speak(message);
+    });
+  };
+
+  const syncAll = async () => {
+    await runAction(async () => {
+      const result = await syncAllSources();
+      const message = sprintf(__('Sync attempted for %d source(s).', 'docsync-wp'), result.count);
+      await refresh();
+      setNotice({ type: 'success', message });
+      speak(message);
+    });
+  };
+
+  const applySourceFilters = async (filters: SourceListFilters) => {
+    await runAction(async () => {
+      await refreshSources(filters, 1);
+    });
+  };
+
+  return {
+    account,
+    applySourceFilters,
+    busy,
+    config,
+    connectGoogle,
+    disconnectGoogle,
+    hasMoreSources,
+    loadMoreSources,
+    notice,
+    persistSettings,
+    redirectUri,
+    refresh,
+    runAction,
+    settings,
+    sourceFilters,
+    sources,
+    syncAll,
+    syncOne
+  };
+};

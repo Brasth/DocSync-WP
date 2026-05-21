@@ -43,8 +43,8 @@ flowchart LR
 ### Setup Admin Page
 
 - Entry point: `src/Admin/AdminPage.php`
-- React mount: `resources/js/admin/main.tsx`
-- Main UI: `resources/js/admin/App.tsx`
+- React mount: `resources/js/admin/entries/admin-entry.tsx`
+- Main UI: `resources/js/admin/app/admin-app.tsx`
 
 Responsibilities:
 
@@ -57,7 +57,7 @@ Responsibilities:
 
 - Entry point: `src/Admin/AdminPage.php`
 - Menu slug: `docsync-wp-sources`
-- React mount: `resources/js/admin/main.tsx`
+- React mount: `resources/js/admin/entries/admin-entry.tsx`
 
 Responsibilities:
 
@@ -69,16 +69,26 @@ Responsibilities:
 ### Post/Page Edit Screen
 
 - Entry point: `src/Admin/PostSyncMetaBox.php`
-- React mount: `resources/js/admin/post-sync-entry.tsx`
+- React mount: `resources/js/admin/entries/post-sync-entry.tsx`
 
 Responsibilities:
 
-- link a Google Doc to the current target with the Drive-like My Drive browser, with pasted URL/file ID under advanced linking
+- link a Google Doc to the current target with the Drive-like My Drive/shared drive browser, with pasted URL/file ID under advanced linking
 - change or detach the source
 - trigger immediate sync
 - show last sync and error state
 
-The Google Doc source modal uses Radix UI Dialog and Tabs primitives for focus management, escape handling, and keyboard tab navigation. The project still uses WordPress `wp-element` as the runtime React provider.
+The Google Doc source modal uses Radix UI Dialog and Tabs primitives for focus management, escape handling, and keyboard tab navigation. WordPress packages provide the runtime React provider, REST client, i18n, URL helpers, a11y announcements, and simple admin controls.
+
+The post sync UI imports `resources/css/post-sync-entry.css`, which composes shared CSS primitives with modal, tab, Drive browser, advanced source, and post sync box partials.
+
+## Frontend Architecture
+
+- Vite builds two bundles from `resources/js/admin/entries/`.
+- REST access is split under `resources/js/admin/api/`, with `apiFetch` imported from `@wordpress/api-fetch` and query strings built with `@wordpress/url`.
+- Stateful workflows live in feature hooks, including Drive browser, source modal, setup/Sources admin, and post-sync actions.
+- Shared UI atoms under `resources/js/admin/shared/ui/` wrap WordPress components where useful while preserving DocSync CSS classes.
+- `resources/js/admin/components/` remains as thin compatibility exports during the refactor.
 
 ### Post/Page List Table
 
@@ -103,7 +113,8 @@ Implemented routes:
 - `GET /oauth/google/account`
 - `DELETE /oauth/google/account`
 - `GET /oauth/google/callback`
-- `GET /drive/items` with `folder_id`, `search`, `page_token`, and `page_size` filters
+- `GET /drive/shared-drives` with `page_token` and `page_size` filters
+- `GET /drive/items` with `folder_id`, `drive_id`, `search`, `page_token`, and `page_size` filters
 - `GET /documents` with `search`, `page_token`, and `page_size` filters
 - `POST /documents/inspect`
 - `GET /sources` with `search`, `post_type`, `status`, `page`, and `per_page` filters
@@ -157,7 +168,7 @@ These identify images imported from a Google Docs HTML ZIP export so re-sync can
 ## Sync Flow
 
 1. User connects Google from the admin dashboard.
-2. User browses My Drive folders and selects a Doc through the Drive browser, or inspects advanced pasted URL/raw file ID entry.
+2. User browses My Drive or a selected shared drive and selects a Doc through the Drive browser, or inspects advanced pasted URL/raw file ID entry.
 3. `DocumentController` lists Drive folders/Docs server-side and validates advanced input through Drive metadata.
 4. `SourceController` attaches the source to an existing target or creates a new draft.
 5. `SyncService` acquires a per-post lock.
@@ -194,9 +205,10 @@ Skip behavior:
 ## Operational Notes
 
 - WP-Cron only runs on site traffic; low-traffic sites need real server cron for reliable schedules
-- source selection uses `drive.readonly` and a server-side custom Drive document browser
+- source selection uses `drive.readonly` and a server-side custom Drive document browser with per-drive shared drive queries
+- setup and Sources screens import `resources/css/admin-entry.css`; the legacy `resources/css/admin.css` file remains as a compatibility wrapper
 - the current connection mode is `self_managed`; a later managed connector can own the verified Google app without proxying document content by default
 - pasted Docs or raw file IDs only work when the connected Google account already has access
-- Vite externalizes Radix React peer imports to `wp.element` and aliases Radix JSX runtime imports to the local WordPress JSX runtime shim; avoid direct app imports from `react` or `react-dom`
+- Vite externalizes Radix React peer imports and WordPress package imports to WordPress globals, and aliases Radix JSX runtime imports to the local WordPress JSX runtime shim; avoid direct app imports from `react` or `react-dom`
 - Inline PHPCS suppression comments are blocked by the frontend lint guard; unavoidable standards exceptions must live in `phpcs.xml.dist`
 - local verification in this checkout is blocked by missing `php` and `composer`
