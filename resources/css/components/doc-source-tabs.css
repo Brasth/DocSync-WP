@@ -1,0 +1,28 @@
+@layer components {
+  .docsync-wp-source-tabs {
+    border-bottom: 1px solid #dcdcde;
+  }
+
+  .docsync-wp-source-tabs__list {
+    display: flex;
+    gap: 0;
+  }
+
+  .docsync-wp-source-tabs__trigger {
+    background: #fff;
+    border: 0;
+    border-right: 1px solid #dcdcde;
+    cursor: pointer;
+    padding: 13px 16px;
+  }
+
+  .docsync-wp-source-tabs__trigger:focus-visible {
+    box-shadow: inset 0 0 0 2px #2271b1;
+    outline: none;
+  }
+
+  .docsync-wp-source-tabs__trigger[data-state="active"] {
+    background: #122620;
+    color: #fff;
+  }
+}

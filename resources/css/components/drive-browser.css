@@ -1,0 +1,195 @@
+@layer components {
+  .docsync-wp-drive-browser {
+    background: #fff;
+    border: 1px solid #d9e2e1;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    padding: 14px;
+  }
+
+  .docsync-wp-drive-browser strong {
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .docsync-wp-drive-browser p {
+    margin: 0;
+  }
+
+  .docsync-wp-drive-browser__heading {
+    align-items: flex-start;
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+  }
+
+  .docsync-wp-drive-browser__heading > span {
+    background: #f6f7f7;
+    border: 1px solid #dcdcde;
+    border-radius: 999px;
+    color: #50575e;
+    flex: 0 0 auto;
+    font-size: 12px;
+    font-weight: 600;
+    max-width: min(100%, 240px);
+    overflow-wrap: anywhere;
+    padding: 5px 9px;
+  }
+
+  .docsync-wp-drive-browser__toolbar {
+    align-items: end;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: minmax(160px, 220px) minmax(0, 1fr) auto auto auto;
+    margin-top: 14px;
+  }
+
+  .docsync-wp-drive-browser__toolbar label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .docsync-wp-drive-browser__toolbar .components-base-control,
+  .docsync-wp-drive-browser__toolbar .components-base-control__field {
+    margin-bottom: 0;
+  }
+
+  .docsync-wp-drive-browser__toolbar .components-input-control__container,
+  .docsync-wp-drive-browser__toolbar .components-search-control {
+    min-width: 0;
+  }
+
+  .docsync-wp-drive-browser__toolbar select,
+  .docsync-wp-drive-browser__toolbar input {
+    min-height: 34px;
+  }
+
+  .docsync-wp-drive-browser__breadcrumb {
+    align-items: center;
+    background: #f6f7f7;
+    border: 1px solid #d9e2e1;
+    border-radius: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 12px;
+    padding: 8px 10px;
+  }
+
+  .docsync-wp-drive-browser__breadcrumb span {
+    align-items: center;
+    display: inline-flex;
+    gap: 6px;
+  }
+
+  .docsync-wp-drive-browser__breadcrumb button {
+    background: transparent;
+    border: 0;
+    color: #2271b1;
+    cursor: pointer;
+    overflow-wrap: anywhere;
+    padding: 0;
+    text-decoration: underline;
+  }
+
+  .docsync-wp-drive-browser__breadcrumb button.is-current {
+    color: #1d2327;
+    cursor: default;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .docsync-wp-drive-browser__state {
+    align-items: center;
+    background: #f6f7f7;
+    border: 1px dashed #c3c4c7;
+    border-radius: 8px;
+    color: #50575e;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 14px;
+    padding: 18px;
+    text-align: center;
+  }
+
+  .docsync-wp-drive-browser__table-wrap {
+    border: 1px solid #d9e2e1;
+    border-radius: 8px;
+    margin-top: 14px;
+    max-height: 300px;
+    overflow: auto;
+  }
+
+  .docsync-wp-drive-browser__table {
+    border: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: 700px;
+  }
+
+  .docsync-wp-drive-browser__table thead th {
+    background: #f6f7f7;
+    box-shadow: 0 1px 0 #dcdcde;
+    line-height: 1.4;
+    padding: 10px 12px;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+
+  .docsync-wp-drive-browser__table tr.is-selected td {
+    background: #e8f3ee;
+    box-shadow: inset 4px 0 0 #0f766e;
+  }
+
+  .docsync-wp-drive-browser__table td {
+    padding: 11px 12px;
+    vertical-align: middle;
+  }
+
+  .docsync-wp-drive-browser__table td:nth-child(2),
+  .docsync-wp-drive-browser__table td:nth-child(3),
+  .docsync-wp-drive-browser__table td:nth-child(4) {
+    color: #646970;
+    white-space: nowrap;
+    width: 1%;
+  }
+
+  .docsync-wp-drive-browser__row-button {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    color: #1d2327;
+    cursor: pointer;
+    display: inline-flex;
+    gap: 8px;
+    max-width: 100%;
+    padding: 0;
+    text-align: left;
+  }
+
+  .docsync-wp-drive-browser__row-button:hover,
+  .docsync-wp-drive-browser__row-button:focus-visible {
+    color: #135e96;
+  }
+
+  .docsync-wp-drive-browser__row-button:focus-visible {
+    box-shadow: 0 0 0 2px #2271b1;
+    outline: none;
+  }
+
+  .docsync-wp-drive-browser__row-button span:last-child {
+    overflow-wrap: anywhere;
+  }
+
+  .docsync-wp-drive-browser__table tr.is-selected .docsync-wp-drive-browser__row-button span:last-child {
+    font-weight: 600;
+  }
+
+  .docsync-wp-drive-browser__more {
+    margin-top: 12px;
+    text-align: center;
+  }
+}

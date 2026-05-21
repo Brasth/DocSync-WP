@@ -1,0 +1,16 @@
+@layer components {
+  .docsync-wp-advanced-toggle {
+    margin-bottom: 12px;
+  }
+
+  .docsync-wp-advanced-source {
+    background: #fff;
+    border: 1px solid #d9e2e1;
+    border-radius: 8px;
+    padding: 14px;
+  }
+
+  .docsync-wp-advanced-source .docsync-wp-source-tabs {
+    margin: -14px -14px 14px;
+  }
+}

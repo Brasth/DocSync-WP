@@ -20,17 +20,18 @@ defined( 'ABSPATH' ) || exit;
 final class DriveClient {
 	public const GOOGLE_DOC_MIME_TYPE = 'application/vnd.google-apps.document';
 
-	private const API_BASE_URL            = 'https://www.googleapis.com/drive/v3';
-	private const FOLDER_MIME_TYPE        = 'application/vnd.google-apps.folder';
-	private const METADATA_FIELDS         = 'id,name,mimeType,modifiedTime,version,webViewLink';
-	private const DOCUMENT_LIST_FIELDS    = 'nextPageToken,incompleteSearch,files(id,name,mimeType,modifiedTime,version,webViewLink)';
-	private const DRIVE_ITEM_LIST_FIELDS  = 'nextPageToken,incompleteSearch,files(id,name,mimeType,modifiedTime,version,webViewLink,iconLink)';
-	private const HTML_ZIP_MIME_TYPE      = 'application/zip';
-	private const MARKDOWN_MIME_TYPE      = 'text/markdown';
-	private const REQUEST_TIMEOUT_SECONDS = 20;
-	private const MAX_EXPORT_BYTES        = 10485760;
-	private const DEFAULT_LIST_PAGE_SIZE  = 20;
-	private const MAX_LIST_PAGE_SIZE      = 50;
+	private const API_BASE_URL             = 'https://www.googleapis.com/drive/v3';
+	private const FOLDER_MIME_TYPE         = 'application/vnd.google-apps.folder';
+	private const METADATA_FIELDS          = 'id,name,mimeType,modifiedTime,version,webViewLink';
+	private const DOCUMENT_LIST_FIELDS     = 'nextPageToken,incompleteSearch,files(id,name,mimeType,modifiedTime,version,webViewLink)';
+	private const DRIVE_ITEM_LIST_FIELDS   = 'nextPageToken,incompleteSearch,files(id,name,mimeType,modifiedTime,version,webViewLink,iconLink)';
+	private const SHARED_DRIVE_LIST_FIELDS = 'nextPageToken,drives(id,name)';
+	private const HTML_ZIP_MIME_TYPE       = 'application/zip';
+	private const MARKDOWN_MIME_TYPE       = 'text/markdown';
+	private const REQUEST_TIMEOUT_SECONDS  = 20;
+	private const MAX_EXPORT_BYTES         = 10485760;
+	private const DEFAULT_LIST_PAGE_SIZE   = 20;
+	private const MAX_LIST_PAGE_SIZE       = 50;
 
 	/**
 	 * OAuth service.
@@ -60,7 +61,8 @@ final class DriveClient {
 			$user_id,
 			add_query_arg(
 				array(
-					'fields' => self::METADATA_FIELDS,
+					'fields'             => self::METADATA_FIELDS,
+					'supportsAllDrives'  => 'true',
 				),
 				self::API_BASE_URL . '/files/' . rawurlencode( $file_id )
 			)
@@ -89,18 +91,84 @@ final class DriveClient {
 	}
 
 	/**
+	 * List shared drives visible to the connected Google account.
+	 *
+	 * @param int    $user_id    User ID.
+	 * @param string $page_token Optional Drive pagination token.
+	 * @param int    $page_size  Requested page size.
+	 * @return array{drives:array<int,array<string,string>>,nextPageToken:string}|WP_Error
+	 */
+	public function listSharedDrives( int $user_id, string $page_token = '', int $page_size = self::MAX_LIST_PAGE_SIZE ): array|WP_Error {
+		$page_size = min( self::MAX_LIST_PAGE_SIZE, max( 1, $page_size ) );
+		$args      = array(
+			'fields'   => self::SHARED_DRIVE_LIST_FIELDS,
+			'pageSize' => $page_size,
+		);
+
+		if ( '' !== $page_token ) {
+			$args['pageToken'] = $page_token;
+		}
+
+		$response = $this->requestJson(
+			$user_id,
+			add_query_arg(
+				$args,
+				self::API_BASE_URL . '/drives'
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		if ( ! isset( $response['drives'] ) || ! is_array( $response['drives'] ) ) {
+			return $this->badGoogleResponseError();
+		}
+
+		$drives = array();
+
+		foreach ( $response['drives'] as $drive ) {
+			if (
+				! is_array( $drive )
+				|| ! isset( $drive['id'], $drive['name'] )
+				|| ! is_scalar( $drive['id'] )
+				|| ! is_scalar( $drive['name'] )
+			) {
+				continue;
+			}
+
+			$drives[] = array(
+				'driveId' => sanitize_text_field( (string) $drive['id'] ),
+				'name'    => sanitize_text_field( (string) $drive['name'] ),
+			);
+		}
+
+		return array(
+			'drives'        => $drives,
+			'nextPageToken' => isset( $response['nextPageToken'] ) && is_scalar( $response['nextPageToken'] ) ? sanitize_text_field( (string) $response['nextPageToken'] ) : '',
+		);
+	}
+
+	/**
 	 * List folders and Google Docs in a Drive folder.
 	 *
 	 * @param int    $user_id    User ID.
 	 * @param string $folder_id  Current Drive folder ID.
+	 * @param string $drive_id   Optional shared drive ID.
 	 * @param string $search     Optional name search scoped to the folder.
 	 * @param string $page_token Optional Drive pagination token.
 	 * @param int    $page_size  Requested page size.
-	 * @return array{items:array<int,array<string,mixed>>,nextPageToken:string,incompleteSearch:bool,folderId:string}|WP_Error
+	 * @return array{items:array<int,array<string,mixed>>,nextPageToken:string,incompleteSearch:bool,folderId:string,driveId:string}|WP_Error
 	 */
-	public function listDriveItems( int $user_id, string $folder_id = 'root', string $search = '', string $page_token = '', int $page_size = self::DEFAULT_LIST_PAGE_SIZE ): array|WP_Error {
+	public function listDriveItems( int $user_id, string $folder_id = 'root', string $drive_id = '', string $search = '', string $page_token = '', int $page_size = self::DEFAULT_LIST_PAGE_SIZE ): array|WP_Error {
 		$page_size = min( self::MAX_LIST_PAGE_SIZE, max( 1, $page_size ) );
+		$drive_id  = trim( $drive_id );
 		$folder_id = '' === trim( $folder_id ) ? 'root' : trim( $folder_id );
+
+		if ( '' !== $drive_id && 'root' === $folder_id ) {
+			$folder_id = $drive_id;
+		}
+
 		$query     = "'" . $this->escapeDriveQueryValue( $folder_id ) . "' in parents and trashed = false and (mimeType = '" . self::FOLDER_MIME_TYPE . "' or mimeType = '" . self::GOOGLE_DOC_MIME_TYPE . "')";
 		$search    = trim( $search );
 
@@ -108,13 +176,16 @@ final class DriveClient {
 			$query .= " and name contains '" . $this->escapeDriveQueryValue( $search ) . "'";
 		}
 
-		$args = array(
-			'corpora'  => 'user',
-			'fields'   => self::DRIVE_ITEM_LIST_FIELDS,
-			'orderBy'  => 'name_natural',
-			'pageSize' => $page_size,
-			'q'        => $query,
-			'spaces'   => 'drive',
+		$args = $this->driveListArgs( $drive_id );
+		$args = array_merge(
+			$args,
+			array(
+				'fields'   => self::DRIVE_ITEM_LIST_FIELDS,
+				'orderBy'  => 'name_natural',
+				'pageSize' => $page_size,
+				'q'        => $query,
+				'spaces'   => 'drive',
+			)
 		);
 
 		if ( '' !== $page_token ) {
@@ -160,6 +231,7 @@ final class DriveClient {
 			'nextPageToken'    => isset( $response['nextPageToken'] ) && is_scalar( $response['nextPageToken'] ) ? sanitize_text_field( (string) $response['nextPageToken'] ) : '',
 			'incompleteSearch' => ! empty( $response['incompleteSearch'] ),
 			'folderId'         => sanitize_text_field( $folder_id ),
+			'driveId'          => sanitize_text_field( $drive_id ),
 		);
 	}
 
@@ -430,6 +502,27 @@ final class DriveClient {
 	 */
 	private function escapeDriveQueryValue( string $value ): string {
 		return str_replace( array( '\\', "'" ), array( '\\\\', "\\'" ), $value );
+	}
+
+	/**
+	 * Build files.list arguments for My Drive or one shared drive.
+	 *
+	 * @param string $drive_id Optional shared drive ID.
+	 * @return array<string,string>
+	 */
+	private function driveListArgs( string $drive_id ): array {
+		if ( '' === $drive_id ) {
+			return array(
+				'corpora' => 'user',
+			);
+		}
+
+		return array(
+			'corpora'                   => 'drive',
+			'driveId'                   => $drive_id,
+			'includeItemsFromAllDrives' => 'true',
+			'supportsAllDrives'         => 'true',
+		);
 	}
 
 	/**

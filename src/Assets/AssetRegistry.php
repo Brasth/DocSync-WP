@@ -168,7 +168,7 @@ final class AssetRegistry {
 		wp_enqueue_script(
 			$handle,
 			$this->plugin_url . 'build/' . ltrim( $entry['file'], '/' ),
-			array( 'wp-api-fetch', 'wp-element' ),
+			array( 'wp-a11y', 'wp-api-fetch', 'wp-components', 'wp-element', 'wp-i18n', 'wp-url' ),
 			$this->assetVersion( $script_path ),
 			true
 		);
@@ -178,6 +178,10 @@ final class AssetRegistry {
 			'window.DocSyncWPAdmin = ' . wp_json_encode( $this->adminConfig() ) . ';',
 			'before'
 		);
+
+		if ( wp_style_is( 'wp-components', 'registered' ) ) {
+			wp_enqueue_style( 'wp-components' );
+		}
 
 		foreach ( $this->getStylesheetFiles( $entry, $manifest_file ) as $index => $css_file ) {
 			$style_path = $this->plugin_path . 'build/' . ltrim( $css_file, '/' );
@@ -189,7 +193,7 @@ final class AssetRegistry {
 			wp_enqueue_style(
 				0 === $index ? $handle : $handle . '-' . (string) $index,
 				$this->plugin_url . 'build/' . ltrim( $css_file, '/' ),
-				array(),
+				wp_style_is( 'wp-components', 'enqueued' ) ? array( 'wp-components' ) : array(),
 				$this->assetVersion( $style_path )
 			);
 		}

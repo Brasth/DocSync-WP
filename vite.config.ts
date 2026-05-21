@@ -3,11 +3,20 @@ import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 
 const entryByMode: Record<string, string> = {
-  admin: 'resources/js/admin/main.tsx',
-  'post-sync': 'resources/js/admin/post-sync-entry.tsx'
+  admin: 'resources/js/admin/entries/admin-entry.tsx',
+  'post-sync': 'resources/js/admin/entries/post-sync-entry.tsx'
 };
 
-const wordpressReactExternals = new Set(['@wordpress/element', 'react', 'react-dom']);
+const wordpressExternals = new Set([
+  '@wordpress/a11y',
+  '@wordpress/api-fetch',
+  '@wordpress/components',
+  '@wordpress/element',
+  '@wordpress/i18n',
+  '@wordpress/url',
+  'react',
+  'react-dom'
+]);
 
 export default defineConfig(({ mode }) => {
   const entryName = mode === 'post-sync' ? 'postSync' : 'admin';
@@ -39,7 +48,7 @@ export default defineConfig(({ mode }) => {
         input: {
           [entryName]: resolve(__dirname, entryPath)
         },
-        external: (id) => wordpressReactExternals.has(id),
+        external: (id) => wordpressExternals.has(id),
         onwarn(warning, warn) {
           if (
             warning.code === 'MODULE_LEVEL_DIRECTIVE'
@@ -55,7 +64,12 @@ export default defineConfig(({ mode }) => {
           format: 'iife',
           name: entryName === 'postSync' ? 'DocSyncWPPostSyncBundle' : 'DocSyncWPAdminBundle',
           globals: {
+            '@wordpress/a11y': 'wp.a11y',
+            '@wordpress/api-fetch': 'wp.apiFetch',
+            '@wordpress/components': 'wp.components',
             '@wordpress/element': 'wp.element',
+            '@wordpress/i18n': 'wp.i18n',
+            '@wordpress/url': 'wp.url',
             react: 'wp.element',
             'react-dom': 'wp.element'
           },

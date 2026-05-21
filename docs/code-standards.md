@@ -1,6 +1,6 @@
 # Code Standards
 
-Last updated: 2026-05-20
+Last updated: 2026-05-21
 
 ## Purpose
 
@@ -24,7 +24,7 @@ Standards here match the current DocSync WP implementation. Keep new work aligne
 - Use `docsync-wp` as slug and text domain.
 - Use `docsync-wp/v1` for REST endpoints.
 - Use WordPress HTTP APIs for Google requests.
-- Use `wp-api-fetch` and `wp-element` in admin JS.
+- Use WordPress packages for admin JS platform APIs: `wp-api-fetch`, `wp-element`, `wp-i18n`, `wp-url`, `wp-a11y`, and `wp-components`.
 - Keep admin UI inside WordPress admin conventions.
 
 ## Storage Standards
@@ -46,9 +46,13 @@ Rules:
 - Admin UI is React mounted from Vite entry points.
 - Keep the central dashboard and post-level controls as separate bundles.
 - Use WordPress element imports, not direct React runtime imports.
-- Use Radix UI primitives through focused admin components when they improve accessibility. Do not adopt Radix Themes without an explicit design-system decision.
-- Keep React and React DOM as build-time peers for Radix only; Vite must externalize runtime React imports to WordPress `wp.element`.
+- Use Radix UI primitives for complex interaction behavior such as Dialog and Tabs. Do not replace those with WordPress Modal/TabPanel unless a future design decision changes this.
+- Use WordPress components for simple admin controls and feedback where they fit: buttons, search controls, select controls, text controls, notices, spinners, and tooltips.
+- Keep React and React DOM as build-time peers for Radix only; Vite must externalize runtime React imports and WordPress package imports to WordPress globals.
 - Alias Radix automatic JSX runtime imports to the local WordPress JSX runtime shim so bundled primitives do not expect a separate React runtime.
+- Organize admin frontend code by feature first, with shared UI atoms under `resources/js/admin/shared/ui/`.
+- Keep old `resources/js/admin/components/*` paths as thin compatibility exports only when useful during refactors.
+- Prefer feature hooks for stateful workflows; do not add `@wordpress/data` until state is shared across independent mounts.
 - Prefer explicit user-facing errors over hidden failures.
 - Keep modal and row-action behavior accessible and keyboard-safe.
 

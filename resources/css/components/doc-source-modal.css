@@ -1,0 +1,65 @@
+@layer components {
+  .docsync-wp-modal-backdrop {
+    background: rgba(10, 18, 25, 0.58);
+    inset: 0;
+    position: fixed;
+    z-index: 100000;
+  }
+
+  .docsync-wp-modal {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 28px 90px rgba(0, 0, 0, 0.28);
+    display: flex;
+    flex-direction: column;
+    left: 50%;
+    max-width: 760px;
+    max-height: calc(100vh - 48px);
+    overflow: hidden;
+    position: fixed;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: min(calc(100vw - 48px), 760px);
+    z-index: 100001;
+  }
+
+  .docsync-wp-modal__header,
+  .docsync-wp-modal__body,
+  .docsync-wp-modal__footer {
+    padding: 20px;
+  }
+
+  .docsync-wp-modal__header {
+    align-items: flex-start;
+    background: #f6f7f7;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .docsync-wp-modal__body {
+    overflow: auto;
+  }
+
+  .docsync-wp-modal__header h2,
+  .docsync-wp-modal__header p {
+    margin: 0;
+  }
+
+  .docsync-wp-doc-preview {
+    background: #f0f6f4;
+    border-left: 4px solid #0f766e;
+    margin-top: 14px;
+    padding: 12px;
+  }
+
+  .docsync-wp-doc-preview span {
+    display: block;
+    margin-top: 4px;
+    word-break: break-all;
+  }
+
+  .docsync-wp-modal__footer {
+    background: #f6f7f7;
+    justify-content: flex-end;
+  }
+}

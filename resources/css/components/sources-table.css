@@ -1,0 +1,30 @@
+@layer components {
+  .docsync-wp-source-filters {
+    align-items: end;
+    display: grid;
+    gap: 12px;
+    grid-template-columns: minmax(220px, 1fr) minmax(160px, 220px) minmax(150px, 190px) auto;
+    margin-bottom: 16px;
+  }
+
+  .docsync-wp-source-filters label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .docsync-wp-source-filters__actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .docsync-wp-sources-table {
+    min-width: 760px;
+  }
+
+  .docsync-wp-sources-table small {
+    color: #646970;
+    display: block;
+    margin-top: 3px;
+  }
+}

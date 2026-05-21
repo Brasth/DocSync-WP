@@ -1,0 +1,81 @@
+@layer components {
+  .docsync-wp-card {
+    background: rgba(255, 255, 255, 0.94);
+    border: 1px solid #d9e2e1;
+    border-radius: 14px;
+    box-shadow: 0 18px 60px rgba(23, 32, 42, 0.08);
+    padding: 22px;
+  }
+
+  .docsync-wp-card__header {
+    border-bottom: 1px solid #d9e2e1;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+  }
+
+  .docsync-wp-card__header--row,
+  .docsync-wp-actions-row,
+  .docsync-wp-account,
+  .docsync-wp-post-box__actions,
+  .docsync-wp-modal__footer {
+    align-items: center;
+    display: flex;
+    gap: 10px;
+  }
+
+  .docsync-wp-card__header--row {
+    justify-content: space-between;
+  }
+
+  .docsync-wp-card h2,
+  .docsync-wp-card p {
+    margin-top: 0;
+  }
+
+  .docsync-wp-kicker {
+    color: #0f766e;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+
+  .docsync-wp-inline-warning {
+    color: #646970;
+  }
+
+  .docsync-wp-field {
+    align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .docsync-wp-field--compact {
+    max-width: 260px;
+  }
+
+  .docsync-wp-table-scroll {
+    overflow-x: auto;
+  }
+
+  .docsync-wp-table-footer {
+    margin: 14px 0 0;
+    text-align: center;
+  }
+
+  .docsync-wp-pill {
+    background: #e8f3ee;
+    border-radius: 999px;
+    color: #175a44;
+    display: inline-block;
+    font-weight: 700;
+    padding: 3px 9px;
+  }
+
+  .docsync-wp-pill.is-error,
+  .docsync-wp-list-error {
+    color: #b42318;
+  }
+}
