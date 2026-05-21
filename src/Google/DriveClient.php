@@ -21,8 +21,10 @@ final class DriveClient {
 	public const GOOGLE_DOC_MIME_TYPE = 'application/vnd.google-apps.document';
 
 	private const API_BASE_URL            = 'https://www.googleapis.com/drive/v3';
+	private const FOLDER_MIME_TYPE        = 'application/vnd.google-apps.folder';
 	private const METADATA_FIELDS         = 'id,name,mimeType,modifiedTime,version,webViewLink';
 	private const DOCUMENT_LIST_FIELDS    = 'nextPageToken,incompleteSearch,files(id,name,mimeType,modifiedTime,version,webViewLink)';
+	private const DRIVE_ITEM_LIST_FIELDS  = 'nextPageToken,incompleteSearch,files(id,name,mimeType,modifiedTime,version,webViewLink,iconLink)';
 	private const HTML_ZIP_MIME_TYPE      = 'application/zip';
 	private const MARKDOWN_MIME_TYPE      = 'text/markdown';
 	private const REQUEST_TIMEOUT_SECONDS = 20;
@@ -83,6 +85,81 @@ final class DriveClient {
 			'modifiedTime' => $response['modifiedTime'],
 			'version'      => $response['version'],
 			'webViewLink'  => $response['webViewLink'],
+		);
+	}
+
+	/**
+	 * List folders and Google Docs in a Drive folder.
+	 *
+	 * @param int    $user_id    User ID.
+	 * @param string $folder_id  Current Drive folder ID.
+	 * @param string $search     Optional name search scoped to the folder.
+	 * @param string $page_token Optional Drive pagination token.
+	 * @param int    $page_size  Requested page size.
+	 * @return array{items:array<int,array<string,mixed>>,nextPageToken:string,incompleteSearch:bool,folderId:string}|WP_Error
+	 */
+	public function listDriveItems( int $user_id, string $folder_id = 'root', string $search = '', string $page_token = '', int $page_size = self::DEFAULT_LIST_PAGE_SIZE ): array|WP_Error {
+		$page_size = min( self::MAX_LIST_PAGE_SIZE, max( 1, $page_size ) );
+		$folder_id = '' === trim( $folder_id ) ? 'root' : trim( $folder_id );
+		$query     = "'" . $this->escapeDriveQueryValue( $folder_id ) . "' in parents and trashed = false and (mimeType = '" . self::FOLDER_MIME_TYPE . "' or mimeType = '" . self::GOOGLE_DOC_MIME_TYPE . "')";
+		$search    = trim( $search );
+
+		if ( '' !== $search ) {
+			$query .= " and name contains '" . $this->escapeDriveQueryValue( $search ) . "'";
+		}
+
+		$args = array(
+			'corpora'  => 'user',
+			'fields'   => self::DRIVE_ITEM_LIST_FIELDS,
+			'orderBy'  => 'name_natural',
+			'pageSize' => $page_size,
+			'q'        => $query,
+			'spaces'   => 'drive',
+		);
+
+		if ( '' !== $page_token ) {
+			$args['pageToken'] = $page_token;
+		}
+
+		$response = $this->requestJson(
+			$user_id,
+			add_query_arg(
+				$args,
+				self::API_BASE_URL . '/files'
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		if ( ! isset( $response['files'] ) || ! is_array( $response['files'] ) ) {
+			return $this->badGoogleResponseError();
+		}
+
+		$items = array();
+
+		foreach ( $response['files'] as $file ) {
+			if ( ! is_array( $file ) || ! $this->hasDriveItemFields( $file ) ) {
+				continue;
+			}
+
+			$item = $this->formatDriveItemResponse( $file );
+
+			if ( ! in_array( $item['mimeType'], array( self::FOLDER_MIME_TYPE, self::GOOGLE_DOC_MIME_TYPE ), true ) ) {
+				continue;
+			}
+
+			$items[] = $item;
+		}
+
+		$this->sortDriveItems( $items );
+
+		return array(
+			'items'            => $items,
+			'nextPageToken'    => isset( $response['nextPageToken'] ) && is_scalar( $response['nextPageToken'] ) ? sanitize_text_field( (string) $response['nextPageToken'] ) : '',
+			'incompleteSearch' => ! empty( $response['incompleteSearch'] ),
+			'folderId'         => sanitize_text_field( $folder_id ),
 		);
 	}
 
@@ -317,6 +394,36 @@ final class DriveClient {
 	}
 
 	/**
+	 * Format a Drive file as a browser item.
+	 *
+	 * @param array<mixed> $data Drive file response.
+	 * @return array<string,mixed>
+	 */
+	private function formatDriveItemResponse( array $data ): array {
+		$mime_type = sanitize_text_field( (string) $data['mimeType'] );
+		$is_folder = self::FOLDER_MIME_TYPE === $mime_type;
+		$item      = array(
+			'fileId'       => sanitize_text_field( (string) $data['id'] ),
+			'name'         => sanitize_text_field( (string) $data['name'] ),
+			'mimeType'     => $mime_type,
+			'itemType'     => $is_folder ? 'folder' : 'document',
+			'modifiedTime' => sanitize_text_field( (string) $data['modifiedTime'] ),
+			'webViewLink'  => isset( $data['webViewLink'] ) && is_scalar( $data['webViewLink'] ) ? esc_url_raw( (string) $data['webViewLink'] ) : '',
+			'selectable'   => ! $is_folder,
+		);
+
+		if ( isset( $data['iconLink'] ) && is_scalar( $data['iconLink'] ) ) {
+			$item['iconLink'] = esc_url_raw( (string) $data['iconLink'] );
+		}
+
+		if ( isset( $data['version'] ) && is_scalar( $data['version'] ) ) {
+			$item['version'] = sanitize_text_field( (string) $data['version'] );
+		}
+
+		return $item;
+	}
+
+	/**
 	 * Escape a user search term for the Drive query language.
 	 *
 	 * @param string $value Raw query value.
@@ -364,6 +471,45 @@ final class DriveClient {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Whether a Drive item response has all required browser fields.
+	 *
+	 * @param array<mixed> $data Drive file response.
+	 */
+	private function hasDriveItemFields( array $data ): bool {
+		foreach ( array( 'id', 'name', 'mimeType', 'modifiedTime' ) as $field ) {
+			if ( ! isset( $data[ $field ] ) || ! is_scalar( $data[ $field ] ) ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Sort Drive browser rows with folders first, then by natural name.
+	 *
+	 * @param array<int,array<string,mixed>> $items Drive items.
+	 */
+	private function sortDriveItems( array &$items ): void {
+		usort(
+			$items,
+			static function ( array $first, array $second ): int {
+				if ( $first['itemType'] !== $second['itemType'] ) {
+					return 'folder' === $first['itemType'] ? -1 : 1;
+				}
+
+				$name_compare = strnatcasecmp( (string) $first['name'], (string) $second['name'] );
+
+				if ( 0 !== $name_compare ) {
+					return $name_compare;
+				}
+
+				return strcmp( (string) $first['fileId'], (string) $second['fileId'] );
+			}
+		);
 	}
 
 	/**

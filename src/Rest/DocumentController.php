@@ -55,6 +55,16 @@ final class DocumentController {
 	public function registerRoutes( string $rest_namespace ): void {
 		register_rest_route(
 			$rest_namespace,
+			'/drive/items',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'listDriveItems' ),
+				'permission_callback' => array( $this, 'canUseAuthenticatedRest' ),
+			)
+		);
+
+		register_rest_route(
+			$rest_namespace,
 			'/documents',
 			array(
 				'methods'             => WP_REST_Server::READABLE,
@@ -104,6 +114,34 @@ final class DocumentController {
 		}
 
 		return true;
+	}
+
+	/**
+	 * List folders and Google Docs in a Google Drive folder.
+	 *
+	 * @param WP_REST_Request $request REST request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function listDriveItems( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$page_size = absint( $request->get_param( 'page_size' ) );
+
+		if ( $page_size <= 0 ) {
+			$page_size = 20;
+		}
+
+		$items = $this->drive_client->listDriveItems(
+			get_current_user_id(),
+			sanitize_text_field( (string) $request->get_param( 'folder_id' ) ),
+			sanitize_text_field( (string) $request->get_param( 'search' ) ),
+			sanitize_text_field( (string) $request->get_param( 'page_token' ) ),
+			$page_size
+		);
+
+		if ( is_wp_error( $items ) ) {
+			return $items;
+		}
+
+		return rest_ensure_response( $items );
 	}
 
 	/**

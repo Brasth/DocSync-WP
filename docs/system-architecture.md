@@ -1,6 +1,6 @@
 # System Architecture
 
-Last updated: 2026-05-20
+Last updated: 2026-05-21
 
 ## Overview
 
@@ -73,7 +73,7 @@ Responsibilities:
 
 Responsibilities:
 
-- link a Google Doc to the current target with the custom Drive browser, with pasted URL/file ID under advanced linking
+- link a Google Doc to the current target with the Drive-like My Drive browser, with pasted URL/file ID under advanced linking
 - change or detach the source
 - trigger immediate sync
 - show last sync and error state
@@ -103,6 +103,7 @@ Implemented routes:
 - `GET /oauth/google/account`
 - `DELETE /oauth/google/account`
 - `GET /oauth/google/callback`
+- `GET /drive/items` with `folder_id`, `search`, `page_token`, and `page_size` filters
 - `GET /documents` with `search`, `page_token`, and `page_size` filters
 - `POST /documents/inspect`
 - `GET /sources` with `search`, `post_type`, `status`, `page`, and `per_page` filters
@@ -156,8 +157,8 @@ These identify images imported from a Google Docs HTML ZIP export so re-sync can
 ## Sync Flow
 
 1. User connects Google from the admin dashboard.
-2. User selects a Doc through the custom Drive browser, or inspects advanced pasted URL/raw file ID entry.
-3. `DocumentController` lists Docs server-side and validates advanced input through Drive metadata.
+2. User browses My Drive folders and selects a Doc through the Drive browser, or inspects advanced pasted URL/raw file ID entry.
+3. `DocumentController` lists Drive folders/Docs server-side and validates advanced input through Drive metadata.
 4. `SourceController` attaches the source to an existing target or creates a new draft.
 5. `SyncService` acquires a per-post lock.
 6. `DriveClient` reads metadata and exports an HTML ZIP package.
