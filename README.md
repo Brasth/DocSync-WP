@@ -65,7 +65,7 @@ Each WordPress user must connect their own Google account before inspecting or s
 ## Sync Behavior
 
 - Google Docs is the source of truth. Manual sync overwrites WordPress post content while preserving normal WordPress revisions.
-- Sync exports Google Docs as an HTML ZIP package, imports local images into the WordPress Media Library, rewrites image URLs, sanitizes HTML, then updates the target post.
+- Sync exports Google Docs as an HTML ZIP package, imports local images into the WordPress Media Library, rewrites image URLs, sanitizes HTML, converts common elements to Gutenberg blocks, then updates the target post.
 - Default Google scope is `https://www.googleapis.com/auth/drive.readonly`.
 - Source selection uses DocSync WP's custom Google Drive document browser. Pasted Google Doc URLs or raw file IDs remain available under advanced linking.
 - Existing Google connections created with the old `drive.file` scope must reconnect before browsing or syncing Docs.

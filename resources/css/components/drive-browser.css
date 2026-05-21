@@ -66,38 +66,59 @@
   }
 
   .docsync-wp-drive-browser__breadcrumb {
-    align-items: center;
     background: #f6f7f7;
     border: 1px solid #d9e2e1;
     border-radius: 8px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
     margin-top: 12px;
     padding: 8px 10px;
   }
 
-  .docsync-wp-drive-browser__breadcrumb span {
+  .docsync-wp-drive-browser__breadcrumb ol {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .docsync-wp-drive-browser__breadcrumb li {
     align-items: center;
     display: inline-flex;
     gap: 6px;
+    margin: 0;
   }
 
-  .docsync-wp-drive-browser__breadcrumb button {
+  .docsync-wp-drive-browser__breadcrumb-button {
     background: transparent;
     border: 0;
+    border-radius: 4px;
     color: #2271b1;
     cursor: pointer;
     overflow-wrap: anywhere;
-    padding: 0;
+    padding: 2px 4px;
     text-decoration: underline;
   }
 
-  .docsync-wp-drive-browser__breadcrumb button.is-current {
+  .docsync-wp-drive-browser__breadcrumb-button:hover,
+  .docsync-wp-drive-browser__breadcrumb-button:focus-visible {
+    color: #135e96;
+  }
+
+  .docsync-wp-drive-browser__breadcrumb-button:focus-visible {
+    box-shadow: 0 0 0 2px #2271b1;
+    outline: none;
+  }
+
+  .docsync-wp-drive-browser__breadcrumb-current {
     color: #1d2327;
-    cursor: default;
     font-weight: 600;
-    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+
+  .docsync-wp-drive-browser__breadcrumb-separator {
+    color: #8c8f94;
   }
 
   .docsync-wp-drive-browser__state {

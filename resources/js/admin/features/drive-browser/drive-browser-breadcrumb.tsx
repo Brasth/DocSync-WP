@@ -1,6 +1,5 @@
 import { createElement } from '@wordpress/element';
 
-import { AdminButton } from '../../shared/ui/admin-button';
 import type { DriveBrowserBreadcrumb } from './drive-browser-utils';
 
 type Props = {
@@ -22,23 +21,33 @@ export const DriveBrowserBreadcrumbNav = ({
 }: Props): JSX.Element => {
   return (
     <nav aria-label="Google Drive folder path" className="docsync-wp-drive-browser__breadcrumb">
-      {breadcrumbs.map((breadcrumb, index) => {
-        const isCurrent = breadcrumb.fileId === folderId;
+      <ol>
+        {breadcrumbs.map((breadcrumb, index) => {
+          const isCurrent = breadcrumb.fileId === folderId;
 
-        return (
-          <span key={`${driveId || 'my-drive'}-${breadcrumb.fileId}`}>
-            {index > 0 ? <span aria-hidden="true">/</span> : null}
-            <AdminButton
-              className={isCurrent ? 'is-current' : ''}
-              disabled={busy || loading || isCurrent}
-              onClick={() => onOpen(breadcrumb, index)}
-              variant="link"
-            >
-              <span aria-current={isCurrent ? 'page' : undefined}>{breadcrumb.name}</span>
-            </AdminButton>
-          </span>
-        );
-      })}
+          return (
+            <li key={`${driveId || 'my-drive'}-${breadcrumb.fileId}`}>
+              {index > 0 ? (
+                <span aria-hidden="true" className="docsync-wp-drive-browser__breadcrumb-separator">/</span>
+              ) : null}
+              {isCurrent ? (
+                <span aria-current="page" className="docsync-wp-drive-browser__breadcrumb-current">
+                  {breadcrumb.name}
+                </span>
+              ) : (
+                <button
+                  className="docsync-wp-drive-browser__breadcrumb-button"
+                  disabled={busy || loading}
+                  onClick={() => onOpen(breadcrumb, index)}
+                  type="button"
+                >
+                  {breadcrumb.name}
+                </button>
+              )}
+            </li>
+          );
+        })}
+      </ol>
     </nav>
   );
 };

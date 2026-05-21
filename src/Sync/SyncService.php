@@ -48,6 +48,13 @@ final class SyncService {
 	private HtmlZipImporter $html_zip_importer;
 
 	/**
+	 * HTML to block content converter.
+	 *
+	 * @var HtmlToBlockContentConverter
+	 */
+	private HtmlToBlockContentConverter $block_converter;
+
+	/**
 	 * Sync lock.
 	 *
 	 * @var SyncLock
@@ -57,20 +64,23 @@ final class SyncService {
 	/**
 	 * Constructor.
 	 *
-	 * @param SourceRepository $source_repository Source repository.
-	 * @param DriveClient      $drive_client      Drive client.
-	 * @param HtmlZipImporter  $html_zip_importer HTML ZIP importer.
-	 * @param SyncLock         $sync_lock         Sync lock.
+	 * @param SourceRepository            $source_repository Source repository.
+	 * @param DriveClient                 $drive_client      Drive client.
+	 * @param HtmlZipImporter             $html_zip_importer HTML ZIP importer.
+	 * @param HtmlToBlockContentConverter $block_converter   HTML to block converter.
+	 * @param SyncLock                    $sync_lock         Sync lock.
 	 */
 	public function __construct(
 		SourceRepository $source_repository,
 		DriveClient $drive_client,
 		HtmlZipImporter $html_zip_importer,
+		HtmlToBlockContentConverter $block_converter,
 		SyncLock $sync_lock
 	) {
 		$this->source_repository = $source_repository;
 		$this->drive_client      = $drive_client;
 		$this->html_zip_importer = $html_zip_importer;
+		$this->block_converter   = $block_converter;
 		$this->sync_lock         = $sync_lock;
 	}
 
@@ -279,7 +289,13 @@ final class SyncService {
 				return $this->markError( $post_id, $source, $html );
 			}
 
-			$hash = hash( 'sha256', $html );
+			$block_content = $this->block_converter->convert( $html );
+
+			if ( is_wp_error( $block_content ) ) {
+				return $this->markError( $post_id, $source, $block_content );
+			}
+
+			$hash = hash( 'sha256', $block_content );
 
 			if ( ! $force && hash_equals( (string) $source['last_hash'], $hash ) ) {
 				$this->saveSourceState(
@@ -301,7 +317,7 @@ final class SyncService {
 				wp_slash(
 					array(
 						'ID'           => $post_id,
-						'post_content' => $html,
+						'post_content' => $block_content,
 					)
 				),
 				true

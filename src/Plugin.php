@@ -27,6 +27,7 @@ use DocSyncWP\Rest\SyncLogController;
 use DocSyncWP\Security\EncryptionService;
 use DocSyncWP\Settings\SettingsRepository;
 use DocSyncWP\Sync\HtmlDocumentImageRewriter;
+use DocSyncWP\Sync\HtmlToBlockContentConverter;
 use DocSyncWP\Sync\HtmlZipImporter;
 use DocSyncWP\Sync\HtmlZipPackageExtractor;
 use DocSyncWP\Sync\MediaAssetImporter;
@@ -147,6 +148,7 @@ final class Plugin {
 				new HtmlZipPackageExtractor(),
 				new HtmlDocumentImageRewriter( $media_assets )
 			),
+			new HtmlToBlockContentConverter(),
 			new SyncLock()
 		);
 

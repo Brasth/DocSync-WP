@@ -27,9 +27,10 @@ flowchart LR
   REST --> Sync["SyncService"]
   Sync --> Drive["Google Drive metadata + HTML ZIP export"]
   Sync --> Import["HtmlZipImporter"]
+  Import --> Blocks["HtmlToBlockContentConverter"]
   Sync --> Lock["SyncLock"]
   Import --> Media["Media Library attachments"]
-  Import --> WP["wp_update_post / wp_insert_post"]
+  Blocks --> WP["wp_update_post / wp_insert_post"]
   WP --> Meta["Post meta sync state"]
   Media --> AttachmentMeta["Attachment asset dedupe meta"]
   OAuth --> Tokens["Encrypted user meta"]
@@ -174,9 +175,10 @@ These identify images imported from a Google Docs HTML ZIP export so re-sync can
 5. `SyncService` acquires a per-post lock.
 6. `DriveClient` reads metadata and exports an HTML ZIP package.
 7. `HtmlZipImporter` extracts the package, imports local images into Media Library, rewrites image URLs, and sanitizes HTML.
-8. WordPress post content is updated only after export and import succeed.
-9. Source state is saved back to post meta.
-10. Result state becomes `linked`, `syncing`, `synced`, `skipped`, or `error`.
+8. `HtmlToBlockContentConverter` maps common document nodes to Gutenberg core blocks and keeps unsupported nodes as `core/html` fallback blocks.
+9. WordPress post content is updated only after export, import, and block conversion succeed.
+10. Source state is saved back to post meta.
+11. Result state becomes `linked`, `syncing`, `synced`, `skipped`, or `error`.
 
 Skip behavior:
 
@@ -197,7 +199,7 @@ Skip behavior:
 - Google tokens and client secret are encrypted with WordPress salt material
 - REST requests require nonce verification
 - post-level actions still require `edit_post` or post-type capability checks
-- imported content is sanitized before write
+- imported content is sanitized and normalized to block markup before write
 - local exported images are validated as image files before Media Library import
 - image import failure marks sync `error` before target content is overwritten
 - plugin never deletes synced posts on uninstall by default

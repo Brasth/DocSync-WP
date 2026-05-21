@@ -22,7 +22,25 @@
     pointer-events: none;
   }
 
+  .docsync-wp-post-box {
+    min-width: 0;
+  }
+
   .docsync-wp-post-box p {
     margin: 0 0 10px;
+    overflow-wrap: anywhere;
+  }
+
+  .docsync-wp-post-box__actions {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .docsync-wp-post-box__actions .button {
+    justify-content: center;
+    min-height: 34px;
+    white-space: normal;
+    width: 100%;
   }
 }

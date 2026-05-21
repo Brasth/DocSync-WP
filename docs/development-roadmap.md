@@ -4,7 +4,7 @@ Last updated: 2026-05-21
 
 ## Status
 
-The Google Docs Sync Admin Actions implementation is complete in code. The self-managed Google onboarding, Drive-like My Drive/shared drive document browser, dedicated Sources submenu, page target support, source filters, HTML ZIP media import, admin frontend structure refactor, Drive modal polish, and OAuth JSON import are also complete in code.
+The Google Docs Sync Admin Actions implementation is complete in code. The self-managed Google onboarding, Drive-like My Drive/shared drive document browser, dedicated Sources submenu, page target support, source filters, HTML ZIP media import, Gutenberg block conversion, admin frontend structure refactor, Drive modal polish, and OAuth JSON import are also complete in code.
 
 ## Phase Summary
 
@@ -22,6 +22,7 @@ The Google Docs Sync Admin Actions implementation is complete in code. The self-
 | 10 | Shared Drive Browser and List Refresh | Complete in code, local PHP validation blocked |
 | 11 | Radix and WordPress-Native Frontend Refactor | Complete in code, local PHP validation blocked |
 | 12 | Drive Modal Polish and OAuth JSON Import | Complete in code, local PHP validation blocked |
+| 13 | Admin UI Fixes and Gutenberg Sync Content | Complete in code, local PHP validation blocked |
 
 ## What Is Shipped
 
@@ -36,6 +37,7 @@ The Google Docs Sync Admin Actions implementation is complete in code. The self-
 - compact source modal close control and table sizing that avoids desktop horizontal overflow
 - feature-first admin frontend structure with split API modules, feature hooks, shared UI atoms, and WordPress-native REST/i18n/a11y/component integration
 - browser-only Google OAuth client JSON import that fills setup credentials and warns on redirect URI mismatch
+- synced Google Docs content is saved as Gutenberg block markup for common document structures, with `core/html` fallback for unsupported nodes
 - post list-table actions update visible source status after link/sync and auto-refresh after new draft creation
 - entry-specific CSS files with shared and component partials for admin setup, Sources, and post sync UI maintenance
 - HTML ZIP import that sideloads exported images into Media Library and rewrites content URLs
@@ -51,7 +53,7 @@ The implementation is usable, but a few follow-ups remain open for future iterat
 
 - add automated PHP and JS tests
 - add richer sync history if support needs increase
-- decide whether to add block-perfect conversion beyond sanitized HTML import
+- improve block-perfect conversion for complex Google Docs layouts if needed
 - decide whether to add a separate audit log table
 - decide whether to add a managed Google connector service for true nontechnical one-click onboarding
 

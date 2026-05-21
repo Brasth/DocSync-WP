@@ -4,11 +4,11 @@ Last updated: 2026-05-21
 
 ## Snapshot
 
-DocSync WP is a WordPress plugin for one-way Google Docs -> WordPress sync. This checkout includes Google OAuth, document inspection, post/page linking and sync, list-table actions, a setup admin page, a dedicated Sources submenu, HTML ZIP media import, and WP-Cron scheduling.
+DocSync WP is a WordPress plugin for one-way Google Docs -> WordPress sync. This checkout includes Google OAuth, document inspection, post/page linking and sync, list-table actions, a setup admin page, a dedicated Sources submenu, HTML ZIP media import, Gutenberg block conversion, and WP-Cron scheduling.
 
-Summary reflects the current source tree after the Radix plus WordPress-native admin frontend refactor, Drive modal polish, and OAuth JSON import.
+Summary reflects the current source tree after the Radix plus WordPress-native admin frontend refactor, Drive modal polish, OAuth JSON import, admin UI fixes, and Gutenberg sync conversion.
 
-- Total files tracked by `rg --files`: 128
+- Total files tracked by `rg --files`: 131
 - Main languages: PHP, TypeScript, CSS
 
 ## Top-Level Structure
@@ -29,7 +29,7 @@ Summary reflects the current source tree after the Radix plus WordPress-native a
 3. The central admin screen mounts the React app through `resources/js/admin/entries/admin-entry.tsx`.
 4. Post/page edit and list-table screens mount through `resources/js/admin/entries/post-sync-entry.tsx`.
 5. REST controllers handle settings, OAuth, My Drive/shared drive folder browsing, document inspection, source management, sync logs, and sync triggers.
-6. `SyncService` reads Google metadata, exports an HTML ZIP package, imports local images into Media Library, updates the target post, and persists sync state.
+6. `SyncService` reads Google metadata, exports an HTML ZIP package, imports local images into Media Library, converts sanitized HTML to block content, updates the target post, and persists sync state.
 
 ## Key Backend Modules
 
@@ -42,6 +42,9 @@ Summary reflects the current source tree after the Radix plus WordPress-native a
 - `src/Sync/HtmlZipImporter.php` - coordinates HTML ZIP import and sanitization.
 - `src/Sync/HtmlZipPackageExtractor.php` - extracts Google Docs ZIP exports and locates HTML.
 - `src/Sync/HtmlDocumentImageRewriter.php` - rewrites local image refs to attachment URLs.
+- `src/Sync/HtmlToBlockContentConverter.php` - maps sanitized HTML fragments to serialized Gutenberg blocks.
+- `src/Sync/HtmlBlockFactory.php` - creates common core block arrays from DOM elements.
+- `src/Sync/HtmlBlockMarkupSanitizer.php` - strips export-specific markup from block inner HTML.
 - `src/Sync/MediaAssetImporter.php` - uploads and dedupes Media Library images.
 - `src/Cron/SyncCron.php` - scheduled sync registration and batch execution.
 - `src/Rest/*Controller.php` - admin REST surface.

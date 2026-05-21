@@ -2,6 +2,28 @@
 
 Last updated: 2026-05-21
 
+## 2026-05-21 - Admin UI Fixes and Gutenberg Sync Content
+
+Status: completed in codebase
+
+Fixed reported admin UI regressions and changed synced content to block markup:
+
+- changed Drive breadcrumbs from boxed WordPress buttons to semantic breadcrumb controls
+- simplified OAuth JSON import into one compact picker with filename/status feedback
+- stacked post edit metabox actions so `Change Doc`, `Sync now`, and `Detach` fit narrow sidebars
+- added server-side HTML-to-Gutenberg conversion for synced Google Docs content
+- maps common HTML export nodes to core paragraph, heading, list, image, table, quote, preformatted, and separator blocks
+- keeps unsupported HTML in `core/html` fallback blocks instead of dropping content
+- hashes and writes the final block content so skip logic matches the saved post body
+
+Verification status:
+
+- `pnpm typecheck` passes
+- `pnpm lint` passes
+- `pnpm build` passes
+- `git diff --check` passes
+- local PHP verification is blocked because `php` and `composer` are unavailable
+
 ## 2026-05-21 - Drive Modal Polish and OAuth JSON Import
 
 Status: completed in codebase

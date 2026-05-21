@@ -1,5 +1,6 @@
-import { createElement, useState } from '@wordpress/element';
+import { createElement, useRef, useState } from '@wordpress/element';
 
+import { AdminButton } from '../../shared/ui/admin-button';
 import { parseOAuthClientJson, type OAuthClientJsonCredentials } from './oauth-client-json';
 
 type Props = {
@@ -14,7 +15,9 @@ type ImportNotice = {
 };
 
 export const OAuthClientJsonImport = ({ busy, redirectUri, onImported }: Props): JSX.Element => {
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const [notice, setNotice] = useState<ImportNotice | null>(null);
+  const [fileName, setFileName] = useState('');
 
   const importFile = async (file: File) => {
     if (!file.name.toLowerCase().endsWith('.json') && file.type !== 'application/json') {
@@ -32,12 +35,12 @@ export const OAuthClientJsonImport = ({ busy, redirectUri, onImported }: Props):
     <div className="docsync-wp-oauth-import">
       <div>
         <strong>Import OAuth JSON</strong>
-        <p>Choose the Web application client JSON downloaded from Google Cloud. The file stays in this browser and only fills the fields below.</p>
+        <p>Optional. Fill the credential fields from the Web application JSON downloaded from Google Cloud.</p>
       </div>
-      <label className="docsync-wp-oauth-import__file">
-        <span>OAuth client JSON file</span>
+      <div className="docsync-wp-oauth-import__control">
         <input
           accept="application/json,.json"
+          className="docsync-wp-oauth-import__input"
           disabled={busy}
           onChange={(event) => {
             const file = event.currentTarget.files?.[0] ?? null;
@@ -47,14 +50,19 @@ export const OAuthClientJsonImport = ({ busy, redirectUri, onImported }: Props):
               return;
             }
 
+            setFileName(file.name);
             importFile(file)
               .then((credentials) => {
+                const redirectMatches = credentials.redirectUris.includes(redirectUri);
+                const message = redirectMatches
+                  ? 'OAuth client ID and secret imported.'
+                  : 'OAuth credentials imported. ' +
+                    'Add the redirect URI from step 2 to this Google OAuth client before connecting.';
+
                 onImported(credentials);
                 setNotice({
-                  type: credentials.redirectUris.includes(redirectUri) ? 'success' : 'warning',
-                  message: credentials.redirectUris.includes(redirectUri)
-                    ? 'OAuth client ID and secret imported.'
-                    : 'OAuth credentials imported. Add the redirect URI from step 2 to this Google OAuth client before connecting.'
+                  type: redirectMatches ? 'success' : 'warning',
+                  message
                 });
               })
               .catch((caught) => {
@@ -64,9 +72,16 @@ export const OAuthClientJsonImport = ({ busy, redirectUri, onImported }: Props):
                 });
               });
           }}
+          ref={inputRef}
           type="file"
         />
-      </label>
+        <AdminButton disabled={busy} onClick={() => inputRef.current?.click()}>
+          Choose JSON
+        </AdminButton>
+        <span className="docsync-wp-oauth-import__filename">
+          {fileName || 'No file selected'}
+        </span>
+      </div>
       {notice ? <p className={`docsync-wp-oauth-import__notice is-${notice.type}`}>{notice.message}</p> : null}
     </div>
   );
