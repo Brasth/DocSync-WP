@@ -9,6 +9,7 @@ import {
   samePostTypes,
   type SetupCheck
 } from './google-setup-utils';
+import { OAuthClientJsonImport } from './oauth-client-json-import';
 import { AdminButton } from '../../shared/ui/admin-button';
 
 type Props = {
@@ -123,6 +124,15 @@ export const SettingsPanel = ({ settings, busy, redirectUri, onSave }: Props): J
               <p>The custom document browser uses these server-side credentials and the connected user's Drive read-only grant.</p>
             </div>
           </div>
+          <OAuthClientJsonImport
+            busy={busy}
+            onImported={(credentials) => {
+              setClientId(credentials.clientId);
+              setClientSecret(credentials.clientSecret);
+              setTestChecks(null);
+            }}
+            redirectUri={redirectUri}
+          />
           <div className="docsync-wp-settings-grid">
             <label>
               <span>OAuth client ID</span>

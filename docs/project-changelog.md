@@ -2,6 +2,29 @@
 
 Last updated: 2026-05-21
 
+## 2026-05-21 - Drive Modal Polish and OAuth JSON Import
+
+Status: completed in codebase
+
+Refined the Google Doc linking and setup UX:
+
+- widened the source modal and changed the header close control to a compact accessible icon button
+- adjusted the Drive browser table so desktop rows fit the modal without awkward horizontal scrolling
+- kept small-screen table overflow available for narrow viewports
+- added a local browser-only OAuth client JSON import control in the setup wizard
+- parses Google Web application OAuth JSON into client ID and client secret fields
+- warns when the imported OAuth client JSON does not contain the plugin redirect URI
+- split Drive browser table CSS into a dedicated component partial for easier maintenance
+- fixed Drive client alignment warnings reported by PHPCS
+
+Verification status:
+
+- `pnpm typecheck` passes
+- `pnpm lint` passes
+- `pnpm build` passes
+- `git diff --check` passes
+- local PHP verification is blocked because `php` and `composer` are unavailable
+
 ## 2026-05-21 - Admin Frontend Structure Refactor
 
 Status: completed in codebase

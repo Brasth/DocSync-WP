@@ -1,0 +1,108 @@
+@layer components {
+  .docsync-wp-drive-browser__table-wrap {
+    border: 1px solid #d9e2e1;
+    border-radius: 8px;
+    margin-top: 14px;
+    max-height: 360px;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .docsync-wp-drive-browser__table {
+    border: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: fixed;
+    width: 100%;
+  }
+
+  .docsync-wp-drive-browser__table thead th {
+    background: #f6f7f7;
+    box-shadow: 0 1px 0 #dcdcde;
+    line-height: 1.4;
+    padding: 10px 12px;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+
+  .docsync-wp-drive-browser__table tr.is-selected td {
+    background: #e8f3ee;
+    box-shadow: inset 4px 0 0 #0f766e;
+  }
+
+  .docsync-wp-drive-browser__table td {
+    padding: 11px 12px;
+    vertical-align: middle;
+  }
+
+  .docsync-wp-drive-browser__table th:nth-child(2),
+  .docsync-wp-drive-browser__table td:nth-child(2) {
+    width: 160px;
+  }
+
+  .docsync-wp-drive-browser__table th:nth-child(3),
+  .docsync-wp-drive-browser__table td:nth-child(3) {
+    width: 110px;
+  }
+
+  .docsync-wp-drive-browser__table th:nth-child(4),
+  .docsync-wp-drive-browser__table td:nth-child(4) {
+    width: 98px;
+  }
+
+  .docsync-wp-drive-browser__table td:nth-child(2),
+  .docsync-wp-drive-browser__table td:nth-child(3),
+  .docsync-wp-drive-browser__table td:nth-child(4) {
+    color: #646970;
+    white-space: nowrap;
+  }
+
+  .docsync-wp-drive-browser__row-button {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    color: #1d2327;
+    cursor: pointer;
+    display: inline-flex;
+    gap: 8px;
+    max-width: 100%;
+    padding: 0;
+    text-align: left;
+  }
+
+  .docsync-wp-drive-browser__row-button:hover,
+  .docsync-wp-drive-browser__row-button:focus-visible {
+    color: #135e96;
+  }
+
+  .docsync-wp-drive-browser__row-button:focus-visible {
+    box-shadow: 0 0 0 2px #2271b1;
+    outline: none;
+  }
+
+  .docsync-wp-drive-browser__row-button span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .docsync-wp-drive-browser__table tr.is-selected .docsync-wp-drive-browser__row-button span:last-child {
+    font-weight: 600;
+  }
+
+  .docsync-wp-drive-browser__more {
+    margin-top: 12px;
+    text-align: center;
+  }
+
+  @media (max-width: 760px) {
+    .docsync-wp-drive-browser__table-wrap {
+      overflow-x: auto;
+    }
+
+    .docsync-wp-drive-browser__table {
+      min-width: 620px;
+    }
+  }
+}

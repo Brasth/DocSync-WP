@@ -56,8 +56,7 @@ In WordPress admin, open **DocSync WP** and follow the Google setup wizard. It s
 
 Save:
 
-- OAuth client ID
-- OAuth client secret
+- OAuth client ID and OAuth client secret. The wizard can import the downloaded Web application OAuth JSON to fill these fields locally in the browser.
 - Enabled post types. `post` is always enabled; `page` and public custom post types are optional.
 - Optional WP-Cron sync interval
 

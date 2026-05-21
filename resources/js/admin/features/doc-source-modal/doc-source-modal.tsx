@@ -47,7 +47,9 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
               </Dialog.Description>
             </div>
             <Dialog.Close asChild>
-              <AdminButton variant="link">{__('Close', 'docsync-wp')}</AdminButton>
+              <button aria-label={__('Close', 'docsync-wp')} className="docsync-wp-modal__close" type="button">
+                <span aria-hidden="true">&times;</span>
+              </button>
             </Dialog.Close>
           </div>
 

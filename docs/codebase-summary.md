@@ -6,9 +6,9 @@ Last updated: 2026-05-21
 
 DocSync WP is a WordPress plugin for one-way Google Docs -> WordPress sync. This checkout includes Google OAuth, document inspection, post/page linking and sync, list-table actions, a setup admin page, a dedicated Sources submenu, HTML ZIP media import, and WP-Cron scheduling.
 
-Summary reflects the current source tree after the Radix plus WordPress-native admin frontend refactor.
+Summary reflects the current source tree after the Radix plus WordPress-native admin frontend refactor, Drive modal polish, and OAuth JSON import.
 
-- Total files tracked by `rg --files`: 125
+- Total files tracked by `rg --files`: 128
 - Main languages: PHP, TypeScript, CSS
 
 ## Top-Level Structure
@@ -53,7 +53,7 @@ Summary reflects the current source tree after the Radix plus WordPress-native a
 - `resources/js/admin/api/` - REST client, typed API modules, and shared wire types.
 - `resources/js/admin/features/drive-browser/` - Google Drive browser hook, toolbar, breadcrumb, table, and panel.
 - `resources/js/admin/features/doc-source-modal/` - Radix-backed source modal, mode tabs, advanced input, and modal hook.
-- `resources/js/admin/features/google-setup/` - setup wizard, account panel, target settings, and setup checks.
+- `resources/js/admin/features/google-setup/` - setup wizard, OAuth JSON import, account panel, target settings, and setup checks.
 - `resources/js/admin/features/post-sync/` - post edit meta box, list-table action mount, row DOM helpers, and sync action hook.
 - `resources/js/admin/features/sources/` - filterable linked source table and bulk sync action.
 - `resources/js/admin/shared/ui/` - small WordPress-backed DocSync UI atoms such as buttons, notices, loading states, and status pills.
@@ -63,7 +63,7 @@ Summary reflects the current source tree after the Radix plus WordPress-native a
 
 - `resources/css/admin.css` remains a compatibility wrapper that imports `admin-entry.css`.
 - `resources/css/admin-entry.css` imports shared primitives plus setup, admin shell, and Sources table partials.
-- `resources/css/post-sync-entry.css` imports shared primitives plus post sync box, modal, tabs, Drive browser, and advanced source partials.
+- `resources/css/post-sync-entry.css` imports shared primitives plus post sync box, modal, tabs, Drive browser layout/table, and advanced source partials.
 - Component-level CSS lives under `resources/css/components/`; cross-entry primitives and responsive rules live under `resources/css/shared/`.
 
 ## Local Toolchain Status

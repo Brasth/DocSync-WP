@@ -18,6 +18,56 @@
     padding-top: 16px;
   }
 
+  .docsync-wp-oauth-import {
+    align-items: center;
+    background: #f6f7f7;
+    border: 1px solid #d9e2e1;
+    border-radius: 8px;
+    display: grid;
+    gap: 12px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    margin-bottom: 14px;
+    padding: 12px;
+  }
+
+  .docsync-wp-oauth-import p {
+    color: #50575e;
+    margin: 4px 0 0;
+  }
+
+  .docsync-wp-oauth-import__file {
+    align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: min(100%, 260px);
+  }
+
+  .docsync-wp-oauth-import__file span {
+    color: #1d2327;
+    font-weight: 600;
+  }
+
+  .docsync-wp-oauth-import__file input[type="file"] {
+    max-width: 100%;
+  }
+
+  .docsync-wp-oauth-import__notice {
+    grid-column: 1 / -1;
+  }
+
+  .docsync-wp-oauth-import__notice.is-success {
+    color: #175a44;
+  }
+
+  .docsync-wp-oauth-import__notice.is-warning {
+    color: #8a5a00;
+  }
+
+  .docsync-wp-oauth-import__notice.is-error {
+    color: #b42318;
+  }
+
   .docsync-wp-setup-test {
     margin-top: 14px;
   }

@@ -61,8 +61,8 @@ final class DriveClient {
 			$user_id,
 			add_query_arg(
 				array(
-					'fields'             => self::METADATA_FIELDS,
-					'supportsAllDrives'  => 'true',
+					'fields'            => self::METADATA_FIELDS,
+					'supportsAllDrives' => 'true',
 				),
 				self::API_BASE_URL . '/files/' . rawurlencode( $file_id )
 			)
@@ -169,8 +169,8 @@ final class DriveClient {
 			$folder_id = $drive_id;
 		}
 
-		$query     = "'" . $this->escapeDriveQueryValue( $folder_id ) . "' in parents and trashed = false and (mimeType = '" . self::FOLDER_MIME_TYPE . "' or mimeType = '" . self::GOOGLE_DOC_MIME_TYPE . "')";
-		$search    = trim( $search );
+		$query  = "'" . $this->escapeDriveQueryValue( $folder_id ) . "' in parents and trashed = false and (mimeType = '" . self::FOLDER_MIME_TYPE . "' or mimeType = '" . self::GOOGLE_DOC_MIME_TYPE . "')";
+		$search = trim( $search );
 
 		if ( '' !== $search ) {
 			$query .= " and name contains '" . $this->escapeDriveQueryValue( $search ) . "'";

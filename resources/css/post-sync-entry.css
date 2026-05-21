@@ -5,5 +5,6 @@
 @import "./components/doc-source-modal.css";
 @import "./components/doc-source-tabs.css";
 @import "./components/drive-browser.css";
+@import "./components/drive-browser-table.css";
 @import "./components/advanced-source.css";
 @import "./shared/responsive.css";
