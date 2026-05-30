@@ -2,6 +2,24 @@
 
 Last updated: 2026-05-30
 
+## 2026-05-30 - Admin UI Stability and Modal Polish
+
+Status: completed in codebase
+
+Fixed the WordPress admin list layout regression and refined the Google Doc linking modal:
+
+- removed global Tailwind imports from the admin CSS entry bundles so Tailwind preflight no longer leaks into WordPress admin list screens
+- kept DocSync WP styles scoped through the existing admin, modal, Drive browser, and shared CSS partials
+- replaced the full-width advanced linking toggle with a compact three-mode source switch for browsing, pasted Doc URLs, and raw file IDs
+- enlarged the modal close control to a 44px hit target with stronger hover and keyboard focus states
+- increased the Drive browser table region to a responsive internal scroll area with sticky headers
+- aligned Drive browser toolbar controls to a shared 40px height while keeping WordPress `SelectControl`
+
+Verification status:
+
+- `pnpm typecheck` passes
+- `pnpm build` passes
+
 ## 2026-05-30 - Non-Blocking Picker and Background Sync
 
 Status: completed in codebase

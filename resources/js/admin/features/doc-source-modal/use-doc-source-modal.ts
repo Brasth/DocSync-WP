@@ -10,7 +10,7 @@ import {
   type SyncResult
 } from '../../api';
 import { getAdminConfig } from '../../config';
-import { type SourceMode } from './doc-source-modal-options';
+import { type DocSourceUiMode } from './doc-source-modal-options';
 
 export type DocSourceTarget =
   | { mode: 'existing'; postId: number; postType?: string }
@@ -24,31 +24,33 @@ type Args = {
 };
 
 export const useDocSourceModal = ({ isOpen, target, onClose, onCompleted }: Args) => {
-  const [sourceMode, setSourceMode] = useState<SourceMode>('url');
+  const [uiMode, setUiMode] = useState<DocSourceUiMode>('browse');
   const [documentInput, setDocumentInput] = useState('');
   const [metadata, setMetadata] = useState<DocumentMetadata | null>(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [advancedOpen, setAdvancedOpen] = useState(false);
   const config = useMemo(() => getAdminConfig(), []);
 
   useEffect(() => {
     if (!isOpen) {
-      setSourceMode('url');
+      setUiMode('browse');
       setDocumentInput('');
       setMetadata(null);
       setError('');
       setBusy(false);
-      setAdvancedOpen(false);
     }
   }, [isOpen]);
 
   const inspect = async () => {
+    if (uiMode === 'browse') {
+      return;
+    }
+
     setBusy(true);
     setError('');
 
     try {
-      const inspected = await inspectDocument(documentInput, sourceMode);
+      const inspected = await inspectDocument(documentInput, uiMode);
       setMetadata(inspected);
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : __('Could not inspect this Google Doc.', 'docsync-wp');
@@ -60,14 +62,12 @@ export const useDocSourceModal = ({ isOpen, target, onClose, onCompleted }: Args
     }
   };
 
-  const toggleAdvanced = () => {
-    const nextOpen = !advancedOpen;
-    setAdvancedOpen(nextOpen);
+  const changeSourceMode = (mode: DocSourceUiMode) => {
+    setUiMode(mode);
     setMetadata(null);
     setError('');
-    setSourceMode('url');
 
-    if (!nextOpen) {
+    if (mode === 'browse') {
       setDocumentInput('');
     }
   };
@@ -75,12 +75,6 @@ export const useDocSourceModal = ({ isOpen, target, onClose, onCompleted }: Args
   const selectDocument = (document: DriveDocumentSummary | null) => {
     setMetadata(document);
     setDocumentInput(document?.webViewLink || document?.fileId || '');
-    setError('');
-  };
-
-  const changeSourceMode = (mode: SourceMode) => {
-    setSourceMode(mode);
-    setMetadata(null);
     setError('');
   };
 
@@ -115,7 +109,6 @@ export const useDocSourceModal = ({ isOpen, target, onClose, onCompleted }: Args
   };
 
   return {
-    advancedOpen,
     attach,
     busy,
     changeSourceMode,
@@ -125,7 +118,6 @@ export const useDocSourceModal = ({ isOpen, target, onClose, onCompleted }: Args
     metadata,
     selectDocument,
     setDocumentInput,
-    sourceMode,
-    toggleAdvanced
+    uiMode
   };
 };
