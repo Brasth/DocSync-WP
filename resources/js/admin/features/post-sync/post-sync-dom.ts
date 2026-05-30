@@ -1,4 +1,5 @@
 import type { SourceRecord } from '../../api';
+import { shouldShowSyncProgress } from '../../shared/ui/sync-progress';
 
 export const parseSource = (value: string | undefined): SourceRecord | null => {
   if (!value) {
@@ -110,7 +111,10 @@ const sourceStatusElement = (source: SourceRecord): HTMLDivElement => {
   title.textContent = source.googleTitle || source.googleFileId;
   status.textContent = capitalizeStatus(source.syncStatus || 'linked');
   wrapper.append(title, document.createElement('br'), status);
-  wrapper.append(sourceProgressElement(source));
+
+  if (shouldShowSyncProgress(source)) {
+    wrapper.append(sourceProgressElement(source));
+  }
 
   if (source.lastSyncedAt) {
     const syncedAt = document.createElement('small');

@@ -82,9 +82,10 @@ Responsibilities:
 - link a Google Doc to the current target with the Drive-like My Drive/shared drive browser, with pasted URL/file ID under advanced linking
 - change or detach the source
 - trigger immediate sync
-- show last sync and error state
+- show active sync progress, terminal status, last sync, and error state
+- prompt or reload the editor after background sync completes so stale editor content is not silently shown
 
-The Google Doc source modal uses Radix UI Dialog and Tabs primitives for focus management, escape handling, and keyboard tab navigation. WordPress packages provide the runtime React provider, REST client, i18n, URL helpers, a11y announcements, and simple admin controls.
+The Google Doc source modal uses Radix UI Dialog and Tabs primitives for focus management, escape handling, and keyboard tab navigation. WordPress packages provide the runtime React provider, REST client, i18n, URL helpers, a11y announcements, simple admin controls, and post editor dirty-state access for safe reload behavior.
 
 The post sync UI imports `resources/css/post-sync-entry.css`, which composes shared CSS primitives with modal, tab, Drive browser, advanced source, and post sync box partials.
 
@@ -133,6 +134,8 @@ Implemented routes:
 - `GET /sync-log`
 
 Source records include additive live progress fields: `syncProgress` from 0 to 100, `syncStep`, and `syncMessage`. Existing status values and route shapes stay unchanged.
+
+Progress UI is shown only while a source is actively `syncing`; terminal states rely on status labels, last sync timestamps, and error messages.
 
 Common permission model:
 

@@ -49,14 +49,18 @@ final class DocsApiHtmlBuilder {
 	 * @param string              $google_file_id Google Drive file ID.
 	 * @param int                 $post_id        Target post ID.
 	 * @param int                 $user_id        Sync owner user ID.
+	 * @param array<string,mixed> $options        Build options.
 	 * @return string|WP_Error
 	 */
-	public function build( array $document, string $google_file_id, int $post_id, int $user_id ): string|WP_Error {
-		$parts = $this->document_parts->parts( $document );
-		$html  = '';
+	public function build( array $document, string $google_file_id, int $post_id, int $user_id, array $options = array() ): string|WP_Error {
+		$parts             = $this->document_parts->parts( $document );
+		$flush_callback    = isset( $options['flush_callback'] ) && is_callable( $options['flush_callback'] ) ? $options['flush_callback'] : null;
+		$total_elements    = DocsApiHtmlBuildProgress::countElements( $parts );
+		$rendered_elements = 0;
+		$html              = '';
 
 		foreach ( $parts as $part ) {
-			$part_html = $this->renderPart( $part, $document, $google_file_id, $post_id, $user_id );
+			$part_html = $this->renderPart( $part, $document, $google_file_id, $post_id, $user_id, $html, $flush_callback, $total_elements, $rendered_elements );
 
 			if ( is_wp_error( $part_html ) ) {
 				return $part_html;
@@ -76,16 +80,20 @@ final class DocsApiHtmlBuilder {
 	 * @param string              $google_file_id Google Drive file ID.
 	 * @param int                 $post_id        Target post ID.
 	 * @param int                 $user_id        Sync owner user ID.
+	 * @param string              $html_prefix    HTML rendered before this part.
+	 * @param callable|null       $flush_callback Partial flush callback.
+	 * @param int                 $total_elements Total renderable elements.
+	 * @param int                 $rendered_elements Rendered element count.
 	 * @return string|WP_Error
 	 */
-	private function renderPart( array $part, array $root, string $google_file_id, int $post_id, int $user_id ): string|WP_Error {
+	private function renderPart( array $part, array $root, string $google_file_id, int $post_id, int $user_id, string $html_prefix, ?callable $flush_callback, int $total_elements, int &$rendered_elements ): string|WP_Error {
 		$content = $part['body']['content'] ?? array();
 
 		if ( ! is_array( $content ) ) {
 			return '';
 		}
 
-		return $this->renderElements( $content, $this->document_parts->context( $part, $root ), $google_file_id, $post_id, $user_id );
+		return $this->renderElements( $content, $this->document_parts->context( $part, $root ), $google_file_id, $post_id, $user_id, $html_prefix, $flush_callback, $total_elements, $rendered_elements );
 	}
 
 	/**
@@ -96,9 +104,13 @@ final class DocsApiHtmlBuilder {
 	 * @param string                         $google_file_id Google Drive file ID.
 	 * @param int                            $post_id        Target post ID.
 	 * @param int                            $user_id        Sync owner user ID.
+	 * @param string                         $html_prefix    HTML rendered before these elements.
+	 * @param callable|null                  $flush_callback Partial flush callback.
+	 * @param int                            $total_elements Total renderable elements.
+	 * @param int                            $rendered_elements Rendered element count.
 	 * @return string|WP_Error
 	 */
-	private function renderElements( array $elements, array $context, string $google_file_id, int $post_id, int $user_id ): string|WP_Error {
+	private function renderElements( array $elements, array $context, string $google_file_id, int $post_id, int $user_id, string $html_prefix, ?callable $flush_callback, int $total_elements, int &$rendered_elements ): string|WP_Error {
 		$html       = '';
 		$list_state = null;
 
@@ -127,6 +139,13 @@ final class DocsApiHtmlBuilder {
 			}
 
 			$html .= $rendered;
+			++$rendered_elements;
+
+			$flushed = DocsApiHtmlBuildProgress::flushPartialHtml( $flush_callback, $html_prefix . $html . $this->paragraph_renderer->closeList( $list_state ), $rendered_elements, $total_elements );
+
+			if ( is_wp_error( $flushed ) ) {
+				return $flushed;
+			}
 		}
 
 		return $html . $this->paragraph_renderer->closeList( $list_state );
@@ -159,8 +178,9 @@ final class DocsApiHtmlBuilder {
 					continue;
 				}
 
-				$content = isset( $cell['content'] ) && is_array( $cell['content'] ) ? $cell['content'] : array();
-				$inner   = $this->renderElements( $content, $context, $google_file_id, $post_id, $user_id );
+				$content         = isset( $cell['content'] ) && is_array( $cell['content'] ) ? $cell['content'] : array();
+				$nested_rendered = 0;
+				$inner           = $this->renderElements( $content, $context, $google_file_id, $post_id, $user_id, '', null, 1, $nested_rendered );
 
 				if ( is_wp_error( $inner ) ) {
 					return $inner;

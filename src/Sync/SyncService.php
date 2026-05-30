@@ -769,8 +769,11 @@ final class SyncService {
 			return $progress_source;
 		}
 
-		$source = $progress_source;
-		$html   = $this->docs_api_importer->import( $user_id, $google_file_id, $post_id );
+		$source  = $progress_source;
+		$options = $this->canProgressivelyUpdateDraft( $post_id )
+			? array( 'flush_callback' => $this->progressiveFallbackFlushCallback( $post_id, $source ) )
+			: array();
+		$html    = $this->docs_api_importer->import( $user_id, $google_file_id, $post_id, $options );
 
 		if ( is_wp_error( $html ) ) {
 			return $html;
@@ -780,6 +783,95 @@ final class SyncService {
 			'html'   => $html,
 			'method' => self::SYNC_METHOD_DOCS_API,
 		);
+	}
+
+	/**
+	 * Whether fallback import can safely write partial content.
+	 *
+	 * @param int $post_id Target post ID.
+	 */
+	private function canProgressivelyUpdateDraft( int $post_id ): bool {
+		$post = get_post( $post_id );
+
+		return null !== $post
+			&& in_array( $post->post_status, array( 'draft', 'auto-draft' ), true )
+			&& '' === trim( (string) $post->post_content );
+	}
+
+	/**
+	 * Build the Docs API fallback partial content writer.
+	 *
+	 * @param int                 $post_id Target post ID.
+	 * @param array<string,mixed> $source  Current source.
+	 */
+	private function progressiveFallbackFlushCallback( int $post_id, array &$source ): callable {
+		$last_hash = '';
+
+		return function ( string $html, int $rendered, int $total ) use ( $post_id, &$source, &$last_hash ): true|WP_Error {
+			$sanitized_html = wp_kses_post( $html );
+			$partial_hash   = hash( 'sha256', $sanitized_html );
+
+			if ( '' === trim( $sanitized_html ) || hash_equals( $last_hash, $partial_hash ) ) {
+				return true;
+			}
+
+			$block_content = $this->block_converter->convert( $sanitized_html );
+
+			if ( is_wp_error( $block_content ) ) {
+				return $block_content;
+			}
+
+			if ( '' === trim( $block_content ) ) {
+				return true;
+			}
+
+			$current_source = $this->assertCurrentSource( $post_id, $source );
+
+			if ( is_wp_error( $current_source ) ) {
+				return $current_source;
+			}
+
+			$updated = wp_update_post(
+				wp_slash(
+					array(
+						'ID'           => $post_id,
+						'post_content' => $block_content,
+					)
+				),
+				true
+			);
+
+			if ( is_wp_error( $updated ) ) {
+				return new WP_Error(
+					'docsync_wp_partial_update_post_failed',
+					__( 'DocSync WP could not save imported large-doc content yet.', 'docsync-wp' ),
+					array( 'status' => 500 )
+				);
+			}
+
+			$progress = max(
+				(int) ( $source['sync_progress'] ?? 0 ),
+				min( 69, 55 + (int) floor( 14 * min( 1, $rendered / max( 1, $total ) ) ) )
+			);
+			$saved    = $this->saveProgressState(
+				$post_id,
+				$source,
+				self::STATUS_SYNCING,
+				$progress,
+				'large_doc_partial_import',
+				__( 'Imported part of the large Doc.', 'docsync-wp' ),
+				array( 'sync_error' => '' )
+			);
+
+			if ( is_wp_error( $saved ) ) {
+				return $saved;
+			}
+
+			$source    = $saved;
+			$last_hash = $partial_hash;
+
+			return true;
+		};
 	}
 
 	/**

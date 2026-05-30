@@ -46,18 +46,19 @@ final class DocsApiHtmlImporter {
 	/**
 	 * Import a Google Doc through the Docs API fallback.
 	 *
-	 * @param int    $user_id        Sync owner user ID.
-	 * @param string $google_file_id Google Drive file ID.
-	 * @param int    $post_id        Target post ID.
+	 * @param int                 $user_id        Sync owner user ID.
+	 * @param string              $google_file_id Google Drive file ID.
+	 * @param int                 $post_id        Target post ID.
+	 * @param array<string,mixed> $options        Import options.
 	 * @return string|WP_Error
 	 */
-	public function import( int $user_id, string $google_file_id, int $post_id ): string|WP_Error {
+	public function import( int $user_id, string $google_file_id, int $post_id, array $options = array() ): string|WP_Error {
 		$document = $this->docs_client->getDocument( $user_id, $google_file_id );
 
 		if ( is_wp_error( $document ) ) {
 			return $document;
 		}
 
-		return $this->html_builder->build( $document, $google_file_id, $post_id, $user_id );
+		return $this->html_builder->build( $document, $google_file_id, $post_id, $user_id, $options );
 	}
 }

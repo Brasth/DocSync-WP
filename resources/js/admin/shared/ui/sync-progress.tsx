@@ -7,6 +7,10 @@ type Props = {
   progress?: number;
 };
 
+export const shouldShowSyncProgress = <T extends { syncStatus?: string }>(source: T | null | undefined): source is T => {
+  return source?.syncStatus === 'syncing';
+};
+
 export const normalizeSyncProgress = (progress: number | null | undefined): number => {
   if (typeof progress !== 'number' || Number.isNaN(progress)) {
     return 0;

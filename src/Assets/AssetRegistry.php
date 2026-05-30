@@ -168,7 +168,7 @@ final class AssetRegistry {
 		wp_enqueue_script(
 			$handle,
 			$this->plugin_url . 'build/' . ltrim( $entry['file'], '/' ),
-			array( 'wp-a11y', 'wp-api-fetch', 'wp-components', 'wp-element', 'wp-i18n', 'wp-url' ),
+			$this->scriptDependencies( $handle ),
 			$this->assetVersion( $script_path ),
 			true
 		);
@@ -197,6 +197,22 @@ final class AssetRegistry {
 				$this->assetVersion( $style_path )
 			);
 		}
+	}
+
+	/**
+	 * Get WordPress script dependencies for a bundle.
+	 *
+	 * @param string $handle Script handle.
+	 * @return array<int,string>
+	 */
+	private function scriptDependencies( string $handle ): array {
+		$dependencies = array( 'wp-a11y', 'wp-api-fetch', 'wp-components', 'wp-element', 'wp-i18n', 'wp-url' );
+
+		if ( self::POST_SYNC_HANDLE === $handle ) {
+			$dependencies[] = 'wp-data';
+		}
+
+		return $dependencies;
 	}
 
 	/**

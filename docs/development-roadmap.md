@@ -4,7 +4,7 @@ Last updated: 2026-05-30
 
 ## Status
 
-The Google Docs Sync Admin Actions implementation is complete in code. The self-managed Google onboarding, Drive-like My Drive/shared drive document browser, dedicated Sources submenu, page target support, source filters, HTML ZIP media import, Gutenberg block conversion, admin frontend structure refactor, Drive modal polish, OAuth JSON import, fullscreen picker, infinite Drive loading, non-blocking background draft sync, and oversized Google Doc fallback are also complete in code.
+The Google Docs Sync Admin Actions implementation is complete in code. The self-managed Google onboarding, Drive-like My Drive/shared drive document browser, dedicated Sources submenu, page target support, source filters, HTML ZIP media import, Gutenberg block conversion, admin frontend structure refactor, Drive modal polish, OAuth JSON import, fullscreen picker, infinite Drive loading, non-blocking background draft sync, oversized Google Doc fallback, sync-completion editor reload UX, and progressive empty-draft large-doc writes are also complete in code.
 
 ## Phase Summary
 
@@ -46,6 +46,9 @@ The Google Docs Sync Admin Actions implementation is complete in code. The self-
 - source REST endpoints support optional `syncMode` while preserving inline behavior by default
 - single-source background sync uses WordPress native single-event cron and existing per-post sync locking
 - oversized Google Docs warn from Drive metadata and automatically retry through Docs API fallback only after Drive export-size failures
+- empty draft oversized-doc fallback imports progressively save sanitized block content before final sync completion
+- post editor background sync completion auto-reloads when no unsaved edits are present and otherwise offers a reload action
+- terminal sync states no longer show stale 100 percent progress bars after reload
 - setup wizard and README now require Drive API and Docs API in the same Google Cloud project
 - entry-specific CSS files with shared and component partials for admin setup, Sources, and post sync UI maintenance
 - HTML ZIP import that sideloads exported images into Media Library and rewrites content URLs

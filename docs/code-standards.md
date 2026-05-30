@@ -24,7 +24,7 @@ Standards here match the current DocSync WP implementation. Keep new work aligne
 - Use `docsync-wp` as slug and text domain.
 - Use `docsync-wp/v1` for REST endpoints.
 - Use WordPress HTTP APIs for Google requests.
-- Use WordPress packages for admin JS platform APIs: `wp-api-fetch`, `wp-element`, `wp-i18n`, `wp-url`, `wp-a11y`, and `wp-components`.
+- Use WordPress packages for admin JS platform APIs: `wp-api-fetch`, `wp-element`, `wp-i18n`, `wp-url`, `wp-a11y`, `wp-components`, and `wp-data` where editor state is required.
 - Keep admin UI inside WordPress admin conventions.
 
 ## Storage Standards
@@ -53,7 +53,7 @@ Rules:
 - Alias Radix automatic JSX runtime imports to the local WordPress JSX runtime shim so bundled primitives do not expect a separate React runtime.
 - Organize admin frontend code by feature first, with shared UI atoms under `resources/js/admin/shared/ui/`.
 - Keep old `resources/js/admin/components/*` paths as thin compatibility exports only when useful during refactors.
-- Prefer feature hooks for stateful workflows; do not add `@wordpress/data` until state is shared across independent mounts.
+- Prefer feature hooks for stateful workflows; use `wp-data` only for WordPress editor state or state shared across independent mounts.
 - Prefer explicit user-facing errors over hidden failures.
 - Keep modal and row-action behavior accessible and keyboard-safe.
 
@@ -66,7 +66,9 @@ Rules:
 - Use a per-post lock during sync.
 - Record `linked`, `syncing`, `synced`, `skipped`, or `error`.
 - Record `syncProgress`, `syncStep`, and `syncMessage` for live admin polling. Progress must be clamped to `0-100`, milestone-based, and honest about external Google API limits.
+- Show progress UI only while a source is actively `syncing`; terminal states should use status labels, last sync time, and error messages.
 - Record the last successful sync method for diagnostics.
+- Keep non-empty existing posts atomic until final conversion succeeds. Empty drafts may receive progressive partial writes during Docs API fallback, and failed progressive imports may keep the partial draft content while marking the source `error`.
 - Manual admin syncs should use background mode and poll source state; backend inline sync remains only for REST compatibility.
 - Manual background sync depends on WP-Cron; admin docs must mention server cron for low-traffic or `DISABLE_WP_CRON` sites.
 - Repeated manual sync should not reset active progress, should refresh locks during milestone saves, and should be able to requeue a stale `syncing` source when no matching cron event or lock remains.

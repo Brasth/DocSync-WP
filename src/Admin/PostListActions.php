@@ -149,7 +149,7 @@ final class PostListActions {
 		$message  = isset( $source['sync_message'] ) ? (string) $source['sync_message'] : '';
 		$status   = isset( $source['sync_status'] ) ? (string) $source['sync_status'] : '';
 
-		if ( '' === $message && 'syncing' !== $status ) {
+		if ( 'syncing' !== $status ) {
 			return;
 		}
 

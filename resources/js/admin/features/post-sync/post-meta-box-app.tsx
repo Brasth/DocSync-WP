@@ -6,7 +6,7 @@ import type { SourceRecord, SyncResult } from '../../api';
 import { DocSourceModal, type DocSourceTarget } from '../doc-source-modal/doc-source-modal';
 import { AdminButton } from '../../shared/ui/admin-button';
 import { AdminNotice } from '../../shared/ui/admin-notice';
-import { SyncProgress } from '../../shared/ui/sync-progress';
+import { shouldShowSyncProgress, SyncProgress } from '../../shared/ui/sync-progress';
 import { BackgroundSyncPoller } from './background-sync-poller';
 import { sourceLabel } from './post-sync-dom';
 import { usePostSyncActions } from './use-post-sync-actions';
@@ -15,6 +15,33 @@ type Props = {
   postId: number;
   postType: string;
   initialSource: SourceRecord | null;
+};
+
+type EditorStore = {
+  isEditedPostDirty?: () => boolean;
+};
+
+declare global {
+  interface Window {
+    wp?: {
+      data?: {
+        select?: (store: string) => EditorStore | undefined;
+      };
+    };
+  }
+}
+
+const reloadEditor = (): void => {
+  window.location.reload();
+};
+
+const getEditorDirtyState = (): boolean | null => {
+  try {
+    const isDirty = window.wp?.data?.select?.('core/editor')?.isEditedPostDirty?.();
+    return typeof isDirty === 'boolean' ? isDirty : null;
+  } catch {
+    return null;
+  }
 };
 
 export const PostMetaBoxApp = ({ postId, postType, initialSource }: Props): JSX.Element => {
@@ -40,6 +67,31 @@ export const PostMetaBoxApp = ({ postId, postType, initialSource }: Props): JSX.
     actions.setSource(source);
     const message = isError ? source.syncError || __('Google Doc sync failed.', 'docsync-wp') : source.syncMessage || __('Google Doc sync complete.', 'docsync-wp');
 
+    if (!isError) {
+      const isDirty = getEditorDirtyState();
+
+      if (isDirty === false) {
+        actions.setNotice({
+          type: 'success',
+          message: __('Google Doc sync complete. Reloading editor.', 'docsync-wp')
+        });
+        speak(message, 'polite');
+        window.setTimeout(reloadEditor, 500);
+        return;
+      }
+
+      actions.setNotice({
+        actionLabel: __('Reload editor', 'docsync-wp'),
+        onAction: reloadEditor,
+        type: isDirty ? 'warning' : 'success',
+        message: isDirty
+          ? __('Google Doc sync complete. Save or discard editor changes, then reload to view synced content.', 'docsync-wp')
+          : message
+      });
+      speak(message, 'polite');
+      return;
+    }
+
     actions.setNotice({
       type: isError ? 'error' : 'success',
       message
@@ -63,7 +115,7 @@ export const PostMetaBoxApp = ({ postId, postType, initialSource }: Props): JSX.
     <Fragment>
       <div className="docsync-wp-post-box">
         <p>{sourceLabel(actions.source)}</p>
-        {actions.source ? (
+        {shouldShowSyncProgress(actions.source) ? (
           <SyncProgress
             message={actions.source.syncMessage}
             progress={actions.source.syncProgress}

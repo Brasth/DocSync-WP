@@ -2,6 +2,29 @@
 
 Last updated: 2026-05-30
 
+## 2026-05-30 - Sync Completion UX and Progressive Large-Doc Drafts
+
+Status: completed in codebase
+
+Fixed stale sync feedback and empty long-running draft imports:
+
+- hid sync progress bars for terminal `synced`, `skipped`, and `error` states while keeping status labels, last sync time, and errors visible
+- added post editor sync-completion handling that reloads automatically when Gutenberg reports no unsaved edits
+- added a `Reload editor` notice action and dirty-editor warning when auto-reload would risk losing local edits
+- added `wp-data` only to the post-sync bundle so the editor dirty-state selector is available
+- added progressive Docs API fallback writes for empty drafts, saving sanitized block content during large-doc import
+- kept non-empty existing posts atomic until full import and final block conversion succeed
+- left partial draft content in place if a progressive fallback fails, then stores the normal `error` source state
+
+Verification status:
+
+- `composer lint` passes
+- `pnpm lint` passes
+- `pnpm typecheck` passes
+- `pnpm build` passes
+- PHP syntax checks pass for modified sync files
+- `git diff --check` passes
+
 ## 2026-05-30 - Live Sync Progress Percent
 
 Status: completed in codebase

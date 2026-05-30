@@ -4,7 +4,7 @@ import type { SourceRecord } from '../../api';
 import type { AvailablePostType } from '../../config';
 import { AdminButton } from '../../shared/ui/admin-button';
 import { StatusPill } from '../../shared/ui/status-pill';
-import { SyncProgress } from '../../shared/ui/sync-progress';
+import { shouldShowSyncProgress, SyncProgress } from '../../shared/ui/sync-progress';
 
 export type SourceListFilters = {
   search: string;
@@ -170,7 +170,7 @@ export const SourcesTable = ({
                 </td>
                 <td>
                   <StatusPill status={statusLabel(source)} />
-                  <SyncProgress message={source.syncMessage} progress={source.syncProgress} />
+                  {shouldShowSyncProgress(source) ? <SyncProgress message={source.syncMessage} progress={source.syncProgress} /> : null}
                   {source.syncError ? <small>{source.syncError}</small> : null}
                 </td>
                 <td>
