@@ -112,6 +112,16 @@ final class SyncService {
 			return $export_format;
 		}
 
+		$current_source = $this->source_repository->getSource( $post_id );
+
+		if ( is_array( $current_source ) && self::STATUS_SYNCING === (string) $current_source['sync_status'] ) {
+			return new WP_Error(
+				'docsync_wp_source_syncing',
+				__( 'Wait for the current Google Doc sync to finish before changing this source.', 'docsync-wp' ),
+				array( 'status' => 409 )
+			);
+		}
+
 		$metadata = $this->drive_client->getMetadata( $user_id, $file_id );
 
 		if ( is_wp_error( $metadata ) ) {
@@ -136,6 +146,9 @@ final class SyncService {
 					'export_format'      => $export_format,
 					'sync_status'        => self::STATUS_LINKED,
 					'sync_error'         => '',
+					'sync_progress'      => 0,
+					'sync_step'          => 'linked',
+					'sync_message'       => __( 'Linked and ready to sync.', 'docsync-wp' ),
 				)
 			)
 		);
@@ -209,6 +222,9 @@ final class SyncService {
 					'export_format'      => $export_format,
 					'sync_status'        => self::STATUS_LINKED,
 					'sync_error'         => '',
+					'sync_progress'      => 0,
+					'sync_step'          => 'linked',
+					'sync_message'       => __( 'Linked and ready to sync.', 'docsync-wp' ),
 				)
 			)
 		);
@@ -247,11 +263,12 @@ final class SyncService {
 	/**
 	 * Mark a linked source as queued for background sync.
 	 *
-	 * @param int $post_id Post ID.
-	 * @param int $user_id User ID that owns the queued sync.
+	 * @param int  $post_id           Post ID.
+	 * @param int  $user_id           User ID that owns the queued sync.
+	 * @param bool $has_pending_event Whether a matching cron event is already pending.
 	 * @return array<string,mixed>|WP_Error
 	 */
-	public function markSyncQueued( int $post_id, int $user_id ): array|WP_Error {
+	public function markSyncQueued( int $post_id, int $user_id, bool $has_pending_event = false ): array|WP_Error {
 		$source = $this->source_repository->getSource( $post_id );
 
 		if ( null === $source ) {
@@ -262,12 +279,22 @@ final class SyncService {
 			);
 		}
 
-		$saved = $this->saveSourceState(
+		if ( self::STATUS_SYNCING === (string) $source['sync_status'] && ( $has_pending_event || $this->sync_lock->isActive( $post_id ) ) ) {
+			$result                  = $this->formatResult( $post_id, 'queued', false, true );
+			$result['alreadyQueued'] = true;
+
+			return $result;
+		}
+
+		$saved = $this->saveProgressState(
 			$post_id,
 			$source,
+			self::STATUS_SYNCING,
+			0,
+			'queued',
+			__( 'Sync queued.', 'docsync-wp' ),
 			array(
 				'sync_owner_user_id' => $user_id,
-				'sync_status'        => self::STATUS_SYNCING,
 				'sync_error'         => '',
 			)
 		);
@@ -297,13 +324,17 @@ final class SyncService {
 			);
 		}
 
-		$message = is_wp_error( $error ) ? $error->get_error_message() : $error;
-		$saved   = $this->saveSourceState(
+		$message  = is_wp_error( $error ) ? $error->get_error_message() : $error;
+		$progress = isset( $source['sync_progress'] ) ? (int) $source['sync_progress'] : 0;
+		$saved    = $this->saveProgressState(
 			$post_id,
 			$source,
+			self::STATUS_ERROR,
+			$progress,
+			'error',
+			$message,
 			array(
 				'last_synced_at' => current_time( 'mysql', true ),
-				'sync_status'    => self::STATUS_ERROR,
 				'sync_error'     => $message,
 			)
 		);
@@ -343,14 +374,19 @@ final class SyncService {
 		}
 
 		try {
-			$this->saveSourceState(
+			$source = $this->saveProgressState(
 				$post_id,
 				$source,
-				array(
-					'sync_status' => self::STATUS_SYNCING,
-					'sync_error'  => '',
-				)
+				self::STATUS_SYNCING,
+				10,
+				'checking_google',
+				__( 'Checking Google Doc metadata.', 'docsync-wp' ),
+				array( 'sync_error' => '' )
 			);
+
+			if ( is_wp_error( $source ) ) {
+				return $source;
+			}
 
 			$sync_user_id = $this->getSyncUserId( $source, $user_id );
 			$metadata     = $this->drive_client->getMetadata( $sync_user_id, (string) $source['google_file_id'] );
@@ -374,24 +410,62 @@ final class SyncService {
 				&& (string) $previous_source['google_modified_time'] === (string) $metadata['modifiedTime']
 				&& (string) $previous_source['google_version'] === (string) $metadata['version']
 			) {
-				$this->saveSourceState(
+				$source = $this->saveProgressState(
 					$post_id,
 					$source,
+					self::STATUS_SKIPPED,
+					100,
+					'complete',
+					__( 'Google Doc has not changed.', 'docsync-wp' ),
 					array(
 						'last_synced_at'     => current_time( 'mysql', true ),
 						'sync_owner_user_id' => $sync_user_id,
-						'sync_status'        => self::STATUS_SKIPPED,
 						'sync_error'         => '',
 					)
 				);
 
+				if ( is_wp_error( $source ) ) {
+					return $source;
+				}
+
 				return $this->formatResult( $post_id, self::STATUS_SKIPPED, false );
 			}
 
-			$import = $this->importSourceHtml( $sync_user_id, (string) $source['google_file_id'], $post_id );
+			$source = $this->saveProgressState(
+				$post_id,
+				$source,
+				self::STATUS_SYNCING,
+				25,
+				'exporting',
+				__( 'Exporting Google Doc.', 'docsync-wp' ),
+				array(
+					'sync_owner_user_id' => $sync_user_id,
+					'sync_error'         => '',
+				)
+			);
+
+			if ( is_wp_error( $source ) ) {
+				return $source;
+			}
+
+			$import = $this->importSourceHtml( $sync_user_id, (string) $source['google_file_id'], $post_id, $source );
 
 			if ( is_wp_error( $import ) ) {
 				return $this->markError( $post_id, $source, $import );
+			}
+
+			$source = $this->saveProgressState(
+				$post_id,
+				$source,
+				self::STATUS_SYNCING,
+				70,
+				'converting',
+				__( 'Converting content to WordPress blocks.', 'docsync-wp' ),
+				array( 'sync_error' => '' )
+			);
+
+			if ( is_wp_error( $source ) ) {
+				return $source;
 			}
 
 			$block_content = $this->block_converter->convert( $import['html'] );
@@ -403,31 +477,58 @@ final class SyncService {
 			$hash = hash( 'sha256', $block_content );
 
 			if ( ! $force && hash_equals( (string) $source['last_hash'], $hash ) ) {
-				$this->saveSourceState(
+				$source = $this->saveProgressState(
 					$post_id,
 					$source,
+					self::STATUS_SKIPPED,
+					100,
+					'complete',
+					__( 'Imported content matches the current WordPress post.', 'docsync-wp' ),
 					array(
 						'last_hash'          => $hash,
 						'last_synced_at'     => current_time( 'mysql', true ),
 						'last_sync_method'   => $import['method'],
 						'sync_owner_user_id' => $sync_user_id,
-						'sync_status'        => self::STATUS_SKIPPED,
 						'sync_error'         => '',
 					)
 				);
 
+				if ( is_wp_error( $source ) ) {
+					return $source;
+				}
+
 				return $this->formatResult( $post_id, self::STATUS_SKIPPED, false );
 			}
 
-			$updated = wp_update_post(
-				wp_slash(
-					array(
-						'ID'           => $post_id,
-						'post_content' => $block_content,
-					)
-				),
-				true
+			$source = $this->saveProgressState(
+				$post_id,
+				$source,
+				self::STATUS_SYNCING,
+				90,
+				'updating_post',
+				__( 'Updating the WordPress post.', 'docsync-wp' ),
+				array( 'sync_error' => '' )
 			);
+
+			if ( is_wp_error( $source ) ) {
+				return $source;
+			}
+
+				$current_source = $this->assertCurrentSource( $post_id, $source );
+
+			if ( is_wp_error( $current_source ) ) {
+				return $current_source;
+			}
+
+				$updated = wp_update_post(
+					wp_slash(
+						array(
+							'ID'           => $post_id,
+							'post_content' => $block_content,
+						)
+					),
+					true
+				);
 
 			if ( is_wp_error( $updated ) ) {
 				return $this->markError(
@@ -441,18 +542,25 @@ final class SyncService {
 				);
 			}
 
-			$this->saveSourceState(
+			$source = $this->saveProgressState(
 				$post_id,
 				$source,
+				self::STATUS_SYNCED,
+				100,
+				'complete',
+				__( 'Sync complete.', 'docsync-wp' ),
 				array(
 					'last_hash'          => $hash,
 					'last_synced_at'     => current_time( 'mysql', true ),
 					'last_sync_method'   => $import['method'],
 					'sync_owner_user_id' => $sync_user_id,
-					'sync_status'        => self::STATUS_SYNCED,
 					'sync_error'         => '',
 				)
 			);
+
+			if ( is_wp_error( $source ) ) {
+				return $source;
+			}
 
 			return $this->formatResult( $post_id, self::STATUS_SYNCED, true );
 		} finally {
@@ -461,17 +569,95 @@ final class SyncService {
 	}
 
 	/**
-	 * Store source state updates.
+	 * Whether a post has an unexpired sync lock.
+	 *
+	 * @param int $post_id Post ID.
+	 */
+	public function hasActiveSyncLock( int $post_id ): bool {
+		return $this->sync_lock->isActive( $post_id );
+	}
+
+	/**
+	 * Store source progress and state updates.
+	 *
+	 * @param int                 $post_id  Post ID.
+	 * @param array<string,mixed> $source   Current source.
+	 * @param string              $status   Sync status.
+	 * @param int                 $progress Progress percent.
+	 * @param string              $step     Progress step.
+	 * @param string              $message  Progress message.
+	 * @param array<string,mixed> $updates  Extra source updates.
+	 * @return array<string,mixed>|WP_Error
+	 */
+	private function saveProgressState( int $post_id, array $source, string $status, int $progress, string $step, string $message, array $updates = array() ): array|WP_Error {
+		$latest_source = $this->source_repository->getSource( $post_id );
+
+		if ( ! $this->isSameSource( $latest_source, $source ) ) {
+			return $this->sourceChangedError();
+		}
+
+		$next_source = array_merge(
+			$latest_source,
+			$source,
+			$updates,
+			array(
+				'sync_status'   => $status,
+				'sync_progress' => $progress,
+				'sync_step'     => $step,
+				'sync_message'  => $message,
+			)
+		);
+
+		$saved = $this->source_repository->saveSource( $post_id, $next_source );
+
+		if ( is_wp_error( $saved ) ) {
+			return $saved;
+		}
+
+		if ( self::STATUS_SYNCING === $status ) {
+			$this->sync_lock->refresh( $post_id );
+		}
+
+		return $next_source;
+	}
+
+	/**
+	 * Ensure the linked source still matches the sync that is running.
 	 *
 	 * @param int                 $post_id Post ID.
-	 * @param array<string,mixed> $source  Current source.
-	 * @param array<string,mixed> $updates State updates.
-	 * @return bool|WP_Error
+	 * @param array<string,mixed> $source  Source captured by this sync.
+	 * @return true|WP_Error
 	 */
-	private function saveSourceState( int $post_id, array $source, array $updates ): bool|WP_Error {
-		return $this->source_repository->saveSource(
-			$post_id,
-			array_merge( $source, $updates )
+	private function assertCurrentSource( int $post_id, array $source ): true|WP_Error {
+		$latest_source = $this->source_repository->getSource( $post_id );
+
+		if ( $this->isSameSource( $latest_source, $source ) ) {
+			return true;
+		}
+
+		return $this->sourceChangedError();
+	}
+
+	/**
+	 * Check whether a freshly loaded source is the same Google Doc.
+	 *
+	 * @param array<string,mixed>|null $latest_source Fresh source state.
+	 * @param array<string,mixed>      $source        Source captured by this sync.
+	 */
+	private function isSameSource( ?array $latest_source, array $source ): bool {
+		return is_array( $latest_source )
+			&& isset( $latest_source['google_file_id'], $source['google_file_id'] )
+			&& (string) $latest_source['google_file_id'] === (string) $source['google_file_id'];
+	}
+
+	/**
+	 * Build the source-changed error used to stop stale background work.
+	 */
+	private function sourceChangedError(): WP_Error {
+		return new WP_Error(
+			'docsync_wp_source_changed',
+			__( 'The linked Google Doc changed while this sync was running. Start a new sync if needed.', 'docsync-wp' ),
+			array( 'status' => 409 )
 		);
 	}
 
@@ -483,15 +669,29 @@ final class SyncService {
 	 * @param WP_Error            $error   Error to store.
 	 */
 	private function markError( int $post_id, array $source, WP_Error $error ): WP_Error {
-		$this->saveSourceState(
+		$latest   = $this->source_repository->getSource( $post_id );
+		$progress = isset( $source['sync_progress'] ) ? (int) $source['sync_progress'] : 0;
+
+		if ( is_array( $latest ) && isset( $latest['sync_progress'] ) ) {
+			$progress = max( $progress, (int) $latest['sync_progress'] );
+		}
+
+		$saved = $this->saveProgressState(
 			$post_id,
 			$source,
+			self::STATUS_ERROR,
+			$progress,
+			'error',
+			$error->get_error_message(),
 			array(
 				'last_synced_at' => current_time( 'mysql', true ),
-				'sync_status'    => self::STATUS_ERROR,
 				'sync_error'     => $error->get_error_message(),
 			)
 		);
+
+		if ( is_wp_error( $saved ) ) {
+			return $saved;
+		}
 
 		return $error;
 	}
@@ -499,16 +699,32 @@ final class SyncService {
 	/**
 	 * Import source HTML with Docs API fallback for oversized Drive exports.
 	 *
-	 * @param int    $user_id        Sync owner user ID.
-	 * @param string $google_file_id Google Drive file ID.
-	 * @param int    $post_id        Target post ID.
+	 * @param int                 $user_id        Sync owner user ID.
+	 * @param string              $google_file_id Google Drive file ID.
+	 * @param int                 $post_id        Target post ID.
+	 * @param array<string,mixed> $source         Current source.
 	 * @return array{html:string,method:string}|WP_Error
 	 */
-	private function importSourceHtml( int $user_id, string $google_file_id, int $post_id ): array|WP_Error {
+	private function importSourceHtml( int $user_id, string $google_file_id, int $post_id, array &$source ): array|WP_Error {
 		$zip_bytes = $this->drive_client->exportHtmlZip( $user_id, $google_file_id );
 
 		if ( ! is_wp_error( $zip_bytes ) ) {
-			$html = $this->html_zip_importer->import( $zip_bytes, $google_file_id, $post_id, $user_id );
+			$progress_source = $this->saveProgressState(
+				$post_id,
+				$source,
+				self::STATUS_SYNCING,
+				55,
+				'importing',
+				__( 'Importing Google Doc HTML and assets.', 'docsync-wp' ),
+				array( 'sync_error' => '' )
+			);
+
+			if ( is_wp_error( $progress_source ) ) {
+				return $progress_source;
+			}
+
+			$source = $progress_source;
+			$html   = $this->html_zip_importer->import( $zip_bytes, $google_file_id, $post_id, $user_id );
 
 			if ( is_wp_error( $html ) ) {
 				return $html;
@@ -524,7 +740,37 @@ final class SyncService {
 			return $zip_bytes;
 		}
 
-		$html = $this->docs_api_importer->import( $user_id, $google_file_id, $post_id );
+		$progress_source = $this->saveProgressState(
+			$post_id,
+			$source,
+			self::STATUS_SYNCING,
+			35,
+			'large_doc_fallback',
+			__( 'Drive export was too large. Switching to the large-doc fallback.', 'docsync-wp' ),
+			array( 'sync_error' => '' )
+		);
+
+		if ( is_wp_error( $progress_source ) ) {
+			return $progress_source;
+		}
+
+		$source          = $progress_source;
+		$progress_source = $this->saveProgressState(
+			$post_id,
+			$source,
+			self::STATUS_SYNCING,
+			55,
+			'importing',
+			__( 'Importing through the large-doc fallback.', 'docsync-wp' ),
+			array( 'sync_error' => '' )
+		);
+
+		if ( is_wp_error( $progress_source ) ) {
+			return $progress_source;
+		}
+
+		$source = $progress_source;
+		$html   = $this->docs_api_importer->import( $user_id, $google_file_id, $post_id );
 
 		if ( is_wp_error( $html ) ) {
 			return $html;

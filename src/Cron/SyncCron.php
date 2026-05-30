@@ -117,11 +117,12 @@ final class SyncCron {
 	/**
 	 * Schedule one source sync as soon as WP-Cron can run.
 	 *
-	 * @param int $post_id Post ID.
-	 * @param int $user_id User ID whose Google token should run the sync.
+	 * @param int  $post_id Post ID.
+	 * @param int  $user_id User ID whose Google token should run the sync.
+	 * @param bool $spawn  Whether to spawn WP-Cron immediately.
 	 * @return true|WP_Error
 	 */
-	public static function scheduleSourceSync( int $post_id, int $user_id ): true|WP_Error {
+	public static function scheduleSourceSync( int $post_id, int $user_id, bool $spawn = true ): true|WP_Error {
 		$post_id = absint( $post_id );
 		$user_id = absint( $user_id );
 
@@ -151,11 +152,37 @@ final class SyncCron {
 			}
 		}
 
-		if ( function_exists( 'spawn_cron' ) ) {
-			spawn_cron();
+		if ( $spawn ) {
+			self::spawnScheduledSyncs();
 		}
 
 		return true;
+	}
+
+	/**
+	 * Ask WordPress to run due sync events.
+	 */
+	public static function spawnScheduledSyncs(): void {
+		if ( function_exists( 'spawn_cron' ) ) {
+			spawn_cron();
+		}
+	}
+
+	/**
+	 * Whether a single-source sync event is already scheduled.
+	 *
+	 * @param int $post_id Post ID.
+	 * @param int $user_id User ID whose Google token should run the sync.
+	 */
+	public static function hasScheduledSourceSync( int $post_id, int $user_id ): bool {
+		$post_id = absint( $post_id );
+		$user_id = absint( $user_id );
+
+		if ( $post_id <= 0 || $user_id <= 0 ) {
+			return false;
+		}
+
+		return false !== wp_next_scheduled( self::SOURCE_HOOK, array( $post_id, $user_id ) );
 	}
 
 	/**
@@ -182,7 +209,10 @@ final class SyncCron {
 
 		$result = $this->sync_service->syncPost( $post_id, $user_id );
 
-		if ( is_wp_error( $result ) && 'docsync_wp_sync_locked' !== $result->get_error_code() ) {
+		if (
+			is_wp_error( $result )
+			&& ! in_array( $result->get_error_code(), array( 'docsync_wp_sync_locked', 'docsync_wp_source_changed', 'docsync_wp_source_not_found' ), true )
+		) {
 			$this->sync_service->markSyncError( $post_id, $result );
 		}
 	}

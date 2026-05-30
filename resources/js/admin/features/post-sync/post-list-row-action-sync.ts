@@ -1,14 +1,15 @@
 import { speak } from '@wordpress/a11y';
 import { __, sprintf } from '@wordpress/i18n';
 
-import { syncSource } from '../../api';
+import { syncSource, type SyncResult } from '../../api';
 import { updateListRowSource } from './post-sync-dom';
 import type { SyncToast } from './sync-toast-stack';
 
 export const syncRowAction = async (
   link: HTMLElement,
   postId: number,
-  showToast: (toast: Omit<SyncToast, 'onDismiss'>) => void
+  showToast: (toast: Omit<SyncToast, 'onDismiss'>) => void,
+  onQueued: (result: SyncResult) => void
 ) => {
   if (link.dataset.busy === 'true') {
     return;
@@ -20,10 +21,16 @@ export const syncRowAction = async (
     link.dataset.busy = 'true';
     link.setAttribute('aria-busy', 'true');
     link.textContent = __('Syncing...', 'docsync-wp');
-    const result = await syncSource(postId);
+    const result = await syncSource(postId, 'background');
     const message = sprintf(__('Source %d sync %s.', 'docsync-wp'), postId, result.status);
 
     updateListRowSource(result.source ?? null);
+
+    if (result.queued || result.status === 'queued') {
+      onQueued(result);
+      link.textContent = originalText;
+      return;
+    }
 
     if (!result.source) {
       link.textContent = originalText;

@@ -67,6 +67,7 @@ Each WordPress user must connect their own Google account before inspecting or s
 - Google Docs is the source of truth. Manual sync overwrites WordPress post content while preserving normal WordPress revisions.
 - Sync exports Google Docs as an HTML ZIP package, imports local images into the WordPress Media Library, rewrites image URLs, sanitizes HTML, converts common elements to Gutenberg blocks, then updates the target post.
 - If Google blocks an HTML ZIP export because the exported Workspace document exceeds its 10 MB export limit, DocSync WP automatically retries through the Google Docs API large-doc fallback before changing WordPress content.
+- Manual admin syncs run in the background through WP-Cron and show milestone-based progress. Percent values reflect sync steps, not byte-level Google export progress.
 - Default Google scope is `https://www.googleapis.com/auth/drive.readonly`.
 - Source selection uses DocSync WP's custom Google Drive document browser. Pasted Google Doc URLs or raw file IDs remain available under advanced linking.
 - Existing Google connections created with the old `drive.file` scope must reconnect before browsing or syncing Docs.
@@ -74,7 +75,7 @@ Each WordPress user must connect their own Google account before inspecting or s
 
 ## Scheduling
 
-DocSync WP uses WP-Cron for scheduled sync. WP-Cron runs only when WordPress receives traffic, so low-traffic sites should use a real server cron hitting `wp-cron.php` for reliable schedules.
+DocSync WP uses WP-Cron for scheduled sync and manual background sync. WP-Cron runs only when WordPress receives traffic, so low-traffic sites or sites with `DISABLE_WP_CRON` should use a real server cron hitting `wp-cron.php` for reliable sync completion.
 
 ## Runtime Notes
 

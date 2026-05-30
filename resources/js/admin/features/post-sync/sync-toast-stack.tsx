@@ -2,6 +2,7 @@ import { createElement } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 import { AdminButton } from '../../shared/ui/admin-button';
+import { SyncProgress } from '../../shared/ui/sync-progress';
 
 export type SyncToast = {
   id: string;
@@ -9,6 +10,7 @@ export type SyncToast = {
   title: string;
   tone: 'info' | 'success' | 'error' | 'warning';
   busy?: boolean;
+  progress?: number;
   actionLabel?: string;
   onAction?: () => void;
   onDismiss: () => void;
@@ -30,7 +32,8 @@ export const SyncToastStack = ({ toasts }: Props): JSX.Element | null => {
           <div className="docsync-wp-toast__content">
             <strong>{toast.title}</strong>
             <p>{toast.message}</p>
-            {toast.busy ? <span aria-hidden="true" className="docsync-wp-toast__progress" /> : null}
+            {typeof toast.progress === 'number' ? <SyncProgress progress={toast.progress} /> : null}
+            {toast.busy && typeof toast.progress !== 'number' ? <span aria-hidden="true" className="docsync-wp-toast__progress" /> : null}
           </div>
           <div className="docsync-wp-toast__actions">
             {toast.actionLabel && toast.onAction ? (

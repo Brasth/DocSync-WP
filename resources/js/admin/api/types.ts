@@ -125,6 +125,9 @@ export type SourceRecord = {
   lastSyncMethod?: 'html_zip' | 'docs_api_fallback' | null;
   syncStatus: 'linked' | 'syncing' | 'synced' | 'skipped' | 'error' | string;
   syncError: string;
+  syncProgress: number;
+  syncStep: string;
+  syncMessage: string;
 };
 
 export type SyncResult = {

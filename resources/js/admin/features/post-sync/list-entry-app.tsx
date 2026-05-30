@@ -34,7 +34,7 @@ export const ListEntryApp = ({ postType }: { postType: string }): JSX.Element =>
       const rowPostType = link.dataset.postType ?? postType;
 
       if (link.dataset.mode === 'sync') {
-        await syncRowAction(link, postId, showToast);
+        await syncRowAction(link, postId, showToast, trackBackgroundSync);
         return;
       }
 
@@ -96,6 +96,7 @@ export const ListEntryApp = ({ postType }: { postType: string }): JSX.Element =>
       busy: true,
       id: syncId,
       message,
+      progress: result.source?.syncProgress,
       title: __('Sync queued', 'docsync-wp'),
       tone: 'info'
     });
@@ -121,6 +122,18 @@ export const ListEntryApp = ({ postType }: { postType: string }): JSX.Element =>
       tone: isError ? 'error' : 'success'
     });
     speak(message, isError ? 'assertive' : 'polite');
+  };
+
+  const handleProgressStatus = (sync: TrackedSync, source: SourceRecord) => {
+    updateListRowSource(source);
+    showToast({
+      busy: true,
+      id: sync.id,
+      message: source.syncMessage || __('Google Doc sync is running.', 'docsync-wp'),
+      progress: source.syncProgress,
+      title: __('Syncing Google Doc', 'docsync-wp'),
+      tone: 'info'
+    });
   };
 
   const handlePollingError = (sync: TrackedSync, message: string) => {
@@ -161,7 +174,7 @@ export const ListEntryApp = ({ postType }: { postType: string }): JSX.Element =>
         <BackgroundSyncPoller
           key={sync.id}
           onError={(message) => handlePollingError(sync, message)}
-          onStatus={(source) => updateListRowSource(source)}
+          onStatus={(source) => handleProgressStatus(sync, source)}
           onTerminal={(source) => handleTerminalStatus(sync, source).catch(() => undefined)}
           onTimeout={() => handlePollingTimeout(sync)}
           postId={sync.postId}

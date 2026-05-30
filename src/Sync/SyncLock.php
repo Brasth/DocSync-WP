@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
  */
 final class SyncLock {
 	private const OPTION_PREFIX    = 'docsync_wp_sync_lock_';
-	private const LOCK_TTL_SECONDS = 300;
+	private const LOCK_TTL_SECONDS = 1800;
 
 	/**
 	 * Acquire a lock for a post.
@@ -62,6 +62,36 @@ final class SyncLock {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Whether a post has an unexpired sync lock.
+	 *
+	 * @param int $post_id Post ID.
+	 */
+	public function isActive( int $post_id ): bool {
+		if ( $post_id <= 0 ) {
+			return false;
+		}
+
+		$expires = $this->readOptionValue( $this->key( $post_id ) );
+
+		return null !== $expires && absint( $expires ) > time();
+	}
+
+	/**
+	 * Extend an active post lock.
+	 *
+	 * @param int $post_id Post ID.
+	 */
+	public function refresh( int $post_id ): bool {
+		if ( ! $this->isActive( $post_id ) ) {
+			return false;
+		}
+
+		$key = $this->key( $post_id );
+
+		return update_option( $key, (string) ( time() + self::LOCK_TTL_SECONDS ), false );
 	}
 
 	/**

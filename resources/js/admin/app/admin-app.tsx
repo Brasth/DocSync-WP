@@ -3,6 +3,7 @@ import { __ } from '@wordpress/i18n';
 
 import { AccountPanel } from '../features/google-setup/account-panel';
 import { SettingsPanel } from '../features/google-setup/settings-panel';
+import { BackgroundSyncPoller } from '../features/post-sync/background-sync-poller';
 import { SourcesTable } from '../features/sources/sources-table';
 import { AdminNotice } from '../shared/ui/admin-notice';
 import { useAdminApp, type AdminView } from './use-admin-app';
@@ -49,6 +50,16 @@ export const AdminApp = ({ view }: { view: AdminView }): JSX.Element => {
         </section>
       ) : view === 'sources' ? (
         <div className="docsync-wp-admin-grid docsync-wp-admin-grid--single">
+          {app.trackedSourceIds.map((postId) => (
+            <BackgroundSyncPoller
+              key={postId}
+              onError={(message) => app.handleSourcePollingError(postId, message)}
+              onStatus={app.handleSourceStatus}
+              onTerminal={app.handleSourceTerminal}
+              onTimeout={() => app.handleSourcePollingTimeout(postId)}
+              postId={postId}
+            />
+          ))}
           <div className="docsync-wp-admin-grid__main">
             <SourcesTable
               availablePostTypes={app.settings.availablePostTypes.filter((postType) => app.settings?.enabledPostTypes.includes(postType.name))}

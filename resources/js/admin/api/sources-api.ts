@@ -31,15 +31,15 @@ export const getSource = (postId: number): Promise<SourceRecord> => {
   return request<SourceRecord>(`sources/${postId}`);
 };
 
-export const syncSource = (postId: number, syncMode: SyncMode = 'inline'): Promise<SyncResult> => {
+export const syncSource = (postId: number, syncMode: SyncMode = 'background'): Promise<SyncResult> => {
   return request<SyncResult>(`sources/${postId}/sync`, {
     method: 'POST',
     data: { syncMode }
   });
 };
 
-export const syncAllSources = (): Promise<{ results: SyncResult[]; count: number }> => {
-  return request<{ results: SyncResult[]; count: number }>('sources/sync-all', { method: 'POST' });
+export const syncAllSources = (): Promise<{ results: SyncResult[]; count: number; hasMore?: boolean }> => {
+  return request<{ results: SyncResult[]; count: number; hasMore?: boolean }>('sources/sync-all', { method: 'POST' });
 };
 
 export const detachSource = (postId: number): Promise<{ postId: number; deleted: boolean }> => {

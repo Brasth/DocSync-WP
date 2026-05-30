@@ -2,6 +2,32 @@
 
 Last updated: 2026-05-30
 
+## 2026-05-30 - Live Sync Progress Percent
+
+Status: completed in codebase
+
+Added truthful milestone progress for Google Doc syncs:
+
+- stored `syncProgress`, `syncStep`, and `syncMessage` with existing source post meta
+- exposed progress fields on existing source REST responses without changing route shapes or persisted status names
+- moved admin manual syncs and sync-all to background queueing so screens can poll progress
+- showed progress percent and messages in the post edit meta box, list-table status column, post-list toasts, and Sources table
+- preserved last reached progress on errors instead of marking failed syncs complete
+- prevented stale background sync work from overwriting a source after the linked Doc changes or detaches
+- batched sync-all queueing and spawns WP-Cron once per batch
+- allowed repeated manual sync to recover a stale `syncing` source when no matching cron event or lock remains
+- refreshed active sync locks on milestone saves and constrained sync-all scanning by user edit capabilities where possible
+
+Verification status:
+
+- `composer validate --no-check-publish` passes
+- `composer lint` passes
+- `pnpm lint` passes
+- `pnpm typecheck` passes
+- `pnpm build` passes
+- PHP syntax checks pass for modified PHP files
+- `git diff --check` passes
+
 ## 2026-05-30 - Oversized Google Doc Export Fallback
 
 Status: completed in codebase

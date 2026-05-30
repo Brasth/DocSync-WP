@@ -18,6 +18,7 @@ import {
 import { getAdminConfig } from '../config';
 import type { SourceListFilters } from '../features/sources/sources-table';
 import type { AdminNoticeState } from '../shared/ui/admin-notice';
+import { useSourceSyncProgress } from './use-source-sync-progress';
 
 const emptyAccount: GoogleAccount = { connected: false, hasRequiredScope: false };
 const sourcePageSize = 100;
@@ -36,6 +37,7 @@ export const useAdminApp = (view: AdminView) => {
   const [hasMoreSources, setHasMoreSources] = useState(false);
   const [notice, setNotice] = useState<AdminNoticeState | null>(null);
   const [busy, setBusy] = useState(false);
+  const sourceSync = useSourceSyncProgress(setSources, setNotice);
 
   const refreshSetup = async () => {
     const [settingsResponse, accountResponse] = await Promise.all([
@@ -62,6 +64,7 @@ export const useAdminApp = (view: AdminView) => {
     setSources((current) => append ? [...current, ...sourcesResponse.sources] : sourcesResponse.sources);
     setSourcePage(page);
     setHasMoreSources(Boolean(sourcesResponse.has_more ?? sourcesResponse.hasMore));
+    sourceSync.trackSourceIds(sourcesResponse.sources.filter((source) => source.syncStatus === 'syncing').map((source) => source.postId));
   };
 
   const refresh = async () => {
@@ -131,10 +134,16 @@ export const useAdminApp = (view: AdminView) => {
 
   const syncOne = async (postId: number) => {
     await runAction(async () => {
-      const result = await syncSource(postId);
-      const message = sprintf(__('Source %d sync %s.', 'docsync-wp'), postId, result.status);
-      await refresh();
-      setNotice({ type: 'success', message });
+      const result = await syncSource(postId, 'background');
+      const source = result.source ?? null;
+      const message = source?.syncMessage || sprintf(__('Source %d sync queued.', 'docsync-wp'), postId);
+
+      if (source) {
+        sourceSync.mergeSources([source]);
+      }
+
+      sourceSync.trackSourceIds([postId]);
+      setNotice({ type: 'info', message });
       speak(message);
     });
   };
@@ -142,9 +151,17 @@ export const useAdminApp = (view: AdminView) => {
   const syncAll = async () => {
     await runAction(async () => {
       const result = await syncAllSources();
-      const message = sprintf(__('Sync attempted for %d source(s).', 'docsync-wp'), result.count);
-      await refresh();
-      setNotice({ type: 'success', message });
+      const syncedSources = result.results
+        .map((item) => item.source)
+        .filter((source): source is SourceRecord => Boolean(source));
+      const queuedIds = result.results
+        .filter((item) => item.queued || item.status === 'queued' || item.source?.syncStatus === 'syncing')
+        .map((item) => item.postId);
+      const message = result.hasMore ? sprintf(__('Queued sync for %d source(s). Run sync all again for more.', 'docsync-wp'), result.count) : sprintf(__('Queued sync for %d source(s).', 'docsync-wp'), result.count);
+
+      sourceSync.mergeSources(syncedSources);
+      sourceSync.trackSourceIds(queuedIds);
+      setNotice({ type: 'info', message });
       speak(message);
     });
   };
@@ -173,6 +190,11 @@ export const useAdminApp = (view: AdminView) => {
     sourceFilters,
     sources,
     syncAll,
-    syncOne
+    syncOne,
+    trackedSourceIds: sourceSync.trackedSourceIds,
+    handleSourcePollingError: sourceSync.handleSourcePollingError,
+    handleSourcePollingTimeout: sourceSync.handleSourcePollingTimeout,
+    handleSourceStatus: sourceSync.handleSourceStatus,
+    handleSourceTerminal: sourceSync.handleSourceTerminal
   };
 };

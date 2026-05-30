@@ -27,6 +27,9 @@ defined( 'ABSPATH' ) || exit;
 final class SourceController {
 	private const SYNC_MODE_INLINE     = 'inline';
 	private const SYNC_MODE_BACKGROUND = 'background';
+	private const SYNC_ALL_BATCH_SIZE  = 20;
+	private const SYNC_ALL_SCAN_LIMIT  = 100;
+	private const SYNC_ALL_MAX_SCANS   = 5;
 
 	/**
 	 * Source repository.
@@ -392,17 +395,31 @@ final class SourceController {
 	 * @return WP_REST_Response
 	 */
 	public function syncAllSources(): WP_REST_Response {
-		$user_id    = get_current_user_id();
-		$batch_size = 20;
-		$before     = gmdate( 'Y-m-d H:i:s', time() - 1 );
-		$results    = array();
-		$seen       = array();
+		$user_id  = get_current_user_id();
+		$before   = gmdate( 'Y-m-d H:i:s', time() - 1 );
+		$results  = array();
+		$seen     = array();
+		$has_more = false;
+		$count    = 0;
 
-		do {
-			$post_ids       = $this->source_repository->listDueSourcePostIds( $this->source_repository->getEnabledPostTypes(), $batch_size, $before, array_keys( $seen ) );
+		for ( $scan = 0; $scan < self::SYNC_ALL_MAX_SCANS && $count < self::SYNC_ALL_BATCH_SIZE; $scan++ ) {
+			$post_ids = $this->source_repository->listDueSourcePostIdsForUser(
+				$this->source_repository->getEnabledPostTypes(),
+				$user_id,
+				self::SYNC_ALL_SCAN_LIMIT,
+				$before,
+				array_keys( $seen )
+			);
+
+			if ( array() === $post_ids ) {
+				$has_more = false;
+				break;
+			}
+
 			$post_ids_count = count( $post_ids );
+			$has_more       = self::SYNC_ALL_SCAN_LIMIT === $post_ids_count;
 
-			foreach ( $post_ids as $post_id ) {
+			foreach ( $post_ids as $index => $post_id ) {
 				$post_id = absint( $post_id );
 
 				if ( $post_id <= 0 ) {
@@ -415,7 +432,7 @@ final class SourceController {
 					continue;
 				}
 
-				$result = $this->sync_service->syncPost( $post_id, $user_id );
+				$result = $this->queueSync( $post_id, $user_id, false, false );
 
 				if ( is_wp_error( $result ) ) {
 					$results[] = array(
@@ -423,17 +440,39 @@ final class SourceController {
 						'status'  => 'error',
 						'message' => $result->get_error_message(),
 					);
+					++$count;
+
+					if ( $count >= self::SYNC_ALL_BATCH_SIZE ) {
+						$has_more = $has_more || $index < $post_ids_count - 1;
+						break;
+					}
+
 					continue;
 				}
 
 				$results[] = $result;
+				++$count;
+
+				if ( $count >= self::SYNC_ALL_BATCH_SIZE ) {
+					$has_more = $has_more || $index < $post_ids_count - 1;
+					break;
+				}
 			}
-		} while ( $post_ids_count === $batch_size );
+
+			if ( ! $has_more ) {
+				break;
+			}
+		}
+
+		if ( array() !== $results ) {
+			SyncCron::spawnScheduledSyncs();
+		}
 
 		return rest_ensure_response(
 			array(
 				'results' => $results,
 				'count'   => count( $results ),
+				'hasMore' => $has_more,
 			)
 		);
 	}
@@ -453,11 +492,21 @@ final class SourceController {
 			return $allowed;
 		}
 
-		if ( null === $this->source_repository->getSource( $post_id ) ) {
+		$source = $this->source_repository->getSource( $post_id );
+
+		if ( null === $source ) {
 			return new WP_Error(
 				'docsync_wp_source_not_found',
 				__( 'This post is not linked to a Google Doc.', 'docsync-wp' ),
 				array( 'status' => 404 )
+			);
+		}
+
+		if ( SyncService::STATUS_SYNCING === (string) $source['sync_status'] ) {
+			return new WP_Error(
+				'docsync_wp_source_syncing',
+				__( 'Wait for the current Google Doc sync to finish before detaching this source.', 'docsync-wp' ),
+				array( 'status' => 409 )
 			);
 		}
 
@@ -537,20 +586,32 @@ final class SourceController {
 	 * @param int  $post_id Post ID.
 	 * @param int  $user_id User ID whose Google token should run the sync.
 	 * @param bool $created Whether the source was created by this request.
+	 * @param bool $spawn   Whether to spawn WP-Cron immediately.
 	 * @return array<string,mixed>|WP_Error
 	 */
-	private function queueSync( int $post_id, int $user_id, bool $created = false ): array|WP_Error {
-		$result = $this->sync_service->markSyncQueued( $post_id, $user_id );
+	private function queueSync( int $post_id, int $user_id, bool $created = false, bool $spawn = true ): array|WP_Error {
+		$source            = $this->source_repository->getSource( $post_id );
+		$sync_owner_user   = is_array( $source ) ? absint( $source['sync_owner_user_id'] ?? 0 ) : 0;
+		$event_user_id     = $sync_owner_user > 0 ? $sync_owner_user : $user_id;
+		$has_pending_event = SyncCron::hasScheduledSourceSync( $post_id, $event_user_id );
+		$result            = $this->sync_service->markSyncQueued( $post_id, $user_id, $has_pending_event );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
 
-		$scheduled = SyncCron::scheduleSourceSync( $post_id, $user_id );
+		$already_queued = ! empty( $result['alreadyQueued'] );
+		unset( $result['alreadyQueued'] );
 
-		if ( is_wp_error( $scheduled ) ) {
-			$this->sync_service->markSyncError( $post_id, $scheduled );
-			return $scheduled;
+		if ( ! $already_queued ) {
+			$scheduled = SyncCron::scheduleSourceSync( $post_id, $user_id, $spawn );
+
+			if ( is_wp_error( $scheduled ) ) {
+				$this->sync_service->markSyncError( $post_id, $scheduled );
+				return $scheduled;
+			}
+		} elseif ( $spawn ) {
+			SyncCron::spawnScheduledSyncs();
 		}
 
 		if ( $created ) {

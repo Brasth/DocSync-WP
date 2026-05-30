@@ -4,6 +4,7 @@ import type { SourceRecord } from '../../api';
 import type { AvailablePostType } from '../../config';
 import { AdminButton } from '../../shared/ui/admin-button';
 import { StatusPill } from '../../shared/ui/status-pill';
+import { SyncProgress } from '../../shared/ui/sync-progress';
 
 export type SourceListFilters = {
   search: string;
@@ -167,7 +168,11 @@ export const SourcesTable = ({
                 <td>
                   {source.googleDocUrl ? <a href={source.googleDocUrl} rel="noreferrer" target="_blank">{source.googleTitle || source.googleFileId}</a> : source.googleTitle || source.googleFileId}
                 </td>
-                <td><StatusPill status={statusLabel(source)} />{source.syncError ? <small>{source.syncError}</small> : null}</td>
+                <td>
+                  <StatusPill status={statusLabel(source)} />
+                  <SyncProgress message={source.syncMessage} progress={source.syncProgress} />
+                  {source.syncError ? <small>{source.syncError}</small> : null}
+                </td>
                 <td>
                   {source.lastSyncedAt || 'Never'}
                   {syncMethodLabel(source) ? <small>{syncMethodLabel(source)}</small> : null}

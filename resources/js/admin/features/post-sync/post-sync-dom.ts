@@ -110,6 +110,7 @@ const sourceStatusElement = (source: SourceRecord): HTMLDivElement => {
   title.textContent = source.googleTitle || source.googleFileId;
   status.textContent = capitalizeStatus(source.syncStatus || 'linked');
   wrapper.append(title, document.createElement('br'), status);
+  wrapper.append(sourceProgressElement(source));
 
   if (source.lastSyncedAt) {
     const syncedAt = document.createElement('small');
@@ -123,6 +124,29 @@ const sourceStatusElement = (source: SourceRecord): HTMLDivElement => {
     error.textContent = source.syncError;
     wrapper.append(document.createElement('br'), error);
   }
+
+  return wrapper;
+};
+
+const sourceProgressElement = (source: SourceRecord): HTMLDivElement => {
+  const progress = Math.max(0, Math.min(100, Math.round(source.syncProgress ?? 0)));
+  const message = source.syncMessage || '';
+  const wrapper = document.createElement('div');
+  const bar = document.createElement('div');
+  const fill = document.createElement('span');
+  const label = document.createElement('small');
+
+  wrapper.className = 'docsync-wp-sync-progress-wrap';
+  bar.className = 'docsync-wp-sync-progress';
+  bar.setAttribute('role', 'progressbar');
+  bar.setAttribute('aria-label', `Sync progress: ${progress}%`);
+  bar.setAttribute('aria-valuemin', '0');
+  bar.setAttribute('aria-valuemax', '100');
+  bar.setAttribute('aria-valuenow', String(progress));
+  fill.style.width = `${progress}%`;
+  label.textContent = message ? `${progress}% - ${message}` : `${progress}%`;
+  bar.append(fill);
+  wrapper.append(bar, label);
 
   return wrapper;
 };

@@ -33,8 +33,12 @@ final class SourceRepository {
 	public const META_EXPORT_FORMAT = '_docsync_wp_export_format';
 	public const META_SYNC_STATUS   = '_docsync_wp_sync_status';
 	public const META_SYNC_ERROR    = '_docsync_wp_sync_error';
+	public const META_SYNC_PROGRESS = '_docsync_wp_sync_progress';
+	public const META_SYNC_STEP     = '_docsync_wp_sync_step';
+	public const META_SYNC_MESSAGE  = '_docsync_wp_sync_message';
 
 	private const EXPORT_FORMAT_HTML_ZIP = 'html_zip';
+	private const STATUS_SYNCING         = 'syncing';
 
 	/**
 	 * Settings repository.
@@ -69,6 +73,13 @@ final class SourceRepository {
 			return null;
 		}
 
+		$sync_status = $this->getStringMeta( $post_id, self::META_SYNC_STATUS );
+		$sync_step   = sanitize_key( $this->getStringMeta( $post_id, self::META_SYNC_STEP ) );
+
+		if ( '' === $sync_step ) {
+			$sync_step = '' !== $sync_status ? sanitize_key( $sync_status ) : 'linked';
+		}
+
 		return array(
 			'google_file_id'       => $file_id,
 			'google_doc_url'       => $this->getStringMeta( $post_id, self::META_DOC_URL ),
@@ -80,8 +91,11 @@ final class SourceRepository {
 			'last_sync_method'     => $this->getStringMeta( $post_id, self::META_LAST_METHOD ),
 			'sync_owner_user_id'   => absint( get_post_meta( $post_id, self::META_OWNER_USER_ID, true ) ),
 			'export_format'        => $this->getStringMeta( $post_id, self::META_EXPORT_FORMAT ),
-			'sync_status'          => $this->getStringMeta( $post_id, self::META_SYNC_STATUS ),
+			'sync_status'          => $sync_status,
 			'sync_error'           => $this->getStringMeta( $post_id, self::META_SYNC_ERROR ),
+			'sync_progress'        => $this->getSyncProgress( $post_id, $sync_status ),
+			'sync_step'            => $sync_step,
+			'sync_message'         => $this->getSyncMessage( $post_id, $sync_step ),
 		);
 	}
 
@@ -133,6 +147,9 @@ final class SourceRepository {
 		update_post_meta( $post_id, self::META_EXPORT_FORMAT, $this->sanitizeExportFormat( $source['export_format'] ?? self::EXPORT_FORMAT_HTML_ZIP ) );
 		update_post_meta( $post_id, self::META_SYNC_STATUS, isset( $source['sync_status'] ) ? sanitize_key( (string) $source['sync_status'] ) : '' );
 		update_post_meta( $post_id, self::META_SYNC_ERROR, isset( $source['sync_error'] ) ? sanitize_textarea_field( (string) $source['sync_error'] ) : '' );
+		update_post_meta( $post_id, self::META_SYNC_PROGRESS, $this->sanitizeProgress( $source['sync_progress'] ?? 0 ) );
+		update_post_meta( $post_id, self::META_SYNC_STEP, isset( $source['sync_step'] ) ? sanitize_key( (string) $source['sync_step'] ) : 'linked' );
+		update_post_meta( $post_id, self::META_SYNC_MESSAGE, $this->sanitizeProgressMessage( $source['sync_message'] ?? __( 'Linked and ready to sync.', 'docsync-wp' ) ) );
 
 		return true;
 	}
@@ -424,44 +441,109 @@ final class SourceRepository {
 	}
 
 	/**
+	 * List due source post IDs the user is likely allowed to edit.
+	 *
+	 * @param array<int,string> $post_types Post types.
+	 * @param int               $user_id    User ID.
+	 * @param int               $limit      Maximum rows to return.
+	 * @param string            $before     UTC mysql timestamp cutoff.
+	 * @param array<int,int>    $exclude    Post IDs to exclude.
+	 * @return array<int,int>
+	 */
+	public function listDueSourcePostIdsForUser( array $post_types, int $user_id, int $limit, string $before, array $exclude = array() ): array {
+		$all_editable_post_types = array();
+		$own_post_types          = array();
+
+		foreach ( array_map( 'sanitize_key', $post_types ) as $post_type ) {
+			if ( ! $this->userCanEditPostType( $post_type, $user_id ) ) {
+				continue;
+			}
+
+			if ( $this->userCanEditOthersPostType( $post_type, $user_id ) ) {
+				$all_editable_post_types[] = $post_type;
+				continue;
+			}
+
+			$own_post_types[] = $post_type;
+		}
+
+		$post_ids = array();
+
+		if ( array() !== $all_editable_post_types ) {
+			$post_ids = array_merge(
+				$post_ids,
+				$this->listDueSourcePostIds( $all_editable_post_types, $limit, $before, $exclude )
+			);
+		}
+
+		if ( array() !== $own_post_types ) {
+			$post_ids = array_merge(
+				$post_ids,
+				array_map( 'absint', $this->queryDueSourceIds( $own_post_types, $limit, $before, $exclude, $user_id )->posts )
+			);
+		}
+
+		$post_ids = array_values( array_unique( array_map( 'absint', $post_ids ) ) );
+
+		return array_slice( $post_ids, 0, max( 1, min( 100, $limit ) ) );
+	}
+
+	/**
 	 * Query source IDs due before a cutoff.
 	 *
 	 * @param array<int,string> $post_types Post types.
 	 * @param int               $limit      Maximum rows to return.
 	 * @param string            $before     UTC mysql timestamp cutoff.
 	 * @param array<int,int>    $exclude    Post IDs to exclude.
+	 * @param int               $author     Optional post author filter.
 	 */
-	private function queryDueSourceIds( array $post_types, int $limit, string $before, array $exclude ): WP_Query {
-		return new WP_Query(
-			array(
-				'fields'                 => 'ids',
-				'meta_query'             => array(
-					'relation'    => 'AND',
-					'has_source'  => array(
-						'key'     => self::META_FILE_ID,
-						'compare' => 'EXISTS',
+	private function queryDueSourceIds( array $post_types, int $limit, string $before, array $exclude, int $author = 0 ): WP_Query {
+		$query_args = array(
+			'fields'                 => 'ids',
+			'meta_query'             => array(
+				'relation'    => 'AND',
+				'has_source'  => array(
+					'key'     => self::META_FILE_ID,
+					'compare' => 'EXISTS',
+				),
+				'last_synced' => array(
+					'key'     => self::META_LAST_SYNCED,
+					'value'   => sanitize_text_field( $before ),
+					'compare' => '<=',
+					'type'    => 'CHAR',
+				),
+				'not_syncing' => array(
+					'relation' => 'OR',
+					array(
+						'key'     => self::META_SYNC_STATUS,
+						'compare' => 'NOT EXISTS',
 					),
-					'last_synced' => array(
-						'key'     => self::META_LAST_SYNCED,
-						'value'   => sanitize_text_field( $before ),
-						'compare' => '<=',
-						'type'    => 'CHAR',
+					array(
+						'key'     => self::META_SYNC_STATUS,
+						'value'   => self::STATUS_SYNCING,
+						'compare' => '!=',
 					),
 				),
-				'no_found_rows'          => true,
-				'orderby'                => array(
-					'last_synced' => 'ASC',
-					'modified'    => 'ASC',
-				),
-				'order'                  => 'ASC',
-				'post_status'            => 'any',
-				'post_type'              => $post_types,
-				'post__not_in'           => array_map( 'absint', $exclude ),
-				'posts_per_page'         => max( 1, min( 100, $limit ) ),
-				'update_post_meta_cache' => true,
-				'update_post_term_cache' => false,
-			)
+			),
+			'no_found_rows'          => true,
+			'orderby'                => array(
+				'last_synced' => 'ASC',
+				'modified'    => 'ASC',
+			),
+			'order'                  => 'ASC',
+			'post_status'            => 'any',
+			'post_type'              => $post_types,
+			'post__not_in'           => array_map( 'absint', $exclude ),
+			'posts_per_page'         => max( 1, min( 100, $limit ) ),
+			'update_post_meta_cache' => true,
+			'update_post_term_cache' => false,
 		);
+
+		if ( $author > 0 ) {
+			$query_args['author'] = $author;
+		}
+
+		return new WP_Query( $query_args );
 	}
 
 	/**
@@ -503,6 +585,9 @@ final class SourceRepository {
 			'exportFormat'       => $source['export_format'],
 			'syncStatus'         => $source['sync_status'],
 			'syncError'          => $source['sync_error'],
+			'syncProgress'       => $source['sync_progress'],
+			'syncStep'           => $source['sync_step'],
+			'syncMessage'        => $source['sync_message'],
 		);
 	}
 
@@ -588,6 +673,24 @@ final class SourceRepository {
 	}
 
 	/**
+	 * Whether a user can edit other users' posts of the given type.
+	 *
+	 * @param string $post_type Post type.
+	 * @param int    $user_id   User ID.
+	 */
+	private function userCanEditOthersPostType( string $post_type, int $user_id ): bool {
+		$post_type_object = get_post_type_object( $post_type );
+
+		if ( ! $post_type_object instanceof WP_Post_Type ) {
+			return false;
+		}
+
+		$capability = $post_type_object->cap->edit_others_posts ?? '';
+
+		return '' !== $capability && user_can( $user_id, $capability );
+	}
+
+	/**
 	 * Get a string post meta value.
 	 *
 	 * @param int    $post_id  Post ID.
@@ -597,6 +700,56 @@ final class SourceRepository {
 		$value = get_post_meta( $post_id, $meta_key, true );
 
 		return is_string( $value ) ? $value : '';
+	}
+
+	/**
+	 * Get the source progress message with linked-source default.
+	 *
+	 * @param int    $post_id Source post ID.
+	 * @param string $step    Current progress step.
+	 */
+	private function getSyncMessage( int $post_id, string $step ): string {
+		$message = $this->getStringMeta( $post_id, self::META_SYNC_MESSAGE );
+
+		if ( '' !== $message ) {
+			return $message;
+		}
+
+		return 'linked' === $step ? __( 'Linked and ready to sync.', 'docsync-wp' ) : '';
+	}
+
+	/**
+	 * Get source sync progress with legacy terminal defaults.
+	 *
+	 * @param int    $post_id Source post ID.
+	 * @param string $status  Current source status.
+	 */
+	private function getSyncProgress( int $post_id, string $status ): int {
+		if ( metadata_exists( 'post', $post_id, self::META_SYNC_PROGRESS ) ) {
+			return $this->sanitizeProgress( get_post_meta( $post_id, self::META_SYNC_PROGRESS, true ) );
+		}
+
+		return in_array( $status, array( 'synced', 'skipped' ), true ) ? 100 : 0;
+	}
+
+	/**
+	 * Sanitize a sync progress percent.
+	 *
+	 * @param mixed $progress Progress value.
+	 */
+	private function sanitizeProgress( mixed $progress ): int {
+		return max( 0, min( 100, (int) $progress ) );
+	}
+
+	/**
+	 * Sanitize a short sync progress message.
+	 *
+	 * @param mixed $message Message.
+	 */
+	private function sanitizeProgressMessage( mixed $message ): string {
+		$message = sanitize_text_field( (string) $message );
+
+		return function_exists( 'mb_substr' ) ? mb_substr( $message, 0, 240 ) : substr( $message, 0, 240 );
 	}
 
 	/**
@@ -640,6 +793,9 @@ final class SourceRepository {
 			self::META_EXPORT_FORMAT,
 			self::META_SYNC_STATUS,
 			self::META_SYNC_ERROR,
+			self::META_SYNC_PROGRESS,
+			self::META_SYNC_STEP,
+			self::META_SYNC_MESSAGE,
 		);
 	}
 }

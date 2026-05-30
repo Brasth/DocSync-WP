@@ -15,10 +15,10 @@ export const usePostSyncActions = (postId: number, initialSource: SourceRecord |
     setNotice(null);
 
     try {
-      const result = await syncSource(postId);
-      const message = `Sync ${result.status}.`;
+      const result = await syncSource(postId, 'background');
+      const message = result.source?.syncMessage || __('Google Doc sync queued.', 'docsync-wp');
       setSource(result.source ?? source);
-      setNotice({ type: 'success', message });
+      setNotice({ type: 'info', message });
       speak(message);
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : __('Sync failed.', 'docsync-wp');

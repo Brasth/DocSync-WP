@@ -126,6 +126,7 @@ final class PostListActions {
 		echo '<div class="docsync-wp-list-status is-linked">';
 		echo '<strong>' . esc_html( (string) $title ) . '</strong><br />';
 		echo '<span>' . esc_html( ucfirst( (string) $status ) ) . '</span>';
+		$this->renderProgressDetails( $source );
 
 		if ( '' !== $source['last_synced_at'] ) {
 			echo '<br /><small>' . esc_html( (string) $source['last_synced_at'] ) . '</small>';
@@ -136,6 +137,35 @@ final class PostListActions {
 		}
 
 		echo '</div>';
+	}
+
+	/**
+	 * Render source sync progress details.
+	 *
+	 * @param array<string,mixed> $source Source metadata.
+	 */
+	private function renderProgressDetails( array $source ): void {
+		$progress = isset( $source['sync_progress'] ) ? max( 0, min( 100, (int) $source['sync_progress'] ) ) : 0;
+		$message  = isset( $source['sync_message'] ) ? (string) $source['sync_message'] : '';
+		$status   = isset( $source['sync_status'] ) ? (string) $source['sync_status'] : '';
+
+		if ( '' === $message && 'syncing' !== $status ) {
+			return;
+		}
+
+		$label = sprintf(
+			/* translators: %d: Sync progress percent. */
+			__( 'Sync progress: %d%%', 'docsync-wp' ),
+			$progress
+		);
+
+		echo '<div class="docsync-wp-sync-progress" role="progressbar" aria-label="' . esc_attr( $label ) . '" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' . esc_attr( (string) $progress ) . '">';
+		echo '<span style="width:' . esc_attr( (string) $progress ) . '%"></span>';
+		echo '</div>';
+
+		if ( '' !== $message ) {
+			echo '<small>' . esc_html( sprintf( '%d%% - %s', $progress, $message ) ) . '</small>';
+		}
 	}
 
 	/**

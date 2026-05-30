@@ -43,10 +43,14 @@ foreach (
 		'_docsync_wp_google_version',
 		'_docsync_wp_last_hash',
 		'_docsync_wp_last_synced_at',
+		'_docsync_wp_last_sync_method',
 		'_docsync_wp_sync_owner_user_id',
 		'_docsync_wp_export_format',
 		'_docsync_wp_sync_status',
 		'_docsync_wp_sync_error',
+		'_docsync_wp_sync_progress',
+		'_docsync_wp_sync_step',
+		'_docsync_wp_sync_message',
 	) as $meta_key
 ) {
 	delete_metadata( 'post', 0, $meta_key, '', true );

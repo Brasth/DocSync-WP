@@ -39,6 +39,7 @@ Rules:
 - store only the minimum required sync state
 - encrypt Google credentials and tokens
 - keep post meta as the source record for sync state
+- store source progress as milestone state in post meta, not as byte-level transfer telemetry
 - avoid adding custom tables unless audit history becomes necessary
 
 ## Frontend Standards
@@ -64,7 +65,12 @@ Rules:
 - Do not sync if metadata and content hash show no change.
 - Use a per-post lock during sync.
 - Record `linked`, `syncing`, `synced`, `skipped`, or `error`.
+- Record `syncProgress`, `syncStep`, and `syncMessage` for live admin polling. Progress must be clamped to `0-100`, milestone-based, and honest about external Google API limits.
 - Record the last successful sync method for diagnostics.
+- Manual admin syncs should use background mode and poll source state; backend inline sync remains only for REST compatibility.
+- Manual background sync depends on WP-Cron; admin docs must mention server cron for low-traffic or `DISABLE_WP_CRON` sites.
+- Repeated manual sync should not reset active progress, should refresh locks during milestone saves, and should be able to requeue a stale `syncing` source when no matching cron event or lock remains.
+- Do not allow source attach/detach operations to overwrite or remove a source while that source is actively syncing.
 - Preserve user capability checks even when a source already exists.
 - Upload exported local images through WordPress Media Library APIs and reuse matching attachments.
 
