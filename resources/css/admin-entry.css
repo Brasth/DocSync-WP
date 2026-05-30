@@ -4,4 +4,5 @@
 @import "./components/setup-panel.css";
 @import "./components/setup-settings.css";
 @import "./components/sources-table.css";
+@import "./components/sync-logs.css";
 @import "./shared/responsive.css";

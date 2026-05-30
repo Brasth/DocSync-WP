@@ -2,6 +2,27 @@
 
 Last updated: 2026-05-30
 
+## 2026-05-30 - Sync Diagnostic Logs
+
+Status: completed in codebase
+
+Added bounded diagnostic event logging for source syncs:
+
+- stored the latest 50 diagnostic-safe sync events per linked source in `_docsync_wp_sync_events`
+- appended events from queued syncs, progress milestones, large-doc fallback switches, partial fallback imports, terminal states, and errors
+- included stale recovery context with last heartbeat, last step, lock state, and cron-event state
+- changed `GET /sync-log` to return real events with `post_id`, `level`, `page`, and `per_page` filters
+- added `DocSync WP > Logs` with level/source filters, pagination, and a `View logs` action from Sources
+
+Verification status:
+
+- `composer validate --no-check-publish` passes
+- `composer lint` passes
+- `pnpm lint` passes
+- `pnpm typecheck` passes
+- `pnpm build` passes
+- PHP syntax checks pass for modified PHP files
+
 ## 2026-05-30 - Large Doc Sync Stuck Recovery
 
 Status: completed in codebase

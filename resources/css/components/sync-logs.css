@@ -1,0 +1,32 @@
+@layer components {
+  .docsync-wp-log-filters {
+    align-items: end;
+    display: grid;
+    gap: 12px;
+    grid-template-columns: minmax(160px, 220px) minmax(150px, 190px) auto;
+    margin-bottom: 16px;
+  }
+
+  .docsync-wp-log-filters label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .docsync-wp-log-filters__actions,
+  .docsync-wp-logs-pagination {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+  }
+
+  .docsync-wp-logs-table {
+    min-width: 1080px;
+  }
+
+  .docsync-wp-logs-table small {
+    color: #646970;
+    display: block;
+    margin-top: 3px;
+  }
+}

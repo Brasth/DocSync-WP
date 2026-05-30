@@ -10,7 +10,8 @@ import { AdminApp } from '../app/admin-app';
 const rootElement = document.getElementById('docsync-wp-admin-root');
 
 if (rootElement) {
-  const view = rootElement.dataset.view === 'sources' ? 'sources' : 'setup';
+  const requestedView = rootElement.dataset.view ?? '';
+  const view = requestedView === 'sources' || requestedView === 'logs' ? requestedView : 'setup';
 
   createRoot(rootElement).render(
     <Fragment>

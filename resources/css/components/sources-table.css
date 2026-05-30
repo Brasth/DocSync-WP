@@ -18,6 +18,13 @@
     gap: 8px;
   }
 
+  .docsync-wp-source-actions {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
   .docsync-wp-sources-table {
     min-width: 760px;
   }

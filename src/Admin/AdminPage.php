@@ -19,9 +19,13 @@ final class AdminPage {
 
 	public const SOURCES_MENU_SLUG = 'docsync-wp-sources';
 
+	public const LOGS_MENU_SLUG = 'docsync-wp-logs';
+
 	public const HOOK_SUFFIX = 'toplevel_page_docsync-wp';
 
 	public const SOURCES_HOOK_SUFFIX = 'docsync-wp_page_docsync-wp-sources';
+
+	public const LOGS_HOOK_SUFFIX = 'docsync-wp_page_docsync-wp-logs';
 
 	private const CAPABILITY = 'manage_options';
 
@@ -56,6 +60,15 @@ final class AdminPage {
 			self::SOURCES_MENU_SLUG,
 			array( $this, 'renderSources' )
 		);
+
+		add_submenu_page(
+			self::MENU_SLUG,
+			esc_html__( 'DocSync WP Logs', 'docsync-wp' ),
+			esc_html__( 'Logs', 'docsync-wp' ),
+			self::CAPABILITY,
+			self::LOGS_MENU_SLUG,
+			array( $this, 'renderLogs' )
+		);
 	}
 
 	/**
@@ -70,6 +83,13 @@ final class AdminPage {
 	 */
 	public function renderSources(): void {
 		$this->renderMount( 'sources' );
+	}
+
+	/**
+	 * Render the Logs React mount point.
+	 */
+	public function renderLogs(): void {
+		$this->renderMount( 'logs' );
 	}
 
 	/**

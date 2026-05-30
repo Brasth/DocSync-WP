@@ -3,6 +3,7 @@
     .docsync-wp-admin-grid,
     .docsync-wp-settings-grid,
     .docsync-wp-drive-browser__toolbar,
+    .docsync-wp-log-filters,
     .docsync-wp-source-filters,
     .docsync-wp-setup-test ul {
       grid-template-columns: 1fr;

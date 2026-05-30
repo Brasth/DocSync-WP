@@ -4,7 +4,7 @@ Last updated: 2026-05-30
 
 ## Status
 
-The Google Docs Sync Admin Actions implementation is complete in code. The self-managed Google onboarding, Drive-like My Drive/shared drive document browser, dedicated Sources submenu, page target support, source filters, HTML ZIP media import, Gutenberg block conversion, admin frontend structure refactor, Drive modal polish, OAuth JSON import, fullscreen picker, dense picker layout, infinite Drive loading, non-blocking background draft sync, oversized Google Doc fallback, inline editor sync-completion apply, progressive empty-draft large-doc writes, and large-doc stuck-state recovery are also complete in code.
+The Google Docs Sync Admin Actions implementation is complete in code. The self-managed Google onboarding, Drive-like My Drive/shared drive document browser, dedicated Sources submenu, Logs submenu, page target support, source filters, HTML ZIP media import, Gutenberg block conversion, admin frontend structure refactor, Drive modal polish, OAuth JSON import, fullscreen picker, dense picker layout, infinite Drive loading, non-blocking background draft sync, oversized Google Doc fallback, inline editor sync-completion apply, progressive empty-draft large-doc writes, large-doc stuck-state recovery, and bounded sync diagnostic logging are also complete in code.
 
 ## Phase Summary
 
@@ -32,6 +32,7 @@ The Google Docs Sync Admin Actions implementation is complete in code. The self-
 - document inspection and source linking
 - source table and bulk sync
 - dedicated `DocSync WP > Sources` submenu with search, post type, status, and pagination filters
+- dedicated `DocSync WP > Logs` submenu with source, level, and pagination filters
 - self-managed Google setup wizard with redirect URI copy, setup checks, and Google Cloud links
 - post/page edit and list-table entry points
 - optional `page` target support while keeping `post` always enabled
@@ -48,6 +49,7 @@ The Google Docs Sync Admin Actions implementation is complete in code. The self-
 - oversized Google Docs warn from Drive metadata and automatically retry through Docs API fallback only after Drive export-size failures
 - empty draft oversized-doc fallback imports progressively save sanitized block content before final sync completion
 - long-running syncs expose heartbeat metadata, tolerate transient polling failures, and recover abandoned `syncing` states into retryable errors
+- per-source sync events retain the latest 50 diagnostic-safe entries for queued, progress, fallback, terminal, error, and stale-recovery states
 - post editor background sync completion applies synced content directly when no unsaved edits are present and otherwise offers an explicit apply action
 - terminal sync states no longer show stale 100 percent progress bars after reload
 - setup wizard and README now require Drive API and Docs API in the same Google Cloud project
@@ -64,7 +66,7 @@ The Google Docs Sync Admin Actions implementation is complete in code. The self-
 The implementation is usable, but a few follow-ups remain open for future iterations:
 
 - add automated PHP and JS tests
-- add richer sync history if support needs increase
+- consider a custom sync-log table if support needs search-heavy or long-retention diagnostics
 - improve block-perfect conversion for complex Google Docs layouts if needed
 - add fixtures around Docs API fallback conversion when a test harness is introduced
 - decide whether to add a separate audit log table

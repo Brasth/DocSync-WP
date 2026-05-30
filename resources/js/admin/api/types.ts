@@ -165,3 +165,43 @@ export type SourceFilters = {
   page?: number;
   perPage?: number;
 };
+
+export type SyncLogLevel = 'info' | 'warning' | 'error';
+
+export type SyncLogEntry = {
+  eventId: string;
+  timestamp: string;
+  level: SyncLogLevel | string;
+  postId: number;
+  postTitle: string;
+  googleTitle: string;
+  status: string;
+  step: string;
+  progress: number;
+  message: string;
+  errorCode: string;
+  syncStartedAt: string;
+  syncUpdatedAt: string;
+  context?: {
+    hasLock?: boolean;
+    hasCronEvent?: boolean;
+    lastHeartbeat?: string;
+    lastStep?: string;
+  };
+};
+
+export type SyncLogFilters = {
+  postId?: number;
+  level?: string;
+  page?: number;
+  perPage?: number;
+};
+
+export type SyncLogResponse = {
+  entries: SyncLogEntry[];
+  has_more?: boolean;
+  hasMore?: boolean;
+  page?: number;
+  per_page?: number;
+  perPage?: number;
+};

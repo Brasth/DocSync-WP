@@ -79,6 +79,10 @@
     color: #b42318;
   }
 
+  .docsync-wp-pill.is-warning {
+    color: #8a4b00;
+  }
+
   .docsync-wp-sync-progress-wrap {
     display: grid;
     gap: 4px;

@@ -696,11 +696,10 @@ final class SourceController {
 		}
 
 		$owner_user_id = absint( $source['sync_owner_user_id'] ?? 0 );
+		$has_lock      = $this->sync_service->hasActiveSyncLock( $post_id );
+		$has_cron      = $owner_user_id > 0 && SyncCron::hasScheduledSourceSync( $post_id, $owner_user_id );
 
-		if (
-			$this->sync_service->hasActiveSyncLock( $post_id )
-			|| ( $owner_user_id > 0 && SyncCron::hasScheduledSourceSync( $post_id, $owner_user_id ) )
-		) {
+		if ( $has_lock || $has_cron ) {
 			return true;
 		}
 
@@ -711,7 +710,13 @@ final class SourceController {
 		$message = __( 'Sync stopped before completion. Retry sync, and check WP-Cron or PHP error logs if it keeps happening.', 'docsync-wp' );
 		$result  = $this->sync_service->markSyncError(
 			$post_id,
-			new WP_Error( 'docsync_wp_sync_stalled', $message, array( 'status' => 500 ) )
+			new WP_Error( 'docsync_wp_sync_stalled', $message, array( 'status' => 500 ) ),
+			array(
+				'hasLock'       => $has_lock,
+				'hasCronEvent'  => $has_cron,
+				'lastHeartbeat' => (string) ( $source['sync_updated_at'] ?? $source['sync_started_at'] ?? '' ),
+				'lastStep'      => (string) ( $source['sync_step'] ?? '' ),
+			)
 		);
 
 		return is_wp_error( $result ) ? $result : true;

@@ -39,9 +39,12 @@ final class SourceRepository {
 	public const META_SYNC_STARTED  = '_docsync_wp_sync_started_at';
 	public const META_SYNC_UPDATED  = '_docsync_wp_sync_updated_at';
 	public const META_SYNC_ERR_CODE = '_docsync_wp_sync_error_code';
+	public const META_SYNC_EVENTS   = '_docsync_wp_sync_events';
 
 	private const EXPORT_FORMAT_HTML_ZIP = 'html_zip';
 	private const STATUS_SYNCING         = 'syncing';
+	private const SYNC_EVENT_LIMIT       = 50;
+	private const SYNC_EVENT_LEVELS      = array( 'info', 'warning', 'error' );
 
 	/**
 	 * Settings repository.
@@ -180,6 +183,134 @@ final class SourceRepository {
 		}
 
 		return $deleted;
+	}
+
+	/**
+	 * Append one sanitized diagnostic sync event to a source history.
+	 *
+	 * @param int                 $post_id Post ID.
+	 * @param array<string,mixed> $event   Event fields.
+	 * @return array<string,mixed>|WP_Error
+	 */
+	public function appendSyncEvent( int $post_id, array $event ): array|WP_Error {
+		$source = $this->getSource( $post_id );
+
+		if ( null === $source ) {
+			return new WP_Error(
+				'docsync_wp_source_not_found',
+				__( 'This post is not linked to a Google Doc.', 'docsync-wp' ),
+				array( 'status' => 404 )
+			);
+		}
+
+		$next_event = $this->sanitizeSyncEvent( $post_id, $source, $event );
+		$events     = $this->getSyncEvents( $post_id );
+
+		array_unshift( $events, $next_event );
+
+		update_post_meta( $post_id, self::META_SYNC_EVENTS, array_slice( $events, 0, self::SYNC_EVENT_LIMIT ) );
+
+		return $next_event;
+	}
+
+	/**
+	 * Get stored diagnostic sync events for a source, newest first.
+	 *
+	 * @param int $post_id Post ID.
+	 * @return array<int,array<string,mixed>>
+	 */
+	public function getSyncEvents( int $post_id ): array {
+		$raw_events = get_post_meta( $post_id, self::META_SYNC_EVENTS, true );
+
+		if ( ! is_array( $raw_events ) ) {
+			return array();
+		}
+
+		$source = $this->getSource( $post_id ) ?? array();
+		$events = array();
+
+		foreach ( $raw_events as $event ) {
+			if ( is_array( $event ) ) {
+				$events[] = $this->sanitizeSyncEvent( $post_id, $source, $event );
+			}
+		}
+
+		return array_slice( $events, 0, self::SYNC_EVENT_LIMIT );
+	}
+
+	/**
+	 * List diagnostic sync events visible to the current user.
+	 *
+	 * @param array<int,string> $post_types Post types.
+	 * @param int               $user_id    User ID.
+	 * @param int               $post_id    Optional source post ID.
+	 * @param string            $level      Optional event level.
+	 * @param int               $limit      Maximum rows to return.
+	 * @param int               $page       Page number.
+	 * @return array{entries:array<int,array<string,mixed>>,has_more:bool,page:int,per_page:int}|WP_Error
+	 */
+	public function listSyncEvents( array $post_types, int $user_id, int $post_id = 0, string $level = '', int $limit = 50, int $page = 1 ): array|WP_Error {
+		$level = sanitize_key( $level );
+
+		if ( '' !== $level && ! in_array( $level, self::SYNC_EVENT_LEVELS, true ) ) {
+			return new WP_Error(
+				'docsync_wp_invalid_sync_log_level',
+				__( 'DocSync WP received an unsupported sync log level filter.', 'docsync-wp' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		$limit    = max( 1, min( 100, $limit ) );
+		$page     = max( 1, $page );
+		$post_ids = $post_id > 0 ? $this->validateSyncEventPostId( $post_id, $user_id ) : $this->querySyncEventPostIds( $post_types, $user_id );
+
+		if ( is_wp_error( $post_ids ) ) {
+			return $post_ids;
+		}
+
+		$entries = array();
+
+		foreach ( $post_ids as $event_post_id ) {
+			foreach ( $this->getSyncEvents( $event_post_id ) as $event ) {
+				if ( '' !== $level && $level !== (string) $event['level'] ) {
+					continue;
+				}
+
+				$entries[] = $event;
+			}
+		}
+
+		usort(
+			$entries,
+			static function ( array $left, array $right ): int {
+				$timestamp_compare = strcmp( (string) $right['timestamp'], (string) $left['timestamp'] );
+
+				if ( 0 !== $timestamp_compare ) {
+					return $timestamp_compare;
+				}
+
+				return strcmp( (string) $right['eventId'], (string) $left['eventId'] );
+			}
+		);
+
+		$offset       = ( $page - 1 ) * $limit;
+		$page_entries = array_slice( $entries, $offset, $limit );
+
+		return array(
+			'entries'  => $page_entries,
+			'has_more' => count( $entries ) > $offset + $limit,
+			'page'     => $page,
+			'per_page' => $limit,
+		);
+	}
+
+	/**
+	 * Event levels available for filtering.
+	 *
+	 * @return array<int,string>
+	 */
+	public function getSyncEventLevels(): array {
+		return self::SYNC_EVENT_LEVELS;
 	}
 
 	/**
@@ -637,6 +768,111 @@ final class SourceRepository {
 	}
 
 	/**
+	 * Validate one source post for sync event listing.
+	 *
+	 * @param int $post_id Post ID.
+	 * @param int $user_id User ID.
+	 * @return array<int,int>|WP_Error
+	 */
+	private function validateSyncEventPostId( int $post_id, int $user_id ): array|WP_Error {
+		$post = get_post( $post_id );
+
+		if ( ! $post instanceof WP_Post ) {
+			return new WP_Error(
+				'docsync_wp_invalid_post',
+				__( 'DocSync WP could not find that post.', 'docsync-wp' ),
+				array( 'status' => 404 )
+			);
+		}
+
+		if ( ! $this->isPostTypeEnabled( $post->post_type ) ) {
+			return new WP_Error(
+				'docsync_wp_post_type_disabled',
+				__( 'DocSync WP is not enabled for this post type.', 'docsync-wp' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		if ( ! user_can( $user_id, 'edit_post', $post_id ) ) {
+			return new WP_Error(
+				'docsync_wp_forbidden',
+				__( 'You do not have permission to edit this post.', 'docsync-wp' ),
+				array( 'status' => 403 )
+			);
+		}
+
+		if ( null === $this->getSource( $post_id ) ) {
+			return new WP_Error(
+				'docsync_wp_source_not_found',
+				__( 'This post is not linked to a Google Doc.', 'docsync-wp' ),
+				array( 'status' => 404 )
+			);
+		}
+
+		return array( $post_id );
+	}
+
+	/**
+	 * Query source post IDs that have diagnostic sync events.
+	 *
+	 * @param array<int,string> $post_types Post types.
+	 * @param int               $user_id    User ID.
+	 * @return array<int,int>
+	 */
+	private function querySyncEventPostIds( array $post_types, int $user_id ): array {
+		$post_types = array_values(
+			array_filter(
+				array_map( 'sanitize_key', $post_types ),
+				function ( string $post_type ) use ( $user_id ): bool {
+					return $this->isPostTypeEnabled( $post_type )
+						&& $this->userCanEditPostType( $post_type, $user_id );
+				}
+			)
+		);
+
+		if ( array() === $post_types ) {
+			return array();
+		}
+
+		$query = new WP_Query(
+			array(
+				'fields'                 => 'ids',
+				'meta_query'             => array(
+					'relation' => 'AND',
+					array(
+						'key'     => self::META_FILE_ID,
+						'compare' => 'EXISTS',
+					),
+					array(
+						'key'     => self::META_SYNC_EVENTS,
+						'compare' => 'EXISTS',
+					),
+				),
+				'no_found_rows'          => true,
+				'orderby'                => 'modified',
+				'order'                  => 'DESC',
+				'post_status'            => 'any',
+				'post_type'              => $post_types,
+				'posts_per_page'         => -1,
+				'update_post_meta_cache' => true,
+				'update_post_term_cache' => false,
+			)
+		);
+
+		$post_ids = array();
+
+		foreach ( $query->posts as $post_id ) {
+			$post_id = absint( $post_id );
+
+			if ( $this->userCanSyncPost( $post_id, $user_id ) ) {
+				$post_ids[] = $post_id;
+			}
+		}
+
+		return $post_ids;
+	}
+
+	/**
 	 * Whether a user can create a synced post of the given type.
 	 *
 	 * @param string $post_type Post type.
@@ -712,6 +948,94 @@ final class SourceRepository {
 		$value = get_post_meta( $post_id, $meta_key, true );
 
 		return is_string( $value ) ? $value : '';
+	}
+
+	/**
+	 * Sanitize a diagnostic sync event for storage and output.
+	 *
+	 * @param int                 $post_id Post ID.
+	 * @param array<string,mixed> $source  Current source.
+	 * @param array<string,mixed> $event   Raw event.
+	 * @return array<string,mixed>
+	 */
+	private function sanitizeSyncEvent( int $post_id, array $source, array $event ): array {
+		$level = isset( $event['level'] ) ? sanitize_key( (string) $event['level'] ) : 'info';
+
+		if ( ! in_array( $level, self::SYNC_EVENT_LEVELS, true ) ) {
+			$level = 'info';
+		}
+
+		$event_id = isset( $event['eventId'] ) ? sanitize_key( (string) $event['eventId'] ) : '';
+
+		if ( '' === $event_id ) {
+			$event_id = function_exists( 'wp_generate_uuid4' ) ? wp_generate_uuid4() : str_replace( '.', '-', uniqid( 'sync-event-', true ) );
+			$event_id = sanitize_key( $event_id );
+		}
+
+		$timestamp = isset( $event['timestamp'] ) ? sanitize_text_field( (string) $event['timestamp'] ) : '';
+
+		if ( '' === $timestamp ) {
+			$timestamp = current_time( 'mysql', true );
+		}
+
+		return array(
+			'eventId'       => $event_id,
+			'timestamp'     => $timestamp,
+			'level'         => $level,
+			'postId'        => $post_id,
+			'postTitle'     => $this->truncateDiagnosticText( $event['postTitle'] ?? get_the_title( $post_id ), 160 ),
+			'googleTitle'   => $this->truncateDiagnosticText( $event['googleTitle'] ?? ( $source['google_title'] ?? '' ), 160 ),
+			'status'        => sanitize_key( (string) ( $event['status'] ?? ( $source['sync_status'] ?? '' ) ) ),
+			'step'          => sanitize_key( (string) ( $event['step'] ?? ( $source['sync_step'] ?? '' ) ) ),
+			'progress'      => $this->sanitizeProgress( $event['progress'] ?? ( $source['sync_progress'] ?? 0 ) ),
+			'message'       => $this->truncateDiagnosticText( $event['message'] ?? ( $source['sync_message'] ?? '' ), 300 ),
+			'errorCode'     => sanitize_key( (string) ( $event['errorCode'] ?? ( $source['sync_error_code'] ?? '' ) ) ),
+			'syncStartedAt' => sanitize_text_field( (string) ( $event['syncStartedAt'] ?? ( $source['sync_started_at'] ?? '' ) ) ),
+			'syncUpdatedAt' => sanitize_text_field( (string) ( $event['syncUpdatedAt'] ?? ( $source['sync_updated_at'] ?? '' ) ) ),
+			'context'       => $this->sanitizeSyncEventContext( $event['context'] ?? array() ),
+		);
+	}
+
+	/**
+	 * Sanitize optional diagnostic context flags.
+	 *
+	 * @param mixed $context Raw context.
+	 * @return array<string,bool|string>
+	 */
+	private function sanitizeSyncEventContext( mixed $context ): array {
+		if ( ! is_array( $context ) ) {
+			return array();
+		}
+
+		$sanitized = array();
+
+		foreach ( array( 'hasLock', 'hasCronEvent' ) as $key ) {
+			if ( array_key_exists( $key, $context ) ) {
+				$sanitized[ $key ] = (bool) $context[ $key ];
+			}
+		}
+
+		if ( isset( $context['lastHeartbeat'] ) ) {
+			$sanitized['lastHeartbeat'] = sanitize_text_field( (string) $context['lastHeartbeat'] );
+		}
+
+		if ( isset( $context['lastStep'] ) ) {
+			$sanitized['lastStep'] = sanitize_key( (string) $context['lastStep'] );
+		}
+
+		return $sanitized;
+	}
+
+	/**
+	 * Sanitize and trim short diagnostic text.
+	 *
+	 * @param mixed $text   Text value.
+	 * @param int   $length Maximum length.
+	 */
+	private function truncateDiagnosticText( mixed $text, int $length ): string {
+		$text = sanitize_text_field( (string) $text );
+
+		return function_exists( 'mb_substr' ) ? mb_substr( $text, 0, $length ) : substr( $text, 0, $length );
 	}
 
 	/**
@@ -811,6 +1135,7 @@ final class SourceRepository {
 			self::META_SYNC_STARTED,
 			self::META_SYNC_UPDATED,
 			self::META_SYNC_ERR_CODE,
+			self::META_SYNC_EVENTS,
 		);
 	}
 }

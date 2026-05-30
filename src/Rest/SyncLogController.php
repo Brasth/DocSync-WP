@@ -50,6 +50,28 @@ final class SyncLogController {
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'listEntries' ),
 				'permission_callback' => array( $this, 'canUseAuthenticatedRest' ),
+				'args'                => array(
+					'post_id'  => array(
+						'type'              => 'integer',
+						'required'          => false,
+						'sanitize_callback' => 'absint',
+					),
+					'level'    => array(
+						'type'              => 'string',
+						'required'          => false,
+						'sanitize_callback' => 'sanitize_key',
+					),
+					'page'     => array(
+						'type'              => 'integer',
+						'required'          => false,
+						'sanitize_callback' => 'absint',
+					),
+					'per_page' => array(
+						'type'              => 'integer',
+						'required'          => false,
+						'sanitize_callback' => 'absint',
+					),
+				),
 			)
 		);
 	}
@@ -88,14 +110,33 @@ final class SyncLogController {
 
 	/**
 	 * List latest status entries.
+	 *
+	 * @param WP_REST_Request $request REST request.
+	 * @return WP_REST_Response|WP_Error
 	 */
-	public function listEntries(): WP_REST_Response {
-		$user_id = get_current_user_id();
-		$entries = $this->source_repository->listSources( $this->source_repository->getEnabledPostTypes(), $user_id, 100 );
+	public function listEntries( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$user_id  = get_current_user_id();
+		$post_id  = absint( $request->get_param( 'post_id' ) );
+		$level    = sanitize_key( (string) $request->get_param( 'level' ) );
+		$per_page = absint( $request->get_param( 'per_page' ) );
+		$page     = absint( $request->get_param( 'page' ) );
+
+		if ( $per_page <= 0 ) {
+			$per_page = 50;
+		}
+
+		if ( $page <= 0 ) {
+			$page = 1;
+		}
 
 		return rest_ensure_response(
-			array(
-				'entries' => $entries,
+			$this->source_repository->listSyncEvents(
+				$this->source_repository->getEnabledPostTypes(),
+				$user_id,
+				$post_id,
+				$level,
+				$per_page,
+				$page
 			)
 		);
 	}

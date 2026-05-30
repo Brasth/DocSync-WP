@@ -5,10 +5,13 @@ import { AccountPanel } from '../features/google-setup/account-panel';
 import { SettingsPanel } from '../features/google-setup/settings-panel';
 import { BackgroundSyncPoller } from '../features/post-sync/background-sync-poller';
 import { SourcesTable } from '../features/sources/sources-table';
+import { SyncLogsView } from '../features/sync-logs/sync-logs-view';
 import { AdminNotice } from '../shared/ui/admin-notice';
-import { useAdminApp, type AdminView } from './use-admin-app';
+import { useAdminApp, type AdminView as SetupAdminView } from './use-admin-app';
 
-export const AdminApp = ({ view }: { view: AdminView }): JSX.Element => {
+type AdminView = SetupAdminView | 'logs';
+
+const SetupSourcesApp = ({ view }: { view: SetupAdminView }): JSX.Element => {
   const app = useAdminApp(view);
 
   useEffect(() => {
@@ -106,4 +109,12 @@ export const AdminApp = ({ view }: { view: AdminView }): JSX.Element => {
       )}
     </main>
   );
+};
+
+export const AdminApp = ({ view }: { view: AdminView }): JSX.Element => {
+  if (view === 'logs') {
+    return <SyncLogsView />;
+  }
+
+  return <SetupSourcesApp view={view} />;
 };

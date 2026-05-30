@@ -45,6 +45,10 @@ const syncMethodLabel = (source: SourceRecord): string => {
   return '';
 };
 
+const logsUrl = (postId: number): string => {
+  return `admin.php?page=docsync-wp-logs&post_id=${encodeURIComponent(String(postId))}`;
+};
+
 const statusOptions = [
   { value: '', label: 'All statuses' },
   { value: 'linked', label: 'Linked' },
@@ -177,7 +181,12 @@ export const SourcesTable = ({
                   {source.lastSyncedAt || 'Never'}
                   {syncMethodLabel(source) ? <small>{syncMethodLabel(source)}</small> : null}
                 </td>
-                <td><AdminButton disabled={busy} onClick={() => onSync(source.postId)}>Sync</AdminButton></td>
+                <td>
+                  <div className="docsync-wp-source-actions">
+                    <AdminButton disabled={busy} onClick={() => onSync(source.postId)}>Sync</AdminButton>
+                    <a className="button button-secondary" href={logsUrl(source.postId)}>View logs</a>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>

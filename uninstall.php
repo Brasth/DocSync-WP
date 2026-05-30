@@ -51,6 +51,10 @@ foreach (
 		'_docsync_wp_sync_progress',
 		'_docsync_wp_sync_step',
 		'_docsync_wp_sync_message',
+		'_docsync_wp_sync_started_at',
+		'_docsync_wp_sync_updated_at',
+		'_docsync_wp_sync_error_code',
+		'_docsync_wp_sync_events',
 	) as $meta_key
 ) {
 	delete_metadata( 'post', 0, $meta_key, '', true );

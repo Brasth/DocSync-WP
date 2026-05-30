@@ -4,10 +4,11 @@ Last updated: 2026-05-30
 
 ## Overview
 
-DocSync WP is a WordPress plugin with three admin surfaces and one shared sync backend:
+DocSync WP is a WordPress plugin with four admin surfaces and one shared sync backend:
 
 - `DocSync WP > Setup` for Google connection settings
 - `DocSync WP > Sources` for linked source operations
+- `DocSync WP > Logs` for bounded sync diagnostics
 - post/page edit meta boxes and list-table actions
 - REST API and sync services shared by all surfaces
 
@@ -19,6 +20,7 @@ The implemented sync model is one-way Google Docs -> WordPress. Google Docs rema
 flowchart LR
   SetupApp["Setup React app"] --> REST["REST controllers"]
   SourcesApp["Sources submenu React app"] --> REST
+  LogsApp["Logs submenu React app"] --> REST
   TargetUI["Post/page edit meta box / list actions"] --> REST
   REST --> Settings["SettingsRepository"]
   REST --> OAuth["GoogleOAuthService + TokenStore"]
@@ -71,6 +73,20 @@ Responsibilities:
 - filter by search, post type, and sync status
 - paginate source results
 - trigger single-source sync and global sync-all-changed actions
+- link directly to source-filtered diagnostic logs
+
+### Logs Admin Page
+
+- Entry point: `src/Admin/AdminPage.php`
+- Menu slug: `docsync-wp-logs`
+- React mount: `resources/js/admin/entries/admin-entry.tsx`
+
+Responsibilities:
+
+- list bounded per-source sync diagnostic events newest first
+- filter by linked source post ID and event level
+- paginate event results
+- show time, level, WordPress target, Google Doc title, status, step, progress, message, and error code without storing document content or Google responses
 
 ### Post/Page Edit Screen
 
@@ -131,9 +147,11 @@ Implemented routes:
 - `DELETE /sources/{postId}`
 - `POST /sources/{postId}/sync`
 - `POST /sources/sync-all`
-- `GET /sync-log`
+- `GET /sync-log` with `post_id`, `level`, `page`, and `per_page` filters
 
 Source records include additive live progress fields: `syncProgress` from 0 to 100, `syncStep`, and `syncMessage`. Existing status values and route shapes stay unchanged.
+
+Sync log entries are diagnostic events, not audit records. They store only `eventId`, timestamp, level, target/source titles, status, step, progress, message, error code, sync timestamps, and safe context flags such as lock or cron-event state.
 
 Progress UI is shown only while a source is actively `syncing`; terminal states rely on status labels, last sync timestamps, and error messages.
 
@@ -173,6 +191,10 @@ Common permission model:
 - `_docsync_wp_sync_progress`
 - `_docsync_wp_sync_step`
 - `_docsync_wp_sync_message`
+- `_docsync_wp_sync_started_at`
+- `_docsync_wp_sync_updated_at`
+- `_docsync_wp_sync_error_code`
+- `_docsync_wp_sync_events`
 
 ### Attachment Meta
 

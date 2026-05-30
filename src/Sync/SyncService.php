@@ -302,7 +302,8 @@ final class SyncService {
 			array(
 				'sync_owner_user_id' => $user_id,
 				'sync_error'         => '',
-			)
+			),
+			array( 'hasCronEvent' => $has_pending_event )
 		);
 
 		if ( is_wp_error( $saved ) ) {
@@ -315,11 +316,12 @@ final class SyncService {
 	/**
 	 * Persist a background sync failure.
 	 *
-	 * @param int             $post_id Post ID.
-	 * @param string|WP_Error $error   Error message or object.
+	 * @param int                 $post_id Post ID.
+	 * @param string|WP_Error     $error   Error message or object.
+	 * @param array<string,mixed> $context Safe diagnostic context flags.
 	 * @return array<string,mixed>|WP_Error
 	 */
-	public function markSyncError( int $post_id, string|WP_Error $error ): array|WP_Error {
+	public function markSyncError( int $post_id, string|WP_Error $error, array $context = array() ): array|WP_Error {
 		$source = $this->source_repository->getSource( $post_id );
 
 		if ( null === $source ) {
@@ -344,7 +346,8 @@ final class SyncService {
 				'last_synced_at'  => current_time( 'mysql', true ),
 				'sync_error'      => $message,
 				'sync_error_code' => $code,
-			)
+			),
+			$context
 		);
 
 		if ( is_wp_error( $saved ) ) {
@@ -595,9 +598,21 @@ final class SyncService {
 	 * @param string              $step     Progress step.
 	 * @param string              $message  Progress message.
 	 * @param array<string,mixed> $updates  Extra source updates.
+	 * @param array<string,mixed> $event_context Safe diagnostic context flags.
+	 * @param string              $event_error_code Optional event-only error code.
 	 * @return array<string,mixed>|WP_Error
 	 */
-	private function saveProgressState( int $post_id, array $source, string $status, int $progress, string $step, string $message, array $updates = array() ): array|WP_Error {
+	private function saveProgressState(
+		int $post_id,
+		array $source,
+		string $status,
+		int $progress,
+		string $step,
+		string $message,
+		array $updates = array(),
+		array $event_context = array(),
+		string $event_error_code = ''
+	): array|WP_Error {
 		$latest_source = $this->source_repository->getSource( $post_id );
 
 		if ( ! $this->isSameSource( $latest_source, $source ) ) {
@@ -638,7 +653,41 @@ final class SyncService {
 			$this->sync_lock->refresh( $post_id );
 		}
 
+		$this->source_repository->appendSyncEvent(
+			$post_id,
+			array(
+				'timestamp'     => $now,
+				'level'         => $this->syncEventLevel( $status, $step ),
+				'status'        => $status,
+				'step'          => $step,
+				'progress'      => $progress,
+				'message'       => $message,
+				'errorCode'     => '' !== $event_error_code ? $event_error_code : (string) ( $next_source['sync_error_code'] ?? '' ),
+				'syncStartedAt' => (string) ( $next_source['sync_started_at'] ?? '' ),
+				'syncUpdatedAt' => (string) ( $next_source['sync_updated_at'] ?? '' ),
+				'context'       => $event_context,
+			)
+		);
+
 		return $next_source;
+	}
+
+	/**
+	 * Choose a safe diagnostic level for a sync state event.
+	 *
+	 * @param string $status Sync status.
+	 * @param string $step   Sync step.
+	 */
+	private function syncEventLevel( string $status, string $step ): string {
+		if ( self::STATUS_ERROR === $status ) {
+			return 'error';
+		}
+
+		if ( 'large_doc_fallback' === $step ) {
+			return 'warning';
+		}
+
+		return 'info';
 	}
 
 	/**
@@ -768,7 +817,9 @@ final class SyncService {
 			35,
 			'large_doc_fallback',
 			__( 'Drive export was too large. Switching to the large-doc fallback.', 'docsync-wp' ),
-			array( 'sync_error' => '' )
+			array( 'sync_error' => '' ),
+			array(),
+			$zip_bytes->get_error_code()
 		);
 
 		if ( is_wp_error( $progress_source ) ) {
