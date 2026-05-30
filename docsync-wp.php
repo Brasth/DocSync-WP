@@ -126,6 +126,9 @@ function docsync_wp_deactivate(): void {
 
 	if ( class_exists( DocSyncWP\Cron\SyncCron::class ) ) {
 		DocSyncWP\Cron\SyncCron::unschedule();
+	} else {
+		wp_clear_scheduled_hook( 'docsync_wp_sync_sources' );
+		wp_clear_scheduled_hook( 'docsync_wp_sync_source' );
 	}
 }
 register_deactivation_hook( __FILE__, 'docsync_wp_deactivate' );

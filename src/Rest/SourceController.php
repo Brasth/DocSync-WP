@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace DocSyncWP\Rest;
 
+use DocSyncWP\Cron\SyncCron;
 use DocSyncWP\Google\DocumentIdParser;
 use DocSyncWP\Sync\SourceRepository;
 use DocSyncWP\Sync\SyncService;
@@ -24,6 +25,9 @@ defined( 'ABSPATH' ) || exit;
  * Handles source attach, sync, detach, and listing routes.
  */
 final class SourceController {
+	private const SYNC_MODE_INLINE     = 'inline';
+	private const SYNC_MODE_BACKGROUND = 'background';
+
 	/**
 	 * Source repository.
 	 *
@@ -89,9 +93,16 @@ final class SourceController {
 			$rest_namespace,
 			'/sources/(?P<postId>[\d]+)',
 			array(
-				'methods'             => WP_REST_Server::DELETABLE,
-				'callback'            => array( $this, 'detachSource' ),
-				'permission_callback' => array( $this, 'canUseAuthenticatedRest' ),
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'getSource' ),
+					'permission_callback' => array( $this, 'canUseAuthenticatedRest' ),
+				),
+				array(
+					'methods'             => WP_REST_Server::DELETABLE,
+					'callback'            => array( $this, 'detachSource' ),
+					'permission_callback' => array( $this, 'canUseAuthenticatedRest' ),
+				),
 			)
 		);
 
@@ -233,7 +244,12 @@ final class SourceController {
 
 		$mode          = sanitize_key( (string) ( $target['mode'] ?? '' ) );
 		$export_format = isset( $params['exportFormat'] ) ? sanitize_key( (string) $params['exportFormat'] ) : 'html_zip';
+		$sync_mode     = $this->getSyncMode( $params );
 		$user_id       = get_current_user_id();
+
+		if ( is_wp_error( $sync_mode ) ) {
+			return $sync_mode;
+		}
 
 		if ( 'existing' === $mode ) {
 			$post_id = absint( $target['postId'] ?? 0 );
@@ -249,6 +265,14 @@ final class SourceController {
 				return $result;
 			}
 
+			if ( self::SYNC_MODE_BACKGROUND === $sync_mode ) {
+				$result = $this->queueSync( $post_id, $user_id );
+
+				if ( is_wp_error( $result ) ) {
+					return $result;
+				}
+			}
+
 			return rest_ensure_response( $result );
 		}
 
@@ -260,10 +284,24 @@ final class SourceController {
 				return $allowed;
 			}
 
-			$result = $this->sync_service->createDraftFromSource( $user_id, $file_id, $post_type, $export_format );
+			$result = $this->sync_service->createDraftFromSource(
+				$user_id,
+				$file_id,
+				$post_type,
+				$export_format,
+				self::SYNC_MODE_INLINE === $sync_mode
+			);
 
 			if ( is_wp_error( $result ) ) {
 				return $result;
+			}
+
+			if ( self::SYNC_MODE_BACKGROUND === $sync_mode ) {
+				$result = $this->queueSync( absint( $result['postId'] ?? 0 ), $user_id, true );
+
+				if ( is_wp_error( $result ) ) {
+					return $result;
+				}
 			}
 
 			$response = rest_ensure_response( $result );
@@ -289,9 +327,26 @@ final class SourceController {
 		$post_id = absint( $request->get_param( 'postId' ) );
 		$user_id = get_current_user_id();
 		$allowed = $this->validateEditablePost( $post_id, $user_id );
+		$params  = $this->getOptionalRequestParams( $request );
 
 		if ( is_wp_error( $allowed ) ) {
 			return $allowed;
+		}
+
+		$sync_mode = $this->getSyncMode( $params );
+
+		if ( is_wp_error( $sync_mode ) ) {
+			return $sync_mode;
+		}
+
+		if ( self::SYNC_MODE_BACKGROUND === $sync_mode ) {
+			$result = $this->queueSync( $post_id, $user_id );
+
+			if ( is_wp_error( $result ) ) {
+				return $result;
+			}
+
+			return rest_ensure_response( $result );
 		}
 
 		$result = $this->sync_service->syncPost( $post_id, $user_id );
@@ -301,6 +356,34 @@ final class SourceController {
 		}
 
 		return rest_ensure_response( $result );
+	}
+
+	/**
+	 * Get one linked source after post permission checks.
+	 *
+	 * @param WP_REST_Request $request REST request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function getSource( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$post_id = absint( $request->get_param( 'postId' ) );
+		$user_id = get_current_user_id();
+		$allowed = $this->validateEditablePost( $post_id, $user_id );
+
+		if ( is_wp_error( $allowed ) ) {
+			return $allowed;
+		}
+
+		$source = $this->source_repository->formatSource( $post_id );
+
+		if ( null === $source ) {
+			return new WP_Error(
+				'docsync_wp_source_not_found',
+				__( 'This post is not linked to a Google Doc.', 'docsync-wp' ),
+				array( 'status' => 404 )
+			);
+		}
+
+		return rest_ensure_response( $source );
 	}
 
 	/**
@@ -410,6 +493,71 @@ final class SourceController {
 		}
 
 		return $params;
+	}
+
+	/**
+	 * Get optional request parameters.
+	 *
+	 * @param WP_REST_Request $request REST request.
+	 * @return array<string,mixed>
+	 */
+	private function getOptionalRequestParams( WP_REST_Request $request ): array {
+		$params = $request->get_json_params();
+
+		if ( ! is_array( $params ) ) {
+			$params = $request->get_body_params();
+		}
+
+		return is_array( $params ) ? $params : array();
+	}
+
+	/**
+	 * Get the requested sync mode, defaulting to inline behavior.
+	 *
+	 * @param array<string,mixed> $params Request params.
+	 * @return string|WP_Error
+	 */
+	private function getSyncMode( array $params ): string|WP_Error {
+		$sync_mode = isset( $params['syncMode'] ) ? sanitize_key( (string) $params['syncMode'] ) : self::SYNC_MODE_INLINE;
+
+		if ( in_array( $sync_mode, array( self::SYNC_MODE_INLINE, self::SYNC_MODE_BACKGROUND ), true ) ) {
+			return $sync_mode;
+		}
+
+		return new WP_Error(
+			'docsync_wp_invalid_sync_mode',
+			__( 'DocSync WP received an unsupported sync mode.', 'docsync-wp' ),
+			array( 'status' => 400 )
+		);
+	}
+
+	/**
+	 * Queue a source sync and return current source state.
+	 *
+	 * @param int  $post_id Post ID.
+	 * @param int  $user_id User ID whose Google token should run the sync.
+	 * @param bool $created Whether the source was created by this request.
+	 * @return array<string,mixed>|WP_Error
+	 */
+	private function queueSync( int $post_id, int $user_id, bool $created = false ): array|WP_Error {
+		$result = $this->sync_service->markSyncQueued( $post_id, $user_id );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		$scheduled = SyncCron::scheduleSourceSync( $post_id, $user_id );
+
+		if ( is_wp_error( $scheduled ) ) {
+			$this->sync_service->markSyncError( $post_id, $scheduled );
+			return $scheduled;
+		}
+
+		if ( $created ) {
+			$result['created'] = true;
+		}
+
+		return $result;
 	}
 
 	/**

@@ -129,15 +129,16 @@ final class SyncService {
 	}
 
 	/**
-	 * Create a draft post, attach the source, and immediately sync it.
+	 * Create a draft post, attach the source, and optionally sync it immediately.
 	 *
-	 * @param int    $user_id       User ID.
-	 * @param string $file_id       Google Drive file ID.
-	 * @param string $post_type     Post type.
-	 * @param string $export_format Export format.
+	 * @param int    $user_id          User ID.
+	 * @param string $file_id          Google Drive file ID.
+	 * @param string $post_type        Post type.
+	 * @param string $export_format    Export format.
+	 * @param bool   $sync_immediately Whether to sync before returning.
 	 * @return array<string,mixed>|WP_Error
 	 */
-	public function createDraftFromSource( int $user_id, string $file_id, string $post_type, string $export_format = self::EXPORT_FORMAT_HTML_ZIP ): array|WP_Error {
+	public function createDraftFromSource( int $user_id, string $file_id, string $post_type, string $export_format = self::EXPORT_FORMAT_HTML_ZIP, bool $sync_immediately = true ): array|WP_Error {
 		$export_format = $this->sanitizeExportFormat( $export_format );
 
 		if ( is_wp_error( $export_format ) ) {
@@ -190,6 +191,13 @@ final class SyncService {
 			return $saved;
 		}
 
+		if ( ! $sync_immediately ) {
+			$result            = $this->formatResult( (int) $post_id, self::STATUS_LINKED, false );
+			$result['created'] = true;
+
+			return $result;
+		}
+
 		$synced = $this->syncPost( (int) $post_id, $user_id );
 
 		if ( is_wp_error( $synced ) ) {
@@ -208,6 +216,77 @@ final class SyncService {
 		$synced['created'] = true;
 
 		return $synced;
+	}
+
+	/**
+	 * Mark a linked source as queued for background sync.
+	 *
+	 * @param int $post_id Post ID.
+	 * @param int $user_id User ID that owns the queued sync.
+	 * @return array<string,mixed>|WP_Error
+	 */
+	public function markSyncQueued( int $post_id, int $user_id ): array|WP_Error {
+		$source = $this->source_repository->getSource( $post_id );
+
+		if ( null === $source ) {
+			return new WP_Error(
+				'docsync_wp_source_not_found',
+				__( 'This post is not linked to a Google Doc.', 'docsync-wp' ),
+				array( 'status' => 404 )
+			);
+		}
+
+		$saved = $this->saveSourceState(
+			$post_id,
+			$source,
+			array(
+				'sync_owner_user_id' => $user_id,
+				'sync_status'        => self::STATUS_SYNCING,
+				'sync_error'         => '',
+			)
+		);
+
+		if ( is_wp_error( $saved ) ) {
+			return $saved;
+		}
+
+		return $this->formatResult( $post_id, 'queued', false, true );
+	}
+
+	/**
+	 * Persist a background sync failure.
+	 *
+	 * @param int             $post_id Post ID.
+	 * @param string|WP_Error $error   Error message or object.
+	 * @return array<string,mixed>|WP_Error
+	 */
+	public function markSyncError( int $post_id, string|WP_Error $error ): array|WP_Error {
+		$source = $this->source_repository->getSource( $post_id );
+
+		if ( null === $source ) {
+			return new WP_Error(
+				'docsync_wp_source_not_found',
+				__( 'This post is not linked to a Google Doc.', 'docsync-wp' ),
+				array( 'status' => 404 )
+			);
+		}
+
+		$message = is_wp_error( $error ) ? $error->get_error_message() : $error;
+		$saved   = $this->saveSourceState(
+			$post_id,
+			$source,
+			array(
+				'last_synced_at' => current_time( 'mysql', true ),
+				'sync_status'    => self::STATUS_ERROR,
+				'sync_error'     => $message,
+			)
+		);
+
+		if ( is_wp_error( $saved ) ) {
+			return $saved;
+		}
+
+		return $this->formatResult( $post_id, self::STATUS_ERROR, false );
 	}
 
 	/**
@@ -423,15 +502,22 @@ final class SyncService {
 	 * @param int    $post_id Post ID.
 	 * @param string $status  Sync status.
 	 * @param bool   $changed Whether post content changed.
+	 * @param bool   $queued  Whether sync has been queued.
 	 * @return array<string,mixed>
 	 */
-	private function formatResult( int $post_id, string $status, bool $changed ): array {
-		return array(
+	private function formatResult( int $post_id, string $status, bool $changed, bool $queued = false ): array {
+		$result = array(
 			'postId'  => $post_id,
 			'status'  => $status,
 			'changed' => $changed,
 			'source'  => $this->source_repository->formatSource( $post_id ),
 		);
+
+		if ( $queued ) {
+			$result['queued'] = true;
+		}
+
+		return $result;
 	}
 
 	/**

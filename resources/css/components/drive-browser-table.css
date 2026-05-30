@@ -2,8 +2,9 @@
   .docsync-wp-drive-browser__table-wrap {
     border: 1px solid #d9e2e1;
     border-radius: 8px;
+    flex: 1 1 auto;
     margin-top: 14px;
-    max-height: 360px;
+    min-height: 220px;
     overflow-x: hidden;
     overflow-y: auto;
   }
@@ -89,6 +90,13 @@
 
   .docsync-wp-drive-browser__table tr.is-selected .docsync-wp-drive-browser__row-button span:last-child {
     font-weight: 600;
+  }
+
+  .docsync-wp-drive-browser__sentinel {
+    color: #646970;
+    min-height: 34px;
+    padding: 9px 12px;
+    text-align: center;
   }
 
   .docsync-wp-drive-browser__more {

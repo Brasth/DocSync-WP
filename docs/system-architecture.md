@@ -1,6 +1,6 @@
 # System Architecture
 
-Last updated: 2026-05-21
+Last updated: 2026-05-30
 
 ## Overview
 
@@ -25,6 +25,7 @@ flowchart LR
   REST --> Docs["DocumentIdParser + DriveClient"]
   REST --> Sources["SourceRepository"]
   REST --> Sync["SyncService"]
+  REST --> Cron["SyncCron"]
   Sync --> Drive["Google Drive metadata + HTML ZIP export"]
   Sync --> Import["HtmlZipImporter"]
   Import --> Blocks["HtmlToBlockContentConverter"]
@@ -35,7 +36,7 @@ flowchart LR
   Media --> AttachmentMeta["Attachment asset dedupe meta"]
   OAuth --> Tokens["Encrypted user meta"]
   Settings --> Opts["Encrypted site option"]
-  Cron["SyncCron"] --> Sources
+  Cron --> Sources
   Cron --> Sync
 ```
 
@@ -101,6 +102,7 @@ Responsibilities:
 - render `Add Sync Doc` button for enabled post types
 - render inline `Link Google Doc` or `Sync Doc` row action
 - render optional `DocSync` status column
+- queue new synced drafts in the background, poll source status, and refresh visible list-table content after sync finishes
 
 ## REST Layer
 
@@ -120,6 +122,7 @@ Implemented routes:
 - `POST /documents/inspect`
 - `GET /sources` with `search`, `post_type`, `status`, `page`, and `per_page` filters
 - `POST /sources`
+- `GET /sources/{postId}`
 - `DELETE /sources/{postId}`
 - `POST /sources/{postId}/sync`
 - `POST /sources/sync-all`
@@ -172,13 +175,14 @@ These identify images imported from a Google Docs HTML ZIP export so re-sync can
 2. User browses My Drive or a selected shared drive and selects a Doc through the Drive browser, or inspects advanced pasted URL/raw file ID entry.
 3. `DocumentController` lists Drive folders/Docs server-side and validates advanced input through Drive metadata.
 4. `SourceController` attaches the source to an existing target or creates a new draft.
-5. `SyncService` acquires a per-post lock.
-6. `DriveClient` reads metadata and exports an HTML ZIP package.
-7. `HtmlZipImporter` extracts the package, imports local images into Media Library, rewrites image URLs, and sanitizes HTML.
-8. `HtmlToBlockContentConverter` maps common document nodes to Gutenberg core blocks and keeps unsupported nodes as `core/html` fallback blocks.
-9. WordPress post content is updated only after export, import, and block conversion succeed.
-10. Source state is saved back to post meta.
-11. Result state becomes `linked`, `syncing`, `synced`, `skipped`, or `error`.
+5. Inline mode continues immediately; background mode stores source state as `syncing`, schedules a single WP-Cron event, and returns a queued result.
+6. `SyncService` acquires a per-post lock.
+7. `DriveClient` reads metadata and exports an HTML ZIP package.
+8. `HtmlZipImporter` extracts the package, imports local images into Media Library, rewrites image URLs, and sanitizes HTML.
+9. `HtmlToBlockContentConverter` maps common document nodes to Gutenberg core blocks and keeps unsupported nodes as `core/html` fallback blocks.
+10. WordPress post content is updated only after export, import, and block conversion succeed.
+11. Source state is saved back to post meta.
+12. Result state becomes `linked`, `syncing`, `synced`, `skipped`, or `error`; queued API responses use top-level `status: queued` while persisted state remains `syncing`.
 
 Skip behavior:
 
@@ -189,9 +193,11 @@ Skip behavior:
 ## Scheduling
 
 - `src/Cron/SyncCron.php` registers `docsync_wp_sync_sources`
+- background post-list sync also schedules `docsync_wp_sync_source` single events with `[postId, userId]`
 - schedule is controlled by the `sync_interval` setting
 - supported intervals: `off`, `hourly`, `twicedaily`, `daily`
 - cron job runs in small batches and syncs linked posts for the current source owner
+- the single-source handler calls `SyncService::syncPost()` so locking, imports, conversion, and error states stay centralized
 
 ## Security Model
 
@@ -208,6 +214,8 @@ Skip behavior:
 
 - WP-Cron only runs on site traffic; low-traffic sites need real server cron for reliable schedules
 - source selection uses `drive.readonly` and a server-side custom Drive document browser with per-drive shared drive queries
+- the Drive browser loads pages of 50 results and uses an IntersectionObserver sentinel for infinite loading
+- the post-list picker is fullscreen below the WordPress admin bar, closes after background queueing, and uses toast polling feedback instead of blocking the modal
 - setup and Sources screens import `resources/css/admin-entry.css`; the legacy `resources/css/admin.css` file remains as a compatibility wrapper
 - the current connection mode is `self_managed`; a later managed connector can own the verified Google app without proxying document content by default
 - pasted Docs or raw file IDs only work when the connected Google account already has access

@@ -1,0 +1,49 @@
+import { createElement } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
+
+import { AdminButton } from '../../shared/ui/admin-button';
+
+export type SyncToast = {
+  id: string;
+  message: string;
+  title: string;
+  tone: 'info' | 'success' | 'error' | 'warning';
+  busy?: boolean;
+  actionLabel?: string;
+  onAction?: () => void;
+  onDismiss: () => void;
+};
+
+type Props = {
+  toasts: SyncToast[];
+};
+
+export const SyncToastStack = ({ toasts }: Props): JSX.Element | null => {
+  if (toasts.length === 0) {
+    return null;
+  }
+
+  return (
+    <div aria-live="polite" className="docsync-wp-toast-stack">
+      {toasts.map((toast) => (
+        <div className={`docsync-wp-toast is-${toast.tone}`} key={toast.id} role={toast.tone === 'error' ? 'alert' : 'status'}>
+          <div className="docsync-wp-toast__content">
+            <strong>{toast.title}</strong>
+            <p>{toast.message}</p>
+            {toast.busy ? <span aria-hidden="true" className="docsync-wp-toast__progress" /> : null}
+          </div>
+          <div className="docsync-wp-toast__actions">
+            {toast.actionLabel && toast.onAction ? (
+              <AdminButton className="button-small" onClick={toast.onAction} variant="secondary">
+                {toast.actionLabel}
+              </AdminButton>
+            ) : null}
+            <button aria-label={__('Dismiss notification', 'docsync-wp')} className="docsync-wp-toast__dismiss" onClick={toast.onDismiss} type="button">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};

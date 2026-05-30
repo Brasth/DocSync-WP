@@ -41,6 +41,66 @@ export const updateListRowSource = (source: SourceRecord | null): void => {
   }
 };
 
+export const refreshPostListTable = async (): Promise<boolean> => {
+  try {
+    const response = await fetch(window.location.href, {
+      credentials: 'same-origin',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    });
+
+    if (!response.ok) {
+      return false;
+    }
+
+    const html = await response.text();
+    const parsed = new DOMParser().parseFromString(html, 'text/html');
+
+    return replaceSingle('#the-list', parsed)
+      && replaceAll('.tablenav-pages', parsed)
+      && replaceAll('.displaying-num', parsed)
+      && replaceAll('.subsubsub', parsed);
+  } catch {
+    return false;
+  }
+};
+
+export const reloadPostListPage = (): void => {
+  window.location.reload();
+};
+
+const replaceSingle = (selector: string, parsed: Document): boolean => {
+  const current = document.querySelector(selector);
+  const next = parsed.querySelector(selector);
+
+  if (!current || !next) {
+    return false;
+  }
+
+  current.replaceWith(next.cloneNode(true));
+  return true;
+};
+
+const replaceAll = (selector: string, parsed: Document): boolean => {
+  const currentNodes = Array.from(document.querySelectorAll(selector));
+  const nextNodes = Array.from(parsed.querySelectorAll(selector));
+
+  if (currentNodes.length !== nextNodes.length) {
+    return false;
+  }
+
+  currentNodes.forEach((node, index) => {
+    const next = nextNodes[index];
+
+    if (next) {
+      node.replaceWith(next.cloneNode(true));
+    }
+  });
+
+  return true;
+};
+
 const sourceStatusElement = (source: SourceRecord): HTMLDivElement => {
   const wrapper = document.createElement('div');
   const title = document.createElement('strong');

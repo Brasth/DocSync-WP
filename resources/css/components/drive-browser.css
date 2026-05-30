@@ -3,7 +3,11 @@
     background: #fff;
     border: 1px solid #d9e2e1;
     border-radius: 8px;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
     margin-bottom: 12px;
+    min-height: 0;
     padding: 14px;
   }
 

@@ -99,7 +99,8 @@ export const useDocSourceModal = ({ isOpen, target, onClose, onCompleted }: Args
         target: target.mode === 'existing'
           ? { mode: 'existing', postId: target.postId }
           : { mode: 'new', postType: target.postType },
-        exportFormat: config.defaultExportFormat || 'html_zip'
+        exportFormat: config.defaultExportFormat || 'html_zip',
+        syncMode: target.mode === 'new' ? 'background' : 'inline'
       });
 
       onCompleted(result);

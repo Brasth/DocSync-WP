@@ -2,6 +2,32 @@
 
 Last updated: 2026-05-30
 
+## 2026-05-30 - Non-Blocking Picker and Background Sync
+
+Status: completed in codebase
+
+Changed the post-list Google Doc creation flow so the picker no longer waits for the full import:
+
+- made the Google Doc source modal fullscreen below the WordPress admin bar
+- changed the Drive browser to 50-result pages with infinite loading
+- added optional `syncMode` support to source create and sync REST requests while keeping inline mode as the default
+- added `GET /sources/{postId}` for status polling
+- added a single-source WP-Cron hook for background sync that still calls `SyncService::syncPost()`
+- queued new synced drafts from the post list, persisted source state as `syncing`, and returned API status `queued`
+- added fixed admin toast feedback with indeterminate progress and a11y announcements
+- polls source status until `synced`, `skipped`, `error`, or timeout
+- refreshes visible list-table content after a newly created draft finishes syncing, with a reload action fallback
+- unschedules both recurring and single-source cron hooks on deactivation/uninstall
+
+Verification status:
+
+- `composer validate --no-check-publish` passes
+- `composer lint` passes
+- `pnpm typecheck` passes
+- `pnpm lint` passes
+- `pnpm build` passes
+- `git diff --check` passes
+
 ## 2026-05-30 - WPCS Setup Validation
 
 Status: completed in codebase
