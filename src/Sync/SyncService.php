@@ -25,6 +25,8 @@ final class SyncService {
 	public const STATUS_ERROR   = 'error';
 
 	private const EXPORT_FORMAT_HTML_ZIP = 'html_zip';
+	private const SYNC_METHOD_HTML_ZIP   = 'html_zip';
+	private const SYNC_METHOD_DOCS_API   = 'docs_api_fallback';
 
 	/**
 	 * Source repository.
@@ -48,6 +50,13 @@ final class SyncService {
 	private HtmlZipImporter $html_zip_importer;
 
 	/**
+	 * Docs API fallback importer.
+	 *
+	 * @var DocsApiHtmlImporter
+	 */
+	private DocsApiHtmlImporter $docs_api_importer;
+
+	/**
 	 * HTML to block content converter.
 	 *
 	 * @var HtmlToBlockContentConverter
@@ -67,6 +76,7 @@ final class SyncService {
 	 * @param SourceRepository            $source_repository Source repository.
 	 * @param DriveClient                 $drive_client      Drive client.
 	 * @param HtmlZipImporter             $html_zip_importer HTML ZIP importer.
+	 * @param DocsApiHtmlImporter         $docs_api_importer Docs API fallback importer.
 	 * @param HtmlToBlockContentConverter $block_converter   HTML to block converter.
 	 * @param SyncLock                    $sync_lock         Sync lock.
 	 */
@@ -74,12 +84,14 @@ final class SyncService {
 		SourceRepository $source_repository,
 		DriveClient $drive_client,
 		HtmlZipImporter $html_zip_importer,
+		DocsApiHtmlImporter $docs_api_importer,
 		HtmlToBlockContentConverter $block_converter,
 		SyncLock $sync_lock
 	) {
 		$this->source_repository = $source_repository;
 		$this->drive_client      = $drive_client;
 		$this->html_zip_importer = $html_zip_importer;
+		$this->docs_api_importer = $docs_api_importer;
 		$this->block_converter   = $block_converter;
 		$this->sync_lock         = $sync_lock;
 	}
@@ -106,6 +118,12 @@ final class SyncService {
 			return $metadata;
 		}
 
+		$can_sync = $this->assertMetadataCanDownload( $metadata );
+
+		if ( is_wp_error( $can_sync ) ) {
+			return $can_sync;
+		}
+
 		$saved = $this->source_repository->saveSource(
 			$post_id,
 			array_merge(
@@ -113,6 +131,7 @@ final class SyncService {
 				array(
 					'last_hash'          => '',
 					'last_synced_at'     => '',
+					'last_sync_method'   => '',
 					'sync_owner_user_id' => $user_id,
 					'export_format'      => $export_format,
 					'sync_status'        => self::STATUS_LINKED,
@@ -151,6 +170,12 @@ final class SyncService {
 			return $metadata;
 		}
 
+		$can_sync = $this->assertMetadataCanDownload( $metadata );
+
+		if ( is_wp_error( $can_sync ) ) {
+			return $can_sync;
+		}
+
 		$post_id = wp_insert_post(
 			wp_slash(
 				array(
@@ -179,6 +204,7 @@ final class SyncService {
 				array(
 					'last_hash'          => '',
 					'last_synced_at'     => '',
+					'last_sync_method'   => '',
 					'sync_owner_user_id' => $user_id,
 					'export_format'      => $export_format,
 					'sync_status'        => self::STATUS_LINKED,
@@ -333,6 +359,12 @@ final class SyncService {
 				return $this->markError( $post_id, $source, $metadata );
 			}
 
+			$can_sync = $this->assertMetadataCanDownload( $metadata );
+
+			if ( is_wp_error( $can_sync ) ) {
+				return $this->markError( $post_id, $source, $can_sync );
+			}
+
 			$previous_source = $source;
 			$source          = array_merge( $source, $this->sourceFromMetadata( $metadata ) );
 
@@ -356,19 +388,13 @@ final class SyncService {
 				return $this->formatResult( $post_id, self::STATUS_SKIPPED, false );
 			}
 
-			$zip_bytes = $this->drive_client->exportHtmlZip( $sync_user_id, (string) $source['google_file_id'] );
+			$import = $this->importSourceHtml( $sync_user_id, (string) $source['google_file_id'], $post_id );
 
-			if ( is_wp_error( $zip_bytes ) ) {
-				return $this->markError( $post_id, $source, $zip_bytes );
+			if ( is_wp_error( $import ) ) {
+				return $this->markError( $post_id, $source, $import );
 			}
 
-			$html = $this->html_zip_importer->import( $zip_bytes, (string) $source['google_file_id'], $post_id, $sync_user_id );
-
-			if ( is_wp_error( $html ) ) {
-				return $this->markError( $post_id, $source, $html );
-			}
-
-			$block_content = $this->block_converter->convert( $html );
+			$block_content = $this->block_converter->convert( $import['html'] );
 
 			if ( is_wp_error( $block_content ) ) {
 				return $this->markError( $post_id, $source, $block_content );
@@ -383,6 +409,7 @@ final class SyncService {
 					array(
 						'last_hash'          => $hash,
 						'last_synced_at'     => current_time( 'mysql', true ),
+						'last_sync_method'   => $import['method'],
 						'sync_owner_user_id' => $sync_user_id,
 						'sync_status'        => self::STATUS_SKIPPED,
 						'sync_error'         => '',
@@ -420,6 +447,7 @@ final class SyncService {
 				array(
 					'last_hash'          => $hash,
 					'last_synced_at'     => current_time( 'mysql', true ),
+					'last_sync_method'   => $import['method'],
 					'sync_owner_user_id' => $sync_user_id,
 					'sync_status'        => self::STATUS_SYNCED,
 					'sync_error'         => '',
@@ -469,6 +497,68 @@ final class SyncService {
 	}
 
 	/**
+	 * Import source HTML with Docs API fallback for oversized Drive exports.
+	 *
+	 * @param int    $user_id        Sync owner user ID.
+	 * @param string $google_file_id Google Drive file ID.
+	 * @param int    $post_id        Target post ID.
+	 * @return array{html:string,method:string}|WP_Error
+	 */
+	private function importSourceHtml( int $user_id, string $google_file_id, int $post_id ): array|WP_Error {
+		$zip_bytes = $this->drive_client->exportHtmlZip( $user_id, $google_file_id );
+
+		if ( ! is_wp_error( $zip_bytes ) ) {
+			$html = $this->html_zip_importer->import( $zip_bytes, $google_file_id, $post_id, $user_id );
+
+			if ( is_wp_error( $html ) ) {
+				return $html;
+			}
+
+			return array(
+				'html'   => $html,
+				'method' => self::SYNC_METHOD_HTML_ZIP,
+			);
+		}
+
+		if ( 'docsync_wp_export_too_large' !== $zip_bytes->get_error_code() ) {
+			return $zip_bytes;
+		}
+
+		$html = $this->docs_api_importer->import( $user_id, $google_file_id, $post_id );
+
+		if ( is_wp_error( $html ) ) {
+			return $html;
+		}
+
+		return array(
+			'html'   => $html,
+			'method' => self::SYNC_METHOD_DOCS_API,
+		);
+	}
+
+	/**
+	 * Ensure Drive metadata allows download/export.
+	 *
+	 * @param array<string,mixed> $metadata Drive metadata.
+	 * @return true|WP_Error
+	 */
+	private function assertMetadataCanDownload( array $metadata ): true|WP_Error {
+		$compatibility = isset( $metadata['syncCompatibility'] ) && is_array( $metadata['syncCompatibility'] )
+			? $metadata['syncCompatibility']
+			: array();
+
+		if ( isset( $compatibility['canDownload'] ) && false === $compatibility['canDownload'] ) {
+			return new WP_Error(
+				'docsync_wp_drive_download_blocked',
+				__( 'Google says this Doc cannot be downloaded by the connected account. Adjust sharing or choose another Doc before syncing.', 'docsync-wp' ),
+				array( 'status' => 403 )
+			);
+		}
+
+		return true;
+	}
+
+	/**
 	 * Get the user whose Google token should run the sync.
 	 *
 	 * @param array<string,mixed> $source          Source.
@@ -483,16 +573,16 @@ final class SyncService {
 	/**
 	 * Convert Drive metadata to source metadata.
 	 *
-	 * @param array<string,string> $metadata Drive metadata.
+	 * @param array<string,mixed> $metadata Drive metadata.
 	 * @return array<string,string>
 	 */
 	private function sourceFromMetadata( array $metadata ): array {
 		return array(
-			'google_file_id'       => $metadata['fileId'],
-			'google_doc_url'       => $metadata['webViewLink'],
-			'google_title'         => $metadata['name'],
-			'google_modified_time' => $metadata['modifiedTime'],
-			'google_version'       => $metadata['version'],
+			'google_file_id'       => (string) $metadata['fileId'],
+			'google_doc_url'       => (string) $metadata['webViewLink'],
+			'google_title'         => (string) $metadata['name'],
+			'google_modified_time' => (string) $metadata['modifiedTime'],
+			'google_version'       => (string) $metadata['version'],
 		);
 	}
 
@@ -512,6 +602,12 @@ final class SyncService {
 			'changed' => $changed,
 			'source'  => $this->source_repository->formatSource( $post_id ),
 		);
+
+		if ( is_array( $result['source'] ) ) {
+			$result['lastSyncMethod'] = $result['source']['lastSyncMethod'] ?? null;
+		} else {
+			$result['lastSyncMethod'] = null;
+		}
 
 		if ( $queued ) {
 			$result['queued'] = true;

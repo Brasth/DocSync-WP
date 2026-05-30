@@ -22,6 +22,7 @@ type Props = {
 export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props): JSX.Element | null => {
   const modal = useDocSourceModal({ isOpen, target, onClose, onCompleted });
   const uiMode = modal.uiMode;
+  const compatibility = modal.metadata?.syncCompatibility;
 
   if (!isOpen || !target) {
     return null;
@@ -81,6 +82,13 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
             ) : null}
 
             <AdminNotice className="inline" notice={modal.error ? { type: 'error', message: modal.error } : null} />
+            <AdminNotice
+              className="inline"
+              notice={compatibility?.warningMessage ? {
+                type: compatibility.warningCode === 'download_blocked' ? 'error' : 'warning',
+                message: compatibility.warningMessage
+              } : null}
+            />
 
             {modal.metadata ? (
               <div className="docsync-wp-doc-preview">
@@ -105,7 +113,7 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
               </AdminButton>
             ) : null}
             <AdminButton
-              disabled={modal.busy || !modal.metadata}
+              disabled={modal.busy || !modal.canAttach}
               onClick={modal.attach}
               variant="primary"
             >

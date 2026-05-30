@@ -78,6 +78,11 @@
     color: #135e96;
   }
 
+  .docsync-wp-drive-browser__row-button:disabled {
+    color: #646970;
+    cursor: not-allowed;
+  }
+
   .docsync-wp-drive-browser__row-button:focus-visible {
     box-shadow: 0 0 0 2px #2271b1;
     outline: none;
@@ -91,6 +96,18 @@
 
   .docsync-wp-drive-browser__table tr.is-selected .docsync-wp-drive-browser__row-button span:last-child {
     font-weight: 600;
+  }
+
+  .docsync-wp-drive-browser__compat-warning {
+    color: #8a4b00;
+    display: block;
+    line-height: 1.35;
+    margin: 6px 0 0 28px;
+    white-space: normal;
+  }
+
+  .docsync-wp-drive-browser__compat-warning.is-download_blocked {
+    color: #b32d2e;
   }
 
   .docsync-wp-drive-browser__sentinel {

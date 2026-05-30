@@ -114,9 +114,14 @@ final class HtmlBlockMarkupSanitizer {
 			'code'   => array(),
 			'em'     => array(),
 			'i'      => array(),
+			'img'    => array(
+				'alt' => true,
+				'src' => true,
+			),
 			'strong' => array(),
 			'sub'    => array(),
 			'sup'    => array(),
+			'u'      => array(),
 		);
 	}
 

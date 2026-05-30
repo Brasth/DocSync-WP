@@ -60,9 +60,11 @@ Rules:
 
 - Google Docs is source of truth.
 - Current export format is `html_zip`; legacy `markdown` metadata should normalize on source save.
+- Google Docs API fallback is automatic only after Drive returns the `docsync_wp_export_too_large` export-size error.
 - Do not sync if metadata and content hash show no change.
 - Use a per-post lock during sync.
 - Record `linked`, `syncing`, `synced`, `skipped`, or `error`.
+- Record the last successful sync method for diagnostics.
 - Preserve user capability checks even when a source already exists.
 - Upload exported local images through WordPress Media Library APIs and reuse matching attachments.
 

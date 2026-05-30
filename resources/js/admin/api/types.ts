@@ -36,6 +36,15 @@ export type DocumentMetadata = {
   modifiedTime: string;
   version: string;
   webViewLink: string;
+  syncCompatibility?: SyncCompatibility;
+};
+
+export type SyncCompatibility = {
+  canDownload: boolean | null;
+  sizeBytes: number | null;
+  quotaBytesUsed: number | null;
+  warningCode: 'large_doc_possible' | 'download_blocked' | null;
+  warningMessage: string;
 };
 
 export type DriveDocumentSummary = DocumentMetadata;
@@ -52,6 +61,7 @@ export type DriveItemSummary = {
   iconLink?: string;
   version?: string;
   selectable: boolean;
+  syncCompatibility?: SyncCompatibility;
 };
 
 export type SharedDriveSummary = {
@@ -112,6 +122,7 @@ export type SourceRecord = {
   lastSyncedAt: string;
   syncOwnerUserId: number;
   exportFormat: string;
+  lastSyncMethod?: 'html_zip' | 'docs_api_fallback' | null;
   syncStatus: 'linked' | 'syncing' | 'synced' | 'skipped' | 'error' | string;
   syncError: string;
 };
@@ -122,6 +133,7 @@ export type SyncResult = {
   changed: boolean;
   created?: boolean;
   queued?: boolean;
+  lastSyncMethod?: 'html_zip' | 'docs_api_fallback' | null;
   source?: SourceRecord | null;
 };
 

@@ -4,7 +4,7 @@ Last updated: 2026-05-30
 
 ## Status
 
-The Google Docs Sync Admin Actions implementation is complete in code. The self-managed Google onboarding, Drive-like My Drive/shared drive document browser, dedicated Sources submenu, page target support, source filters, HTML ZIP media import, Gutenberg block conversion, admin frontend structure refactor, Drive modal polish, OAuth JSON import, fullscreen picker, infinite Drive loading, and non-blocking background draft sync are also complete in code.
+The Google Docs Sync Admin Actions implementation is complete in code. The self-managed Google onboarding, Drive-like My Drive/shared drive document browser, dedicated Sources submenu, page target support, source filters, HTML ZIP media import, Gutenberg block conversion, admin frontend structure refactor, Drive modal polish, OAuth JSON import, fullscreen picker, infinite Drive loading, non-blocking background draft sync, and oversized Google Doc fallback are also complete in code.
 
 ## Phase Summary
 
@@ -24,6 +24,7 @@ The Google Docs Sync Admin Actions implementation is complete in code. The self-
 | 12 | Drive Modal Polish and OAuth JSON Import | Complete in code, local PHP validation blocked |
 | 13 | Admin UI Fixes and Gutenberg Sync Content | Complete in code, local PHP validation blocked |
 | 14 | Non-Blocking Picker and Background Sync Feedback | Complete in code |
+| 15 | Oversized Google Doc Export Fallback | Complete in code |
 
 ## What Is Shipped
 
@@ -44,6 +45,8 @@ The Google Docs Sync Admin Actions implementation is complete in code. The self-
 - Drive browser pagination now uses infinite loading with 50-result pages
 - source REST endpoints support optional `syncMode` while preserving inline behavior by default
 - single-source background sync uses WordPress native single-event cron and existing per-post sync locking
+- oversized Google Docs warn from Drive metadata and automatically retry through Docs API fallback only after Drive export-size failures
+- setup wizard and README now require Drive API and Docs API in the same Google Cloud project
 - entry-specific CSS files with shared and component partials for admin setup, Sources, and post sync UI maintenance
 - HTML ZIP import that sideloads exported images into Media Library and rewrites content URLs
 - attachment dedupe by Google file ID, asset path, and image hash
@@ -59,14 +62,16 @@ The implementation is usable, but a few follow-ups remain open for future iterat
 - add automated PHP and JS tests
 - add richer sync history if support needs increase
 - improve block-perfect conversion for complex Google Docs layouts if needed
+- add fixtures around Docs API fallback conversion when a test harness is introduced
 - decide whether to add a separate audit log table
 - decide whether to add a managed Google connector service for true nontechnical one-click onboarding
 
 ## Release Readiness Notes
 
 - repository snapshot and docs are aligned with the current code
+- GitHub workflow JavaScript actions use Node 24-compatible major versions
 - current one-click improvement is plugin-only and still requires a self-managed Google Cloud app
 - frontend lint blocks inline PHPCS suppression comments in plugin source
 - workflow packaging now uploads installer-ready artifact contents instead of a nested ZIP
-- local verification is blocked here because PHP and Composer are missing
+- local PHP and frontend verification completed for the latest oversized-doc fallback changes
 - production validation still needs the normal PHP toolchain before release packaging

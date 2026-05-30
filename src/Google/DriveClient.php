@@ -22,14 +22,15 @@ final class DriveClient {
 
 	private const API_BASE_URL             = 'https://www.googleapis.com/drive/v3';
 	private const FOLDER_MIME_TYPE         = 'application/vnd.google-apps.folder';
-	private const METADATA_FIELDS          = 'id,name,mimeType,modifiedTime,version,webViewLink';
-	private const DOCUMENT_LIST_FIELDS     = 'nextPageToken,incompleteSearch,files(id,name,mimeType,modifiedTime,version,webViewLink)';
-	private const DRIVE_ITEM_LIST_FIELDS   = 'nextPageToken,incompleteSearch,files(id,name,mimeType,modifiedTime,version,webViewLink,iconLink)';
+	private const METADATA_FIELDS          = 'id,name,mimeType,modifiedTime,version,webViewLink,size,quotaBytesUsed,capabilities/canDownload';
+	private const DOCUMENT_LIST_FIELDS     = 'nextPageToken,incompleteSearch,files(id,name,mimeType,modifiedTime,version,webViewLink,size,quotaBytesUsed,capabilities/canDownload)';
+	private const DRIVE_ITEM_LIST_FIELDS   = 'nextPageToken,incompleteSearch,files(id,name,mimeType,modifiedTime,version,webViewLink,iconLink,size,quotaBytesUsed,capabilities/canDownload)';
 	private const SHARED_DRIVE_LIST_FIELDS = 'nextPageToken,drives(id,name)';
 	private const HTML_ZIP_MIME_TYPE       = 'application/zip';
 	private const MARKDOWN_MIME_TYPE       = 'text/markdown';
 	private const REQUEST_TIMEOUT_SECONDS  = 20;
 	private const MAX_EXPORT_BYTES         = 10485760;
+	private const LARGE_DOC_WARNING_BYTES  = 8388608;
 	private const DEFAULT_LIST_PAGE_SIZE   = 20;
 	private const MAX_LIST_PAGE_SIZE       = 50;
 
@@ -54,7 +55,7 @@ final class DriveClient {
 	 *
 	 * @param int    $user_id User ID.
 	 * @param string $file_id Google Drive file ID.
-	 * @return array<string,string>|WP_Error
+	 * @return array<string,mixed>|WP_Error
 	 */
 	public function getMetadata( int $user_id, string $file_id ): array|WP_Error {
 		$response = $this->request(
@@ -80,14 +81,7 @@ final class DriveClient {
 			);
 		}
 
-		return array(
-			'fileId'       => $response['id'],
-			'name'         => $response['name'],
-			'mimeType'     => $response['mimeType'],
-			'modifiedTime' => $response['modifiedTime'],
-			'version'      => $response['version'],
-			'webViewLink'  => $response['webViewLink'],
-		);
+		return $this->formatDocumentMetadata( $response );
 	}
 
 	/**
@@ -242,7 +236,7 @@ final class DriveClient {
 	 * @param string $search     Optional name search.
 	 * @param string $page_token Optional Drive pagination token.
 	 * @param int    $page_size  Requested page size.
-	 * @return array{documents:array<int,array<string,string>>,nextPageToken:string,incompleteSearch:bool}|WP_Error
+	 * @return array{documents:array<int,array<string,mixed>>,nextPageToken:string,incompleteSearch:bool}|WP_Error
 	 */
 	public function listGoogleDocs( int $user_id, string $search = '', string $page_token = '', int $page_size = self::DEFAULT_LIST_PAGE_SIZE ): array|WP_Error {
 		$page_size = min( self::MAX_LIST_PAGE_SIZE, max( 1, $page_size ) );
@@ -294,14 +288,7 @@ final class DriveClient {
 				continue;
 			}
 
-			$documents[] = array(
-				'fileId'       => $metadata['id'],
-				'name'         => $metadata['name'],
-				'mimeType'     => $metadata['mimeType'],
-				'modifiedTime' => $metadata['modifiedTime'],
-				'version'      => $metadata['version'],
-				'webViewLink'  => $metadata['webViewLink'],
-			);
+			$documents[] = $this->formatDocumentMetadata( $metadata );
 		}
 
 		return array(
@@ -387,7 +374,7 @@ final class DriveClient {
 	 *
 	 * @param int    $user_id User ID.
 	 * @param string $url     Request URL.
-	 * @return array{id:string,name:string,mimeType:string,modifiedTime:string,version:string,webViewLink:string}|WP_Error
+	 * @return array<string,mixed>|WP_Error
 	 */
 	private function request( int $user_id, string $url ): array|WP_Error {
 		$data = $this->requestJson( $user_id, $url );
@@ -452,16 +439,17 @@ final class DriveClient {
 	 * Format a Drive metadata object for internal use.
 	 *
 	 * @param array<mixed> $data Metadata response.
-	 * @return array{id:string,name:string,mimeType:string,modifiedTime:string,version:string,webViewLink:string}
+	 * @return array<string,mixed>
 	 */
 	private function formatMetadataResponse( array $data ): array {
 		return array(
-			'id'           => sanitize_text_field( (string) $data['id'] ),
-			'name'         => sanitize_text_field( (string) $data['name'] ),
-			'mimeType'     => sanitize_text_field( (string) $data['mimeType'] ),
-			'modifiedTime' => sanitize_text_field( (string) $data['modifiedTime'] ),
-			'version'      => sanitize_text_field( (string) $data['version'] ),
-			'webViewLink'  => esc_url_raw( (string) $data['webViewLink'] ),
+			'id'                => sanitize_text_field( (string) $data['id'] ),
+			'name'              => sanitize_text_field( (string) $data['name'] ),
+			'mimeType'          => sanitize_text_field( (string) $data['mimeType'] ),
+			'modifiedTime'      => sanitize_text_field( (string) $data['modifiedTime'] ),
+			'version'           => sanitize_text_field( (string) $data['version'] ),
+			'webViewLink'       => esc_url_raw( (string) $data['webViewLink'] ),
+			'syncCompatibility' => $this->buildSyncCompatibility( $data ),
 		);
 	}
 
@@ -481,7 +469,7 @@ final class DriveClient {
 			'itemType'     => $is_folder ? 'folder' : 'document',
 			'modifiedTime' => sanitize_text_field( (string) $data['modifiedTime'] ),
 			'webViewLink'  => isset( $data['webViewLink'] ) && is_scalar( $data['webViewLink'] ) ? esc_url_raw( (string) $data['webViewLink'] ) : '',
-			'selectable'   => ! $is_folder,
+			'selectable'   => ! $is_folder && false !== $this->getCanDownload( $data ),
 		);
 
 		if ( isset( $data['iconLink'] ) && is_scalar( $data['iconLink'] ) ) {
@@ -492,7 +480,92 @@ final class DriveClient {
 			$item['version'] = sanitize_text_field( (string) $data['version'] );
 		}
 
+		if ( ! $is_folder ) {
+			$item['syncCompatibility'] = $this->buildSyncCompatibility( $data );
+		}
+
 		return $item;
+	}
+
+	/**
+	 * Format Drive metadata for REST responses.
+	 *
+	 * @param array<string,mixed> $metadata Internal metadata.
+	 * @return array<string,mixed>
+	 */
+	private function formatDocumentMetadata( array $metadata ): array {
+		return array(
+			'fileId'            => $metadata['id'],
+			'name'              => $metadata['name'],
+			'mimeType'          => $metadata['mimeType'],
+			'modifiedTime'      => $metadata['modifiedTime'],
+			'version'           => $metadata['version'],
+			'webViewLink'       => $metadata['webViewLink'],
+			'syncCompatibility' => $metadata['syncCompatibility'],
+		);
+	}
+
+	/**
+	 * Build document sync compatibility metadata.
+	 *
+	 * @param array<string,mixed> $data Drive file metadata.
+	 * @return array{canDownload:bool|null,sizeBytes:int|null,quotaBytesUsed:int|null,warningCode:string|null,warningMessage:string}
+	 */
+	private function buildSyncCompatibility( array $data ): array {
+		$can_download     = $this->getCanDownload( $data );
+		$size_bytes       = $this->metadataInteger( $data['size'] ?? null );
+		$quota_bytes_used = $this->metadataInteger( $data['quotaBytesUsed'] ?? null );
+		$warning_code     = null;
+		$warning_message  = '';
+
+		if ( false === $can_download ) {
+			$warning_code    = 'download_blocked';
+			$warning_message = __( 'Google says this Doc cannot be downloaded by the connected account. Adjust sharing or choose another Doc before linking.', 'docsync-wp' );
+		} elseif (
+			( null !== $size_bytes && $size_bytes >= self::LARGE_DOC_WARNING_BYTES )
+			|| ( null !== $quota_bytes_used && $quota_bytes_used >= self::LARGE_DOC_WARNING_BYTES )
+		) {
+			$warning_code    = 'large_doc_possible';
+			$warning_message = __( 'This Doc may exceed Google\'s 10 MB export limit. DocSync WP will use the large-doc fallback if needed.', 'docsync-wp' );
+		}
+
+		return array(
+			'canDownload'    => $can_download,
+			'sizeBytes'      => $size_bytes,
+			'quotaBytesUsed' => $quota_bytes_used,
+			'warningCode'    => $warning_code,
+			'warningMessage' => $warning_message,
+		);
+	}
+
+	/**
+	 * Read the Drive canDownload capability.
+	 *
+	 * @param array<string,mixed> $data Drive file metadata.
+	 */
+	private function getCanDownload( array $data ): ?bool {
+		if ( ! isset( $data['capabilities'] ) || ! is_array( $data['capabilities'] ) ) {
+			return null;
+		}
+
+		return isset( $data['capabilities']['canDownload'] ) && is_bool( $data['capabilities']['canDownload'] )
+			? $data['capabilities']['canDownload']
+			: null;
+	}
+
+	/**
+	 * Parse a non-negative Drive metadata integer.
+	 *
+	 * @param mixed $value Raw metadata value.
+	 */
+	private function metadataInteger( mixed $value ): ?int {
+		if ( ! is_scalar( $value ) ) {
+			return null;
+		}
+
+		$value = trim( (string) $value );
+
+		return '' !== $value && ctype_digit( $value ) ? (int) $value : null;
 	}
 
 	/**

@@ -27,13 +27,17 @@ flowchart LR
   REST --> Sync["SyncService"]
   REST --> Cron["SyncCron"]
   Sync --> Drive["Google Drive metadata + HTML ZIP export"]
+  Sync --> DocsAPI["Google Docs API fallback"]
   Sync --> Import["HtmlZipImporter"]
+  DocsAPI --> FallbackImport["DocsApiHtmlImporter"]
   Import --> Blocks["HtmlToBlockContentConverter"]
+  FallbackImport --> Blocks
   Sync --> Lock["SyncLock"]
   Import --> Media["Media Library attachments"]
   Blocks --> WP["wp_update_post / wp_insert_post"]
   WP --> Meta["Post meta sync state"]
   Media --> AttachmentMeta["Attachment asset dedupe meta"]
+  FallbackImport --> Media
   OAuth --> Tokens["Encrypted user meta"]
   Settings --> Opts["Encrypted site option"]
   Cron --> Sources
@@ -156,6 +160,7 @@ Common permission model:
 - `_docsync_wp_google_version`
 - `_docsync_wp_last_hash`
 - `_docsync_wp_last_synced_at`
+- `_docsync_wp_last_sync_method`
 - `_docsync_wp_sync_owner_user_id`
 - `_docsync_wp_export_format`
 - `_docsync_wp_sync_status`
@@ -177,18 +182,22 @@ These identify images imported from a Google Docs HTML ZIP export so re-sync can
 4. `SourceController` attaches the source to an existing target or creates a new draft.
 5. Inline mode continues immediately; background mode stores source state as `syncing`, schedules a single WP-Cron event, and returns a queued result.
 6. `SyncService` acquires a per-post lock.
-7. `DriveClient` reads metadata and exports an HTML ZIP package.
-8. `HtmlZipImporter` extracts the package, imports local images into Media Library, rewrites image URLs, and sanitizes HTML.
-9. `HtmlToBlockContentConverter` maps common document nodes to Gutenberg core blocks and keeps unsupported nodes as `core/html` fallback blocks.
-10. WordPress post content is updated only after export, import, and block conversion succeed.
-11. Source state is saved back to post meta.
-12. Result state becomes `linked`, `syncing`, `synced`, `skipped`, or `error`; queued API responses use top-level `status: queued` while persisted state remains `syncing`.
+7. `DriveClient` reads metadata, including `capabilities.canDownload`, `size`, and `quotaBytesUsed`.
+8. If Drive reports `canDownload=false`, link/sync stops before content changes.
+9. `DriveClient` exports an HTML ZIP package by default.
+10. If Google returns the 10 MB export-size failure, `DocsApiHtmlImporter` reads the same document through `documents.get?includeTabsContent=true`, converts supported Docs structures to sanitized HTML, and imports inline image `contentUri` assets into Media Library.
+11. `HtmlZipImporter` extracts the normal ZIP package, imports local images into Media Library, rewrites image URLs, and sanitizes HTML.
+12. `HtmlToBlockContentConverter` maps common document nodes to Gutenberg core blocks and keeps unsupported nodes as `core/html` fallback blocks.
+13. WordPress post content is updated only after export/import or fallback conversion and block conversion succeed.
+14. Source state is saved back to post meta with `lastSyncMethod` set to `html_zip` or `docs_api_fallback` after successful content import.
+15. Result state becomes `linked`, `syncing`, `synced`, `skipped`, or `error`; queued API responses use top-level `status: queued` while persisted state remains `syncing`.
 
 Skip behavior:
 
 - if Google `modifiedTime`, `version`, and last hash show no change, sync is marked `skipped`
 - lock prevents duplicate concurrent syncs for the same post
 - legacy `markdown` export metadata is normalized to `html_zip` the next time source state is saved
+- large-doc fallback is automatic and only runs after the stable `docsync_wp_export_too_large` Drive export error
 
 ## Scheduling
 
@@ -207,6 +216,7 @@ Skip behavior:
 - post-level actions still require `edit_post` or post-type capability checks
 - imported content is sanitized and normalized to block markup before write
 - local exported images are validated as image files before Media Library import
+- Docs API fallback image content URIs are downloaded to temporary files and validated before Media Library import
 - image import failure marks sync `error` before target content is overwritten
 - plugin never deletes synced posts on uninstall by default
 
@@ -214,6 +224,7 @@ Skip behavior:
 
 - WP-Cron only runs on site traffic; low-traffic sites need real server cron for reliable schedules
 - source selection uses `drive.readonly` and a server-side custom Drive document browser with per-drive shared drive queries
+- self-managed Google Cloud setup must enable both Drive API and Docs API; no additional OAuth scope is required beyond `drive.readonly`
 - the Drive browser loads pages of 50 results and uses an IntersectionObserver sentinel for infinite loading
 - the post-list picker is fullscreen below the WordPress admin bar, closes after background queueing, and uses toast polling feedback instead of blocking the modal
 - setup and Sources screens import `resources/css/admin-entry.css`; the legacy `resources/css/admin.css` file remains as a compatibility wrapper

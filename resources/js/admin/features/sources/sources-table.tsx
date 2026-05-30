@@ -32,6 +32,18 @@ const statusLabel = (source: SourceRecord): string => {
   return source.syncStatus || 'linked';
 };
 
+const syncMethodLabel = (source: SourceRecord): string => {
+  if (source.lastSyncMethod === 'docs_api_fallback') {
+    return 'Large-doc fallback';
+  }
+
+  if (source.lastSyncMethod === 'html_zip') {
+    return 'HTML ZIP';
+  }
+
+  return '';
+};
+
 const statusOptions = [
   { value: '', label: 'All statuses' },
   { value: 'linked', label: 'Linked' },
@@ -156,7 +168,10 @@ export const SourcesTable = ({
                   {source.googleDocUrl ? <a href={source.googleDocUrl} rel="noreferrer" target="_blank">{source.googleTitle || source.googleFileId}</a> : source.googleTitle || source.googleFileId}
                 </td>
                 <td><StatusPill status={statusLabel(source)} />{source.syncError ? <small>{source.syncError}</small> : null}</td>
-                <td>{source.lastSyncedAt || 'Never'}</td>
+                <td>
+                  {source.lastSyncedAt || 'Never'}
+                  {syncMethodLabel(source) ? <small>{syncMethodLabel(source)}</small> : null}
+                </td>
                 <td><AdminButton disabled={busy} onClick={() => onSync(source.postId)}>Sync</AdminButton></td>
               </tr>
             ))}

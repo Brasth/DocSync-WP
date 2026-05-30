@@ -2,6 +2,47 @@
 
 Last updated: 2026-05-30
 
+## 2026-05-30 - Oversized Google Doc Export Fallback
+
+Status: completed in codebase
+
+Prevented large Google Docs from dead-ending when Drive HTML ZIP export exceeds Google's Workspace export limit:
+
+- added Drive metadata compatibility data for `canDownload`, `size`, `quotaBytesUsed`, and large-doc warnings
+- blocked link/sync when Drive reports the connected account cannot download the Doc
+- kept HTML ZIP as the primary sync path and only retries through Docs API after `docsync_wp_export_too_large`
+- added Docs API fallback conversion for paragraphs, headings, links, text styling, lists, tables, horizontal rules, and inline images
+- preserved post content until either primary import or fallback import fully succeeds
+- stored `lastSyncMethod` diagnostics on successful sync
+- updated setup copy and docs to require both Drive API and Docs API in the same Google Cloud project
+
+Verification status:
+
+- `composer validate --no-check-publish` passes
+- `composer lint` passes
+- `pnpm lint` passes
+- `pnpm typecheck` passes
+- `pnpm build` passes
+- PHP syntax checks pass for all `src/**/*.php`
+- `git diff --check` passes
+
+## 2026-05-30 - GitHub Actions Node 24 Compatibility
+
+Status: completed in codebase
+
+Updated CI workflows before GitHub's Node.js 20 action runtime removal:
+
+- upgraded checkout, setup-node, pnpm setup, and artifact upload actions to Node 24-compatible major versions
+- changed frontend CI jobs to run with Node.js 24 while keeping the package `>=20` runtime floor unchanged
+- kept existing PHP setup, package staging, and installer-ready artifact layout behavior unchanged
+
+Verification status:
+
+- GitHub workflow YAML parses successfully
+- `pnpm lint` passes
+- `pnpm typecheck` passes
+- `pnpm build` passes
+
 ## 2026-05-30 - Admin UI Stability and Modal Polish
 
 Status: completed in codebase

@@ -17,7 +17,7 @@ export const GoogleSetupCloudSteps = ({ redirectUri, copyMessage, onCopyValue }:
           <span>1</span>
           <div>
             <h3>Create the Google Cloud pieces</h3>
-            <p>Use one Google Cloud project for Drive API, OAuth consent, and OAuth web credentials.</p>
+            <p>Use one Google Cloud project for Drive API, Docs API, OAuth consent, and OAuth web credentials.</p>
           </div>
         </div>
         <div className="docsync-wp-cloud-links">

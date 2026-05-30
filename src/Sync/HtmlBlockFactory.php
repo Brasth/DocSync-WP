@@ -172,6 +172,6 @@ final class HtmlBlockFactory {
 	 * @param string $tag HTML tag.
 	 */
 	private function isInlineElement( string $tag ): bool {
-		return in_array( $tag, array( 'a', 'strong', 'b', 'em', 'i', 'code', 'sub', 'sup', 'span' ), true );
+		return in_array( $tag, array( 'a', 'strong', 'b', 'em', 'i', 'code', 'sub', 'sup', 'span', 'u' ), true );
 	}
 }

@@ -9,6 +9,7 @@ export type SetupCheck = {
 
 export const googleCloudLinks = [
   { href: 'https://console.cloud.google.com/apis/library/drive.googleapis.com', label: 'Enable Drive API' },
+  { href: 'https://console.cloud.google.com/apis/library/docs.googleapis.com', label: 'Enable Docs API' },
   { href: 'https://console.cloud.google.com/apis/credentials/consent', label: 'OAuth consent' },
   { href: 'https://console.cloud.google.com/apis/credentials', label: 'Credentials' }
 ];
