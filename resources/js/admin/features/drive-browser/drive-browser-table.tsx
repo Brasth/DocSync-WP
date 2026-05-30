@@ -54,6 +54,8 @@ export const DriveBrowserTable = ({ busy, items, loading, selectedDocument, hasM
         <tbody>
           {items.map((item) => {
             const selected = item.itemType === 'document' && selectedDocument?.fileId === item.fileId;
+            const compatibility = item.syncCompatibility;
+            const disabled = busy || loading || (item.itemType === 'document' && !item.selectable);
 
             return (
               <tr className={selected ? 'is-selected' : ''} key={item.fileId}>
@@ -62,7 +64,7 @@ export const DriveBrowserTable = ({ busy, items, loading, selectedDocument, hasM
                     aria-label={item.itemType === 'folder' ? `Open folder ${item.name}` : `Select Google Doc ${item.name}`}
                     aria-pressed={item.itemType === 'document' ? selected : undefined}
                     className="docsync-wp-drive-browser__row-button"
-                    disabled={busy || loading}
+                    disabled={disabled}
                     onClick={() => onActivate(item).catch(() => undefined)}
                     type="button"
                   >
@@ -72,17 +74,22 @@ export const DriveBrowserTable = ({ busy, items, loading, selectedDocument, hasM
                     />
                     <span>{item.name}</span>
                   </button>
+                  {compatibility?.warningMessage ? (
+                    <small className={`docsync-wp-drive-browser__compat-warning is-${compatibility.warningCode ?? 'info'}`}>
+                      {compatibility.warningMessage}
+                    </small>
+                  ) : null}
                 </td>
                 <td>{formatDriveModifiedTime(item.modifiedTime)}</td>
                 <td>{driveItemTypeLabel(item)}</td>
                 <td>
                   <AdminButton
                     className="button-small"
-                    disabled={busy || loading}
+                    disabled={disabled}
                     onClick={() => onActivate(item)}
                     variant={selected ? 'primary' : 'secondary'}
                   >
-                    {item.itemType === 'folder' ? 'Open' : selected ? 'Selected' : 'Select'}
+                    {item.itemType === 'folder' ? 'Open' : !item.selectable ? 'Blocked' : selected ? 'Selected' : 'Select'}
                   </AdminButton>
                 </td>
               </tr>

@@ -54,6 +54,7 @@
 
 	<!-- HTML ZIP imports must manipulate temporary export files before handing images to WordPress media APIs. -->
 	<rule ref="WordPress.WP.AlternativeFunctions">
+		<exclude-pattern>src/Google/DocsClient.php</exclude-pattern>
 		<exclude-pattern>src/Sync/HtmlZipPackageExtractor.php</exclude-pattern>
 		<exclude-pattern>src/Sync/MediaAssetImporter.php</exclude-pattern>
 	</rule>

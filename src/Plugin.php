@@ -17,6 +17,7 @@ use DocSyncWP\Auth\GoogleOAuthService;
 use DocSyncWP\Auth\TokenStore;
 use DocSyncWP\Cron\SyncCron;
 use DocSyncWP\Google\DocumentIdParser;
+use DocSyncWP\Google\DocsClient;
 use DocSyncWP\Google\DriveClient;
 use DocSyncWP\Rest\DocumentController;
 use DocSyncWP\Rest\OAuthController;
@@ -26,6 +27,11 @@ use DocSyncWP\Rest\SourceController;
 use DocSyncWP\Rest\SyncLogController;
 use DocSyncWP\Security\EncryptionService;
 use DocSyncWP\Settings\SettingsRepository;
+use DocSyncWP\Sync\DocsApiHtmlBuilder;
+use DocSyncWP\Sync\DocsApiHtmlImporter;
+use DocSyncWP\Sync\DocsApiImageImporter;
+use DocSyncWP\Sync\DocsApiInlineRenderer;
+use DocSyncWP\Sync\DocsApiParagraphRenderer;
 use DocSyncWP\Sync\HtmlDocumentImageRewriter;
 use DocSyncWP\Sync\HtmlToBlockContentConverter;
 use DocSyncWP\Sync\HtmlZipImporter;
@@ -139,6 +145,7 @@ final class Plugin {
 		$source_repository  = new SourceRepository( $settings );
 		$google_oauth       = new GoogleOAuthService( $settings, $token_store );
 		$drive_client       = new DriveClient( $google_oauth );
+		$docs_client        = new DocsClient( $google_oauth );
 		$document_id_parser = new DocumentIdParser();
 		$media_assets       = new MediaAssetImporter();
 		$sync_service       = new SyncService(
@@ -147,6 +154,16 @@ final class Plugin {
 			new HtmlZipImporter(
 				new HtmlZipPackageExtractor(),
 				new HtmlDocumentImageRewriter( $media_assets )
+			),
+			new DocsApiHtmlImporter(
+				$docs_client,
+				new DocsApiHtmlBuilder(
+					new DocsApiParagraphRenderer(
+						new DocsApiInlineRenderer(
+							new DocsApiImageImporter( $docs_client, $media_assets )
+						)
+					)
+				)
 			),
 			new HtmlToBlockContentConverter(),
 			new SyncLock()

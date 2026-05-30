@@ -28,6 +28,7 @@ final class SourceRepository {
 	public const META_VERSION       = '_docsync_wp_google_version';
 	public const META_LAST_HASH     = '_docsync_wp_last_hash';
 	public const META_LAST_SYNCED   = '_docsync_wp_last_synced_at';
+	public const META_LAST_METHOD   = '_docsync_wp_last_sync_method';
 	public const META_OWNER_USER_ID = '_docsync_wp_sync_owner_user_id';
 	public const META_EXPORT_FORMAT = '_docsync_wp_export_format';
 	public const META_SYNC_STATUS   = '_docsync_wp_sync_status';
@@ -76,6 +77,7 @@ final class SourceRepository {
 			'google_version'       => $this->getStringMeta( $post_id, self::META_VERSION ),
 			'last_hash'            => $this->getStringMeta( $post_id, self::META_LAST_HASH ),
 			'last_synced_at'       => $this->getStringMeta( $post_id, self::META_LAST_SYNCED ),
+			'last_sync_method'     => $this->getStringMeta( $post_id, self::META_LAST_METHOD ),
 			'sync_owner_user_id'   => absint( get_post_meta( $post_id, self::META_OWNER_USER_ID, true ) ),
 			'export_format'        => $this->getStringMeta( $post_id, self::META_EXPORT_FORMAT ),
 			'sync_status'          => $this->getStringMeta( $post_id, self::META_SYNC_STATUS ),
@@ -126,8 +128,9 @@ final class SourceRepository {
 		update_post_meta( $post_id, self::META_VERSION, isset( $source['google_version'] ) ? sanitize_text_field( (string) $source['google_version'] ) : '' );
 		update_post_meta( $post_id, self::META_LAST_HASH, isset( $source['last_hash'] ) ? sanitize_text_field( (string) $source['last_hash'] ) : '' );
 		update_post_meta( $post_id, self::META_LAST_SYNCED, isset( $source['last_synced_at'] ) ? sanitize_text_field( (string) $source['last_synced_at'] ) : '' );
+		update_post_meta( $post_id, self::META_LAST_METHOD, $this->sanitizeLastSyncMethod( $source['last_sync_method'] ?? '' ) );
 		update_post_meta( $post_id, self::META_OWNER_USER_ID, isset( $source['sync_owner_user_id'] ) ? absint( $source['sync_owner_user_id'] ) : 0 );
-		update_post_meta( $post_id, self::META_EXPORT_FORMAT, $this->sanitizeExportFormat( $source['export_format'] ?? self::EXPORT_FORMAT_MARKDOWN ) );
+		update_post_meta( $post_id, self::META_EXPORT_FORMAT, $this->sanitizeExportFormat( $source['export_format'] ?? self::EXPORT_FORMAT_HTML_ZIP ) );
 		update_post_meta( $post_id, self::META_SYNC_STATUS, isset( $source['sync_status'] ) ? sanitize_key( (string) $source['sync_status'] ) : '' );
 		update_post_meta( $post_id, self::META_SYNC_ERROR, isset( $source['sync_error'] ) ? sanitize_textarea_field( (string) $source['sync_error'] ) : '' );
 
@@ -495,6 +498,7 @@ final class SourceRepository {
 			'googleVersion'      => $source['google_version'],
 			'lastHash'           => $source['last_hash'],
 			'lastSyncedAt'       => $source['last_synced_at'],
+			'lastSyncMethod'     => '' !== $source['last_sync_method'] ? $source['last_sync_method'] : null,
 			'syncOwnerUserId'    => $source['sync_owner_user_id'],
 			'exportFormat'       => $source['export_format'],
 			'syncStatus'         => $source['sync_status'],
@@ -607,6 +611,17 @@ final class SourceRepository {
 	}
 
 	/**
+	 * Sanitize the last successful sync method.
+	 *
+	 * @param mixed $method Sync method.
+	 */
+	private function sanitizeLastSyncMethod( mixed $method ): string {
+		$method = sanitize_key( (string) $method );
+
+		return in_array( $method, array( 'html_zip', 'docs_api_fallback' ), true ) ? $method : '';
+	}
+
+	/**
 	 * Source meta keys.
 	 *
 	 * @return array<int,string>
@@ -620,6 +635,7 @@ final class SourceRepository {
 			self::META_VERSION,
 			self::META_LAST_HASH,
 			self::META_LAST_SYNCED,
+			self::META_LAST_METHOD,
 			self::META_OWNER_USER_ID,
 			self::META_EXPORT_FORMAT,
 			self::META_SYNC_STATUS,

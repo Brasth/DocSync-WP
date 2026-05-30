@@ -28,7 +28,12 @@ export const request = async <T>(endpoint: string, options: ApiFetchOptions = {}
     });
   } catch (caught) {
     if (caught && typeof caught === 'object' && 'message' in caught && typeof caught.message === 'string') {
-      throw new Error(caught.message);
+      const code = 'code' in caught && typeof caught.code === 'string' ? caught.code : '';
+      const message = code === 'docsync_wp_docs_api_unavailable' && !caught.message.includes('Google Docs API')
+        ? 'Enable Google Docs API in the same Google Cloud project, then retry sync.'
+        : caught.message;
+
+      throw new Error(message);
     }
 
     throw caught;

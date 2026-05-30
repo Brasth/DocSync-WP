@@ -84,6 +84,13 @@ export const useDocSourceModal = ({ isOpen, target, onClose, onCompleted }: Args
       return;
     }
 
+    if (metadata.syncCompatibility?.canDownload === false) {
+      const message = metadata.syncCompatibility.warningMessage || __('Google says this Doc cannot be downloaded by the connected account.', 'docsync-wp');
+      setError(message);
+      speak(message, 'assertive');
+      return;
+    }
+
     setBusy(true);
     setError('');
 
@@ -111,6 +118,7 @@ export const useDocSourceModal = ({ isOpen, target, onClose, onCompleted }: Args
   return {
     attach,
     busy,
+    canAttach: Boolean(metadata && metadata.syncCompatibility?.canDownload !== false),
     changeSourceMode,
     documentInput,
     error,
