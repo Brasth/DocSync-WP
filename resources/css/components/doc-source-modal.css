@@ -5,7 +5,7 @@
     left: 0;
     position: fixed;
     right: 0;
-    top: var(--wp-admin--admin-bar--height, 32px);
+    top: 0;
     z-index: 100000;
   }
 
@@ -19,7 +19,7 @@
     overflow: hidden;
     position: fixed;
     right: 0;
-    top: var(--wp-admin--admin-bar--height, 32px);
+    top: 0;
     width: 100vw;
     z-index: 100001;
   }
@@ -130,11 +130,6 @@
   }
 
   @media (max-width: 782px) {
-    .docsync-wp-modal,
-    .docsync-wp-modal-backdrop {
-      top: var(--wp-admin--admin-bar--height, 46px);
-    }
-
     .docsync-wp-modal__header,
     .docsync-wp-modal__body,
     .docsync-wp-modal__footer {

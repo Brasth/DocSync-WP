@@ -2,6 +2,29 @@
 
 Last updated: 2026-05-30
 
+## 2026-05-30 - Large Doc Sync Stuck Recovery
+
+Status: completed in codebase
+
+Improved long-running Google Doc sync recovery and modal sizing:
+
+- added sync start/update heartbeat metadata and error codes to source state
+- converted abandoned `syncing` states into a clear retryable error when no lock or cron event remains
+- kept background sync polling alive after long-running thresholds with slower polling
+- retried transient source-status polling failures instead of stopping after one failed request
+- displayed the latest sync heartbeat in post editor progress details
+- removed the admin-bar offset from the post type source modal so it fills the viewport from the top
+
+Verification status:
+
+- `composer validate --no-check-publish` passes
+- `composer lint` passes
+- `pnpm lint` passes
+- `pnpm typecheck` passes
+- `pnpm build` passes
+- PHP syntax checks pass for modified PHP files
+- `git diff --check` passes
+
 ## 2026-05-30 - Dense Doc Picker and Inline Editor Apply
 
 Status: completed in codebase

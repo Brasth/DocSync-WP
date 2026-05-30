@@ -4,7 +4,7 @@ Last updated: 2026-05-30
 
 ## Status
 
-The Google Docs Sync Admin Actions implementation is complete in code. The self-managed Google onboarding, Drive-like My Drive/shared drive document browser, dedicated Sources submenu, page target support, source filters, HTML ZIP media import, Gutenberg block conversion, admin frontend structure refactor, Drive modal polish, OAuth JSON import, fullscreen picker, dense picker layout, infinite Drive loading, non-blocking background draft sync, oversized Google Doc fallback, inline editor sync-completion apply, and progressive empty-draft large-doc writes are also complete in code.
+The Google Docs Sync Admin Actions implementation is complete in code. The self-managed Google onboarding, Drive-like My Drive/shared drive document browser, dedicated Sources submenu, page target support, source filters, HTML ZIP media import, Gutenberg block conversion, admin frontend structure refactor, Drive modal polish, OAuth JSON import, fullscreen picker, dense picker layout, infinite Drive loading, non-blocking background draft sync, oversized Google Doc fallback, inline editor sync-completion apply, progressive empty-draft large-doc writes, and large-doc stuck-state recovery are also complete in code.
 
 ## Phase Summary
 
@@ -47,6 +47,7 @@ The Google Docs Sync Admin Actions implementation is complete in code. The self-
 - single-source background sync uses WordPress native single-event cron and existing per-post sync locking
 - oversized Google Docs warn from Drive metadata and automatically retry through Docs API fallback only after Drive export-size failures
 - empty draft oversized-doc fallback imports progressively save sanitized block content before final sync completion
+- long-running syncs expose heartbeat metadata, tolerate transient polling failures, and recover abandoned `syncing` states into retryable errors
 - post editor background sync completion applies synced content directly when no unsaved edits are present and otherwise offers an explicit apply action
 - terminal sync states no longer show stale 100 percent progress bars after reload
 - setup wizard and README now require Drive API and Docs API in the same Google Cloud project

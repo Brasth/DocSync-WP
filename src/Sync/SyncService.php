@@ -149,6 +149,9 @@ final class SyncService {
 					'sync_progress'      => 0,
 					'sync_step'          => 'linked',
 					'sync_message'       => __( 'Linked and ready to sync.', 'docsync-wp' ),
+					'sync_started_at'    => '',
+					'sync_updated_at'    => '',
+					'sync_error_code'    => '',
 				)
 			)
 		);
@@ -225,6 +228,9 @@ final class SyncService {
 					'sync_progress'      => 0,
 					'sync_step'          => 'linked',
 					'sync_message'       => __( 'Linked and ready to sync.', 'docsync-wp' ),
+					'sync_started_at'    => '',
+					'sync_updated_at'    => '',
+					'sync_error_code'    => '',
 				)
 			)
 		);
@@ -325,6 +331,7 @@ final class SyncService {
 		}
 
 		$message  = is_wp_error( $error ) ? $error->get_error_message() : $error;
+		$code     = is_wp_error( $error ) ? $error->get_error_code() : 'docsync_wp_background_sync_failed';
 		$progress = isset( $source['sync_progress'] ) ? (int) $source['sync_progress'] : 0;
 		$saved    = $this->saveProgressState(
 			$post_id,
@@ -334,8 +341,9 @@ final class SyncService {
 			'error',
 			$message,
 			array(
-				'last_synced_at' => current_time( 'mysql', true ),
-				'sync_error'     => $message,
+				'last_synced_at'  => current_time( 'mysql', true ),
+				'sync_error'      => $message,
+				'sync_error_code' => $code,
 			)
 		);
 
@@ -596,17 +604,29 @@ final class SyncService {
 			return $this->sourceChangedError();
 		}
 
+		$now         = current_time( 'mysql', true );
 		$next_source = array_merge(
 			$latest_source,
 			$source,
 			$updates,
 			array(
-				'sync_status'   => $status,
-				'sync_progress' => $progress,
-				'sync_step'     => $step,
-				'sync_message'  => $message,
+				'sync_status'     => $status,
+				'sync_progress'   => $progress,
+				'sync_step'       => $step,
+				'sync_message'    => $message,
+				'sync_updated_at' => $now,
 			)
 		);
+
+		if ( self::STATUS_SYNCING === $status ) {
+			$was_syncing = self::STATUS_SYNCING === (string) ( $latest_source['sync_status'] ?? '' );
+
+			if ( ! $was_syncing || '' === (string) ( $next_source['sync_started_at'] ?? '' ) ) {
+				$next_source['sync_started_at'] = $now;
+			}
+
+			$next_source['sync_error_code'] = '';
+		}
 
 		$saved = $this->source_repository->saveSource( $post_id, $next_source );
 
@@ -684,8 +704,9 @@ final class SyncService {
 			'error',
 			$error->get_error_message(),
 			array(
-				'last_synced_at' => current_time( 'mysql', true ),
-				'sync_error'     => $error->get_error_message(),
+				'last_synced_at'  => current_time( 'mysql', true ),
+				'sync_error'      => $error->get_error_message(),
+				'sync_error_code' => $error->get_error_code(),
 			)
 		);
 

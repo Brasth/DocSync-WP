@@ -128,6 +128,9 @@ export type SourceRecord = {
   syncProgress: number;
   syncStep: string;
   syncMessage: string;
+  syncStartedAt: string;
+  syncUpdatedAt: string;
+  syncErrorCode: string;
 };
 
 export type SyncResult = {

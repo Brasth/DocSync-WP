@@ -36,6 +36,9 @@ final class SourceRepository {
 	public const META_SYNC_PROGRESS = '_docsync_wp_sync_progress';
 	public const META_SYNC_STEP     = '_docsync_wp_sync_step';
 	public const META_SYNC_MESSAGE  = '_docsync_wp_sync_message';
+	public const META_SYNC_STARTED  = '_docsync_wp_sync_started_at';
+	public const META_SYNC_UPDATED  = '_docsync_wp_sync_updated_at';
+	public const META_SYNC_ERR_CODE = '_docsync_wp_sync_error_code';
 
 	private const EXPORT_FORMAT_HTML_ZIP = 'html_zip';
 	private const STATUS_SYNCING         = 'syncing';
@@ -96,6 +99,9 @@ final class SourceRepository {
 			'sync_progress'        => $this->getSyncProgress( $post_id, $sync_status ),
 			'sync_step'            => $sync_step,
 			'sync_message'         => $this->getSyncMessage( $post_id, $sync_step ),
+			'sync_started_at'      => $this->getStringMeta( $post_id, self::META_SYNC_STARTED ),
+			'sync_updated_at'      => $this->getStringMeta( $post_id, self::META_SYNC_UPDATED ),
+			'sync_error_code'      => $this->getStringMeta( $post_id, self::META_SYNC_ERR_CODE ),
 		);
 	}
 
@@ -150,6 +156,9 @@ final class SourceRepository {
 		update_post_meta( $post_id, self::META_SYNC_PROGRESS, $this->sanitizeProgress( $source['sync_progress'] ?? 0 ) );
 		update_post_meta( $post_id, self::META_SYNC_STEP, isset( $source['sync_step'] ) ? sanitize_key( (string) $source['sync_step'] ) : 'linked' );
 		update_post_meta( $post_id, self::META_SYNC_MESSAGE, $this->sanitizeProgressMessage( $source['sync_message'] ?? __( 'Linked and ready to sync.', 'docsync-wp' ) ) );
+		update_post_meta( $post_id, self::META_SYNC_STARTED, isset( $source['sync_started_at'] ) ? sanitize_text_field( (string) $source['sync_started_at'] ) : '' );
+		update_post_meta( $post_id, self::META_SYNC_UPDATED, isset( $source['sync_updated_at'] ) ? sanitize_text_field( (string) $source['sync_updated_at'] ) : '' );
+		update_post_meta( $post_id, self::META_SYNC_ERR_CODE, isset( $source['sync_error_code'] ) ? sanitize_key( (string) $source['sync_error_code'] ) : '' );
 
 		return true;
 	}
@@ -588,6 +597,9 @@ final class SourceRepository {
 			'syncProgress'       => $source['sync_progress'],
 			'syncStep'           => $source['sync_step'],
 			'syncMessage'        => $source['sync_message'],
+			'syncStartedAt'      => $source['sync_started_at'],
+			'syncUpdatedAt'      => $source['sync_updated_at'],
+			'syncErrorCode'      => $source['sync_error_code'],
 		);
 	}
 
@@ -796,6 +808,9 @@ final class SourceRepository {
 			self::META_SYNC_PROGRESS,
 			self::META_SYNC_STEP,
 			self::META_SYNC_MESSAGE,
+			self::META_SYNC_STARTED,
+			self::META_SYNC_UPDATED,
+			self::META_SYNC_ERR_CODE,
 		);
 	}
 }

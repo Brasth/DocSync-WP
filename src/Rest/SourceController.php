@@ -30,6 +30,7 @@ final class SourceController {
 	private const SYNC_ALL_BATCH_SIZE  = 20;
 	private const SYNC_ALL_SCAN_LIMIT  = 100;
 	private const SYNC_ALL_MAX_SCANS   = 5;
+	private const SYNC_STALE_SECONDS   = 600;
 
 	/**
 	 * Source repository.
@@ -386,6 +387,12 @@ final class SourceController {
 			return $allowed;
 		}
 
+		$recovered = $this->recoverStaleSync( $post_id );
+
+		if ( is_wp_error( $recovered ) ) {
+			return $recovered;
+		}
+
 		$source = $this->source_repository->formatSource( $post_id );
 
 		if ( null === $source ) {
@@ -673,6 +680,62 @@ final class SourceController {
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Convert abandoned background sync state into an actionable error.
+	 *
+	 * @param int $post_id Post ID.
+	 * @return true|WP_Error
+	 */
+	private function recoverStaleSync( int $post_id ): true|WP_Error {
+		$source = $this->source_repository->getSource( $post_id );
+
+		if ( null === $source || SyncService::STATUS_SYNCING !== (string) $source['sync_status'] ) {
+			return true;
+		}
+
+		$owner_user_id = absint( $source['sync_owner_user_id'] ?? 0 );
+
+		if (
+			$this->sync_service->hasActiveSyncLock( $post_id )
+			|| ( $owner_user_id > 0 && SyncCron::hasScheduledSourceSync( $post_id, $owner_user_id ) )
+		) {
+			return true;
+		}
+
+		if ( ! $this->isStaleSyncHeartbeat( $source ) ) {
+			return true;
+		}
+
+		$message = __( 'Sync stopped before completion. Retry sync, and check WP-Cron or PHP error logs if it keeps happening.', 'docsync-wp' );
+		$result  = $this->sync_service->markSyncError(
+			$post_id,
+			new WP_Error( 'docsync_wp_sync_stalled', $message, array( 'status' => 500 ) )
+		);
+
+		return is_wp_error( $result ) ? $result : true;
+	}
+
+	/**
+	 * Whether the last sync heartbeat is old enough to treat as stalled.
+	 *
+	 * @param array<string,mixed> $source Source metadata.
+	 */
+	private function isStaleSyncHeartbeat( array $source ): bool {
+		$timestamp = (string) ( $source['sync_updated_at'] ?? $source['sync_started_at'] ?? '' );
+
+		if ( '' === $timestamp ) {
+			return true;
+		}
+
+		$updated_at = strtotime( $timestamp . ' UTC' );
+
+		if ( false === $updated_at ) {
+			return true;
+		}
+
+		return time() - $updated_at >= self::SYNC_STALE_SECONDS;
 	}
 
 	/**

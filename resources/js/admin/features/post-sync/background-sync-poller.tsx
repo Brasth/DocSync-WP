@@ -4,7 +4,8 @@ import { getSource, type SourceRecord } from '../../api';
 
 const terminalStatuses = new Set(['synced', 'skipped', 'error']);
 const fastPollingDurationMs = 30000;
-const timeoutMs = 600000;
+const longRunningMs = 600000;
+const slowPollingIntervalMs = 15000;
 
 type Props = {
   postId: number;
@@ -19,8 +20,14 @@ export const BackgroundSyncPoller = ({ postId, onError, onStatus, onTerminal, on
     let cancelled = false;
     let timer: number | undefined;
     const startedAt = Date.now();
+    let consecutiveFailures = 0;
+    let longRunningNotified = false;
 
-    const poll = async () => {
+    const schedulePoll = (delayMs: number) => {
+      timer = window.setTimeout(poll, delayMs);
+    };
+
+    async function poll() {
       try {
         const source = await getSource(postId);
 
@@ -28,6 +35,7 @@ export const BackgroundSyncPoller = ({ postId, onError, onStatus, onTerminal, on
           return;
         }
 
+        consecutiveFailures = 0;
         onStatus(source);
 
         if (terminalStatuses.has(source.syncStatus)) {
@@ -37,20 +45,28 @@ export const BackgroundSyncPoller = ({ postId, onError, onStatus, onTerminal, on
 
         const elapsed = Date.now() - startedAt;
 
-        if (elapsed >= timeoutMs) {
+        if (elapsed >= longRunningMs && !longRunningNotified) {
+          longRunningNotified = true;
           onTimeout();
+        }
+
+        schedulePoll(elapsed < fastPollingDurationMs ? 2000 : elapsed < longRunningMs ? 5000 : slowPollingIntervalMs);
+      } catch (caught) {
+        if (cancelled) {
           return;
         }
 
-        timer = window.setTimeout(poll, elapsed < fastPollingDurationMs ? 2000 : 5000);
-      } catch (caught) {
-        if (!cancelled) {
+        consecutiveFailures += 1;
+
+        if (consecutiveFailures >= 3 && consecutiveFailures % 3 === 0) {
           onError(caught instanceof Error ? caught.message : 'Could not check sync status.');
         }
-      }
-    };
 
-    timer = window.setTimeout(poll, 2000);
+        schedulePoll(Math.min(slowPollingIntervalMs, 3000 * consecutiveFailures));
+      }
+    }
+
+    schedulePoll(2000);
 
     return () => {
       cancelled = true;

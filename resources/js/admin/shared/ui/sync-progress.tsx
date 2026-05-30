@@ -5,6 +5,7 @@ type Props = {
   className?: string;
   message?: string;
   progress?: number;
+  updatedAt?: string;
 };
 
 export const shouldShowSyncProgress = <T extends { syncStatus?: string }>(source: T | null | undefined): source is T => {
@@ -19,10 +20,13 @@ export const normalizeSyncProgress = (progress: number | null | undefined): numb
   return Math.max(0, Math.min(100, Math.round(progress)));
 };
 
-export const SyncProgress = ({ className = '', message = '', progress }: Props): JSX.Element => {
+export const SyncProgress = ({ className = '', message = '', progress, updatedAt = '' }: Props): JSX.Element => {
   const percent = normalizeSyncProgress(progress);
   const label = sprintf(__('Sync progress: %d%%', 'docsync-wp'), percent);
-  const details = message ? `${percent}% - ${message}` : `${percent}%`;
+  const progressDetails = message ? `${percent}% - ${message}` : `${percent}%`;
+  const details = updatedAt
+    ? sprintf(__('%1$s. Last update: %2$s', 'docsync-wp'), progressDetails, updatedAt)
+    : progressDetails;
 
   return (
     <div className={`docsync-wp-sync-progress-wrap ${className}`.trim()}>

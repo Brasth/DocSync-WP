@@ -116,6 +116,7 @@ export const PostMetaBoxApp = ({ postId, postType, initialSource }: Props): JSX.
           <SyncProgress
             message={actions.source.syncMessage}
             progress={actions.source.syncProgress}
+            updatedAt={actions.source.syncUpdatedAt}
           />
         ) : null}
         {actions.source?.lastSyncedAt ? <p><strong>{__('Last sync:', 'docsync-wp')}</strong> {actions.source.lastSyncedAt}</p> : null}
