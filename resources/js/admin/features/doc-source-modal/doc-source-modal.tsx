@@ -7,6 +7,7 @@ import { AdminButton } from '../../shared/ui/admin-button';
 import { AdminNotice } from '../../shared/ui/admin-notice';
 import type { SyncResult } from '../../api';
 import { AdvancedSourcePanel } from './advanced-source-panel';
+import { SourceModeTabs } from './source-mode-tabs';
 import { type DocSourceTarget, useDocSourceModal } from './use-doc-source-modal';
 
 export type { DocSourceTarget } from './use-doc-source-modal';
@@ -20,6 +21,7 @@ type Props = {
 
 export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props): JSX.Element | null => {
   const modal = useDocSourceModal({ isOpen, target, onClose, onCompleted });
+  const uiMode = modal.uiMode;
 
   if (!isOpen || !target) {
     return null;
@@ -54,7 +56,15 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
           </div>
 
           <div className="docsync-wp-modal__body">
-            {!modal.advancedOpen ? (
+            <div className="docsync-wp-modal__mode-switch">
+              <SourceModeTabs
+                modes={['browse', 'url', 'file_id']}
+                onChange={modal.changeSourceMode}
+                sourceMode={uiMode}
+              />
+            </div>
+
+            {uiMode === 'browse' ? (
               <DriveBrowserPanel
                 busy={modal.busy}
                 onSelect={modal.selectDocument}
@@ -62,20 +72,11 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
               />
             ) : null}
 
-            <AdminButton
-              className="docsync-wp-advanced-toggle"
-              onClick={modal.toggleAdvanced}
-              variant="secondary"
-            >
-              {modal.advancedOpen ? __('Browse Google Docs', 'docsync-wp') : __('Paste URL or file ID', 'docsync-wp')}
-            </AdminButton>
-
-            {modal.advancedOpen ? (
+            {uiMode !== 'browse' ? (
               <AdvancedSourcePanel
                 documentInput={modal.documentInput}
                 onInputChange={modal.setDocumentInput}
-                onModeChange={modal.changeSourceMode}
-                sourceMode={modal.sourceMode}
+                sourceMode={uiMode}
               />
             ) : null}
 
@@ -94,7 +95,7 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
             <Dialog.Close asChild>
               <AdminButton disabled={modal.busy}>{__('Cancel', 'docsync-wp')}</AdminButton>
             </Dialog.Close>
-            {modal.advancedOpen ? (
+            {uiMode !== 'browse' ? (
               <AdminButton
                 disabled={modal.busy || modal.documentInput.trim() === ''}
                 onClick={modal.inspect}

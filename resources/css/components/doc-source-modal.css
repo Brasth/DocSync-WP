@@ -47,7 +47,7 @@
     flex: 1 1 auto;
     flex-direction: column;
     min-height: 0;
-    overflow: hidden;
+    overflow-y: auto;
   }
 
   .docsync-wp-modal__header h2,
@@ -64,13 +64,18 @@
     cursor: pointer;
     display: inline-flex;
     font-size: 18px;
-    height: 36px;
+    height: 44px;
     justify-content: center;
     line-height: 1;
     position: absolute;
-    right: 18px;
-    top: 18px;
-    width: 36px;
+    right: 16px;
+    top: 16px;
+    width: 44px;
+  }
+
+  .docsync-wp-modal__close span {
+    font-size: 28px;
+    transform: translateY(-1px);
   }
 
   .docsync-wp-modal__close:hover,
@@ -83,6 +88,10 @@
 
   .docsync-wp-modal__close:focus-visible {
     box-shadow: 0 0 0 2px #2271b1;
+  }
+
+  .docsync-wp-modal__mode-switch {
+    margin-bottom: 14px;
   }
 
   .docsync-wp-doc-preview {
@@ -113,6 +122,12 @@
     .docsync-wp-modal,
     .docsync-wp-modal-backdrop {
       top: var(--wp-admin--admin-bar--height, 46px);
+    }
+
+    .docsync-wp-modal__header,
+    .docsync-wp-modal__body,
+    .docsync-wp-modal__footer {
+      padding: 16px;
     }
   }
 }

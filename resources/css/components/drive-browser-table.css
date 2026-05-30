@@ -3,8 +3,9 @@
     border: 1px solid #d9e2e1;
     border-radius: 8px;
     flex: 1 1 auto;
+    height: clamp(360px, 52vh, 640px);
     margin-top: 14px;
-    min-height: 220px;
+    min-height: 360px;
     overflow-x: hidden;
     overflow-y: auto;
   }
