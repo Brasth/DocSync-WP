@@ -140,6 +140,12 @@ export type SyncResult = {
   source?: SourceRecord | null;
 };
 
+export type SourceContentResponse = {
+  postId: number;
+  content: string;
+  source: SourceRecord | null;
+};
+
 export type SourcesResponse = {
   sources: SourceRecord[];
   has_more?: boolean;

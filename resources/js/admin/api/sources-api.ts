@@ -1,7 +1,7 @@
 import { addQueryArgs } from '@wordpress/url';
 
 import { request } from './client';
-import type { SourceFilters, SourceRecord, SourcesResponse, SyncResult } from './types';
+import type { SourceContentResponse, SourceFilters, SourceRecord, SourcesResponse, SyncResult } from './types';
 
 export type SyncMode = 'inline' | 'background';
 
@@ -29,6 +29,10 @@ export const createSource = (payload: {
 
 export const getSource = (postId: number): Promise<SourceRecord> => {
   return request<SourceRecord>(`sources/${postId}`);
+};
+
+export const getSourceContent = (postId: number): Promise<SourceContentResponse> => {
+  return request<SourceContentResponse>(`sources/${postId}/content`);
 };
 
 export const syncSource = (postId: number, syncMode: SyncMode = 'background'): Promise<SyncResult> => {

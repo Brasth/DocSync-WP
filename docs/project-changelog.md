@@ -2,6 +2,28 @@
 
 Last updated: 2026-05-30
 
+## 2026-05-30 - Dense Doc Picker and Inline Editor Apply
+
+Status: completed in codebase
+
+Improved the Google Doc linking modal and post editor sync completion flow:
+
+- moved source mode tabs into the modal header to reclaim vertical space
+- replaced the separate current-folder background row with a compact breadcrumb beside the Drive browser title
+- tightened Drive browser panel, table header, row, and load sentinel spacing so more items fit onscreen
+- added a permission-checked source content REST response for editor screens
+- changed post editor sync completion to apply synced content through WordPress editor APIs instead of reloading clean editors
+- changed dirty-editor completion to offer `Apply synced content` instead of `Reload editor`, preserving explicit overwrite control
+
+Verification status:
+
+- `composer lint` passes
+- `pnpm lint` passes
+- `pnpm typecheck` passes
+- `pnpm build` passes
+- PHP syntax check passes for `src/Rest/SourceController.php`
+- `git diff --check` passes
+
 ## 2026-05-30 - Sync Completion UX and Progressive Large-Doc Drafts
 
 Status: completed in codebase

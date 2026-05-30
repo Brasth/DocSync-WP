@@ -31,10 +31,11 @@
   }
 
   .docsync-wp-modal__header {
-    align-items: flex-start;
+    align-items: center;
     background: #fff;
     border-bottom: 1px solid #dcdcde;
     display: flex;
+    gap: 16px;
     justify-content: space-between;
     padding-right: 66px;
     position: sticky;
@@ -53,6 +54,15 @@
   .docsync-wp-modal__header h2,
   .docsync-wp-modal__header p {
     margin: 0;
+  }
+
+  .docsync-wp-modal__title {
+    min-width: 0;
+  }
+
+  .docsync-wp-modal__title p {
+    color: #50575e;
+    margin-top: 4px;
   }
 
   .docsync-wp-modal__close {
@@ -91,7 +101,8 @@
   }
 
   .docsync-wp-modal__mode-switch {
-    margin-bottom: 14px;
+    flex: 0 0 auto;
+    margin-left: auto;
   }
 
   .docsync-wp-doc-preview {
@@ -128,6 +139,16 @@
     .docsync-wp-modal__body,
     .docsync-wp-modal__footer {
       padding: 16px;
+    }
+
+    .docsync-wp-modal__header {
+      align-items: flex-start;
+      flex-direction: column;
+      padding-right: 66px;
+    }
+
+    .docsync-wp-modal__mode-switch {
+      margin-left: 0;
     }
   }
 }

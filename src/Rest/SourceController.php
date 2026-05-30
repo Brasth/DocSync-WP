@@ -111,6 +111,16 @@ final class SourceController {
 
 		register_rest_route(
 			$rest_namespace,
+			'/sources/(?P<postId>[\d]+)/content',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'getSourceContent' ),
+				'permission_callback' => array( $this, 'canUseAuthenticatedRest' ),
+			)
+		);
+
+		register_rest_route(
+			$rest_namespace,
 			'/sources/sync-all',
 			array(
 				'methods'             => WP_REST_Server::CREATABLE,
@@ -387,6 +397,50 @@ final class SourceController {
 		}
 
 		return rest_ensure_response( $source );
+	}
+
+	/**
+	 * Get synced post content after post permission checks.
+	 *
+	 * @param WP_REST_Request $request REST request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function getSourceContent( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$post_id = absint( $request->get_param( 'postId' ) );
+		$user_id = get_current_user_id();
+		$allowed = $this->validateEditablePost( $post_id, $user_id );
+
+		if ( is_wp_error( $allowed ) ) {
+			return $allowed;
+		}
+
+		$source = $this->source_repository->formatSource( $post_id );
+
+		if ( null === $source ) {
+			return new WP_Error(
+				'docsync_wp_source_not_found',
+				__( 'This post is not linked to a Google Doc.', 'docsync-wp' ),
+				array( 'status' => 404 )
+			);
+		}
+
+		$post = get_post( $post_id );
+
+		if ( ! $post instanceof WP_Post ) {
+			return new WP_Error(
+				'docsync_wp_post_not_found',
+				__( 'DocSync WP could not find this post.', 'docsync-wp' ),
+				array( 'status' => 404 )
+			);
+		}
+
+		return rest_ensure_response(
+			array(
+				'postId'  => $post_id,
+				'content' => (string) $post->post_content,
+				'source'  => $source,
+			)
+		);
 	}
 
 	/**

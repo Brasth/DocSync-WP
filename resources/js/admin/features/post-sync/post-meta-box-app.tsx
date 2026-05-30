@@ -2,12 +2,13 @@ import { speak } from '@wordpress/a11y';
 import { createElement, Fragment, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
-import type { SourceRecord, SyncResult } from '../../api';
+import { getSourceContent, type SourceRecord, type SyncResult } from '../../api';
 import { DocSourceModal, type DocSourceTarget } from '../doc-source-modal/doc-source-modal';
 import { AdminButton } from '../../shared/ui/admin-button';
 import { AdminNotice } from '../../shared/ui/admin-notice';
 import { shouldShowSyncProgress, SyncProgress } from '../../shared/ui/sync-progress';
 import { BackgroundSyncPoller } from './background-sync-poller';
+import { applyPostContentToEditor, getEditorDirtyState } from './post-editor-content';
 import { sourceLabel } from './post-sync-dom';
 import { usePostSyncActions } from './use-post-sync-actions';
 
@@ -15,33 +16,6 @@ type Props = {
   postId: number;
   postType: string;
   initialSource: SourceRecord | null;
-};
-
-type EditorStore = {
-  isEditedPostDirty?: () => boolean;
-};
-
-declare global {
-  interface Window {
-    wp?: {
-      data?: {
-        select?: (store: string) => EditorStore | undefined;
-      };
-    };
-  }
-}
-
-const reloadEditor = (): void => {
-  window.location.reload();
-};
-
-const getEditorDirtyState = (): boolean | null => {
-  try {
-    const isDirty = window.wp?.data?.select?.('core/editor')?.isEditedPostDirty?.();
-    return typeof isDirty === 'boolean' ? isDirty : null;
-  } catch {
-    return null;
-  }
 };
 
 export const PostMetaBoxApp = ({ postId, postType, initialSource }: Props): JSX.Element => {
@@ -62,6 +36,32 @@ export const PostMetaBoxApp = ({ postId, postType, initialSource }: Props): JSX.
     });
   };
 
+  const applySyncedContent = async (source: SourceRecord) => {
+    actions.setNotice({ type: 'info', message: __('Applying synced Google Doc content.', 'docsync-wp') });
+
+    try {
+      const response = await getSourceContent(source.postId);
+      const applied = applyPostContentToEditor(response.content);
+
+      actions.setSource(response.source ?? source);
+
+      if (!applied) {
+        const message = __('Google Doc sync complete, but this editor cannot be updated without reopening the screen.', 'docsync-wp');
+        actions.setNotice({ type: 'warning', message });
+        speak(message, 'assertive');
+        return;
+      }
+
+      const message = __('Synced Google Doc content applied to the editor.', 'docsync-wp');
+      actions.setNotice({ type: 'success', message });
+      speak(message, 'polite');
+    } catch (caught) {
+      const message = caught instanceof Error ? caught.message : __('Could not load synced Google Doc content.', 'docsync-wp');
+      actions.setNotice({ type: 'error', message });
+      speak(message, 'assertive');
+    }
+  };
+
   const onTerminal = (source: SourceRecord) => {
     const isError = source.syncStatus === 'error';
     actions.setSource(source);
@@ -71,22 +71,19 @@ export const PostMetaBoxApp = ({ postId, postType, initialSource }: Props): JSX.
       const isDirty = getEditorDirtyState();
 
       if (isDirty === false) {
-        actions.setNotice({
-          type: 'success',
-          message: __('Google Doc sync complete. Reloading editor.', 'docsync-wp')
-        });
-        speak(message, 'polite');
-        window.setTimeout(reloadEditor, 500);
+        applySyncedContent(source).catch(() => undefined);
         return;
       }
 
       actions.setNotice({
-        actionLabel: __('Reload editor', 'docsync-wp'),
-        onAction: reloadEditor,
+        actionLabel: __('Apply synced content', 'docsync-wp'),
+        onAction: () => {
+          applySyncedContent(source).catch(() => undefined);
+        },
         type: isDirty ? 'warning' : 'success',
         message: isDirty
-          ? __('Google Doc sync complete. Save or discard editor changes, then reload to view synced content.', 'docsync-wp')
-          : message
+          ? __('Google Doc sync complete. Applying it will replace the current editor content.', 'docsync-wp')
+          : __('Google Doc sync complete. Apply the synced content to the editor.', 'docsync-wp')
       });
       speak(message, 'polite');
       return;
@@ -105,7 +102,7 @@ export const PostMetaBoxApp = ({ postId, postType, initialSource }: Props): JSX.
   };
 
   const onPollingTimeout = () => {
-    const message = __('Still syncing. Refresh this editor to check again later.', 'docsync-wp');
+    const message = __('Still syncing. Leave this editor open to keep checking progress.', 'docsync-wp');
 
     actions.setNotice({ type: 'warning', message });
     speak(message);

@@ -3,9 +3,9 @@
     border: 1px solid #d9e2e1;
     border-radius: 8px;
     flex: 1 1 auto;
-    height: clamp(360px, 52vh, 640px);
-    margin-top: 14px;
-    min-height: 360px;
+    height: clamp(420px, 60vh, 720px);
+    margin-top: 10px;
+    min-height: 420px;
     overflow-x: hidden;
     overflow-y: auto;
   }
@@ -22,7 +22,7 @@
     background: #f6f7f7;
     box-shadow: 0 1px 0 #dcdcde;
     line-height: 1.4;
-    padding: 10px 12px;
+    padding: 7px 10px;
     position: sticky;
     top: 0;
     z-index: 2;
@@ -34,7 +34,7 @@
   }
 
   .docsync-wp-drive-browser__table td {
-    padding: 11px 12px;
+    padding: 7px 10px;
     vertical-align: middle;
   }
 
@@ -112,8 +112,8 @@
 
   .docsync-wp-drive-browser__sentinel {
     color: #646970;
-    min-height: 34px;
-    padding: 9px 12px;
+    min-height: 28px;
+    padding: 6px 10px;
     text-align: center;
   }
 

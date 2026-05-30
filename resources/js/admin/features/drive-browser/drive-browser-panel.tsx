@@ -21,11 +21,15 @@ export const DriveBrowserPanel = ({ busy, selectedDocument, onSelect }: Props): 
   return (
     <div className="docsync-wp-drive-browser">
       <div className="docsync-wp-drive-browser__heading">
-        <div>
-          <strong>Choose from Google Drive</strong>
-          <p>Browse My Drive folders and Google Docs visible to your connected account.</p>
-        </div>
-        <span>Current: {browser.currentFolderName}</span>
+        <strong>Choose from Google Drive</strong>
+        <DriveBrowserBreadcrumbNav
+          breadcrumbs={browser.breadcrumbs}
+          busy={busy}
+          driveId={browser.driveId}
+          folderId={browser.folderId}
+          loading={browser.loading}
+          onOpen={browser.openBreadcrumb}
+        />
       </div>
 
       <DriveBrowserToolbar
@@ -44,15 +48,6 @@ export const DriveBrowserPanel = ({ busy, selectedDocument, onSelect }: Props): 
       />
 
       {browser.sharedDriveError ? <p className="docsync-wp-inline-warning">Shared drives are unavailable: {browser.sharedDriveError}</p> : null}
-
-      <DriveBrowserBreadcrumbNav
-        breadcrumbs={browser.breadcrumbs}
-        busy={busy}
-        driveId={browser.driveId}
-        folderId={browser.folderId}
-        loading={browser.loading}
-        onOpen={browser.openBreadcrumb}
-      />
 
       <AdminNotice className="inline" notice={browser.error ? { type: 'error', message: browser.error } : null} />
       {browser.loading && browser.items.length === 0 ? <LoadingState>Loading Drive items...</LoadingState> : null}

@@ -41,13 +41,20 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
           onPointerDownOutside={(event) => event.preventDefault()}
         >
           <div className="docsync-wp-modal__header">
-            <div>
+            <div className="docsync-wp-modal__title">
               <Dialog.Title asChild>
                 <h2>{__('Link Google Doc', 'docsync-wp')}</h2>
               </Dialog.Title>
               <Dialog.Description asChild>
                 <p>{__('Google Docs is source of truth. Sync overwrites WordPress content.', 'docsync-wp')}</p>
               </Dialog.Description>
+            </div>
+            <div className="docsync-wp-modal__mode-switch">
+              <SourceModeTabs
+                modes={['browse', 'url', 'file_id']}
+                onChange={modal.changeSourceMode}
+                sourceMode={uiMode}
+              />
             </div>
             <Dialog.Close asChild>
               <button aria-label={__('Close', 'docsync-wp')} className="docsync-wp-modal__close" type="button">
@@ -57,14 +64,6 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
           </div>
 
           <div className="docsync-wp-modal__body">
-            <div className="docsync-wp-modal__mode-switch">
-              <SourceModeTabs
-                modes={['browse', 'url', 'file_id']}
-                onChange={modal.changeSourceMode}
-                sourceMode={uiMode}
-              />
-            </div>
-
             {uiMode === 'browse' ? (
               <DriveBrowserPanel
                 busy={modal.busy}
