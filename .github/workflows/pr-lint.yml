@@ -7,6 +7,9 @@ on:
       - synchronize
       - reopened
       - ready_for_review
+  push:
+    branches-ignore:
+      - main
 
 jobs:
   php-lint:
@@ -26,6 +29,21 @@ jobs:
 
       - name: Install PHP dependencies
         run: composer install --no-interaction --prefer-dist
+
+      - name: Validate Composer configuration
+        run: composer validate --no-check-publish
+
+      - name: Verify PHPCS standards
+        run: |
+          standards="$(vendor/bin/phpcs -i)"
+          echo "$standards"
+
+          for standard in WordPress WordPress-Core WordPress-Docs WordPress-Extra PHPCompatibilityWP; do
+            if ! grep -Fq "$standard" <<< "$standards"; then
+              echo "Missing PHPCS standard: $standard"
+              exit 1
+            fi
+          done
 
       - name: Run PHPCS
         run: composer lint

@@ -1,6 +1,27 @@
 # Project Changelog
 
-Last updated: 2026-05-21
+Last updated: 2026-05-30
+
+## 2026-05-30 - WPCS Setup Validation
+
+Status: completed in codebase
+
+Validated and tightened the WordPress coding standards setup:
+
+- confirmed Composer installs project-local PHPCS, WPCS, and PHPCompatibilityWP dependencies
+- confirmed `vendor/bin/phpcs -i` discovers WordPress and PHPCompatibilityWP standards
+- moved fixed PHP DOM extension mixed-case property names into a ruleset-level allow-list
+- applied safe PHPCBF formatting fixes for array layout and assignment alignment
+- added GitHub runner checks for Composer validation and required PHPCS standards discovery
+- routed branch pushes to lint checks and kept snapshot packaging on `main`
+- documented the reproducible WPCS workflow in README and code standards docs
+
+Verification status:
+
+- `vendor/bin/phpcs -i` passes and lists required standards
+- `composer validate --no-check-publish` passes
+- `composer lint` passes
+- `pnpm lint` passes
 
 ## 2026-05-21 - Admin UI Fixes and Gutenberg Sync Content
 
