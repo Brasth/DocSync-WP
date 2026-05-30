@@ -126,7 +126,14 @@ final class HtmlBlockMarkupSanitizer {
 	 * @return array<string,array>
 	 */
 	private function listTags(): array {
-		return array_merge( $this->inlineTags(), array( 'li' => array(), 'ol' => array(), 'ul' => array() ) );
+		return array_merge(
+			$this->inlineTags(),
+			array(
+				'li' => array(),
+				'ol' => array(),
+				'ul' => array(),
+			)
+		);
 	}
 
 	/**
@@ -135,7 +142,13 @@ final class HtmlBlockMarkupSanitizer {
 	 * @return array<string,array>
 	 */
 	private function quoteTags(): array {
-		return array_merge( $this->inlineTags(), array( 'cite' => array(), 'p' => array() ) );
+		return array_merge(
+			$this->inlineTags(),
+			array(
+				'cite' => array(),
+				'p'    => array(),
+			)
+		);
 	}
 
 	/**
@@ -148,9 +161,15 @@ final class HtmlBlockMarkupSanitizer {
 			$this->inlineTags(),
 			array(
 				'tbody' => array(),
-				'td'    => array( 'colspan' => true, 'rowspan' => true ),
+				'td'    => array(
+					'colspan' => true,
+					'rowspan' => true,
+				),
 				'tfoot' => array(),
-				'th'    => array( 'colspan' => true, 'rowspan' => true ),
+				'th'    => array(
+					'colspan' => true,
+					'rowspan' => true,
+				),
 				'thead' => array(),
 				'tr'    => array(),
 			)

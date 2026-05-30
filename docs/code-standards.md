@@ -1,6 +1,6 @@
 # Code Standards
 
-Last updated: 2026-05-21
+Last updated: 2026-05-30
 
 ## Purpose
 
@@ -77,18 +77,18 @@ Rules:
 
 ## Verification Standards
 
-Current verification commands listed in the repo README:
+Use the project-local Composer and pnpm toolchains:
 
-- `composer validate`
-- `composer dump-autoload -o`
-- `vendor/bin/phpcs`
+- `composer install`
+- `vendor/bin/phpcs -i`
+- `composer validate --no-check-publish`
+- `composer lint`
+- `pnpm install --frozen-lockfile`
 - `pnpm lint`
 - `pnpm typecheck`
 - `pnpm build`
 
-Local note:
-
-- PHP and Composer are missing in this checkout, so the PHP verification path cannot run here until the toolchain is installed.
+Run `composer lint:fix` only for safe automatic PHPCS fixes. Confirm `vendor/bin/phpcs -i` includes `WordPress`, `WordPress-Core`, `WordPress-Docs`, `WordPress-Extra`, and `PHPCompatibilityWP` after dependency installation.
 
 ## File Organization
 

@@ -246,8 +246,8 @@ final class DriveClient {
 	 */
 	public function listGoogleDocs( int $user_id, string $search = '', string $page_token = '', int $page_size = self::DEFAULT_LIST_PAGE_SIZE ): array|WP_Error {
 		$page_size = min( self::MAX_LIST_PAGE_SIZE, max( 1, $page_size ) );
-		$query  = "mimeType = '" . self::GOOGLE_DOC_MIME_TYPE . "' and trashed = false";
-		$search = trim( $search );
+		$query     = "mimeType = '" . self::GOOGLE_DOC_MIME_TYPE . "' and trashed = false";
+		$search    = trim( $search );
 
 		if ( '' !== $search ) {
 			$query .= " and name contains '" . $this->escapeDriveQueryValue( $search ) . "'";

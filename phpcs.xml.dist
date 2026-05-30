@@ -23,6 +23,18 @@
 	</rule>
 	<rule ref="PHPCompatibilityWP"/>
 
+	<!-- PHP DOM extension properties use fixed mixed-case API names. -->
+	<rule ref="WordPress.NamingConventions.ValidVariableName">
+		<properties>
+			<property name="allowed_custom_properties" type="array">
+				<element value="childNodes"/>
+				<element value="ownerDocument"/>
+				<element value="tagName"/>
+				<element value="textContent"/>
+			</property>
+		</properties>
+	</rule>
+
 	<!-- Sync locks require compare-and-swap SQL against the options table to avoid duplicate imports. -->
 	<rule ref="WordPress.DB.DirectDatabaseQuery.DirectQuery">
 		<exclude-pattern>src/Sync/SyncLock.php</exclude-pattern>

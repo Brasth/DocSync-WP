@@ -90,13 +90,17 @@ DocSync WP uses WP-Cron for scheduled sync. WP-Cron runs only when WordPress rec
 ## Verification
 
 ```sh
-composer validate
-composer dump-autoload -o
-vendor/bin/phpcs
+composer install
+vendor/bin/phpcs -i
+composer validate --no-check-publish
+composer lint
+pnpm install --frozen-lockfile
 pnpm lint
 pnpm typecheck
 pnpm build
 ```
+
+Use `composer lint:fix` only for safe automatic PHPCS fixes. Keep unavoidable WordPress coding standards exceptions narrow and centralized in `phpcs.xml.dist`.
 
 ## Release Packaging
 
