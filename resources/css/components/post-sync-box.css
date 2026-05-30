@@ -16,6 +16,115 @@
     color: #b42318;
   }
 
+  .docsync-wp-toast-stack {
+    bottom: 24px;
+    display: grid;
+    gap: 10px;
+    max-width: min(420px, calc(100vw - 32px));
+    position: fixed;
+    right: 24px;
+    z-index: 100002;
+  }
+
+  .docsync-wp-toast {
+    align-items: flex-start;
+    background: #fff;
+    border-left: 4px solid #2271b1;
+    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.18);
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    min-width: 300px;
+    padding: 12px;
+  }
+
+  .docsync-wp-toast.is-success {
+    border-left-color: #00a32a;
+  }
+
+  .docsync-wp-toast.is-error {
+    border-left-color: #d63638;
+  }
+
+  .docsync-wp-toast.is-warning {
+    border-left-color: #dba617;
+  }
+
+  .docsync-wp-toast__content {
+    min-width: 0;
+  }
+
+  .docsync-wp-toast__content strong,
+  .docsync-wp-toast__content p {
+    margin: 0;
+  }
+
+  .docsync-wp-toast__content p {
+    color: #50575e;
+    margin-top: 4px;
+    overflow-wrap: anywhere;
+  }
+
+  .docsync-wp-toast__actions {
+    align-items: center;
+    display: flex;
+    flex: 0 0 auto;
+    gap: 6px;
+  }
+
+  .docsync-wp-toast__dismiss {
+    align-items: center;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: #646970;
+    cursor: pointer;
+    display: inline-flex;
+    height: 28px;
+    justify-content: center;
+    line-height: 1;
+    width: 28px;
+  }
+
+  .docsync-wp-toast__dismiss:hover,
+  .docsync-wp-toast__dismiss:focus-visible {
+    background: #f6f7f7;
+    border-color: #8c8f94;
+    color: #1d2327;
+    outline: none;
+  }
+
+  .docsync-wp-toast__progress {
+    background: #dcdcde;
+    display: block;
+    height: 3px;
+    margin-top: 10px;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+  }
+
+  .docsync-wp-toast__progress::before {
+    animation: docsync-wp-toast-progress 1.2s ease-in-out infinite;
+    background: #2271b1;
+    content: "";
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 38%;
+  }
+
+  @keyframes docsync-wp-toast-progress {
+    0% {
+      transform: translateX(-110%);
+    }
+
+    100% {
+      transform: translateX(290%);
+    }
+  }
+
   .docsync-wp-row-action[aria-busy="true"] {
     color: #646970;
     cursor: progress;
@@ -42,5 +151,17 @@
     min-height: 34px;
     white-space: normal;
     width: 100%;
+  }
+
+  @media (max-width: 782px) {
+    .docsync-wp-toast-stack {
+      bottom: 16px;
+      left: 16px;
+      right: 16px;
+    }
+
+    .docsync-wp-toast {
+      min-width: 0;
+    }
   }
 }

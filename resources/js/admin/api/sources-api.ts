@@ -1,7 +1,9 @@
 import { addQueryArgs } from '@wordpress/url';
 
 import { request } from './client';
-import type { SourceFilters, SourcesResponse, SyncResult } from './types';
+import type { SourceFilters, SourceRecord, SourcesResponse, SyncResult } from './types';
+
+export type SyncMode = 'inline' | 'background';
 
 export const listSources = (filters: SourceFilters = {}): Promise<SourcesResponse> => {
   return request<SourcesResponse>(addQueryArgs('sources', {
@@ -17,6 +19,7 @@ export const createSource = (payload: {
   fileId: string;
   target: { mode: 'existing'; postId: number } | { mode: 'new'; postType: string };
   exportFormat?: string;
+  syncMode?: SyncMode;
 }): Promise<SyncResult> => {
   return request<SyncResult>('sources', {
     method: 'POST',
@@ -24,8 +27,15 @@ export const createSource = (payload: {
   });
 };
 
-export const syncSource = (postId: number): Promise<SyncResult> => {
-  return request<SyncResult>(`sources/${postId}/sync`, { method: 'POST' });
+export const getSource = (postId: number): Promise<SourceRecord> => {
+  return request<SourceRecord>(`sources/${postId}`);
+};
+
+export const syncSource = (postId: number, syncMode: SyncMode = 'inline'): Promise<SyncResult> => {
+  return request<SyncResult>(`sources/${postId}/sync`, {
+    method: 'POST',
+    data: { syncMode }
+  });
 };
 
 export const syncAllSources = (): Promise<{ results: SyncResult[]; count: number }> => {

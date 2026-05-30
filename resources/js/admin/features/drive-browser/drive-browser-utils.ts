@@ -6,7 +6,7 @@ export type DriveBrowserBreadcrumb = {
 };
 
 export const rootDriveBreadcrumb: DriveBrowserBreadcrumb = { fileId: 'root', name: 'My Drive' };
-export const driveBrowserPageSize = 20;
+export const driveBrowserPageSize = 50;
 
 export const formatDriveModifiedTime = (value: string): string => {
   if (!value) {

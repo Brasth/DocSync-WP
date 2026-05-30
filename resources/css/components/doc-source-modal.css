@@ -1,25 +1,26 @@
 @layer components {
   .docsync-wp-modal-backdrop {
     background: rgba(10, 18, 25, 0.58);
-    inset: 0;
+    bottom: 0;
+    left: 0;
     position: fixed;
+    right: 0;
+    top: var(--wp-admin--admin-bar--height, 32px);
     z-index: 100000;
   }
 
   .docsync-wp-modal {
     background: #fff;
-    border-radius: 14px;
-    box-shadow: 0 28px 90px rgba(0, 0, 0, 0.28);
+    bottom: 0;
+    box-shadow: 0 -1px 32px rgba(0, 0, 0, 0.24);
     display: flex;
     flex-direction: column;
-    left: 50%;
-    max-height: calc(100vh - 48px);
-    max-width: 960px;
+    left: 0;
     overflow: hidden;
     position: fixed;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: min(calc(100vw - 48px), 960px);
+    right: 0;
+    top: var(--wp-admin--admin-bar--height, 32px);
+    width: 100vw;
     z-index: 100001;
   }
 
@@ -36,11 +37,17 @@
     display: flex;
     justify-content: space-between;
     padding-right: 66px;
-    position: relative;
+    position: sticky;
+    top: 0;
+    z-index: 3;
   }
 
   .docsync-wp-modal__body {
-    overflow: auto;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
   }
 
   .docsync-wp-modal__header h2,
@@ -93,6 +100,19 @@
 
   .docsync-wp-modal__footer {
     background: #f6f7f7;
+    border-top: 1px solid #dcdcde;
+    bottom: 0;
+    display: flex;
+    gap: 8px;
     justify-content: flex-end;
+    position: sticky;
+    z-index: 3;
+  }
+
+  @media (max-width: 782px) {
+    .docsync-wp-modal,
+    .docsync-wp-modal-backdrop {
+      top: var(--wp-admin--admin-bar--height, 46px);
+    }
   }
 }

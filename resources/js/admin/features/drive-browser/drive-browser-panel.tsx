@@ -1,7 +1,6 @@
 import { createElement } from '@wordpress/element';
 
 import type { DocumentMetadata } from '../../api';
-import { AdminButton } from '../../shared/ui/admin-button';
 import { AdminNotice } from '../../shared/ui/admin-notice';
 import { EmptyState } from '../../shared/ui/empty-state';
 import { LoadingState } from '../../shared/ui/loading-state';
@@ -66,9 +65,11 @@ export const DriveBrowserPanel = ({ busy, selectedDocument, onSelect }: Props): 
       {browser.items.length > 0 ? (
         <DriveBrowserTable
           busy={busy}
+          hasMore={Boolean(browser.nextPageToken)}
           items={browser.items}
           loading={browser.loading}
           onActivate={browser.activateItem}
+          onLoadMore={browser.loadNextPage}
           selectedDocument={selectedDocument}
         />
       ) : null}
@@ -77,16 +78,6 @@ export const DriveBrowserPanel = ({ busy, selectedDocument, onSelect }: Props): 
         <p className="docsync-wp-inline-warning">Google could not search every Drive item. Narrow the search if the Doc is missing.</p>
       ) : null}
 
-      {browser.nextPageToken ? (
-        <div className="docsync-wp-drive-browser__more">
-          <AdminButton
-            disabled={busy || browser.loading}
-            onClick={() => browser.loadItems(browser.folderId, browser.activeSearch, browser.nextPageToken)}
-          >
-            {browser.loading ? 'Loading...' : 'Load more'}
-          </AdminButton>
-        </div>
-      ) : null}
     </div>
   );
 };

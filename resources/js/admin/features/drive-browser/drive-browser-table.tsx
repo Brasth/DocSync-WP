@@ -1,4 +1,4 @@
-import { createElement } from '@wordpress/element';
+import { createElement, useEffect, useRef } from '@wordpress/element';
 
 import type { DocumentMetadata, DriveItemSummary } from '../../api';
 import { AdminButton } from '../../shared/ui/admin-button';
@@ -9,12 +9,39 @@ type Props = {
   items: DriveItemSummary[];
   loading: boolean;
   selectedDocument: DocumentMetadata | null;
+  hasMore: boolean;
   onActivate: (item: DriveItemSummary) => Promise<void>;
+  onLoadMore: () => Promise<void>;
 };
 
-export const DriveBrowserTable = ({ busy, items, loading, selectedDocument, onActivate }: Props): JSX.Element => {
+export const DriveBrowserTable = ({ busy, items, loading, selectedDocument, hasMore, onActivate, onLoadMore }: Props): JSX.Element => {
+  const scrollRoot = useRef<HTMLDivElement | null>(null);
+  const sentinel = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const root = scrollRoot.current;
+    const target = sentinel.current;
+
+    if (!root || !target || !hasMore || busy || loading) {
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        onLoadMore().catch(() => undefined);
+      }
+    }, {
+      root,
+      rootMargin: '160px 0px'
+    });
+
+    observer.observe(target);
+
+    return () => observer.disconnect();
+  }, [busy, hasMore, loading, onLoadMore]);
+
   return (
-    <div className="docsync-wp-drive-browser__table-wrap">
+    <div className="docsync-wp-drive-browser__table-wrap" ref={scrollRoot}>
       <table className="widefat striped docsync-wp-drive-browser__table">
         <thead>
           <tr>
@@ -63,6 +90,15 @@ export const DriveBrowserTable = ({ busy, items, loading, selectedDocument, onAc
           })}
         </tbody>
       </table>
+      {hasMore ? (
+        <div
+          aria-hidden={!loading}
+          className="docsync-wp-drive-browser__sentinel"
+          ref={sentinel}
+        >
+          {loading ? 'Loading more...' : ''}
+        </div>
+      ) : null}
     </div>
   );
 };

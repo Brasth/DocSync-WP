@@ -12,6 +12,7 @@ namespace DocSyncWP\Cron;
 use DocSyncWP\Settings\SettingsRepository;
 use DocSyncWP\Sync\SourceRepository;
 use DocSyncWP\Sync\SyncService;
+use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -19,7 +20,8 @@ defined( 'ABSPATH' ) || exit;
  * Registers and executes the DocSync WP cron job.
  */
 final class SyncCron {
-	public const HOOK = 'docsync_wp_sync_sources';
+	public const HOOK        = 'docsync_wp_sync_sources';
+	public const SOURCE_HOOK = 'docsync_wp_sync_source';
 
 	private const BATCH_SIZE = 20;
 
@@ -64,6 +66,7 @@ final class SyncCron {
 		add_action( 'init', array( $this, 'syncSchedule' ) );
 		add_action( 'update_option_docsync_wp_settings', array( $this, 'syncSchedule' ), 10, 0 );
 		add_action( self::HOOK, array( $this, 'run' ) );
+		add_action( self::SOURCE_HOOK, array( $this, 'runSingle' ), 10, 2 );
 	}
 
 	/**
@@ -73,14 +76,14 @@ final class SyncCron {
 		$interval = $this->getInterval();
 
 		if ( 'off' === $interval ) {
-			self::unschedule();
+			self::unscheduleRecurring();
 			return;
 		}
 
 		$current_schedule = wp_get_schedule( self::HOOK );
 
 		if ( false !== $current_schedule && $current_schedule !== $interval ) {
-			self::unschedule();
+			self::unscheduleRecurring();
 		}
 
 		if ( false === wp_next_scheduled( self::HOOK ) ) {
@@ -112,9 +115,90 @@ final class SyncCron {
 	}
 
 	/**
+	 * Schedule one source sync as soon as WP-Cron can run.
+	 *
+	 * @param int $post_id Post ID.
+	 * @param int $user_id User ID whose Google token should run the sync.
+	 * @return true|WP_Error
+	 */
+	public static function scheduleSourceSync( int $post_id, int $user_id ): true|WP_Error {
+		$post_id = absint( $post_id );
+		$user_id = absint( $user_id );
+
+		if ( $post_id <= 0 || $user_id <= 0 ) {
+			return new WP_Error(
+				'docsync_wp_invalid_background_sync',
+				__( 'DocSync WP could not queue this sync request.', 'docsync-wp' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		$args = array( $post_id, $user_id );
+
+		if ( false === wp_next_scheduled( self::SOURCE_HOOK, $args ) ) {
+			$scheduled = wp_schedule_single_event( time(), self::SOURCE_HOOK, $args, true );
+
+			if ( is_wp_error( $scheduled ) ) {
+				return $scheduled;
+			}
+
+			if ( false === $scheduled ) {
+				return new WP_Error(
+					'docsync_wp_background_sync_not_scheduled',
+					__( 'DocSync WP could not queue this sync request.', 'docsync-wp' ),
+					array( 'status' => 500 )
+				);
+			}
+		}
+
+		if ( function_exists( 'spawn_cron' ) ) {
+			spawn_cron();
+		}
+
+		return true;
+	}
+
+	/**
+	 * Run a queued source sync.
+	 *
+	 * @param int $post_id Post ID.
+	 * @param int $user_id User ID whose Google token should run the sync.
+	 */
+	public function runSingle( int $post_id, int $user_id ): void {
+		$post_id = absint( $post_id );
+		$user_id = absint( $user_id );
+
+		if ( $post_id <= 0 || $user_id <= 0 ) {
+			return;
+		}
+
+		if ( ! $this->source_repository->userCanSyncPost( $post_id, $user_id ) ) {
+			$this->sync_service->markSyncError(
+				$post_id,
+				__( 'DocSync WP could not run this background sync because permission changed.', 'docsync-wp' )
+			);
+			return;
+		}
+
+		$result = $this->sync_service->syncPost( $post_id, $user_id );
+
+		if ( is_wp_error( $result ) && 'docsync_wp_sync_locked' !== $result->get_error_code() ) {
+			$this->sync_service->markSyncError( $post_id, $result );
+		}
+	}
+
+	/**
 	 * Unschedule all DocSync cron events.
 	 */
 	public static function unschedule(): void {
+		self::unscheduleRecurring();
+		wp_clear_scheduled_hook( self::SOURCE_HOOK );
+	}
+
+	/**
+	 * Unschedule recurring source sync events.
+	 */
+	private static function unscheduleRecurring(): void {
 		$timestamp = wp_next_scheduled( self::HOOK );
 
 		while ( false !== $timestamp ) {

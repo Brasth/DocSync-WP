@@ -1,10 +1,10 @@
 # Development Roadmap
 
-Last updated: 2026-05-21
+Last updated: 2026-05-30
 
 ## Status
 
-The Google Docs Sync Admin Actions implementation is complete in code. The self-managed Google onboarding, Drive-like My Drive/shared drive document browser, dedicated Sources submenu, page target support, source filters, HTML ZIP media import, Gutenberg block conversion, admin frontend structure refactor, Drive modal polish, and OAuth JSON import are also complete in code.
+The Google Docs Sync Admin Actions implementation is complete in code. The self-managed Google onboarding, Drive-like My Drive/shared drive document browser, dedicated Sources submenu, page target support, source filters, HTML ZIP media import, Gutenberg block conversion, admin frontend structure refactor, Drive modal polish, OAuth JSON import, fullscreen picker, infinite Drive loading, and non-blocking background draft sync are also complete in code.
 
 ## Phase Summary
 
@@ -23,6 +23,7 @@ The Google Docs Sync Admin Actions implementation is complete in code. The self-
 | 11 | Radix and WordPress-Native Frontend Refactor | Complete in code, local PHP validation blocked |
 | 12 | Drive Modal Polish and OAuth JSON Import | Complete in code, local PHP validation blocked |
 | 13 | Admin UI Fixes and Gutenberg Sync Content | Complete in code, local PHP validation blocked |
+| 14 | Non-Blocking Picker and Background Sync Feedback | Complete in code |
 
 ## What Is Shipped
 
@@ -39,6 +40,10 @@ The Google Docs Sync Admin Actions implementation is complete in code. The self-
 - browser-only Google OAuth client JSON import that fills setup credentials and warns on redirect URI mismatch
 - synced Google Docs content is saved as Gutenberg block markup for common document structures, with `core/html` fallback for unsupported nodes
 - post list-table actions update visible source status after link/sync and auto-refresh after new draft creation
+- post list-table draft creation queues background sync, closes the picker quickly, polls source status, shows admin toasts, and refreshes visible list-table content when the sync reaches a terminal state
+- Drive browser pagination now uses infinite loading with 50-result pages
+- source REST endpoints support optional `syncMode` while preserving inline behavior by default
+- single-source background sync uses WordPress native single-event cron and existing per-post sync locking
 - entry-specific CSS files with shared and component partials for admin setup, Sources, and post sync UI maintenance
 - HTML ZIP import that sideloads exported images into Media Library and rewrites content URLs
 - attachment dedupe by Google file ID, asset path, and image hash

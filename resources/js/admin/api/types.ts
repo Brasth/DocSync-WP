@@ -112,15 +112,16 @@ export type SourceRecord = {
   lastSyncedAt: string;
   syncOwnerUserId: number;
   exportFormat: string;
-  syncStatus: string;
+  syncStatus: 'linked' | 'syncing' | 'synced' | 'skipped' | 'error' | string;
   syncError: string;
 };
 
 export type SyncResult = {
   postId: number;
-  status: string;
+  status: 'queued' | 'linked' | 'syncing' | 'synced' | 'skipped' | 'error' | string;
   changed: boolean;
   created?: boolean;
+  queued?: boolean;
   source?: SourceRecord | null;
 };
 

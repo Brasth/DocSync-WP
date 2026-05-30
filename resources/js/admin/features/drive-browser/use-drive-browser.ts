@@ -1,5 +1,5 @@
 import { speak } from '@wordpress/a11y';
-import { useEffect, useState } from '@wordpress/element';
+import { useEffect, useRef, useState } from '@wordpress/element';
 
 import {
   listDriveItems,
@@ -18,7 +18,6 @@ import {
 type Args = {
   onSelect: (document: DocumentMetadata | null) => void;
 };
-
 export const useDriveBrowser = ({ onSelect }: Args) => {
   const [driveId, setDriveId] = useState('');
   const [folderId, setFolderId] = useState(rootDriveBreadcrumb.fileId);
@@ -33,7 +32,9 @@ export const useDriveBrowser = ({ onSelect }: Args) => {
   const [loading, setLoading] = useState(false);
   const [sharedDriveError, setSharedDriveError] = useState('');
   const [error, setError] = useState('');
-
+  const loadedPageTokens = useRef<Set<string>>(new Set());
+  const loadingToken = useRef('');
+  const requestSequence = useRef(0);
   const loadSharedDriveOptions = async () => {
     setLoadingSharedDrives(true);
     setSharedDriveError('');
@@ -47,17 +48,25 @@ export const useDriveBrowser = ({ onSelect }: Args) => {
       setLoadingSharedDrives(false);
     }
   };
-
   const loadItems = async (nextFolderId: string, search: string, pageToken = '', nextDriveId = driveId) => {
+    const tokenKey = `${nextDriveId || 'my-drive'}:${nextFolderId}:${search}:${pageToken}`;
+
+    if (pageToken && (loadingToken.current === tokenKey || loadedPageTokens.current.has(tokenKey))) {
+      return;
+    }
+    const requestId = requestSequence.current + 1;
+
+    requestSequence.current = requestId;
+    loadingToken.current = tokenKey;
     setLoading(true);
     setError('');
 
     if (!pageToken) {
+      loadedPageTokens.current = new Set();
       setItems([]);
       setNextPageToken('');
       setIncompleteSearch(false);
     }
-
     try {
       const response = await listDriveItems({
         driveId: nextDriveId || undefined,
@@ -67,43 +76,57 @@ export const useDriveBrowser = ({ onSelect }: Args) => {
         pageSize: driveBrowserPageSize
       });
 
+      if (requestId !== requestSequence.current) {
+        return;
+      }
+      if (pageToken) {
+        loadedPageTokens.current.add(tokenKey);
+      }
       setDriveId(response.driveId || nextDriveId);
       setFolderId(response.folderId || nextFolderId);
       setItems((current) => pageToken ? [...current, ...response.items] : response.items);
       setNextPageToken(response.nextPageToken ?? '');
       setIncompleteSearch(Boolean(response.incompleteSearch));
     } catch (caught) {
+      if (requestId !== requestSequence.current) {
+        return;
+      }
       const message = caught instanceof Error ? caught.message : 'Could not load Google Drive items.';
       setError(message);
       speak(message, 'assertive');
     } finally {
-      setLoading(false);
+      if (requestId === requestSequence.current) {
+        loadingToken.current = '';
+        setLoading(false);
+      }
     }
   };
-
   useEffect(() => {
     loadSharedDriveOptions().catch(() => undefined);
     loadItems(rootDriveBreadcrumb.fileId, '').catch(() => undefined);
   }, []);
-
   const submitSearch = async () => {
     const search = searchInput.trim();
     setActiveSearch(search);
     onSelect(null);
     await loadItems(folderId, search);
   };
-
   const clearSearch = async () => {
     setSearchInput('');
     setActiveSearch('');
     onSelect(null);
     await loadItems(folderId, '');
   };
-
   const refreshFolder = async () => {
     await loadItems(folderId, activeSearch);
   };
+  const loadNextPage = async () => {
+    if (!nextPageToken) {
+      return;
+    }
 
+    await loadItems(folderId, activeSearch, nextPageToken);
+  };
   const openFolder = async (item: DriveItemSummary) => {
     setBreadcrumbs((current) => [...current, { fileId: item.fileId, name: item.name }]);
     setSearchInput('');
@@ -111,7 +134,6 @@ export const useDriveBrowser = ({ onSelect }: Args) => {
     onSelect(null);
     await loadItems(item.fileId, '');
   };
-
   const changeDriveLocation = async (nextDriveId: string) => {
     const sharedDrive = sharedDrives.find((drive) => drive.driveId === nextDriveId) ?? null;
     const rootFolderId = sharedDrive?.driveId ?? rootDriveBreadcrumb.fileId;
@@ -123,7 +145,6 @@ export const useDriveBrowser = ({ onSelect }: Args) => {
     onSelect(null);
     await loadItems(rootFolderId, '', '', nextDriveId);
   };
-
   const openBreadcrumb = async (breadcrumb: DriveBrowserBreadcrumb, index: number) => {
     if (breadcrumb.fileId === folderId) {
       return;
@@ -135,7 +156,6 @@ export const useDriveBrowser = ({ onSelect }: Args) => {
     onSelect(null);
     await loadItems(breadcrumb.fileId, '');
   };
-
   const activateItem = async (item: DriveItemSummary) => {
     if (item.itemType === 'folder') {
       await openFolder(item);
@@ -145,7 +165,6 @@ export const useDriveBrowser = ({ onSelect }: Args) => {
     onSelect(driveItemToDocumentMetadata(item));
     setError('');
   };
-
   return {
     activeSearch,
     activateItem,
@@ -160,7 +179,7 @@ export const useDriveBrowser = ({ onSelect }: Args) => {
     items,
     loading,
     loadingSharedDrives,
-    loadItems,
+    loadNextPage,
     nextPageToken,
     openBreadcrumb,
     refreshFolder,
