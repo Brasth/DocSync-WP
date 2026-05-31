@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name:       DocSync WP
- * Description:       Document synchronization tools for WordPress.
- * Version:           0.1.0
+ * Description:       Sync Google Docs into WordPress posts and pages with self-managed Google OAuth.
+ * Version:           1.0.0
  * Requires at least: 6.4
  * Requires PHP:      8.1
- * Author:            DocSync WP Contributors
+ * Author:            Brasth
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       docsync-wp
@@ -18,7 +18,7 @@ declare(strict_types=1);
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DOCSYNC_WP_VERSION', '0.1.0' );
+define( 'DOCSYNC_WP_VERSION', '1.0.0' );
 define( 'DOCSYNC_WP_MINIMUM_PHP_VERSION', '8.1' );
 define( 'DOCSYNC_WP_MINIMUM_WP_VERSION', '6.4' );
 define( 'DOCSYNC_WP_FILE', __FILE__ );
@@ -90,6 +90,32 @@ function docsync_wp_render_missing_autoload_notice(): void {
 }
 
 /**
+ * Add suggested privacy policy content for DocSync WP data handling.
+ */
+function docsync_wp_add_privacy_policy_content(): void {
+	if ( ! function_exists( 'wp_add_privacy_policy_content' ) ) {
+		return;
+	}
+
+	$content = wp_kses_post(
+		wpautop(
+			__(
+				'DocSync WP lets authorized WordPress users connect their own Google account to import Google Docs content into WordPress. The site owner supplies a Google OAuth client ID and client secret. DocSync WP stores those site credentials, per-user Google access and refresh tokens, connected Google account email addresses, linked Google document metadata, source sync status, diagnostic sync events, and imported attachment metadata in the WordPress database.
+
+When a user connects Google, DocSync WP sends OAuth authorization and token refresh requests to Google. During browsing and sync, DocSync WP sends connected-user access tokens, Google Drive file IDs, folder IDs, shared-drive IDs, Drive search text, pagination tokens, and document export or read requests to the Google Drive API and Google Docs API. Google can return account email, OAuth tokens, document titles, document metadata, document export content, document structure, and image content URLs used to import media into WordPress.
+
+Imported Google Docs images are stored in the WordPress Media Library. Synced posts, pages, imported media, and linked post metadata remain on the site until a user with sufficient permission changes or deletes them. Uninstall removes plugin settings, encrypted user Google tokens, and scheduled cron events. Linked post metadata is retained by default unless full DocSync WP uninstall cleanup is enabled. Synced posts and imported media are not deleted automatically.
+
+Google provides the OAuth, Drive, and Docs services used by this plugin. Google Privacy Policy: https://policies.google.com/privacy. Google API Services User Data Policy: https://developers.google.com/terms/api-services-user-data-policy. Google APIs Terms of Service: https://developers.google.com/terms.',
+				'docsync-wp'
+			)
+		)
+	);
+
+	wp_add_privacy_policy_content( 'DocSync WP', $content );
+}
+
+/**
  * Activation callback.
  */
 function docsync_wp_activate(): void {
@@ -139,6 +165,8 @@ if ( ! docsync_wp_runtime_is_supported() ) {
 }
 
 $docsync_wp_autoload = DOCSYNC_WP_PATH . 'vendor/autoload.php';
+
+add_action( 'admin_init', 'docsync_wp_add_privacy_policy_content' );
 
 if ( ! file_exists( $docsync_wp_autoload ) ) {
 	add_action( 'admin_notices', 'docsync_wp_render_missing_autoload_notice' );

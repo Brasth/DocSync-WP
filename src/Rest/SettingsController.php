@@ -50,47 +50,15 @@ final class SettingsController {
 				array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'getSettings' ),
-					'permission_callback' => array( $this, 'canManageSettings' ),
+					'permission_callback' => array( RestPermissions::class, 'canManageSettings' ),
 				),
 				array(
 					'methods'             => WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'updateSettings' ),
-					'permission_callback' => array( $this, 'canManageSettings' ),
+					'permission_callback' => array( RestPermissions::class, 'canManageSettings' ),
 				),
 			)
 		);
-	}
-
-	/**
-	 * Permission callback for settings routes.
-	 *
-	 * @param WP_REST_Request $request REST request.
-	 * @return bool|WP_Error
-	 */
-	public function canManageSettings( WP_REST_Request $request ): bool|WP_Error {
-		if ( ! current_user_can( 'manage_options' ) ) {
-			return new WP_Error(
-				'docsync_wp_forbidden',
-				__( 'You do not have permission to manage DocSync WP settings.', 'docsync-wp' ),
-				array( 'status' => 403 )
-			);
-		}
-
-		$nonce = (string) $request->get_header( 'X-WP-Nonce' );
-
-		if ( '' === $nonce ) {
-			$nonce = (string) $request->get_param( '_wpnonce' );
-		}
-
-		if ( ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
-			return new WP_Error(
-				'docsync_wp_rest_nonce_required',
-				__( 'DocSync WP requires a valid REST nonce.', 'docsync-wp' ),
-				array( 'status' => 403 )
-			);
-		}
-
-		return true;
 	}
 
 	/**
@@ -146,8 +114,6 @@ final class SettingsController {
 		$allowed_keys = array(
 			'clientId',
 			'clientSecret',
-			'pickerApiKey',
-			'pickerAppId',
 			'scopeMode',
 			'enabledPostTypes',
 			'defaultPostStatus',
@@ -174,14 +140,6 @@ final class SettingsController {
 
 		if ( array_key_exists( 'clientSecret', $params ) ) {
 			$mapped['client_secret'] = $params['clientSecret'];
-		}
-
-		if ( array_key_exists( 'pickerApiKey', $params ) ) {
-			$mapped['picker_api_key'] = $params['pickerApiKey'];
-		}
-
-		if ( array_key_exists( 'pickerAppId', $params ) ) {
-			$mapped['picker_app_id'] = $params['pickerAppId'];
 		}
 
 		if ( array_key_exists( 'scopeMode', $params ) ) {
@@ -221,8 +179,6 @@ final class SettingsController {
 
 		return array(
 			'clientId'            => $settings['client_id'],
-			'pickerApiKey'        => $settings['picker_api_key'],
-			'pickerAppId'         => $settings['picker_app_id'],
 			'scopeMode'           => $settings['scope_mode'],
 			'enabledPostTypes'    => $settings['enabled_post_types'],
 			'defaultPostStatus'   => $settings['default_post_status'],
@@ -231,9 +187,6 @@ final class SettingsController {
 			'connectionMode'      => $settings['connection_mode'],
 			'hasClientId'         => $settings['has_client_id'],
 			'hasClientSecret'     => $settings['has_client_secret'],
-			'hasPickerApiKey'     => $settings['has_picker_api_key'],
-			'hasPickerAppId'      => $settings['has_picker_app_id'],
-			'hasPickerSettings'   => $settings['has_picker_settings'],
 			'hasRequiredSettings' => $settings['has_required_settings'],
 			'availablePostTypes'  => $this->settings->getAvailablePostTypes(),
 		);

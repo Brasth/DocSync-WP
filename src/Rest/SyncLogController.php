@@ -49,7 +49,7 @@ final class SyncLogController {
 			array(
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'listEntries' ),
-				'permission_callback' => array( $this, 'canUseAuthenticatedRest' ),
+				'permission_callback' => array( RestPermissions::class, 'canUseAuthenticatedRest' ),
 				'args'                => array(
 					'post_id'  => array(
 						'type'              => 'integer',
@@ -74,38 +74,6 @@ final class SyncLogController {
 				),
 			)
 		);
-	}
-
-	/**
-	 * Permission callback for authenticated REST routes.
-	 *
-	 * @param WP_REST_Request $request REST request.
-	 * @return bool|WP_Error
-	 */
-	public function canUseAuthenticatedRest( WP_REST_Request $request ): bool|WP_Error {
-		if ( ! is_user_logged_in() ) {
-			return new WP_Error(
-				'docsync_wp_not_connected',
-				__( 'You must be logged in to use DocSync WP.', 'docsync-wp' ),
-				array( 'status' => 401 )
-			);
-		}
-
-		$nonce = (string) $request->get_header( 'X-WP-Nonce' );
-
-		if ( '' === $nonce ) {
-			$nonce = (string) $request->get_param( '_wpnonce' );
-		}
-
-		if ( ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
-			return new WP_Error(
-				'docsync_wp_rest_nonce_required',
-				__( 'DocSync WP requires a valid REST nonce.', 'docsync-wp' ),
-				array( 'status' => 403 )
-			);
-		}
-
-		return true;
 	}
 
 	/**

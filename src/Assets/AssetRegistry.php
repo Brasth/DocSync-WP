@@ -317,8 +317,6 @@ final class AssetRegistry {
 			'version'             => $this->version,
 			'currentUserId'       => get_current_user_id(),
 			'clientId'            => $settings['client_id'],
-			'pickerApiKey'        => $settings['picker_api_key'],
-			'pickerAppId'         => $settings['picker_app_id'],
 			'connectionMode'      => $settings['connection_mode'],
 			'enabledPostTypes'    => $settings['enabled_post_types'],
 			'availablePostTypes'  => $this->settings->getAvailablePostTypes(),
@@ -326,9 +324,6 @@ final class AssetRegistry {
 			'syncInterval'        => $settings['sync_interval'],
 			'hasClientId'         => (bool) $settings['has_client_id'],
 			'hasClientSecret'     => (bool) $settings['has_client_secret'],
-			'hasPickerApiKey'     => (bool) $settings['has_picker_api_key'],
-			'hasPickerAppId'      => (bool) $settings['has_picker_app_id'],
-			'hasPickerSettings'   => (bool) $settings['has_picker_settings'],
 			'hasRequiredSettings' => (bool) $settings['has_required_settings'],
 		);
 	}

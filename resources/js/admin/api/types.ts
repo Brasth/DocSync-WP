@@ -2,8 +2,6 @@ import type { AvailablePostType } from '../config';
 
 export type SettingsResponse = {
   clientId: string;
-  pickerApiKey: string;
-  pickerAppId: string;
   scopeMode: string;
   enabledPostTypes: string[];
   defaultPostStatus: string;
@@ -12,9 +10,6 @@ export type SettingsResponse = {
   connectionMode: string;
   hasClientId: boolean;
   hasClientSecret: boolean;
-  hasPickerApiKey: boolean;
-  hasPickerAppId: boolean;
-  hasPickerSettings: boolean;
   hasRequiredSettings: boolean;
   availablePostTypes: AvailablePostType[];
 };

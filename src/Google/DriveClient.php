@@ -27,7 +27,6 @@ final class DriveClient {
 	private const DRIVE_ITEM_LIST_FIELDS   = 'nextPageToken,incompleteSearch,files(id,name,mimeType,modifiedTime,version,webViewLink,iconLink,size,quotaBytesUsed,capabilities/canDownload)';
 	private const SHARED_DRIVE_LIST_FIELDS = 'nextPageToken,drives(id,name)';
 	private const HTML_ZIP_MIME_TYPE       = 'application/zip';
-	private const MARKDOWN_MIME_TYPE       = 'text/markdown';
 	private const REQUEST_TIMEOUT_SECONDS  = 20;
 	private const MAX_EXPORT_BYTES         = 10485760;
 	private const LARGE_DOC_WARNING_BYTES  = 8388608;
@@ -296,17 +295,6 @@ final class DriveClient {
 			'nextPageToken'    => isset( $response['nextPageToken'] ) && is_scalar( $response['nextPageToken'] ) ? sanitize_text_field( (string) $response['nextPageToken'] ) : '',
 			'incompleteSearch' => ! empty( $response['incompleteSearch'] ),
 		);
-	}
-
-	/**
-	 * Export a Google Docs file as Markdown.
-	 *
-	 * @param int    $user_id User ID.
-	 * @param string $file_id Google Drive file ID.
-	 * @return string|WP_Error
-	 */
-	public function exportMarkdown( int $user_id, string $file_id ): string|WP_Error {
-		return $this->exportFile( $user_id, $file_id, self::MARKDOWN_MIME_TYPE );
 	}
 
 	/**

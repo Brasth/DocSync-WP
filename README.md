@@ -1,6 +1,6 @@
 # DocSync WP
 
-DocSync WP is a WordPress plugin scaffold for document synchronization features.
+DocSync WP is a WordPress plugin for syncing Google Docs into WordPress posts, pages, and enabled public custom post types. It uses self-managed Google OAuth, a server-side Drive browser, HTML ZIP import with media sideloading, a Google Docs API fallback for oversized exports, background sync, and Gutenberg block output.
 
 ## Requirements
 
@@ -114,6 +114,8 @@ pnpm install --frozen-lockfile
 pnpm build
 ```
 
-Create the release ZIP from the plugin directory after dependencies and assets are present, excluding files listed in `.distignore`. The ZIP should include `vendor/`, `build/`, `docsync-wp.php`, `src/`, `uninstall.php`, and `README.md`.
+Create the release ZIP from the plugin directory after dependencies and assets are present, excluding files listed in `.distignore`. The ZIP should include `vendor/`, `build/`, `resources/`, `docsync-wp.php`, `src/`, `uninstall.php`, `readme.txt`, `README.md`, `LICENSE`, `package.json`, `pnpm-lock.yaml`, `vite.config.ts`, and `composer.json`.
+
+WordPress.org/SVN submissions should keep the human-readable frontend source in `resources/` alongside the built assets in `build/`. Listing assets live in `assets/`.
 
 GitHub workflow artifacts are uploaded as installer-ready plugin contents. If an older downloaded artifact contains a single nested `.zip` file, extract it first and upload the inner ZIP to WordPress.

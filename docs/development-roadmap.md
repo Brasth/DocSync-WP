@@ -1,10 +1,10 @@
 # Development Roadmap
 
-Last updated: 2026-05-30
+Last updated: 2026-05-31
 
 ## Status
 
-The Google Docs Sync Admin Actions implementation is complete in code. The self-managed Google onboarding, Drive-like My Drive/shared drive document browser, dedicated Sources submenu, Logs submenu, page target support, source filters, HTML ZIP media import, Gutenberg block conversion, admin frontend structure refactor, Drive modal polish, OAuth JSON import, fullscreen picker, dense picker layout, infinite Drive loading, non-blocking background draft sync, oversized Google Doc fallback, inline editor sync-completion apply, progressive empty-draft large-doc writes, large-doc stuck-state recovery, and bounded sync diagnostic logging are also complete in code.
+The Google Docs Sync Admin Actions implementation is complete in code. The self-managed Google onboarding, Drive-like My Drive/shared drive document browser, dedicated Sources submenu, Logs submenu, page target support, source filters, HTML ZIP media import, Gutenberg block conversion, admin frontend structure refactor, Drive modal polish, OAuth JSON import, fullscreen picker, dense picker layout, infinite Drive loading, non-blocking background draft sync, oversized Google Doc fallback, inline editor sync-completion apply, progressive empty-draft large-doc writes, large-doc stuck-state recovery, bounded sync diagnostic logging, and first-pass WordPress.org release packaging are also complete in code.
 
 ## Phase Summary
 
@@ -25,6 +25,7 @@ The Google Docs Sync Admin Actions implementation is complete in code. The self-
 | 13 | Admin UI Fixes and Gutenberg Sync Content | Complete in code, local PHP validation blocked |
 | 14 | Non-Blocking Picker and Background Sync Feedback | Complete in code |
 | 15 | Oversized Google Doc Export Fallback | Complete in code |
+| 16 | WordPress.org Readiness First Pass | Complete in code, final validation pending |
 
 ## What Is Shipped
 
@@ -52,6 +53,11 @@ The Google Docs Sync Admin Actions implementation is complete in code. The self-
 - per-source sync events retain the latest 50 diagnostic-safe entries for queued, progress, fallback, terminal, error, and stale-recovery states
 - post editor background sync completion applies synced content directly when no unsaved edits are present and otherwise offers an explicit apply action
 - terminal sync states no longer show stale 100 percent progress bars after reload
+- WordPress.org `readme.txt`, `LICENSE`, listing assets, source-inclusive distribution rules, and `1.0.0` release metadata
+- privacy policy suggested content for Google OAuth, Drive API, Docs API, stored credentials/tokens, linked metadata, imported media, retention, and uninstall behavior
+- legacy Google Picker settings and unused Markdown/CommonMark runtime path removed before public release
+- common REST login/nonce/settings permission checks centralized
+- Google account connection disclosure and disconnect confirmation added to setup UI
 - setup wizard and README now require Drive API and Docs API in the same Google Cloud project
 - entry-specific CSS files with shared and component partials for admin setup, Sources, and post sync UI maintenance
 - HTML ZIP import that sideloads exported images into Media Library and rewrites content URLs
@@ -66,6 +72,9 @@ The Google Docs Sync Admin Actions implementation is complete in code. The self-
 The implementation is usable, but a few follow-ups remain open for future iterations:
 
 - add automated PHP and JS tests
+- run official Plugin Check and readme validator in a release test site
+- complete admin i18n pass across remaining hardcoded strings
+- replace first-pass listing artwork with final polished screenshots/banner/icon before SVN submission if brand assets are available
 - consider a custom sync-log table if support needs search-heavy or long-retention diagnostics
 - improve block-perfect conversion for complex Google Docs layouts if needed
 - add fixtures around Docs API fallback conversion when a test harness is introduced
@@ -80,4 +89,4 @@ The implementation is usable, but a few follow-ups remain open for future iterat
 - frontend lint blocks inline PHPCS suppression comments in plugin source
 - workflow packaging now uploads installer-ready artifact contents instead of a nested ZIP
 - local PHP and frontend verification completed for the latest oversized-doc fallback changes
-- production validation still needs the normal PHP toolchain before release packaging
+- production validation still needs Plugin Check, the official readme validator, and manual Google sync scenarios before SVN submission

@@ -54,7 +54,8 @@ final class SettingsRepository {
 			$stored = array();
 		}
 
-		$settings = array_merge( $this->defaults(), $stored );
+		$defaults = $this->defaults();
+		$settings = array_intersect_key( array_merge( $defaults, $stored ), $defaults );
 		$settings = $this->sanitizeScalarSettings( $settings );
 
 		$enabled_post_types = $this->sanitizeEnabledPostTypes( $settings['enabled_post_types'], false );
@@ -200,8 +201,6 @@ final class SettingsRepository {
 
 		return array(
 			'client_id'             => $settings['client_id'],
-			'picker_api_key'        => $settings['picker_api_key'],
-			'picker_app_id'         => $settings['picker_app_id'],
 			'scope_mode'            => $settings['scope_mode'],
 			'enabled_post_types'    => $settings['enabled_post_types'],
 			'default_post_status'   => $settings['default_post_status'],
@@ -210,9 +209,6 @@ final class SettingsRepository {
 			'connection_mode'       => $settings['connection_mode'],
 			'has_client_id'         => '' !== $settings['client_id'],
 			'has_client_secret'     => '' !== $settings['encrypted_client_secret'],
-			'has_picker_api_key'    => '' !== $settings['picker_api_key'],
-			'has_picker_app_id'     => '' !== $settings['picker_app_id'],
-			'has_picker_settings'   => '' !== $settings['picker_api_key'] && '' !== $settings['picker_app_id'],
 			'has_required_settings' => '' !== $settings['client_id'] && '' !== $settings['encrypted_client_secret'],
 		);
 	}
@@ -325,8 +321,6 @@ final class SettingsRepository {
 		return array(
 			'client_id'               => '',
 			'encrypted_client_secret' => '',
-			'picker_api_key'          => '',
-			'picker_app_id'           => '',
 			'scope_mode'              => self::DEFAULT_SCOPE_MODE,
 			'enabled_post_types'      => array( 'post' ),
 			'default_post_status'     => self::DEFAULT_POST_STATUS,
@@ -353,8 +347,6 @@ final class SettingsRepository {
 	private function scalarWritableKeys(): array {
 		return array(
 			'client_id',
-			'picker_api_key',
-			'picker_app_id',
 			'scope_mode',
 			'default_post_status',
 			'default_export_format',
@@ -372,8 +364,6 @@ final class SettingsRepository {
 	private function sanitizeScalarSettings( array $settings ): array {
 		$settings['client_id']               = sanitize_text_field( (string) $settings['client_id'] );
 		$settings['encrypted_client_secret'] = is_string( $settings['encrypted_client_secret'] ) ? $settings['encrypted_client_secret'] : '';
-		$settings['picker_api_key']          = sanitize_text_field( (string) $settings['picker_api_key'] );
-		$settings['picker_app_id']           = sanitize_text_field( (string) $settings['picker_app_id'] );
 		$settings['scope_mode']              = sanitize_key( (string) $settings['scope_mode'] );
 		$settings['default_post_status']     = sanitize_key( (string) $settings['default_post_status'] );
 		$settings['default_export_format']   = sanitize_key( (string) $settings['default_export_format'] );
