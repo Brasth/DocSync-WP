@@ -167,7 +167,7 @@ Common permission model:
 ### Site Options
 
 - `docsync_wp_settings`
-- stores Google connection mode, client id, encrypted client secret, legacy Picker key/app id fields, enabled post types, default post status, default export format, and sync interval
+- stores Google connection mode, client id, encrypted client secret, enabled post types, default post status, default export format, and sync interval
 
 ### User Meta
 

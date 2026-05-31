@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">DocSync WP icon</title>
+  <desc id="desc">A centered document with colored content lines and sync arrows.</desc>
+  <rect width="256" height="256" rx="48" fill="#1D4ED8"/>
+  <path fill="#0F766E" opacity=".9" d="M256 0v256H0z"/>
+  <circle cx="128" cy="128" r="88" fill="#0F172A" opacity=".1"/>
+  <path fill="#FFFFFF" d="M70 40h84l38 38v138H70z"/>
+  <path fill="#DCEBFF" d="M154 40v38h38z"/>
+  <rect x="94" y="100" width="72" height="12" rx="6" fill="#1D4ED8"/>
+  <rect x="94" y="128" width="88" height="12" rx="6" fill="#0F766E"/>
+  <rect x="94" y="156" width="64" height="12" rx="6" fill="#334155"/>
+  <path fill="#0F766E" d="M94 182h48v-8l26 14-26 14v-8H94z"/>
+  <path fill="#1D4ED8" d="M164 204h-48v8l-26-14 26-14v8h48z"/>
+</svg>

@@ -1,6 +1,34 @@
 # Project Changelog
 
-Last updated: 2026-05-30
+Last updated: 2026-05-31
+
+## 2026-05-31 - WordPress.org Readiness First Pass
+
+Status: completed in codebase
+
+Prepared the first public release surface for WordPress.org review:
+
+- added WordPress.org `readme.txt` with stable tag, install steps, FAQ, changelog, privacy notes, external-service disclosure, and source/build instructions
+- added root `LICENSE` and WordPress.org listing assets under `assets/`
+- set the public plugin author to Brasth and refreshed the listing logo/banner artwork with a centered document mark
+- bumped plugin and package metadata to `1.0.0`
+- updated `.distignore` so release packages include human-readable frontend source, package metadata, lockfile, Vite config, and built assets while excluding local/development artifacts
+- added suggested privacy policy content for Google OAuth, Drive API, Docs API, stored credentials/tokens, linked source metadata, imported media, retention, and uninstall behavior
+- removed legacy Google Picker settings from PHP settings, REST responses, localized admin config, and TypeScript API types
+- removed unused Markdown/CommonMark conversion code and dependency
+- centralized common REST login/nonce/settings permission checks
+- added Google account disconnect confirmation and pre-connect disclosure in the setup UI
+
+Verification status:
+
+- `composer validate --no-check-publish` passes
+- `composer lint` passes
+- `pnpm lint` passes
+- `pnpm typecheck` passes
+- `pnpm build` passes
+- targeted PHP syntax checks pass for modified bootstrap and REST permission files
+- `git diff --check` passes
+- package dry run confirms required release files are included and local docs/plans/node modules are excluded
 
 ## 2026-05-30 - Sync Diagnostic Logs
 

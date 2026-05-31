@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1544" height="500" viewBox="0 0 1544 500" role="img" aria-labelledby="title desc">
+  <title id="title">DocSync WP banner</title>
+  <desc id="desc">A clean WordPress.org banner for DocSync WP.</desc>
+  <rect width="1544" height="500" fill="#0F172A"/>
+  <path fill="#1D4ED8" opacity=".9" d="M0 0h1180L760 500H0z"/>
+  <path fill="#0F766E" opacity=".9" d="M1544 0v500H560L980 0z"/>
+  <circle cx="254" cy="250" r="152" fill="#0F172A" opacity=".12"/>
+  <path fill="#FFFFFF" d="M154 82h156l68 68v268H154z"/>
+  <path fill="#DCEBFF" d="M310 82v68h68z"/>
+  <rect x="198" y="198" width="142" height="24" rx="12" fill="#1D4ED8"/>
+  <rect x="198" y="258" width="170" height="24" rx="12" fill="#0F766E"/>
+  <rect x="198" y="318" width="124" height="24" rx="12" fill="#334155"/>
+  <path fill="#0F766E" d="M198 368h94v-16l52 28-52 28v-16h-94z"/>
+  <path fill="#1D4ED8" d="M338 412h-94v16l-52-28 52-28v16h94z"/>
+  <rect x="830" y="162" width="430" height="46" rx="23" fill="#FFFFFF"/>
+  <rect x="830" y="240" width="560" height="28" rx="14" fill="#E0F2FE"/>
+  <rect x="830" y="300" width="470" height="20" rx="10" fill="#CFFAFE"/>
+  <rect x="830" y="340" width="330" height="20" rx="10" fill="#A7F3D0"/>
+</svg>

@@ -10,8 +10,6 @@ export type DocSyncWPAdminConfig = {
   version: string;
   currentUserId: number;
   clientId: string;
-  pickerApiKey: string;
-  pickerAppId: string;
   connectionMode: string;
   enabledPostTypes: string[];
   availablePostTypes: AvailablePostType[];
@@ -19,9 +17,6 @@ export type DocSyncWPAdminConfig = {
   syncInterval: string;
   hasClientId: boolean;
   hasClientSecret: boolean;
-  hasPickerApiKey: boolean;
-  hasPickerAppId: boolean;
-  hasPickerSettings: boolean;
   hasRequiredSettings: boolean;
 };
 
@@ -35,11 +30,9 @@ const fallbackConfig: DocSyncWPAdminConfig = {
   restUrl: '',
   nonce: '',
   pluginUrl: '',
-  version: '0.1.0',
+  version: '1.0.0',
   currentUserId: 0,
   clientId: '',
-  pickerApiKey: '',
-  pickerAppId: '',
   connectionMode: 'self_managed',
   enabledPostTypes: ['post'],
   availablePostTypes: [{ name: 'post', label: 'Post' }],
@@ -47,9 +40,6 @@ const fallbackConfig: DocSyncWPAdminConfig = {
   syncInterval: 'off',
   hasClientId: false,
   hasClientSecret: false,
-  hasPickerApiKey: false,
-  hasPickerAppId: false,
-  hasPickerSettings: false,
   hasRequiredSettings: false
 };
 
