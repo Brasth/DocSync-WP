@@ -1,26 +1,45 @@
 name: Build Release ZIP (Tag)
 
 on:
-  push:
-    tags:
-      - "v*"
+  release:
+    types:
+      - published
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to package, for example v1.0.0"
+        required: true
+        type: string
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-zip:
     name: Build And Package Tagged Release
     runs-on: ubuntu-latest
+    env:
+      PLUGIN_SLUG: docsync-wp
+      RELEASE_TAG_NAME: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.event.release.tag_name }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          ref: ${{ env.RELEASE_TAG_NAME }}
 
       - name: Validate tag and plugin versions
+        id: validate
         run: |
           set -euo pipefail
-          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          TAG_NAME="${RELEASE_TAG_NAME:?Release tag is required.}"
+
+          if [[ "${TAG_NAME}" != v* ]]; then
+            echo "Release tag must start with v. Received: ${TAG_NAME}"
+            exit 1
+          fi
+
+          TAG_VERSION="${TAG_NAME#v}"
 
           PLUGIN_HEADER_VERSION="$(
             awk -F':' '/^[[:space:]]*\*[[:space:]]*Version:/ {gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2; exit}' docsync-wp.php
@@ -28,9 +47,12 @@ jobs:
           PLUGIN_CONST_VERSION="$(
             sed -nE "s/^define\([[:space:]]*'DOCSYNC_WP_VERSION',[[:space:]]*'([^']+)'.*\);$/\1/p" docsync-wp.php | head -n 1
           )"
+          README_STABLE_TAG="$(
+            awk -F':' '/^Stable tag:/ {gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2; exit}' readme.txt
+          )"
 
-          if [ -z "${PLUGIN_HEADER_VERSION}" ] || [ -z "${PLUGIN_CONST_VERSION}" ]; then
-            echo "Could not parse plugin versions from docsync-wp.php."
+          if [ -z "${PLUGIN_HEADER_VERSION}" ] || [ -z "${PLUGIN_CONST_VERSION}" ] || [ -z "${README_STABLE_TAG}" ]; then
+            echo "Could not parse plugin version metadata from docsync-wp.php and readme.txt."
             exit 1
           fi
 
@@ -39,10 +61,18 @@ jobs:
             exit 1
           fi
 
-          if [ "${TAG_VERSION}" != "${PLUGIN_HEADER_VERSION}" ]; then
-            echo "Tag version (${TAG_VERSION}) does not match plugin version (${PLUGIN_HEADER_VERSION})."
+          if [ "${PLUGIN_HEADER_VERSION}" != "${README_STABLE_TAG}" ]; then
+            echo "Plugin header version (${PLUGIN_HEADER_VERSION}) does not match readme.txt Stable tag (${README_STABLE_TAG})."
             exit 1
           fi
+
+          if [ "${TAG_VERSION}" != "${PLUGIN_HEADER_VERSION}" ]; then
+            echo "Tag version from ${TAG_NAME} (${TAG_VERSION}) does not match plugin version (${PLUGIN_HEADER_VERSION})."
+            exit 1
+          fi
+
+          echo "tag_name=${TAG_NAME}" >> "${GITHUB_OUTPUT}"
+          echo "version=${TAG_VERSION}" >> "${GITHUB_OUTPUT}"
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -73,27 +103,125 @@ jobs:
         id: stage
         run: |
           set -euo pipefail
-          PLUGIN_SLUG="docsync-wp"
           STAGING_DIR="${RUNNER_TEMP}/${PLUGIN_SLUG}-package"
           RSYNC_EXCLUDES="${RUNNER_TEMP}/distignore-rsync.txt"
+          rm -rf "${STAGING_DIR}"
           mkdir -p "${STAGING_DIR}/${PLUGIN_SLUG}"
           sed 's|^/||' .distignore > "${RSYNC_EXCLUDES}"
+          printf '%s\n' '*.zip' >> "${RSYNC_EXCLUDES}"
           rsync -a ./ "${STAGING_DIR}/${PLUGIN_SLUG}/" --exclude-from="${RSYNC_EXCLUDES}"
           echo "staging_dir=${STAGING_DIR}" >> "${GITHUB_OUTPUT}"
 
       - name: Validate installable plugin layout
         run: |
           set -euo pipefail
-          PLUGIN_SLUG="docsync-wp"
           STAGING_DIR="${{ steps.stage.outputs.staging_dir }}"
-          test -f "${STAGING_DIR}/${PLUGIN_SLUG}/${PLUGIN_SLUG}.php"
-          test -f "${STAGING_DIR}/${PLUGIN_SLUG}/vendor/autoload.php"
-          test -f "${STAGING_DIR}/${PLUGIN_SLUG}/build/manifest.json"
-          grep -q "Plugin Name:" "${STAGING_DIR}/${PLUGIN_SLUG}/${PLUGIN_SLUG}.php"
+          PLUGIN_DIR="${STAGING_DIR}/${PLUGIN_SLUG}"
 
-      - name: Upload installable plugin artifact
+          test -f "${PLUGIN_DIR}/${PLUGIN_SLUG}.php"
+          test -f "${PLUGIN_DIR}/vendor/autoload.php"
+          test -f "${PLUGIN_DIR}/build/manifest.json"
+          test -f "${PLUGIN_DIR}/readme.txt"
+          test -d "${PLUGIN_DIR}/build"
+          test -d "${PLUGIN_DIR}/resources"
+          grep -q "Plugin Name:" "${PLUGIN_DIR}/${PLUGIN_SLUG}.php"
+
+      - name: Create release ZIP
+        id: package
+        run: |
+          set -euo pipefail
+          VERSION="${{ steps.validate.outputs.version }}"
+          STAGING_DIR="${{ steps.stage.outputs.staging_dir }}"
+          DIST_DIR="${RUNNER_TEMP}/${PLUGIN_SLUG}-dist"
+          ZIP_NAME="${PLUGIN_SLUG}-v${VERSION}.zip"
+          ZIP_PATH="${DIST_DIR}/${ZIP_NAME}"
+
+          rm -rf "${DIST_DIR}"
+          mkdir -p "${DIST_DIR}"
+
+          (
+            cd "${STAGING_DIR}"
+            zip -qr "${ZIP_PATH}" "${PLUGIN_SLUG}"
+          )
+
+          echo "zip_name=${ZIP_NAME}" >> "${GITHUB_OUTPUT}"
+          echo "zip_path=${ZIP_PATH}" >> "${GITHUB_OUTPUT}"
+
+      - name: Validate release ZIP contents
+        run: |
+          set -euo pipefail
+          ZIP_PATH="${{ steps.package.outputs.zip_path }}"
+          ZIP_LIST="${RUNNER_TEMP}/release-zip-list.txt"
+          unzip -Z1 "${ZIP_PATH}" > "${ZIP_LIST}"
+
+          TOP_LEVELS="$(awk -F/ 'NF {print $1}' "${ZIP_LIST}" | sort -u)"
+          if [ "${TOP_LEVELS}" != "${PLUGIN_SLUG}" ]; then
+            echo "ZIP must contain exactly one top-level ${PLUGIN_SLUG}/ directory."
+            echo "${TOP_LEVELS}"
+            exit 1
+          fi
+
+          REQUIRED_FILES=(
+            "${PLUGIN_SLUG}/${PLUGIN_SLUG}.php"
+            "${PLUGIN_SLUG}/vendor/autoload.php"
+            "${PLUGIN_SLUG}/build/manifest.json"
+            "${PLUGIN_SLUG}/readme.txt"
+          )
+
+          for required_file in "${REQUIRED_FILES[@]}"; do
+            if ! grep -Fxq "${required_file}" "${ZIP_LIST}"; then
+              echo "ZIP is missing required file: ${required_file}"
+              exit 1
+            fi
+          done
+
+          REQUIRED_DIRS=(
+            "${PLUGIN_SLUG}/build/"
+            "${PLUGIN_SLUG}/resources/"
+          )
+
+          for required_dir in "${REQUIRED_DIRS[@]}"; do
+            if ! grep -Fq "${required_dir}" "${ZIP_LIST}"; then
+              echo "ZIP is missing required directory: ${required_dir}"
+              exit 1
+            fi
+          done
+
+          FORBIDDEN_PATHS=(
+            "${PLUGIN_SLUG}/.git"
+            "${PLUGIN_SLUG}/.github"
+            "${PLUGIN_SLUG}/node_modules"
+            "${PLUGIN_SLUG}/.pnpm-store"
+            "${PLUGIN_SLUG}/docs"
+            "${PLUGIN_SLUG}/plans"
+            "${PLUGIN_SLUG}/tests"
+            "${PLUGIN_SLUG}/coverage"
+            "${PLUGIN_SLUG}/phpcs.xml.dist"
+          )
+
+          for forbidden_path in "${FORBIDDEN_PATHS[@]}"; do
+            if grep -Fq "${forbidden_path}/" "${ZIP_LIST}" || grep -Fxq "${forbidden_path}" "${ZIP_LIST}"; then
+              echo "ZIP contains excluded development path: ${forbidden_path}"
+              exit 1
+            fi
+          done
+
+          if grep -Eiq '\.zip$' "${ZIP_LIST}"; then
+            echo "ZIP contains a nested ZIP file."
+            grep -Ei '\.zip$' "${ZIP_LIST}"
+            exit 1
+          fi
+
+      - name: Upload release ZIP artifact
         uses: actions/upload-artifact@v7
         with:
-          name: docsync-wp-${{ github.ref_name }}
-          path: ${{ steps.stage.outputs.staging_dir }}/docsync-wp
+          name: ${{ steps.package.outputs.zip_name }}
+          path: ${{ steps.package.outputs.zip_path }}
           if-no-files-found: error
+
+      - name: Upload GitHub Release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_NAME: ${{ steps.validate.outputs.tag_name }}
+          ZIP_PATH: ${{ steps.package.outputs.zip_path }}
+        run: gh release upload "${TAG_NAME}" "${ZIP_PATH}" --clobber
