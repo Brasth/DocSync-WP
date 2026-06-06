@@ -106,7 +106,7 @@ Use `composer lint:fix` only for safe automatic PHPCS fixes. Keep unavoidable Wo
 
 ## Release Packaging
 
-Build release artifacts from a clean checkout:
+Build release artifacts from a clean checkout or by publishing a GitHub Release:
 
 ```sh
 composer install --no-dev --optimize-autoloader
@@ -114,8 +114,18 @@ pnpm install --frozen-lockfile
 pnpm build
 ```
 
-Create the release ZIP from the plugin directory after dependencies and assets are present, excluding files listed in `.distignore`. The ZIP should include `vendor/`, `build/`, `resources/`, `docsync-wp.php`, `src/`, `uninstall.php`, `readme.txt`, `README.md`, `LICENSE`, `package.json`, `pnpm-lock.yaml`, `vite.config.ts`, and `composer.json`.
+The `Build Release ZIP (Tag)` workflow runs when a GitHub Release is published. It checks out the release tag, validates the tag version against `docsync-wp.php` and `readme.txt`, installs production dependencies, builds frontend assets, stages files using `.distignore`, creates `docsync-wp-v<version>.zip`, uploads that ZIP as a workflow artifact, and attaches it to the GitHub Release with `gh release upload --clobber`.
+
+The release ZIP should include a single top-level `docsync-wp/` directory containing `vendor/`, `build/`, `resources/`, `docsync-wp.php`, `src/`, `uninstall.php`, `readme.txt`, `README.md`, `LICENSE`, `package.json`, `pnpm-lock.yaml`, `vite.config.ts`, and `composer.json`.
+
+To backfill an existing release asset, run the same workflow manually from GitHub Actions with the release tag input. For the first public release, use:
+
+```text
+tag=v1.0.0
+```
+
+This rebuilds the plugin from the existing `v1.0.0` tag and replaces any existing `docsync-wp-v1.0.0.zip` release asset.
 
 WordPress.org/SVN submissions should keep the human-readable frontend source in `resources/` alongside the built assets in `build/`. Listing assets live in `assets/`.
 
-GitHub workflow artifacts are uploaded as installer-ready plugin contents. If an older downloaded artifact contains a single nested `.zip` file, extract it first and upload the inner ZIP to WordPress.
+GitHub Release assets are installer-ready ZIP files for manual upload through WordPress admin. WordPress.org SVN deployment remains separate: commit plugin files directly under `trunk/`, copy releases to `tags/<version>/`, and do not commit ZIP files to SVN.

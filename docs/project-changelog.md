@@ -1,6 +1,31 @@
 # Project Changelog
 
-Last updated: 2026-05-31
+Last updated: 2026-06-06
+
+## 2026-06-06 - GitHub Release ZIP Asset Packaging
+
+Status: completed in codebase
+
+Changed GitHub Release packaging so published releases and manual backfills produce a WordPress-installable ZIP asset:
+
+- changed the tagged release workflow to run on `release.published` and manual `workflow_dispatch` with a required tag input
+- made the workflow check out the target release tag before building package contents
+- validated the release tag, plugin header version, `DOCSYNC_WP_VERSION`, and `readme.txt` stable tag before packaging
+- created `docsync-wp-v<version>.zip` with a single top-level `docsync-wp/` folder
+- uploaded the ZIP both as a GitHub Actions artifact and as a GitHub Release asset through `gh release upload --clobber`
+- added ZIP content checks for required plugin files, required `build/` and `resources/` directories, forbidden development paths, and nested ZIP files
+- added `*.zip` to `.distignore`
+- updated README release instructions with the `v1.0.0` manual backfill workflow
+
+Verification status:
+
+- `composer validate --no-check-publish` passes
+- `composer lint` passes
+- `pnpm lint` passes
+- `pnpm typecheck` passes
+- `pnpm build` passes
+- package dry run confirms `docsync-wp-v1.0.0.zip` has one top-level `docsync-wp/` folder, required runtime/build/source files, no excluded development paths, and no nested ZIP files
+- `git diff --check` passes
 
 ## 2026-05-31 - WordPress.org Readiness First Pass
 

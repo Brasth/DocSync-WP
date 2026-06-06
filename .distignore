@@ -14,4 +14,5 @@
 /.phpunit.result.cache
 /coverage
 /phpcs.xml.dist
+*.zip
 *.log

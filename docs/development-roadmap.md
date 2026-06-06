@@ -1,10 +1,10 @@
 # Development Roadmap
 
-Last updated: 2026-05-31
+Last updated: 2026-06-06
 
 ## Status
 
-The Google Docs Sync Admin Actions implementation is complete in code. The self-managed Google onboarding, Drive-like My Drive/shared drive document browser, dedicated Sources submenu, Logs submenu, page target support, source filters, HTML ZIP media import, Gutenberg block conversion, admin frontend structure refactor, Drive modal polish, OAuth JSON import, fullscreen picker, dense picker layout, infinite Drive loading, non-blocking background draft sync, oversized Google Doc fallback, inline editor sync-completion apply, progressive empty-draft large-doc writes, large-doc stuck-state recovery, bounded sync diagnostic logging, and first-pass WordPress.org release packaging are also complete in code.
+The Google Docs Sync Admin Actions implementation is complete in code. The self-managed Google onboarding, Drive-like My Drive/shared drive document browser, dedicated Sources submenu, Logs submenu, page target support, source filters, HTML ZIP media import, Gutenberg block conversion, admin frontend structure refactor, Drive modal polish, OAuth JSON import, fullscreen picker, dense picker layout, infinite Drive loading, non-blocking background draft sync, oversized Google Doc fallback, inline editor sync-completion apply, progressive empty-draft large-doc writes, large-doc stuck-state recovery, bounded sync diagnostic logging, first-pass WordPress.org release packaging, and GitHub Release ZIP asset packaging are also complete in code.
 
 ## Phase Summary
 
@@ -54,6 +54,7 @@ The Google Docs Sync Admin Actions implementation is complete in code. The self-
 - post editor background sync completion applies synced content directly when no unsaved edits are present and otherwise offers an explicit apply action
 - terminal sync states no longer show stale 100 percent progress bars after reload
 - WordPress.org `readme.txt`, `LICENSE`, listing assets, source-inclusive distribution rules, and `1.0.0` release metadata
+- GitHub Release workflow that builds `docsync-wp-v<version>.zip`, uploads it as an Actions artifact, and attaches it to the release asset list
 - privacy policy suggested content for Google OAuth, Drive API, Docs API, stored credentials/tokens, linked metadata, imported media, retention, and uninstall behavior
 - legacy Google Picker settings and unused Markdown/CommonMark runtime path removed before public release
 - common REST login/nonce/settings permission checks centralized
@@ -87,6 +88,6 @@ The implementation is usable, but a few follow-ups remain open for future iterat
 - GitHub workflow JavaScript actions use Node 24-compatible major versions
 - current one-click improvement is plugin-only and still requires a self-managed Google Cloud app
 - frontend lint blocks inline PHPCS suppression comments in plugin source
-- workflow packaging now uploads installer-ready artifact contents instead of a nested ZIP
+- workflow packaging now uploads installer-ready GitHub Release ZIP assets instead of a staged folder artifact
 - local PHP and frontend verification completed for the latest oversized-doc fallback changes
 - production validation still needs Plugin Check, the official readme validator, and manual Google sync scenarios before SVN submission
