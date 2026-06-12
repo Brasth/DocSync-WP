@@ -53,11 +53,11 @@ export const ListEntryApp = ({ postType }: { postType: string }): JSX.Element =>
       return;
     }
 
-    const message = sprintf(__('Sync %s.', 'docsync-wp'), result.status);
+    const message = sprintf(__('Sync %s.', 'brasth-document-sync-for-google-docs'), result.status);
     showToast({
       id: `sync-${result.postId}-${Date.now()}`,
       message,
-      title: __('DocSync WP', 'docsync-wp'),
+      title: __('Brasth Document Sync', 'brasth-document-sync-for-google-docs'),
       tone: 'success'
     });
     speak(message);
@@ -84,8 +84,8 @@ export const ListEntryApp = ({ postType }: { postType: string }): JSX.Element =>
   const trackBackgroundSync = (result: SyncResult) => {
     const syncId = `sync-${result.postId}-${Date.now()}`;
     const message = result.created
-      ? __('Draft created. Syncing Google Doc in the background.', 'docsync-wp')
-      : __('Google Doc sync queued.', 'docsync-wp');
+      ? __('Draft created. Syncing Google Doc in the background.', 'brasth-document-sync-for-google-docs')
+      : __('Google Doc sync queued.', 'brasth-document-sync-for-google-docs');
 
     setTrackedSyncs((current) => [...current, {
       id: syncId,
@@ -97,7 +97,7 @@ export const ListEntryApp = ({ postType }: { postType: string }): JSX.Element =>
       id: syncId,
       message,
       progress: result.source?.syncProgress,
-      title: __('Sync queued', 'docsync-wp'),
+      title: __('Sync queued', 'brasth-document-sync-for-google-docs'),
       tone: 'info'
     });
     speak(message);
@@ -108,17 +108,17 @@ export const ListEntryApp = ({ postType }: { postType: string }): JSX.Element =>
     const isError = status === 'error';
     const refreshed = sync.created ? await refreshPostListTable() : true;
     const message = isError
-      ? source.syncError || __('Google Doc sync failed.', 'docsync-wp')
-      : sprintf(__('Google Doc sync %s.', 'docsync-wp'), status);
+      ? source.syncError || __('Google Doc sync failed.', 'brasth-document-sync-for-google-docs')
+      : sprintf(__('Google Doc sync %s.', 'brasth-document-sync-for-google-docs'), status);
 
     updateListRowSource(source);
     stopTracking(sync.id);
     showToast({
-      actionLabel: refreshed ? undefined : __('Reload', 'docsync-wp'),
+      actionLabel: refreshed ? undefined : __('Reload', 'brasth-document-sync-for-google-docs'),
       id: sync.id,
-      message: refreshed ? message : `${message} ${__('Reload to see the updated list.', 'docsync-wp')}`,
+      message: refreshed ? message : `${message} ${__('Reload to see the updated list.', 'brasth-document-sync-for-google-docs')}`,
       onAction: refreshed ? undefined : reloadPostListPage,
-      title: isError ? __('Sync failed', 'docsync-wp') : __('Sync complete', 'docsync-wp'),
+      title: isError ? __('Sync failed', 'brasth-document-sync-for-google-docs') : __('Sync complete', 'brasth-document-sync-for-google-docs'),
       tone: isError ? 'error' : 'success'
     });
     speak(message, isError ? 'assertive' : 'polite');
@@ -129,9 +129,9 @@ export const ListEntryApp = ({ postType }: { postType: string }): JSX.Element =>
     showToast({
       busy: true,
       id: sync.id,
-      message: source.syncMessage || __('Google Doc sync is running.', 'docsync-wp'),
+      message: source.syncMessage || __('Google Doc sync is running.', 'brasth-document-sync-for-google-docs'),
       progress: source.syncProgress,
-      title: __('Syncing Google Doc', 'docsync-wp'),
+      title: __('Syncing Google Doc', 'brasth-document-sync-for-google-docs'),
       tone: 'info'
     });
   };
@@ -139,26 +139,26 @@ export const ListEntryApp = ({ postType }: { postType: string }): JSX.Element =>
   const handlePollingError = (sync: TrackedSync, message: string) => {
     stopTracking(sync.id);
     showToast({
-      actionLabel: __('Reload', 'docsync-wp'),
+      actionLabel: __('Reload', 'brasth-document-sync-for-google-docs'),
       id: sync.id,
       message,
       onAction: reloadPostListPage,
-      title: __('Sync status unavailable', 'docsync-wp'),
+      title: __('Sync status unavailable', 'brasth-document-sync-for-google-docs'),
       tone: 'error'
     });
     speak(message, 'assertive');
   };
 
   const handlePollingTimeout = (sync: TrackedSync) => {
-    const message = __('Still syncing. The source status remains visible in the list.', 'docsync-wp');
+    const message = __('Still syncing. The source status remains visible in the list.', 'brasth-document-sync-for-google-docs');
 
     stopTracking(sync.id);
     showToast({
-      actionLabel: __('Reload', 'docsync-wp'),
+      actionLabel: __('Reload', 'brasth-document-sync-for-google-docs'),
       id: sync.id,
       message,
       onAction: reloadPostListPage,
-      title: __('Still syncing', 'docsync-wp'),
+      title: __('Still syncing', 'brasth-document-sync-for-google-docs'),
       tone: 'warning'
     });
     speak(message);
@@ -167,7 +167,7 @@ export const ListEntryApp = ({ postType }: { postType: string }): JSX.Element =>
   return (
     <Fragment>
       <AdminButton className="docsync-wp-add-sync-doc" onClick={() => setModalTarget({ mode: 'new', postType })} variant="primary">
-        {__('Add Sync Doc', 'docsync-wp')}
+        {__('Add Sync Doc', 'brasth-document-sync-for-google-docs')}
       </AdminButton>
       <SyncToastStack toasts={toasts} />
       {trackedSyncs.map((sync) => (

@@ -90,7 +90,7 @@ final class DocsClient {
 		if ( 'https' !== $scheme ) {
 			return new WP_Error(
 				'docsync_wp_docs_api_image_uri_invalid',
-				__( 'DocSync WP rejected an unsafe Google Docs image URL.', 'docsync-wp' ),
+				__( 'Brasth Document Sync rejected an unsafe Google Docs image URL.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -104,7 +104,7 @@ final class DocsClient {
 		if ( '' === $response['body'] || strlen( $response['body'] ) > self::MAX_IMAGE_BYTES ) {
 			return new WP_Error(
 				'docsync_wp_docs_api_image_invalid',
-				__( 'DocSync WP could not read an image from the Google Docs API fallback.', 'docsync-wp' ),
+				__( 'Brasth Document Sync could not read an image from the Google Docs API fallback.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 502 )
 			);
 		}
@@ -114,7 +114,7 @@ final class DocsClient {
 		if ( ! is_string( $temp_file ) || '' === $temp_file ) {
 			return new WP_Error(
 				'docsync_wp_docs_api_temp_file_failed',
-				__( 'DocSync WP could not create a temporary file for a Google Docs image.', 'docsync-wp' ),
+				__( 'Brasth Document Sync could not create a temporary file for a Google Docs image.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -123,7 +123,7 @@ final class DocsClient {
 			wp_delete_file( $temp_file );
 			return new WP_Error(
 				'docsync_wp_docs_api_image_write_failed',
-				__( 'DocSync WP could not store a Google Docs image before importing it.', 'docsync-wp' ),
+				__( 'Brasth Document Sync could not store a Google Docs image before importing it.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 500 )
 			);
 		}

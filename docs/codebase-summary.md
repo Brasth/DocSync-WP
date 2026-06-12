@@ -1,10 +1,10 @@
-# DocSync WP Codebase Summary
+# Brasth Document Sync Codebase Summary
 
-Last updated: 2026-05-31
+Last updated: 2026-06-12
 
 ## Snapshot
 
-DocSync WP is a WordPress plugin for one-way Google Docs -> WordPress sync. This checkout includes Google OAuth, document inspection, post/page linking and sync, list-table actions, setup/Sources/Logs admin pages, HTML ZIP media import, Gutenberg block conversion, diagnostic sync events, WP-Cron scheduling, and first-pass WordPress.org release packaging.
+Brasth Document Sync for Google Docs is a WordPress plugin for one-way Google Docs -> WordPress sync. This checkout includes Google OAuth, document inspection, post/page linking and sync, list-table actions, setup/Sources/Logs admin pages, HTML ZIP media import, Gutenberg block conversion, diagnostic sync events, WP-Cron scheduling, and first-pass WordPress.org release packaging.
 
 Summary reflects the current source tree after the Radix plus WordPress-native admin frontend refactor, Drive modal polish, OAuth JSON import, admin UI fixes, Gutenberg sync conversion, background sync progress, large-doc fallback, stale sync recovery, bounded sync logging, privacy disclosure, Picker settings cleanup, and CommonMark dependency removal.
 
@@ -25,7 +25,7 @@ Summary reflects the current source tree after the Radix plus WordPress-native a
 
 ## Primary Runtime Flow
 
-1. WordPress loads `docsync-wp.php`.
+1. WordPress loads `brasth-document-sync-for-google-docs.php`.
 2. `DocSyncWP\Plugin::boot()` wires settings, OAuth, Drive client, source repository, sync service, cron, REST, and admin UI.
 3. The central admin screen mounts the React app through `resources/js/admin/entries/admin-entry.tsx`.
 4. Post/page edit and list-table screens mount through `resources/js/admin/entries/post-sync-entry.tsx`.
@@ -62,7 +62,7 @@ Summary reflects the current source tree after the Radix plus WordPress-native a
 - `resources/js/admin/features/post-sync/` - post edit meta box, list-table action mount, row DOM helpers, and sync action hook.
 - `resources/js/admin/features/sources/` - filterable linked source table and bulk sync action.
 - `resources/js/admin/features/sync-logs/` - diagnostic event table, filters, and pagination.
-- `resources/js/admin/shared/ui/` - small WordPress-backed DocSync UI atoms such as buttons, notices, loading states, and status pills.
+- `resources/js/admin/shared/ui/` - small WordPress-backed sync UI atoms such as buttons, notices, loading states, and status pills.
 - `resources/js/admin/components/` - thin compatibility re-exports for older local imports.
 
 ## Frontend Style Modules
@@ -79,10 +79,10 @@ Summary reflects the current source tree after the Radix plus WordPress-native a
 
 ## Notes
 
-- The repo uses `docsync-wp` as the plugin slug and text domain.
-- REST namespace: `docsync-wp/v1`.
+- The repo uses `brasth-document-sync-for-google-docs` as the plugin slug and text domain.
+- REST namespace: `brasth-document-sync-for-google-docs/v1`.
 - Google tokens and the OAuth client secret are encrypted with WordPress salts.
 - WordPress privacy policy suggested text discloses Google OAuth, Drive API, Docs API, stored credentials/tokens, linked metadata, imported media, and uninstall retention.
-- Release packaging includes `resources/`, `package.json`, `pnpm-lock.yaml`, `vite.config.ts`, `composer.json`, `build/`, and WordPress.org `readme.txt` so reviewers can inspect human-readable source for built assets.
+- Release packaging includes `resources/`, `package.json`, `pnpm-lock.yaml`, `vite.config.ts`, `composer.json`, `build/`, and WordPress.org `readme.txt` so reviewers can inspect human-readable source for built assets. Installable ZIP files exclude `assets/`; listing assets stay in the repository for WordPress.org SVN root upload.
 - The admin app depends on WordPress packages for REST, i18n, a11y, URL helpers, components, and element runtime; Radix Dialog/Tabs remain the complex interaction primitives.
 - Frontend lint blocks inline PHPCS suppression comments in plugin source.

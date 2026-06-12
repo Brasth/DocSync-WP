@@ -83,7 +83,7 @@ export const useAdminApp = (view: AdminView) => {
     try {
       await action();
     } catch (caught) {
-      const message = caught instanceof Error ? caught.message : __('Action failed.', 'docsync-wp');
+      const message = caught instanceof Error ? caught.message : __('Action failed.', 'brasth-document-sync-for-google-docs');
       setNotice({ type: 'error', message });
       speak(message, 'assertive');
     } finally {
@@ -100,7 +100,7 @@ export const useAdminApp = (view: AdminView) => {
 
   const connectGoogle = async () => {
     if (!settings?.hasRequiredSettings) {
-      const message = __('Save OAuth client ID and client secret before connecting Google.', 'docsync-wp');
+      const message = __('Save OAuth client ID and client secret before connecting Google.', 'brasth-document-sync-for-google-docs');
       setNotice({ type: 'error', message });
       speak(message, 'assertive');
       return;
@@ -116,7 +116,7 @@ export const useAdminApp = (view: AdminView) => {
     await runAction(async () => {
       await disconnectGoogleAccount();
       await refresh();
-      const message = __('Google account disconnected.', 'docsync-wp');
+      const message = __('Google account disconnected.', 'brasth-document-sync-for-google-docs');
       setNotice({ type: 'success', message });
       speak(message);
     });
@@ -125,7 +125,7 @@ export const useAdminApp = (view: AdminView) => {
   const persistSettings = async (nextSettings: Partial<SettingsResponse> & { clientSecret?: string }) => {
     await runAction(async () => {
       const saved = await saveSettings(nextSettings);
-      const message = __('Settings saved.', 'docsync-wp');
+      const message = __('Settings saved.', 'brasth-document-sync-for-google-docs');
       setSettings(saved);
       setNotice({ type: 'success', message });
       speak(message);
@@ -136,7 +136,7 @@ export const useAdminApp = (view: AdminView) => {
     await runAction(async () => {
       const result = await syncSource(postId, 'background');
       const source = result.source ?? null;
-      const message = source?.syncMessage || sprintf(__('Source %d sync queued.', 'docsync-wp'), postId);
+      const message = source?.syncMessage || sprintf(__('Source %d sync queued.', 'brasth-document-sync-for-google-docs'), postId);
 
       if (source) {
         sourceSync.mergeSources([source]);
@@ -157,7 +157,7 @@ export const useAdminApp = (view: AdminView) => {
       const queuedIds = result.results
         .filter((item) => item.queued || item.status === 'queued' || item.source?.syncStatus === 'syncing')
         .map((item) => item.postId);
-      const message = result.hasMore ? sprintf(__('Queued sync for %d source(s). Run sync all again for more.', 'docsync-wp'), result.count) : sprintf(__('Queued sync for %d source(s).', 'docsync-wp'), result.count);
+      const message = result.hasMore ? sprintf(__('Queued sync for %d source(s). Run sync all again for more.', 'brasth-document-sync-for-google-docs'), result.count) : sprintf(__('Queued sync for %d source(s).', 'brasth-document-sync-for-google-docs'), result.count);
 
       sourceSync.mergeSources(syncedSources);
       sourceSync.trackSourceIds(queuedIds);

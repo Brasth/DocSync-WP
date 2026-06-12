@@ -11,10 +11,10 @@ import { SyncLogEventsTable } from './sync-log-events-table';
 const pageSize = 25;
 
 const levelOptions = [
-  { value: '', label: __('All levels', 'docsync-wp') },
-  { value: 'info', label: __('Info', 'docsync-wp') },
-  { value: 'warning', label: __('Warning', 'docsync-wp') },
-  { value: 'error', label: __('Error', 'docsync-wp') }
+  { value: '', label: __('All levels', 'brasth-document-sync-for-google-docs') },
+  { value: 'info', label: __('Info', 'brasth-document-sync-for-google-docs') },
+  { value: 'warning', label: __('Warning', 'brasth-document-sync-for-google-docs') },
+  { value: 'error', label: __('Error', 'brasth-document-sync-for-google-docs') }
 ];
 
 const positivePage = (value: string | null): number => {
@@ -36,7 +36,7 @@ const getInitialFilters = () => {
 const updateLocation = (postId: string, level: string, page: number) => {
   const params = new URLSearchParams();
 
-  params.set('page', 'docsync-wp-logs');
+  params.set('page', 'brasth-document-sync-for-google-docs-logs');
 
   if (postId.trim()) {
     params.set('post_id', postId.trim());
@@ -69,7 +69,7 @@ export const SyncLogsView = (): JSX.Element => {
     const parsedPostId = trimmedPostId ? Number(trimmedPostId) : 0;
 
     if (trimmedPostId && (!Number.isInteger(parsedPostId) || parsedPostId <= 0)) {
-      const message = __('Enter a valid source post ID.', 'docsync-wp');
+      const message = __('Enter a valid source post ID.', 'brasth-document-sync-for-google-docs');
       setNotice({ type: 'error', message });
       speak(message, 'assertive');
       return;
@@ -91,7 +91,7 @@ export const SyncLogsView = (): JSX.Element => {
       setPage(nextPage);
       updateLocation(trimmedPostId, nextLevel, nextPage);
     } catch (caught) {
-      const message = caught instanceof Error ? caught.message : __('Could not load sync logs.', 'docsync-wp');
+      const message = caught instanceof Error ? caught.message : __('Could not load sync logs.', 'brasth-document-sync-for-google-docs');
       setNotice({ type: 'error', message });
       speak(message, 'assertive');
     } finally {
@@ -117,13 +117,13 @@ export const SyncLogsView = (): JSX.Element => {
     <main className="docsync-wp-admin-shell">
       <header className="docsync-wp-hero">
         <div>
-          <p>{__('DocSync WP', 'docsync-wp')}</p>
-          <h1>{__('Sync Logs', 'docsync-wp')}</h1>
-          <span>{__('Version', 'docsync-wp')} {config.version}</span>
+          <p>{__('Brasth Document Sync', 'brasth-document-sync-for-google-docs')}</p>
+          <h1>{__('Sync Logs', 'brasth-document-sync-for-google-docs')}</h1>
+          <span>{__('Version', 'brasth-document-sync-for-google-docs')} {config.version}</span>
         </div>
         <div className="docsync-wp-hero__status">
           <strong>{entries.length}</strong>
-          <span>{entries.length === 1 ? __('shown event', 'docsync-wp') : __('shown events', 'docsync-wp')}</span>
+          <span>{entries.length === 1 ? __('shown event', 'brasth-document-sync-for-google-docs') : __('shown events', 'brasth-document-sync-for-google-docs')}</span>
         </div>
       </header>
 
@@ -133,10 +133,10 @@ export const SyncLogsView = (): JSX.Element => {
         <section className="docsync-wp-card docsync-wp-card--wide">
           <div className="docsync-wp-card__header docsync-wp-card__header--row">
             <div>
-              <h2>{__('Logs', 'docsync-wp')}</h2>
-              <p>{__('Diagnostic sync events stored per linked source.', 'docsync-wp')}</p>
+              <h2>{__('Logs', 'brasth-document-sync-for-google-docs')}</h2>
+              <p>{__('Diagnostic sync events stored per linked source.', 'brasth-document-sync-for-google-docs')}</p>
             </div>
-            <AdminButton disabled={busy} onClick={() => loadEntries(page)}>{__('Refresh', 'docsync-wp')}</AdminButton>
+            <AdminButton disabled={busy} onClick={() => loadEntries(page)}>{__('Refresh', 'brasth-document-sync-for-google-docs')}</AdminButton>
           </div>
 
           <form className="docsync-wp-log-filters" onSubmit={(event) => {
@@ -144,27 +144,27 @@ export const SyncLogsView = (): JSX.Element => {
             void applyFilters();
           }}>
             <label>
-              <span>{__('Source post ID', 'docsync-wp')}</span>
+              <span>{__('Source post ID', 'brasth-document-sync-for-google-docs')}</span>
               <input className="small-text" inputMode="numeric" onChange={(event) => setPostId(event.currentTarget.value)} type="number" value={postId} />
             </label>
             <label>
-              <span>{__('Level', 'docsync-wp')}</span>
+              <span>{__('Level', 'brasth-document-sync-for-google-docs')}</span>
               <select onChange={(event) => setLevel(event.currentTarget.value)} value={level}>
                 {levelOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
               </select>
             </label>
             <div className="docsync-wp-log-filters__actions">
-              <AdminButton disabled={busy} type="submit" variant="primary">{__('Apply filters', 'docsync-wp')}</AdminButton>
-              <AdminButton disabled={busy || (!postId && !level)} onClick={resetFilters}>{__('Reset', 'docsync-wp')}</AdminButton>
+              <AdminButton disabled={busy} type="submit" variant="primary">{__('Apply filters', 'brasth-document-sync-for-google-docs')}</AdminButton>
+              <AdminButton disabled={busy || (!postId && !level)} onClick={resetFilters}>{__('Reset', 'brasth-document-sync-for-google-docs')}</AdminButton>
             </div>
           </form>
 
           <SyncLogEventsTable entries={entries} />
 
           <div className="docsync-wp-table-footer docsync-wp-logs-pagination">
-            <AdminButton disabled={busy || page <= 1} onClick={() => loadEntries(page - 1)}>{__('Previous', 'docsync-wp')}</AdminButton>
-            <span>{sprintf(__('Page %d', 'docsync-wp'), page)}</span>
-            <AdminButton disabled={busy || !hasMore} onClick={() => loadEntries(page + 1)}>{__('Next', 'docsync-wp')}</AdminButton>
+            <AdminButton disabled={busy || page <= 1} onClick={() => loadEntries(page - 1)}>{__('Previous', 'brasth-document-sync-for-google-docs')}</AdminButton>
+            <span>{sprintf(__('Page %d', 'brasth-document-sync-for-google-docs'), page)}</span>
+            <AdminButton disabled={busy || !hasMore} onClick={() => loadEntries(page + 1)}>{__('Next', 'brasth-document-sync-for-google-docs')}</AdminButton>
           </div>
         </section>
       </div>

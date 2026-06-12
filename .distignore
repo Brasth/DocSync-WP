@@ -4,6 +4,10 @@
 /.distignore
 /.editorconfig
 /.code-review-graph
+/.claude
+/.agents
+/.codex
+/assets
 /eslint.config.js
 /node_modules
 /.pnpm-store

@@ -1,6 +1,6 @@
 <?php
 /**
- * Post list table DocSync actions.
+ * Post list table sync actions.
  *
  * @package DocSyncWP
  */
@@ -77,7 +77,7 @@ final class PostListActions {
 
 		$source = $this->source_repository->getSource( $post->ID );
 		$mode   = null === $source ? 'link' : 'sync';
-		$label  = null === $source ? __( 'Link Google Doc', 'docsync-wp' ) : __( 'Sync Doc', 'docsync-wp' );
+		$label  = null === $source ? __( 'Link Google Doc', 'brasth-document-sync-for-google-docs' ) : __( 'Sync Doc', 'brasth-document-sync-for-google-docs' );
 
 		$actions['docsync_wp'] = sprintf(
 			'<a href="#" class="docsync-wp-row-action" data-mode="%1$s" data-post-id="%2$d" data-post-type="%3$s">%4$s</a>',
@@ -97,7 +97,7 @@ final class PostListActions {
 	 * @return array<string,string>
 	 */
 	public function addStatusColumn( array $columns ): array {
-		$columns[ self::STATUS_COLUMN ] = __( 'DocSync', 'docsync-wp' );
+		$columns[ self::STATUS_COLUMN ] = __( 'Sync', 'brasth-document-sync-for-google-docs' );
 
 		return $columns;
 	}
@@ -116,7 +116,7 @@ final class PostListActions {
 		$source = $this->source_repository->getSource( $post_id );
 
 		if ( null === $source ) {
-			echo '<span class="docsync-wp-list-status is-empty">' . esc_html__( 'Not linked', 'docsync-wp' ) . '</span>';
+			echo '<span class="docsync-wp-list-status is-empty">' . esc_html__( 'Not linked', 'brasth-document-sync-for-google-docs' ) . '</span>';
 			return;
 		}
 
@@ -155,7 +155,7 @@ final class PostListActions {
 
 		$label = sprintf(
 			/* translators: %d: Sync progress percent. */
-			__( 'Sync progress: %d%%', 'docsync-wp' ),
+			__( 'Sync progress: %d%%', 'brasth-document-sync-for-google-docs' ),
 			$progress
 		);
 

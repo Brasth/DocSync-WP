@@ -98,7 +98,7 @@ Content conversion:
 WordPress architecture:
 
 - Use custom database tables if tracking many docs/jobs/logs. For MVP, post meta plus one option/user meta record is enough.
-- Use REST endpoints under existing `docsync-wp/v1` namespace for admin app actions.
+- Use REST endpoints under existing `brasth-document-sync-for-google-docs/v1` namespace for admin app actions.
 - Use `wp_schedule_event()` or `wp_schedule_single_event()` for background sync, and unschedule on deactivation.
 - For high-volume queues later, consider Action Scheduler, but WP-Cron is enough for MVP.
 

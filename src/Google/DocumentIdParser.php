@@ -135,7 +135,7 @@ final class DocumentIdParser {
 	private function invalidDocumentIdError(): WP_Error {
 		return new WP_Error(
 			'docsync_wp_invalid_document_id',
-			__( 'Enter a Google Docs URL or a valid Google Drive file ID.', 'docsync-wp' ),
+			__( 'Enter a Google Docs URL or a valid Google Drive file ID.', 'brasth-document-sync-for-google-docs' ),
 			array( 'status' => 400 )
 		);
 	}

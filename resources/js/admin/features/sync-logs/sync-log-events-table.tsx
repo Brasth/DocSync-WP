@@ -13,19 +13,19 @@ const eventContext = (entry: SyncLogEntry): string => {
   const details = [];
 
   if (typeof context.hasLock === 'boolean') {
-    details.push(sprintf(__('lock: %s', 'docsync-wp'), context.hasLock ? __('yes', 'docsync-wp') : __('no', 'docsync-wp')));
+    details.push(sprintf(__('lock: %s', 'brasth-document-sync-for-google-docs'), context.hasLock ? __('yes', 'brasth-document-sync-for-google-docs') : __('no', 'brasth-document-sync-for-google-docs')));
   }
 
   if (typeof context.hasCronEvent === 'boolean') {
-    details.push(sprintf(__('cron: %s', 'docsync-wp'), context.hasCronEvent ? __('yes', 'docsync-wp') : __('no', 'docsync-wp')));
+    details.push(sprintf(__('cron: %s', 'brasth-document-sync-for-google-docs'), context.hasCronEvent ? __('yes', 'brasth-document-sync-for-google-docs') : __('no', 'brasth-document-sync-for-google-docs')));
   }
 
   if (context.lastHeartbeat) {
-    details.push(sprintf(__('last heartbeat: %s', 'docsync-wp'), context.lastHeartbeat));
+    details.push(sprintf(__('last heartbeat: %s', 'brasth-document-sync-for-google-docs'), context.lastHeartbeat));
   }
 
   if (context.lastStep) {
-    details.push(sprintf(__('last step: %s', 'docsync-wp'), context.lastStep));
+    details.push(sprintf(__('last step: %s', 'brasth-document-sync-for-google-docs'), context.lastStep));
   }
 
   return details.join(' | ');
@@ -37,19 +37,19 @@ export const SyncLogEventsTable = ({ entries }: Props): JSX.Element => {
       <table className="widefat striped docsync-wp-logs-table">
         <thead>
           <tr>
-            <th>{__('Time', 'docsync-wp')}</th>
-            <th>{__('Level', 'docsync-wp')}</th>
-            <th>{__('WordPress target', 'docsync-wp')}</th>
-            <th>{__('Google Doc', 'docsync-wp')}</th>
-            <th>{__('Status', 'docsync-wp')}</th>
-            <th>{__('Message', 'docsync-wp')}</th>
-            <th>{__('Error code', 'docsync-wp')}</th>
+            <th>{__('Time', 'brasth-document-sync-for-google-docs')}</th>
+            <th>{__('Level', 'brasth-document-sync-for-google-docs')}</th>
+            <th>{__('WordPress target', 'brasth-document-sync-for-google-docs')}</th>
+            <th>{__('Google Doc', 'brasth-document-sync-for-google-docs')}</th>
+            <th>{__('Status', 'brasth-document-sync-for-google-docs')}</th>
+            <th>{__('Message', 'brasth-document-sync-for-google-docs')}</th>
+            <th>{__('Error code', 'brasth-document-sync-for-google-docs')}</th>
           </tr>
         </thead>
         <tbody>
           {entries.length === 0 ? (
             <tr>
-              <td colSpan={7}>{__('No sync events match these filters.', 'docsync-wp')}</td>
+              <td colSpan={7}>{__('No sync events match these filters.', 'brasth-document-sync-for-google-docs')}</td>
             </tr>
           ) : entries.map((entry) => {
             const context = eventContext(entry);
@@ -59,10 +59,10 @@ export const SyncLogEventsTable = ({ entries }: Props): JSX.Element => {
                 <td>{entry.timestamp}</td>
                 <td><StatusPill status={entry.level} /></td>
                 <td>
-                  {entry.postTitle || sprintf(__('Post %d', 'docsync-wp'), entry.postId)}
-                  <small>{sprintf(__('ID %d', 'docsync-wp'), entry.postId)}</small>
+                  {entry.postTitle || sprintf(__('Post %d', 'brasth-document-sync-for-google-docs'), entry.postId)}
+                  <small>{sprintf(__('ID %d', 'brasth-document-sync-for-google-docs'), entry.postId)}</small>
                 </td>
-                <td>{entry.googleTitle || __('Untitled Google Doc', 'docsync-wp')}</td>
+                <td>{entry.googleTitle || __('Untitled Google Doc', 'brasth-document-sync-for-google-docs')}</td>
                 <td>{entry.status}<small>{entry.step} | {entry.progress}%</small></td>
                 <td>{entry.message}{context ? <small>{context}</small> : null}</td>
                 <td>{entry.errorCode || '-'}</td>

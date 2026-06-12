@@ -46,7 +46,7 @@ final class EncryptionService {
 		if ( ! $this->isAvailable() ) {
 			return new WP_Error(
 				'docsync_wp_encryption_unavailable',
-				__( 'DocSync WP cannot store sensitive values because OpenSSL encryption is unavailable.', 'docsync-wp' ),
+				__( 'Brasth Document Sync cannot store sensitive values because OpenSSL encryption is unavailable.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -56,7 +56,7 @@ final class EncryptionService {
 		} catch ( Throwable $exception ) {
 			return new WP_Error(
 				'docsync_wp_encryption_iv_failed',
-				__( 'DocSync WP could not generate secure encryption data.', 'docsync-wp' ),
+				__( 'Brasth Document Sync could not generate secure encryption data.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -76,7 +76,7 @@ final class EncryptionService {
 		if ( false === $ciphertext || '' === $tag ) {
 			return new WP_Error(
 				'docsync_wp_encryption_failed',
-				__( 'DocSync WP could not encrypt the sensitive value.', 'docsync-wp' ),
+				__( 'Brasth Document Sync could not encrypt the sensitive value.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -94,7 +94,7 @@ final class EncryptionService {
 		if ( false === $payload ) {
 			return new WP_Error(
 				'docsync_wp_encryption_payload_failed',
-				__( 'DocSync WP could not prepare encrypted data for storage.', 'docsync-wp' ),
+				__( 'Brasth Document Sync could not prepare encrypted data for storage.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -116,7 +116,7 @@ final class EncryptionService {
 		if ( ! $this->isAvailable() ) {
 			return new WP_Error(
 				'docsync_wp_decryption_unavailable',
-				__( 'DocSync WP cannot read sensitive values because OpenSSL encryption is unavailable.', 'docsync-wp' ),
+				__( 'Brasth Document Sync cannot read sensitive values because OpenSSL encryption is unavailable.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -126,7 +126,7 @@ final class EncryptionService {
 		if ( ! is_array( $decoded ) || ! $this->isValidPayload( $decoded ) ) {
 			return new WP_Error(
 				'docsync_wp_decryption_payload_invalid',
-				__( 'DocSync WP could not read the encrypted value payload.', 'docsync-wp' ),
+				__( 'Brasth Document Sync could not read the encrypted value payload.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -139,7 +139,7 @@ final class EncryptionService {
 		if ( false === $iv || false === $tag || false === $ciphertext ) {
 			return new WP_Error(
 				'docsync_wp_decryption_payload_invalid',
-				__( 'DocSync WP could not decode the encrypted value payload.', 'docsync-wp' ),
+				__( 'Brasth Document Sync could not decode the encrypted value payload.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -156,7 +156,7 @@ final class EncryptionService {
 		if ( false === $plaintext ) {
 			return new WP_Error(
 				'docsync_wp_decryption_failed',
-				__( 'DocSync WP could not decrypt the sensitive value.', 'docsync-wp' ),
+				__( 'Brasth Document Sync could not decrypt the sensitive value.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 500 )
 			);
 		}

@@ -22,10 +22,10 @@ export const normalizeSyncProgress = (progress: number | null | undefined): numb
 
 export const SyncProgress = ({ className = '', message = '', progress, updatedAt = '' }: Props): JSX.Element => {
   const percent = normalizeSyncProgress(progress);
-  const label = sprintf(__('Sync progress: %d%%', 'docsync-wp'), percent);
+  const label = sprintf(__('Sync progress: %d%%', 'brasth-document-sync-for-google-docs'), percent);
   const progressDetails = message ? `${percent}% - ${message}` : `${percent}%`;
   const details = updatedAt
-    ? sprintf(__('%1$s. Last update: %2$s', 'docsync-wp'), progressDetails, updatedAt)
+    ? sprintf(__('%1$s. Last update: %2$s', 'brasth-document-sync-for-google-docs'), progressDetails, updatedAt)
     : progressDetails;
 
   return (

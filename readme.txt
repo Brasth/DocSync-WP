@@ -1,4 +1,4 @@
-=== DocSync WP ===
+=== Brasth Document Sync for Google Docs ===
 Contributors: canvilled
 Tags: google-docs, google-drive, content-sync, editorial-workflow, blocks
 Requires at least: 6.4
@@ -12,9 +12,9 @@ Sync Google Docs into WordPress posts and pages with self-managed Google OAuth, 
 
 == Description ==
 
-DocSync WP helps editorial teams use Google Docs as the source of truth while publishing clean WordPress content. Site owners provide their own Google OAuth web client, each WordPress user connects their own Google account, and authorized users can browse accessible Google Docs, link a document to a post or page, and sync content into WordPress.
+Brasth Document Sync for Google Docs helps editorial teams use Google Docs as the source of truth while publishing clean WordPress content. Site owners provide their own Google OAuth web client, each WordPress user connects their own Google account, and authorized users can browse accessible Google Docs, link a document to a post or page, and sync content into WordPress.
 
-The plugin exports Google Docs as HTML ZIP packages, imports embedded images into the WordPress Media Library, rewrites image URLs, sanitizes the resulting HTML, and converts common document structures to Gutenberg block markup. If Google blocks a large HTML ZIP export, DocSync WP retries through the Google Docs API fallback before changing post content.
+The plugin exports Google Docs as HTML ZIP packages, imports embedded images into the WordPress Media Library, rewrites image URLs, sanitizes the resulting HTML, and converts common document structures to Gutenberg block markup. If Google blocks a large HTML ZIP export, Brasth Document Sync retries through the Google Docs API fallback before changing post content.
 
 Features include:
 
@@ -29,7 +29,7 @@ Features include:
 
 = External Services =
 
-DocSync WP connects to Google services only after a site administrator saves a self-managed Google OAuth client ID and client secret and a WordPress user connects their Google account.
+Brasth Document Sync connects to Google services only after a site administrator saves a self-managed Google OAuth client ID and client secret and a WordPress user connects their Google account.
 
 This plugin sends requests to these Google services:
 
@@ -47,23 +47,23 @@ Google's terms and privacy documents apply to these services:
 * Google API Services User Data Policy: https://developers.google.com/terms/api-services-user-data-policy
 * Google APIs Terms of Service: https://developers.google.com/terms
 
-DocSync WP does not send Google data to a DocSync WP vendor-hosted service in this release.
+Brasth Document Sync does not send Google data to a Brasth Document Sync vendor-hosted service in this release.
 
 == Installation ==
 
-1. Upload the `docsync-wp` folder to `/wp-content/plugins/`, or install the plugin ZIP through Plugins > Add New > Upload Plugin.
-2. Activate DocSync WP from the WordPress Plugins screen.
+1. Upload the `brasth-document-sync-for-google-docs` folder to `/wp-content/plugins/`, or install the plugin ZIP through Plugins > Add New > Upload Plugin.
+2. Activate Brasth Document Sync from the WordPress Plugins screen.
 3. In Google Cloud, create or select a project.
 4. Enable the Google Drive API and Google Docs API.
 5. Configure the OAuth consent screen for the WordPress site users.
 6. Create an OAuth 2.0 Web application client.
-7. Add the authorized redirect URI shown in the DocSync WP setup wizard.
-8. In WordPress admin, open DocSync WP and save the OAuth client ID and client secret.
+7. Add the authorized redirect URI shown in the Brasth Document Sync setup wizard.
+8. In WordPress admin, open Brasth Document Sync and save the OAuth client ID and client secret.
 9. Connect a Google account, browse or paste a Google Doc, and link it to a WordPress post or page.
 
 == Frequently Asked Questions ==
 
-= Does DocSync WP provide a hosted Google connector? =
+= Does Brasth Document Sync provide a hosted Google connector? =
 
 No. Version 1.0.0 uses self-managed Google OAuth. The site owner supplies the Google Cloud project and OAuth web client.
 
@@ -73,7 +73,7 @@ Enable both the Google Drive API and Google Docs API in the same Google Cloud pr
 
 = Which Google OAuth scope is used? =
 
-DocSync WP uses `https://www.googleapis.com/auth/drive.readonly` so connected users can browse and sync Google Docs their account can read.
+Brasth Document Sync uses `https://www.googleapis.com/auth/drive.readonly` so connected users can browse and sync Google Docs their account can read.
 
 = Does sync delete WordPress posts? =
 
@@ -85,15 +85,15 @@ Manual and scheduled background syncs use WP-Cron. Low-traffic sites or sites wi
 
 = Are Google OAuth secrets and user tokens stored safely? =
 
-DocSync WP encrypts the site OAuth client secret and per-user Google tokens with WordPress salts before storage. Rotating WordPress salts invalidates those credentials and users must reconnect.
+Brasth Document Sync encrypts the site OAuth client secret and per-user Google tokens with WordPress salts before storage. Rotating WordPress salts invalidates those credentials and users must reconnect.
 
 == Privacy ==
 
-DocSync WP stores site-level Google OAuth client settings, encrypted per-user Google tokens, connected Google account email addresses, linked Google document metadata, source sync status, diagnostic sync events, and imported attachment metadata in the WordPress database.
+Brasth Document Sync stores site-level Google OAuth client settings, encrypted per-user Google tokens, connected Google account email addresses, linked Google document metadata, source sync status, diagnostic sync events, and imported attachment metadata in the WordPress database.
 
-During document browsing and sync, DocSync WP communicates with Google OAuth, Google Drive API, and Google Docs API as described in the External Services section. Imported Google Docs images are stored in the WordPress Media Library. Synced WordPress posts and imported media remain on the site until a user with sufficient permission changes or deletes them.
+During document browsing and sync, Brasth Document Sync communicates with Google OAuth, Google Drive API, and Google Docs API as described in the External Services section. Imported Google Docs images are stored in the WordPress Media Library. Synced WordPress posts and imported media remain on the site until a user with sufficient permission changes or deletes them.
 
-Uninstall removes plugin settings, encrypted user Google tokens, and scheduled cron events. Linked post metadata is retained by default; define `DOCSYNC_WP_FULL_UNINSTALL` or return true from the `docsync_wp_full_uninstall` filter to remove DocSync WP post metadata. Synced posts and imported media are not deleted automatically.
+Uninstall removes plugin settings, encrypted user Google tokens, and scheduled cron events. Linked post metadata is retained by default; define `DOCSYNC_WP_FULL_UNINSTALL` or return true from the `docsync_wp_full_uninstall` filter to remove Brasth Document Sync post metadata. Synced posts and imported media are not deleted automatically.
 
 == Source And Build Instructions ==
 

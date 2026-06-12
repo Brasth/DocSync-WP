@@ -110,7 +110,7 @@ final class HtmlDocumentImageRewriter {
 		if ( ! $loaded ) {
 			return new WP_Error(
 				'docsync_wp_html_parse_failed',
-				__( 'DocSync WP could not parse the Google Docs HTML export.', 'docsync-wp' ),
+				__( 'Brasth Document Sync could not parse the Google Docs HTML export.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -150,7 +150,7 @@ final class HtmlDocumentImageRewriter {
 		if ( ! is_string( $real_root ) || ! is_string( $real_file ) || ! is_file( $real_file ) ) {
 			return new WP_Error(
 				'docsync_wp_export_image_missing',
-				__( 'DocSync WP could not find an image referenced by the Google Docs export.', 'docsync-wp' ),
+				__( 'Brasth Document Sync could not find an image referenced by the Google Docs export.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -158,7 +158,7 @@ final class HtmlDocumentImageRewriter {
 		if ( ! str_starts_with( $real_file, trailingslashit( $real_root ) ) ) {
 			return new WP_Error(
 				'docsync_wp_export_image_unsafe',
-				__( 'DocSync WP rejected an unsafe image path from the Google Docs export.', 'docsync-wp' ),
+				__( 'Brasth Document Sync rejected an unsafe image path from the Google Docs export.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 400 )
 			);
 		}

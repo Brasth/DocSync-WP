@@ -1,10 +1,10 @@
 # Development Roadmap
 
-Last updated: 2026-06-06
+Last updated: 2026-06-12
 
 ## Status
 
-The Google Docs Sync Admin Actions implementation is complete in code. The self-managed Google onboarding, Drive-like My Drive/shared drive document browser, dedicated Sources submenu, Logs submenu, page target support, source filters, HTML ZIP media import, Gutenberg block conversion, admin frontend structure refactor, Drive modal polish, OAuth JSON import, fullscreen picker, dense picker layout, infinite Drive loading, non-blocking background draft sync, oversized Google Doc fallback, inline editor sync-completion apply, progressive empty-draft large-doc writes, large-doc stuck-state recovery, bounded sync diagnostic logging, first-pass WordPress.org release packaging, and GitHub Release ZIP asset packaging are also complete in code.
+The Google Docs Sync Admin Actions implementation is complete in code. The self-managed Google onboarding, Drive-like My Drive/shared drive document browser, dedicated Sources submenu, Logs submenu, page target support, source filters, HTML ZIP media import, Gutenberg block conversion, admin frontend structure refactor, Drive modal polish, OAuth JSON import, fullscreen picker, dense picker layout, infinite Drive loading, non-blocking background draft sync, oversized Google Doc fallback, inline editor sync-completion apply, progressive empty-draft large-doc writes, large-doc stuck-state recovery, bounded sync diagnostic logging, first-pass WordPress.org release packaging, GitHub Release ZIP asset packaging, and WordPress.org pre-review rename/package scoping are also complete in code.
 
 ## Phase Summary
 
@@ -32,8 +32,8 @@ The Google Docs Sync Admin Actions implementation is complete in code. The self-
 - Google settings and token storage
 - document inspection and source linking
 - source table and bulk sync
-- dedicated `DocSync WP > Sources` submenu with search, post type, status, and pagination filters
-- dedicated `DocSync WP > Logs` submenu with source, level, and pagination filters
+- dedicated `Brasth Document Sync > Sources` submenu with search, post type, status, and pagination filters
+- dedicated `Brasth Document Sync > Logs` submenu with source, level, and pagination filters
 - self-managed Google setup wizard with redirect URI copy, setup checks, and Google Cloud links
 - post/page edit and list-table entry points
 - optional `page` target support while keeping `post` always enabled
@@ -54,7 +54,7 @@ The Google Docs Sync Admin Actions implementation is complete in code. The self-
 - post editor background sync completion applies synced content directly when no unsaved edits are present and otherwise offers an explicit apply action
 - terminal sync states no longer show stale 100 percent progress bars after reload
 - WordPress.org `readme.txt`, `LICENSE`, listing assets, source-inclusive distribution rules, and `1.0.0` release metadata
-- GitHub Release workflow that builds `docsync-wp-v<version>.zip`, uploads it as an Actions artifact, and attaches it to the release asset list
+- GitHub Release workflow that builds `brasth-document-sync-for-google-docs-v<version>.zip`, uploads it as an Actions artifact, and attaches it to the release asset list
 - privacy policy suggested content for Google OAuth, Drive API, Docs API, stored credentials/tokens, linked metadata, imported media, retention, and uninstall behavior
 - legacy Google Picker settings and unused Markdown/CommonMark runtime path removed before public release
 - common REST login/nonce/settings permission checks centralized

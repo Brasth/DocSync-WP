@@ -46,7 +46,7 @@ jobs:
         id: stage
         run: |
           set -euo pipefail
-          PLUGIN_SLUG="docsync-wp"
+          PLUGIN_SLUG="brasth-document-sync-for-google-docs"
           STAGING_DIR="${RUNNER_TEMP}/${PLUGIN_SLUG}-package"
           RSYNC_EXCLUDES="${RUNNER_TEMP}/distignore-rsync.txt"
           mkdir -p "${STAGING_DIR}/${PLUGIN_SLUG}"
@@ -57,16 +57,23 @@ jobs:
       - name: Validate installable plugin layout
         run: |
           set -euo pipefail
-          PLUGIN_SLUG="docsync-wp"
+          PLUGIN_SLUG="brasth-document-sync-for-google-docs"
           STAGING_DIR="${{ steps.stage.outputs.staging_dir }}"
           test -f "${STAGING_DIR}/${PLUGIN_SLUG}/${PLUGIN_SLUG}.php"
           test -f "${STAGING_DIR}/${PLUGIN_SLUG}/vendor/autoload.php"
           test -f "${STAGING_DIR}/${PLUGIN_SLUG}/build/manifest.json"
           grep -q "Plugin Name:" "${STAGING_DIR}/${PLUGIN_SLUG}/${PLUGIN_SLUG}.php"
+          FORBIDDEN_PATHS=(assets .claude .agents .codex)
+          for forbidden_path in "${FORBIDDEN_PATHS[@]}"; do
+            if [ -e "${STAGING_DIR}/${PLUGIN_SLUG}/${forbidden_path}" ]; then
+              echo "Installable artifact must not contain ${forbidden_path}."
+              exit 1
+            fi
+          done
 
       - name: Upload installable plugin artifact
         uses: actions/upload-artifact@v7
         with:
-          name: docsync-wp-${{ github.ref_name }}-${{ github.sha }}
-          path: ${{ steps.stage.outputs.staging_dir }}/docsync-wp
+          name: brasth-document-sync-for-google-docs-${{ github.ref_name }}-${{ github.sha }}
+          path: ${{ steps.stage.outputs.staging_dir }}/brasth-document-sync-for-google-docs
           if-no-files-found: error

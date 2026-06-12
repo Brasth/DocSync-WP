@@ -41,7 +41,7 @@ export const SyncToastStack = ({ toasts }: Props): JSX.Element | null => {
                 {toast.actionLabel}
               </AdminButton>
             ) : null}
-            <button aria-label={__('Dismiss notification', 'docsync-wp')} className="docsync-wp-toast__dismiss" onClick={toast.onDismiss} type="button">
+            <button aria-label={__('Dismiss notification', 'brasth-document-sync-for-google-docs')} className="docsync-wp-toast__dismiss" onClick={toast.onDismiss} type="button">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>

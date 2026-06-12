@@ -1,5 +1,5 @@
 {
-  "name": "docsync-wp/docsync-wp",
+  "name": "brasth/brasth-document-sync-for-google-docs",
   "description": "Document synchronization tools for WordPress.",
   "type": "wordpress-plugin",
   "license": "GPL-2.0-or-later",

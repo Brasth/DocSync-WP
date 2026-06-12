@@ -17,7 +17,7 @@ export const SourceModeTabs = <T extends DocSourceUiMode>({ sourceMode, onChange
       onValueChange={(value) => onChange(value as T)}
       value={sourceMode}
     >
-      <Tabs.List aria-label={__('Document source', 'docsync-wp')} className="docsync-wp-source-tabs__list">
+      <Tabs.List aria-label={__('Document source', 'brasth-document-sync-for-google-docs')} className="docsync-wp-source-tabs__list">
         {modes.map((mode) => (
           <Tabs.Trigger
             className="docsync-wp-source-tabs__trigger"

@@ -15,11 +15,11 @@ use WP_REST_Request;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Centralizes common DocSync WP REST authentication checks.
+ * Centralizes common Brasth Document Sync REST authentication checks.
  */
 final class RestPermissions {
 	/**
-	 * Permission callback for logged-in DocSync WP REST users.
+	 * Permission callback for logged-in Brasth Document Sync REST users.
 	 *
 	 * @param WP_REST_Request $request REST request.
 	 * @return bool|WP_Error
@@ -28,7 +28,7 @@ final class RestPermissions {
 		if ( ! is_user_logged_in() ) {
 			return new WP_Error(
 				'docsync_wp_not_connected',
-				__( 'You must be logged in to use DocSync WP.', 'docsync-wp' ),
+				__( 'You must be logged in to use Brasth Document Sync.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 401 )
 			);
 		}
@@ -46,7 +46,7 @@ final class RestPermissions {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return new WP_Error(
 				'docsync_wp_forbidden',
-				__( 'You do not have permission to manage DocSync WP settings.', 'docsync-wp' ),
+				__( 'You do not have permission to manage Brasth Document Sync settings.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 403 )
 			);
 		}
@@ -70,7 +70,7 @@ final class RestPermissions {
 		if ( ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
 			return new WP_Error(
 				'docsync_wp_rest_nonce_required',
-				__( 'DocSync WP requires a valid REST nonce.', 'docsync-wp' ),
+				__( 'Brasth Document Sync requires a valid REST nonce.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 403 )
 			);
 		}

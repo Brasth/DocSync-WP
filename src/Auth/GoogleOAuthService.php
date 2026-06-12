@@ -63,7 +63,7 @@ final class GoogleOAuthService {
 		if ( $user_id <= 0 ) {
 			return new WP_Error(
 				'docsync_wp_not_connected',
-				__( 'You must be logged in before connecting Google Drive.', 'docsync-wp' ),
+				__( 'You must be logged in before connecting Google Drive.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 401 )
 			);
 		}
@@ -82,7 +82,7 @@ final class GoogleOAuthService {
 
 		$state_data = array(
 			'user_id'    => $user_id,
-			'return_url' => admin_url( 'admin.php?page=docsync-wp' ),
+			'return_url' => admin_url( 'admin.php?page=brasth-document-sync-for-google-docs' ),
 			'created_at' => time(),
 		);
 
@@ -122,7 +122,7 @@ final class GoogleOAuthService {
 		if ( '' === $code ) {
 			return new WP_Error(
 				'docsync_wp_bad_google_response',
-				__( 'Google did not return an authorization code.', 'docsync-wp' ),
+				__( 'Google did not return an authorization code.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -155,7 +155,7 @@ final class GoogleOAuthService {
 
 		return wp_validate_redirect(
 			(string) $state_data['return_url'],
-			admin_url( 'admin.php?page=docsync-wp' )
+			admin_url( 'admin.php?page=brasth-document-sync-for-google-docs' )
 		);
 	}
 
@@ -175,7 +175,7 @@ final class GoogleOAuthService {
 		if ( null === $token || '' === $token['access_token'] ) {
 			return new WP_Error(
 				'docsync_wp_not_connected',
-				__( 'Connect a Google account before inspecting documents.', 'docsync-wp' ),
+				__( 'Connect a Google account before inspecting documents.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 401 )
 			);
 		}
@@ -183,7 +183,7 @@ final class GoogleOAuthService {
 		if ( ! self::hasRequiredScope( (string) $token['scope'] ) ) {
 			return new WP_Error(
 				'docsync_wp_google_reconnect_required',
-				__( 'Reconnect Google Drive so DocSync WP can browse and sync Google Docs with Drive read-only access.', 'docsync-wp' ),
+				__( 'Reconnect Google Drive so Brasth Document Sync can browse and sync Google Docs with Drive read-only access.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 401 )
 			);
 		}
@@ -195,7 +195,7 @@ final class GoogleOAuthService {
 		if ( '' === $token['refresh_token'] ) {
 			return new WP_Error(
 				'docsync_wp_not_connected',
-				__( 'Reconnect Google Drive so DocSync WP can refresh access.', 'docsync-wp' ),
+				__( 'Reconnect Google Drive so Brasth Document Sync can refresh access.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 401 )
 			);
 		}
@@ -266,7 +266,7 @@ final class GoogleOAuthService {
 		if ( empty( $token['access_token'] ) || ! is_string( $token['access_token'] ) ) {
 			return new WP_Error(
 				'docsync_wp_bad_google_response',
-				__( 'Google did not return an access token.', 'docsync-wp' ),
+				__( 'Google did not return an access token.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 502 )
 			);
 		}
@@ -284,7 +284,7 @@ final class GoogleOAuthService {
 		if ( '' === $refresh_token ) {
 			return new WP_Error(
 				'docsync_wp_bad_google_response',
-				__( 'Google did not return a refresh token. Reconnect and approve offline access.', 'docsync-wp' ),
+				__( 'Google did not return a refresh token. Reconnect and approve offline access.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 502 )
 			);
 		}
@@ -341,7 +341,7 @@ final class GoogleOAuthService {
 		if ( is_wp_error( $response ) ) {
 			return new WP_Error(
 				'docsync_wp_google_transient_failure',
-				__( 'Google is temporarily unavailable. Try again shortly.', 'docsync-wp' ),
+				__( 'Google is temporarily unavailable. Try again shortly.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 503 )
 			);
 		}
@@ -353,7 +353,7 @@ final class GoogleOAuthService {
 		if ( $status >= 500 || 429 === $status ) {
 			return new WP_Error(
 				'docsync_wp_google_transient_failure',
-				__( 'Google is temporarily unavailable. Try again shortly.', 'docsync-wp' ),
+				__( 'Google is temporarily unavailable. Try again shortly.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 503 )
 			);
 		}
@@ -368,7 +368,7 @@ final class GoogleOAuthService {
 		) {
 			return new WP_Error(
 				'docsync_wp_not_connected',
-				__( 'Reconnect Google Drive so DocSync WP can refresh access.', 'docsync-wp' ),
+				__( 'Reconnect Google Drive so Brasth Document Sync can refresh access.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 401 )
 			);
 		}
@@ -376,7 +376,7 @@ final class GoogleOAuthService {
 		if ( $status < 200 || $status >= 300 || ! is_array( $data ) ) {
 			return new WP_Error(
 				'docsync_wp_bad_google_response',
-				__( 'Google returned an unexpected OAuth response.', 'docsync-wp' ),
+				__( 'Google returned an unexpected OAuth response.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 502 )
 			);
 		}
@@ -401,7 +401,7 @@ final class GoogleOAuthService {
 		if ( '' === $client_id || '' === $client_secret ) {
 			return new WP_Error(
 				'docsync_wp_google_credentials_missing',
-				__( 'Configure the Google OAuth client ID and client secret before connecting.', 'docsync-wp' ),
+				__( 'Configure the Google OAuth client ID and client secret before connecting.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -457,7 +457,7 @@ final class GoogleOAuthService {
 		} catch ( \Throwable $exception ) {
 			return new WP_Error(
 				'docsync_wp_oauth_state_failed',
-				__( 'DocSync WP could not create secure Google OAuth state.', 'docsync-wp' ),
+				__( 'Brasth Document Sync could not create secure Google OAuth state.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -485,7 +485,7 @@ final class GoogleOAuthService {
 	private function invalidStateError(): WP_Error {
 		return new WP_Error(
 			'docsync_wp_invalid_oauth_state',
-			__( 'The Google OAuth state is invalid or expired. Start the connection again.', 'docsync-wp' ),
+			__( 'The Google OAuth state is invalid or expired. Start the connection again.', 'brasth-document-sync-for-google-docs' ),
 			array( 'status' => 400 )
 		);
 	}

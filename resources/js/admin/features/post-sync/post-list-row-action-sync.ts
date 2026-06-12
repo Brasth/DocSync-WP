@@ -15,14 +15,14 @@ export const syncRowAction = async (
     return;
   }
 
-  const originalText = link.textContent || __('Sync Doc', 'docsync-wp');
+  const originalText = link.textContent || __('Sync Doc', 'brasth-document-sync-for-google-docs');
 
   try {
     link.dataset.busy = 'true';
     link.setAttribute('aria-busy', 'true');
-    link.textContent = __('Syncing...', 'docsync-wp');
+    link.textContent = __('Syncing...', 'brasth-document-sync-for-google-docs');
     const result = await syncSource(postId, 'background');
-    const message = sprintf(__('Source %d sync %s.', 'docsync-wp'), postId, result.status);
+    const message = sprintf(__('Source %d sync %s.', 'brasth-document-sync-for-google-docs'), postId, result.status);
 
     updateListRowSource(result.source ?? null);
 
@@ -39,18 +39,18 @@ export const syncRowAction = async (
     showToast({
       id: `sync-${postId}-${Date.now()}`,
       message,
-      title: __('DocSync WP', 'docsync-wp'),
+      title: __('Brasth Document Sync', 'brasth-document-sync-for-google-docs'),
       tone: 'success'
     });
     speak(message);
   } catch (caught) {
-    const message = caught instanceof Error ? caught.message : __('Sync failed.', 'docsync-wp');
+    const message = caught instanceof Error ? caught.message : __('Sync failed.', 'brasth-document-sync-for-google-docs');
 
     link.textContent = originalText;
     showToast({
       id: `sync-${postId}-${Date.now()}`,
       message,
-      title: __('Sync failed', 'docsync-wp'),
+      title: __('Sync failed', 'brasth-document-sync-for-google-docs'),
       tone: 'error'
     });
     speak(message, 'assertive');

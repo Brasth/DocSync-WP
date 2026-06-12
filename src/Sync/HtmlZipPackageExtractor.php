@@ -31,7 +31,7 @@ final class HtmlZipPackageExtractor {
 		if ( ! class_exists( ZipArchive::class ) ) {
 			return new WP_Error(
 				'docsync_wp_zip_missing',
-				__( 'DocSync WP requires the PHP Zip extension to import Google Docs images.', 'docsync-wp' ),
+				__( 'Brasth Document Sync requires the PHP Zip extension to import Google Docs images.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -48,7 +48,7 @@ final class HtmlZipPackageExtractor {
 			$this->deleteDirectory( $temp_dir );
 			return new WP_Error(
 				'docsync_wp_zip_write_failed',
-				__( 'DocSync WP could not prepare the Google Docs export for import.', 'docsync-wp' ),
+				__( 'Brasth Document Sync could not prepare the Google Docs export for import.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -73,7 +73,7 @@ final class HtmlZipPackageExtractor {
 			$this->deleteDirectory( $temp_dir );
 			return new WP_Error(
 				'docsync_wp_html_read_failed',
-				__( 'DocSync WP could not read the Google Docs HTML export.', 'docsync-wp' ),
+				__( 'Brasth Document Sync could not read the Google Docs HTML export.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -124,7 +124,7 @@ final class HtmlZipPackageExtractor {
 		if ( true !== $zip->open( $zip_path ) ) {
 			return new WP_Error(
 				'docsync_wp_zip_open_failed',
-				__( 'DocSync WP could not open the Google Docs HTML export.', 'docsync-wp' ),
+				__( 'Brasth Document Sync could not open the Google Docs HTML export.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -142,7 +142,7 @@ final class HtmlZipPackageExtractor {
 		if ( ! $extracted ) {
 			return new WP_Error(
 				'docsync_wp_zip_extract_failed',
-				__( 'DocSync WP could not extract the Google Docs HTML export.', 'docsync-wp' ),
+				__( 'Brasth Document Sync could not extract the Google Docs HTML export.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -165,7 +165,7 @@ final class HtmlZipPackageExtractor {
 			if ( '' === $name || str_starts_with( $name, '/' ) || str_contains( $name, '\\' ) || preg_match( '#(^|/)\.\.(/|$)#', $name ) || preg_match( '/^[A-Za-z]:/', $name ) ) {
 				return new WP_Error(
 					'docsync_wp_zip_path_invalid',
-					__( 'DocSync WP rejected a Google Docs export with unsafe file paths.', 'docsync-wp' ),
+					__( 'Brasth Document Sync rejected a Google Docs export with unsafe file paths.', 'brasth-document-sync-for-google-docs' ),
 					array( 'status' => 400 )
 				);
 			}
@@ -201,7 +201,7 @@ final class HtmlZipPackageExtractor {
 
 		return new WP_Error(
 			'docsync_wp_html_missing',
-			__( 'DocSync WP could not find HTML content in the Google Docs export.', 'docsync-wp' ),
+			__( 'Brasth Document Sync could not find HTML content in the Google Docs export.', 'brasth-document-sync-for-google-docs' ),
 			array( 'status' => 500 )
 		);
 	}
@@ -217,7 +217,7 @@ final class HtmlZipPackageExtractor {
 		if ( ! wp_mkdir_p( $temp_dir ) ) {
 			return new WP_Error(
 				'docsync_wp_temp_dir_failed',
-				__( 'DocSync WP could not create a temporary import directory.', 'docsync-wp' ),
+				__( 'Brasth Document Sync could not create a temporary import directory.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 500 )
 			);
 		}

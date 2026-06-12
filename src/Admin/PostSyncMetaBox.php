@@ -1,6 +1,6 @@
 <?php
 /**
- * Post edit screen DocSync controls.
+ * Post edit screen sync controls.
  *
  * @package DocSyncWP
  */
@@ -44,7 +44,7 @@ final class PostSyncMetaBox {
 	}
 
 	/**
-	 * Register the DocSync meta box for enabled post types.
+	 * Register the sync meta box for enabled post types.
 	 *
 	 * @param string  $post_type Current post type.
 	 * @param WP_Post $post      Current post.
@@ -60,7 +60,7 @@ final class PostSyncMetaBox {
 
 		add_meta_box(
 			self::BOX_ID,
-			esc_html__( 'DocSync WP', 'docsync-wp' ),
+			esc_html__( 'Brasth Document Sync', 'brasth-document-sync-for-google-docs' ),
 			array( $this, 'render' ),
 			$post_type,
 			'side',
@@ -88,7 +88,7 @@ final class PostSyncMetaBox {
 			data-post-type="<?php echo esc_attr( $post->post_type ); ?>"
 			data-source="<?php echo esc_attr( $json ); ?>"
 		>
-			<p><?php esc_html_e( 'Loading DocSync controls...', 'docsync-wp' ); ?></p>
+			<p><?php esc_html_e( 'Loading sync controls...', 'brasth-document-sync-for-google-docs' ); ?></p>
 		</div>
 		<?php
 	}

@@ -12,10 +12,10 @@ namespace DocSyncWP\Rest;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Registers DocSync WP REST routes.
+ * Registers Brasth Document Sync REST routes.
  */
 final class RestServiceProvider {
-	public const NAMESPACE = 'docsync-wp/v1';
+	public const NAMESPACE = 'brasth-document-sync-for-google-docs/v1';
 
 	/**
 	 * Settings controller.

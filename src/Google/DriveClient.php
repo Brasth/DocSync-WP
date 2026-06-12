@@ -75,7 +75,7 @@ final class DriveClient {
 		if ( self::GOOGLE_DOC_MIME_TYPE !== $response['mimeType'] ) {
 			return new WP_Error(
 				'docsync_wp_non_google_doc',
-				__( 'DocSync WP can only inspect Google Docs documents.', 'docsync-wp' ),
+				__( 'Brasth Document Sync can only inspect Google Docs documents.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -508,13 +508,13 @@ final class DriveClient {
 
 		if ( false === $can_download ) {
 			$warning_code    = 'download_blocked';
-			$warning_message = __( 'Google says this Doc cannot be downloaded by the connected account. Adjust sharing or choose another Doc before linking.', 'docsync-wp' );
+			$warning_message = __( 'Google says this Doc cannot be downloaded by the connected account. Adjust sharing or choose another Doc before linking.', 'brasth-document-sync-for-google-docs' );
 		} elseif (
 			( null !== $size_bytes && $size_bytes >= self::LARGE_DOC_WARNING_BYTES )
 			|| ( null !== $quota_bytes_used && $quota_bytes_used >= self::LARGE_DOC_WARNING_BYTES )
 		) {
 			$warning_code    = 'large_doc_possible';
-			$warning_message = __( 'This Doc may exceed Google\'s 10 MB export limit. DocSync WP will use the large-doc fallback if needed.', 'docsync-wp' );
+			$warning_message = __( 'This Doc may exceed Google\'s 10 MB export limit. Brasth Document Sync will use the large-doc fallback if needed.', 'brasth-document-sync-for-google-docs' );
 		}
 
 		return array(
@@ -604,7 +604,7 @@ final class DriveClient {
 		if ( in_array( $status, array( 401, 403, 404 ), true ) ) {
 			return new WP_Error(
 				'docsync_wp_access_denied',
-				__( 'DocSync WP cannot access this Google Doc. Reconnect Google Drive or choose a document your account can open, then try again.', 'docsync-wp' ),
+				__( 'Brasth Document Sync cannot access this Google Doc. Reconnect Google Drive or choose a document your account can open, then try again.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 403 )
 			);
 		}
@@ -692,7 +692,7 @@ final class DriveClient {
 	private function exportTooLargeError(): WP_Error {
 		return new WP_Error(
 			'docsync_wp_export_too_large',
-			__( 'This Google Doc is too large to export for DocSync WP.', 'docsync-wp' ),
+			__( 'This Google Doc is too large to export for Brasth Document Sync.', 'brasth-document-sync-for-google-docs' ),
 			array( 'status' => 413 )
 		);
 	}
@@ -703,7 +703,7 @@ final class DriveClient {
 	private function badGoogleResponseError(): WP_Error {
 		return new WP_Error(
 			'docsync_wp_bad_google_response',
-			__( 'Google returned an unexpected Drive response.', 'docsync-wp' ),
+			__( 'Google returned an unexpected Drive response.', 'brasth-document-sync-for-google-docs' ),
 			array( 'status' => 502 )
 		);
 	}
@@ -714,7 +714,7 @@ final class DriveClient {
 	private function transientGoogleFailureError(): WP_Error {
 		return new WP_Error(
 			'docsync_wp_google_transient_failure',
-			__( 'Google Drive is temporarily unavailable. Try again shortly.', 'docsync-wp' ),
+			__( 'Google Drive is temporarily unavailable. Try again shortly.', 'brasth-document-sync-for-google-docs' ),
 			array( 'status' => 503 )
 		);
 	}

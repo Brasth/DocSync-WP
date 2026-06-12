@@ -15,7 +15,7 @@ use WP_Error;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Reads, validates, and stores DocSync WP settings.
+ * Reads, validates, and stores Brasth Document Sync settings.
  */
 final class SettingsRepository {
 	public const OPTION_NAME = 'docsync_wp_settings';
@@ -104,7 +104,7 @@ final class SettingsRepository {
 		if ( array() !== $unknown_keys ) {
 			return new WP_Error(
 				'docsync_wp_unknown_settings',
-				__( 'DocSync WP received unknown settings.', 'docsync-wp' ),
+				__( 'Brasth Document Sync received unknown settings.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -133,7 +133,7 @@ final class SettingsRepository {
 		if ( ! $this->isValidScopeMode( $settings['scope_mode'] ) ) {
 			return new WP_Error(
 				'docsync_wp_invalid_scope_mode',
-				__( 'DocSync WP received an unsupported Google scope mode.', 'docsync-wp' ),
+				__( 'Brasth Document Sync received an unsupported Google scope mode.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -141,7 +141,7 @@ final class SettingsRepository {
 		if ( ! $this->isValidPostStatus( $settings['default_post_status'] ) ) {
 			return new WP_Error(
 				'docsync_wp_invalid_post_status',
-				__( 'DocSync WP received an unsupported default post status.', 'docsync-wp' ),
+				__( 'Brasth Document Sync received an unsupported default post status.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -149,7 +149,7 @@ final class SettingsRepository {
 		if ( ! $this->isValidExportFormat( $settings['default_export_format'] ) ) {
 			return new WP_Error(
 				'docsync_wp_invalid_export_format',
-				__( 'DocSync WP received an unsupported export format.', 'docsync-wp' ),
+				__( 'Brasth Document Sync received an unsupported export format.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -157,7 +157,7 @@ final class SettingsRepository {
 		if ( ! $this->isValidSyncInterval( $settings['sync_interval'] ) ) {
 			return new WP_Error(
 				'docsync_wp_invalid_sync_interval',
-				__( 'DocSync WP received an unsupported sync schedule.', 'docsync-wp' ),
+				__( 'Brasth Document Sync received an unsupported sync schedule.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -165,7 +165,7 @@ final class SettingsRepository {
 		if ( ! $this->isValidConnectionMode( $settings['connection_mode'] ) ) {
 			return new WP_Error(
 				'docsync_wp_invalid_connection_mode',
-				__( 'DocSync WP received an unsupported Google connection mode.', 'docsync-wp' ),
+				__( 'Brasth Document Sync received an unsupported Google connection mode.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -236,7 +236,7 @@ final class SettingsRepository {
 	}
 
 	/**
-	 * Get public post types supported by DocSync WP.
+	 * Get public post types supported by Brasth Document Sync.
 	 *
 	 * @return array<int,array{name:string,label:string}>
 	 */
@@ -385,7 +385,7 @@ final class SettingsRepository {
 			if ( $strict ) {
 				return new WP_Error(
 					'docsync_wp_invalid_post_types',
-					__( 'DocSync WP enabled post types must be an array.', 'docsync-wp' ),
+					__( 'Brasth Document Sync enabled post types must be an array.', 'brasth-document-sync-for-google-docs' ),
 					array( 'status' => 400 )
 				);
 			}
@@ -400,7 +400,7 @@ final class SettingsRepository {
 				if ( $strict ) {
 					return new WP_Error(
 						'docsync_wp_invalid_post_type',
-						__( 'DocSync WP received an invalid post type.', 'docsync-wp' ),
+						__( 'Brasth Document Sync received an invalid post type.', 'brasth-document-sync-for-google-docs' ),
 						array( 'status' => 400 )
 					);
 				}
@@ -428,7 +428,7 @@ final class SettingsRepository {
 						'docsync_wp_unsupported_post_type',
 						sprintf(
 							/* translators: %s: post type name. */
-							__( 'The "%s" post type cannot be used for DocSync WP.', 'docsync-wp' ),
+							__( 'The "%s" post type cannot be used for Brasth Document Sync.', 'brasth-document-sync-for-google-docs' ),
 							$post_type
 						),
 						array( 'status' => 400 )
@@ -497,7 +497,7 @@ final class SettingsRepository {
 	}
 
 	/**
-	 * Whether the post type object is supported by DocSync WP.
+	 * Whether the post type object is supported by Brasth Document Sync.
 	 *
 	 * @param string $post_type        Post type name.
 	 * @param object $post_type_object Post type object.

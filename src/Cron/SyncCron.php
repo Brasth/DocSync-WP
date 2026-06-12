@@ -17,7 +17,7 @@ use WP_Error;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Registers and executes the DocSync WP cron job.
+ * Registers and executes the Brasth Document Sync cron job.
  */
 final class SyncCron {
 	public const HOOK        = 'docsync_wp_sync_sources';
@@ -129,7 +129,7 @@ final class SyncCron {
 		if ( $post_id <= 0 || $user_id <= 0 ) {
 			return new WP_Error(
 				'docsync_wp_invalid_background_sync',
-				__( 'DocSync WP could not queue this sync request.', 'docsync-wp' ),
+				__( 'Brasth Document Sync could not queue this sync request.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -146,7 +146,7 @@ final class SyncCron {
 			if ( false === $scheduled ) {
 				return new WP_Error(
 					'docsync_wp_background_sync_not_scheduled',
-					__( 'DocSync WP could not queue this sync request.', 'docsync-wp' ),
+					__( 'Brasth Document Sync could not queue this sync request.', 'brasth-document-sync-for-google-docs' ),
 					array( 'status' => 500 )
 				);
 			}
@@ -202,7 +202,7 @@ final class SyncCron {
 		if ( ! $this->source_repository->userCanSyncPost( $post_id, $user_id ) ) {
 			$this->sync_service->markSyncError(
 				$post_id,
-				__( 'DocSync WP could not run this background sync because permission changed.', 'docsync-wp' )
+				__( 'Brasth Document Sync could not run this background sync because permission changed.', 'brasth-document-sync-for-google-docs' )
 			);
 			return;
 		}
@@ -218,7 +218,7 @@ final class SyncCron {
 	}
 
 	/**
-	 * Unschedule all DocSync cron events.
+	 * Unschedule all plugin cron events.
 	 */
 	public static function unschedule(): void {
 		self::unscheduleRecurring();

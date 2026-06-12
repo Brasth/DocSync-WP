@@ -12,20 +12,20 @@ namespace DocSyncWP\Admin;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Registers the DocSync WP admin screen.
+ * Registers the Brasth Document Sync admin screen.
  */
 final class AdminPage {
-	public const MENU_SLUG = 'docsync-wp';
+	public const MENU_SLUG = 'brasth-document-sync-for-google-docs';
 
-	public const SOURCES_MENU_SLUG = 'docsync-wp-sources';
+	public const SOURCES_MENU_SLUG = 'brasth-document-sync-for-google-docs-sources';
 
-	public const LOGS_MENU_SLUG = 'docsync-wp-logs';
+	public const LOGS_MENU_SLUG = 'brasth-document-sync-for-google-docs-logs';
 
-	public const HOOK_SUFFIX = 'toplevel_page_docsync-wp';
+	public const HOOK_SUFFIX = 'toplevel_page_brasth-document-sync-for-google-docs';
 
-	public const SOURCES_HOOK_SUFFIX = 'docsync-wp_page_docsync-wp-sources';
+	public const SOURCES_HOOK_SUFFIX = 'brasth-document-sync-for-google-docs_page_brasth-document-sync-for-google-docs-sources';
 
-	public const LOGS_HOOK_SUFFIX = 'docsync-wp_page_docsync-wp-logs';
+	public const LOGS_HOOK_SUFFIX = 'brasth-document-sync-for-google-docs_page_brasth-document-sync-for-google-docs-logs';
 
 	private const CAPABILITY = 'manage_options';
 
@@ -34,8 +34,8 @@ final class AdminPage {
 	 */
 	public function register(): void {
 		add_menu_page(
-			esc_html__( 'DocSync WP', 'docsync-wp' ),
-			esc_html__( 'DocSync WP', 'docsync-wp' ),
+			esc_html__( 'Brasth Document Sync', 'brasth-document-sync-for-google-docs' ),
+			esc_html__( 'Brasth Document Sync', 'brasth-document-sync-for-google-docs' ),
 			self::CAPABILITY,
 			self::MENU_SLUG,
 			array( $this, 'render' ),
@@ -45,8 +45,8 @@ final class AdminPage {
 
 		add_submenu_page(
 			self::MENU_SLUG,
-			esc_html__( 'DocSync WP Setup', 'docsync-wp' ),
-			esc_html__( 'Setup', 'docsync-wp' ),
+			esc_html__( 'Brasth Document Sync Setup', 'brasth-document-sync-for-google-docs' ),
+			esc_html__( 'Setup', 'brasth-document-sync-for-google-docs' ),
 			self::CAPABILITY,
 			self::MENU_SLUG,
 			array( $this, 'render' )
@@ -54,8 +54,8 @@ final class AdminPage {
 
 		add_submenu_page(
 			self::MENU_SLUG,
-			esc_html__( 'DocSync WP Sources', 'docsync-wp' ),
-			esc_html__( 'Sources', 'docsync-wp' ),
+			esc_html__( 'Brasth Document Sync Sources', 'brasth-document-sync-for-google-docs' ),
+			esc_html__( 'Sources', 'brasth-document-sync-for-google-docs' ),
 			self::CAPABILITY,
 			self::SOURCES_MENU_SLUG,
 			array( $this, 'renderSources' )
@@ -63,8 +63,8 @@ final class AdminPage {
 
 		add_submenu_page(
 			self::MENU_SLUG,
-			esc_html__( 'DocSync WP Logs', 'docsync-wp' ),
-			esc_html__( 'Logs', 'docsync-wp' ),
+			esc_html__( 'Brasth Document Sync Logs', 'brasth-document-sync-for-google-docs' ),
+			esc_html__( 'Logs', 'brasth-document-sync-for-google-docs' ),
 			self::CAPABILITY,
 			self::LOGS_MENU_SLUG,
 			array( $this, 'renderLogs' )
@@ -100,8 +100,8 @@ final class AdminPage {
 	private function renderMount( string $view ): void {
 		if ( ! current_user_can( self::CAPABILITY ) ) {
 			wp_die(
-				esc_html__( 'You do not have permission to access DocSync WP.', 'docsync-wp' ),
-				esc_html__( 'Permission denied', 'docsync-wp' ),
+				esc_html__( 'You do not have permission to access Brasth Document Sync.', 'brasth-document-sync-for-google-docs' ),
+				esc_html__( 'Permission denied', 'brasth-document-sync-for-google-docs' ),
 				array( 'response' => 403 )
 			);
 		}
@@ -110,7 +110,7 @@ final class AdminPage {
 		<div class="wrap docsync-wp-admin-page">
 			<div id="docsync-wp-admin-root" data-view="<?php echo esc_attr( $view ); ?>"></div>
 			<noscript>
-				<?php esc_html_e( 'DocSync WP requires JavaScript in the WordPress admin.', 'docsync-wp' ); ?>
+				<?php esc_html_e( 'Brasth Document Sync requires JavaScript in the WordPress admin.', 'brasth-document-sync-for-google-docs' ); ?>
 			</noscript>
 		</div>
 		<?php

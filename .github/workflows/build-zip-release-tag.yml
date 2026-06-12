@@ -19,7 +19,7 @@ jobs:
     name: Build And Package Tagged Release
     runs-on: ubuntu-latest
     env:
-      PLUGIN_SLUG: docsync-wp
+      PLUGIN_SLUG: brasth-document-sync-for-google-docs
       RELEASE_TAG_NAME: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.event.release.tag_name }}
 
     steps:
@@ -42,17 +42,17 @@ jobs:
           TAG_VERSION="${TAG_NAME#v}"
 
           PLUGIN_HEADER_VERSION="$(
-            awk -F':' '/^[[:space:]]*\*[[:space:]]*Version:/ {gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2; exit}' docsync-wp.php
+            awk -F':' '/^[[:space:]]*\*[[:space:]]*Version:/ {gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2; exit}' brasth-document-sync-for-google-docs.php
           )"
           PLUGIN_CONST_VERSION="$(
-            sed -nE "s/^define\([[:space:]]*'DOCSYNC_WP_VERSION',[[:space:]]*'([^']+)'.*\);$/\1/p" docsync-wp.php | head -n 1
+            sed -nE "s/^define\([[:space:]]*'DOCSYNC_WP_VERSION',[[:space:]]*'([^']+)'.*\);$/\1/p" brasth-document-sync-for-google-docs.php | head -n 1
           )"
           README_STABLE_TAG="$(
             awk -F':' '/^Stable tag:/ {gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2; exit}' readme.txt
           )"
 
           if [ -z "${PLUGIN_HEADER_VERSION}" ] || [ -z "${PLUGIN_CONST_VERSION}" ] || [ -z "${README_STABLE_TAG}" ]; then
-            echo "Could not parse plugin version metadata from docsync-wp.php and readme.txt."
+            echo "Could not parse plugin version metadata from brasth-document-sync-for-google-docs.php and readme.txt."
             exit 1
           fi
 
@@ -190,6 +190,9 @@ jobs:
           FORBIDDEN_PATHS=(
             "${PLUGIN_SLUG}/.git"
             "${PLUGIN_SLUG}/.github"
+            "${PLUGIN_SLUG}/.claude"
+            "${PLUGIN_SLUG}/.agents"
+            "${PLUGIN_SLUG}/.codex"
             "${PLUGIN_SLUG}/node_modules"
             "${PLUGIN_SLUG}/.pnpm-store"
             "${PLUGIN_SLUG}/docs"
@@ -197,6 +200,7 @@ jobs:
             "${PLUGIN_SLUG}/tests"
             "${PLUGIN_SLUG}/coverage"
             "${PLUGIN_SLUG}/phpcs.xml.dist"
+            "${PLUGIN_SLUG}/assets"
           )
 
           for forbidden_path in "${FORBIDDEN_PATHS[@]}"; do
