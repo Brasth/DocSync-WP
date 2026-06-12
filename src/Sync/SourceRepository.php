@@ -121,7 +121,7 @@ final class SourceRepository {
 		if ( null === $post ) {
 			return new WP_Error(
 				'docsync_wp_invalid_post',
-				__( 'DocSync WP cannot save source metadata for an invalid post.', 'docsync-wp' ),
+				__( 'Brasth Document Sync cannot save source metadata for an invalid post.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 404 )
 			);
 		}
@@ -129,7 +129,7 @@ final class SourceRepository {
 		if ( ! $this->isPostTypeEnabled( $post->post_type ) ) {
 			return new WP_Error(
 				'docsync_wp_post_type_disabled',
-				__( 'DocSync WP source metadata cannot be saved for this post type.', 'docsync-wp' ),
+				__( 'Brasth Document Sync source metadata cannot be saved for this post type.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -139,7 +139,7 @@ final class SourceRepository {
 		if ( '' === $file_id ) {
 			return new WP_Error(
 				'docsync_wp_missing_google_file_id',
-				__( 'DocSync WP requires a Google file ID before saving source metadata.', 'docsync-wp' ),
+				__( 'Brasth Document Sync requires a Google file ID before saving source metadata.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -158,7 +158,7 @@ final class SourceRepository {
 		update_post_meta( $post_id, self::META_SYNC_ERROR, isset( $source['sync_error'] ) ? sanitize_textarea_field( (string) $source['sync_error'] ) : '' );
 		update_post_meta( $post_id, self::META_SYNC_PROGRESS, $this->sanitizeProgress( $source['sync_progress'] ?? 0 ) );
 		update_post_meta( $post_id, self::META_SYNC_STEP, isset( $source['sync_step'] ) ? sanitize_key( (string) $source['sync_step'] ) : 'linked' );
-		update_post_meta( $post_id, self::META_SYNC_MESSAGE, $this->sanitizeProgressMessage( $source['sync_message'] ?? __( 'Linked and ready to sync.', 'docsync-wp' ) ) );
+		update_post_meta( $post_id, self::META_SYNC_MESSAGE, $this->sanitizeProgressMessage( $source['sync_message'] ?? __( 'Linked and ready to sync.', 'brasth-document-sync-for-google-docs' ) ) );
 		update_post_meta( $post_id, self::META_SYNC_STARTED, isset( $source['sync_started_at'] ) ? sanitize_text_field( (string) $source['sync_started_at'] ) : '' );
 		update_post_meta( $post_id, self::META_SYNC_UPDATED, isset( $source['sync_updated_at'] ) ? sanitize_text_field( (string) $source['sync_updated_at'] ) : '' );
 		update_post_meta( $post_id, self::META_SYNC_ERR_CODE, isset( $source['sync_error_code'] ) ? sanitize_key( (string) $source['sync_error_code'] ) : '' );
@@ -198,7 +198,7 @@ final class SourceRepository {
 		if ( null === $source ) {
 			return new WP_Error(
 				'docsync_wp_source_not_found',
-				__( 'This post is not linked to a Google Doc.', 'docsync-wp' ),
+				__( 'This post is not linked to a Google Doc.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 404 )
 			);
 		}
@@ -255,7 +255,7 @@ final class SourceRepository {
 		if ( '' !== $level && ! in_array( $level, self::SYNC_EVENT_LEVELS, true ) ) {
 			return new WP_Error(
 				'docsync_wp_invalid_sync_log_level',
-				__( 'DocSync WP received an unsupported sync log level filter.', 'docsync-wp' ),
+				__( 'Brasth Document Sync received an unsupported sync log level filter.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -744,7 +744,7 @@ final class SourceRepository {
 	}
 
 	/**
-	 * Whether a post type is enabled for DocSync WP.
+	 * Whether a post type is enabled for Brasth Document Sync.
 	 *
 	 * @param string $post_type Post type.
 	 */
@@ -780,7 +780,7 @@ final class SourceRepository {
 		if ( ! $post instanceof WP_Post ) {
 			return new WP_Error(
 				'docsync_wp_invalid_post',
-				__( 'DocSync WP could not find that post.', 'docsync-wp' ),
+				__( 'Brasth Document Sync could not find that post.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 404 )
 			);
 		}
@@ -788,7 +788,7 @@ final class SourceRepository {
 		if ( ! $this->isPostTypeEnabled( $post->post_type ) ) {
 			return new WP_Error(
 				'docsync_wp_post_type_disabled',
-				__( 'DocSync WP is not enabled for this post type.', 'docsync-wp' ),
+				__( 'Brasth Document Sync is not enabled for this post type.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -796,7 +796,7 @@ final class SourceRepository {
 		if ( ! user_can( $user_id, 'edit_post', $post_id ) ) {
 			return new WP_Error(
 				'docsync_wp_forbidden',
-				__( 'You do not have permission to edit this post.', 'docsync-wp' ),
+				__( 'You do not have permission to edit this post.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 403 )
 			);
 		}
@@ -804,7 +804,7 @@ final class SourceRepository {
 		if ( null === $this->getSource( $post_id ) ) {
 			return new WP_Error(
 				'docsync_wp_source_not_found',
-				__( 'This post is not linked to a Google Doc.', 'docsync-wp' ),
+				__( 'This post is not linked to a Google Doc.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 404 )
 			);
 		}
@@ -1051,7 +1051,7 @@ final class SourceRepository {
 			return $message;
 		}
 
-		return 'linked' === $step ? __( 'Linked and ready to sync.', 'docsync-wp' ) : '';
+		return 'linked' === $step ? __( 'Linked and ready to sync.', 'brasth-document-sync-for-google-docs' ) : '';
 	}
 
 	/**

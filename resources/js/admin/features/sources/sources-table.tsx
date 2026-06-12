@@ -46,7 +46,7 @@ const syncMethodLabel = (source: SourceRecord): string => {
 };
 
 const logsUrl = (postId: number): string => {
-  return `admin.php?page=docsync-wp-logs&post_id=${encodeURIComponent(String(postId))}`;
+  return `admin.php?page=brasth-document-sync-for-google-docs-logs&post_id=${encodeURIComponent(String(postId))}`;
 };
 
 const statusOptions = [

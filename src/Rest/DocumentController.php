@@ -192,7 +192,7 @@ final class DocumentController {
 		if ( ! is_array( $params ) ) {
 			return new WP_Error(
 				'docsync_wp_invalid_document_payload',
-				__( 'DocSync WP document inspection requires a JSON object.', 'docsync-wp' ),
+				__( 'Brasth Document Sync document inspection requires a JSON object.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 400 )
 			);
 		}

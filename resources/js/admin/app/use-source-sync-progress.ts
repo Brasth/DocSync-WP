@@ -40,8 +40,8 @@ export const useSourceSyncProgress = (setSources: SetSources, setNotice: SetNoti
   const handleSourceTerminal = (source: SourceRecord) => {
     const isError = source.syncStatus === 'error';
     const message = isError
-      ? source.syncError || __('Google Doc sync failed.', 'docsync-wp')
-      : source.syncMessage || sprintf(__('Source %d sync complete.', 'docsync-wp'), source.postId);
+      ? source.syncError || __('Google Doc sync failed.', 'brasth-document-sync-for-google-docs')
+      : source.syncMessage || sprintf(__('Source %d sync complete.', 'brasth-document-sync-for-google-docs'), source.postId);
 
     mergeSources([source]);
     stopTrackingSource(source.postId);
@@ -56,7 +56,7 @@ export const useSourceSyncProgress = (setSources: SetSources, setNotice: SetNoti
   };
 
   const handleSourcePollingTimeout = (postId: number) => {
-    const message = __('Still syncing. Refresh sources to check again later.', 'docsync-wp');
+    const message = __('Still syncing. Refresh sources to check again later.', 'brasth-document-sync-for-google-docs');
 
     stopTrackingSource(postId);
     setNotice({ type: 'warning', message });

@@ -17,7 +17,7 @@ const SetupSourcesApp = ({ view }: { view: SetupAdminView }): JSX.Element => {
   useEffect(() => {
     app.refresh().catch((caught) => {
       app.runAction(async () => {
-        throw caught instanceof Error ? caught : new Error(__('Could not load DocSync WP.', 'docsync-wp'));
+        throw caught instanceof Error ? caught : new Error(__('Could not load Brasth Document Sync.', 'brasth-document-sync-for-google-docs'));
       }).catch(() => undefined);
     });
   }, [view]);
@@ -26,20 +26,20 @@ const SetupSourcesApp = ({ view }: { view: SetupAdminView }): JSX.Element => {
     <main className="docsync-wp-admin-shell">
       <header className="docsync-wp-hero">
         <div>
-          <p>{__('DocSync WP', 'docsync-wp')}</p>
-          <h1>{view === 'sources' ? __('Sources', 'docsync-wp') : __('Google Setup', 'docsync-wp')}</h1>
-          <span>{__('Version', 'docsync-wp')} {app.config.version}</span>
+          <p>{__('Brasth Document Sync', 'brasth-document-sync-for-google-docs')}</p>
+          <h1>{view === 'sources' ? __('Sources', 'brasth-document-sync-for-google-docs') : __('Google Setup', 'brasth-document-sync-for-google-docs')}</h1>
+          <span>{__('Version', 'brasth-document-sync-for-google-docs')} {app.config.version}</span>
         </div>
         <div className="docsync-wp-hero__status">
           {view === 'sources' ? (
             <>
               <strong>{app.sources.length}</strong>
-              <span>{app.sources.length === 1 ? __('shown source', 'docsync-wp') : __('shown sources', 'docsync-wp')}</span>
+              <span>{app.sources.length === 1 ? __('shown source', 'brasth-document-sync-for-google-docs') : __('shown sources', 'brasth-document-sync-for-google-docs')}</span>
             </>
           ) : (
             <>
-              <strong>{app.settings?.hasRequiredSettings ? __('Ready', 'docsync-wp') : __('Setup', 'docsync-wp')}</strong>
-              <span>{__('Google connection', 'docsync-wp')}</span>
+              <strong>{app.settings?.hasRequiredSettings ? __('Ready', 'brasth-document-sync-for-google-docs') : __('Setup', 'brasth-document-sync-for-google-docs')}</strong>
+              <span>{__('Google connection', 'brasth-document-sync-for-google-docs')}</span>
             </>
           )}
         </div>
@@ -49,7 +49,7 @@ const SetupSourcesApp = ({ view }: { view: SetupAdminView }): JSX.Element => {
 
       {!app.settings ? (
         <section className="docsync-wp-card">
-          <p>{__('Loading settings...', 'docsync-wp')}</p>
+          <p>{__('Loading settings...', 'brasth-document-sync-for-google-docs')}</p>
         </section>
       ) : view === 'sources' ? (
         <div className="docsync-wp-admin-grid docsync-wp-admin-grid--single">
@@ -97,11 +97,11 @@ const SetupSourcesApp = ({ view }: { view: SetupAdminView }): JSX.Element => {
               onDisconnect={app.disconnectGoogle}
             />
             <section className="docsync-wp-card">
-              <h2>{__('Connection mode', 'docsync-wp')}</h2>
+              <h2>{__('Connection mode', 'brasth-document-sync-for-google-docs')}</h2>
               <ul>
-                <li>{__('Current mode: self-managed Google Cloud app.', 'docsync-wp')}</li>
-                <li>{__('Each WordPress user connects their own Google account.', 'docsync-wp')}</li>
-                <li>{__('Managed connector support can be added later without proxying document content.', 'docsync-wp')}</li>
+                <li>{__('Current mode: self-managed Google Cloud app.', 'brasth-document-sync-for-google-docs')}</li>
+                <li>{__('Each WordPress user connects their own Google account.', 'brasth-document-sync-for-google-docs')}</li>
+                <li>{__('Managed connector support can be added later without proxying document content.', 'brasth-document-sync-for-google-docs')}</li>
               </ul>
             </section>
           </aside>

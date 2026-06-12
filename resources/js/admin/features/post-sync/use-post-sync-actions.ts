@@ -16,12 +16,12 @@ export const usePostSyncActions = (postId: number, initialSource: SourceRecord |
 
     try {
       const result = await syncSource(postId, 'background');
-      const message = result.source?.syncMessage || __('Google Doc sync queued.', 'docsync-wp');
+      const message = result.source?.syncMessage || __('Google Doc sync queued.', 'brasth-document-sync-for-google-docs');
       setSource(result.source ?? source);
       setNotice({ type: 'info', message });
       speak(message);
     } catch (caught) {
-      const message = caught instanceof Error ? caught.message : __('Sync failed.', 'docsync-wp');
+      const message = caught instanceof Error ? caught.message : __('Sync failed.', 'brasth-document-sync-for-google-docs');
       setNotice({ type: 'error', message });
       speak(message, 'assertive');
     } finally {
@@ -35,12 +35,12 @@ export const usePostSyncActions = (postId: number, initialSource: SourceRecord |
 
     try {
       await detachSource(postId);
-      const message = __('Google Doc detached.', 'docsync-wp');
+      const message = __('Google Doc detached.', 'brasth-document-sync-for-google-docs');
       setSource(null);
       setNotice({ type: 'success', message });
       speak(message);
     } catch (caught) {
-      const message = caught instanceof Error ? caught.message : __('Detach failed.', 'docsync-wp');
+      const message = caught instanceof Error ? caught.message : __('Detach failed.', 'brasth-document-sync-for-google-docs');
       setNotice({ type: 'error', message });
       speak(message, 'assertive');
     } finally {

@@ -1,6 +1,6 @@
 <?php
 /**
- * REST controller for DocSync WP settings.
+ * REST controller for Brasth Document Sync settings.
  *
  * @package DocSyncWP
  */
@@ -84,7 +84,7 @@ final class SettingsController {
 		if ( ! is_array( $params ) ) {
 			return new WP_Error(
 				'docsync_wp_invalid_settings_payload',
-				__( 'DocSync WP settings must be submitted as an object.', 'docsync-wp' ),
+				__( 'Brasth Document Sync settings must be submitted as an object.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -127,7 +127,7 @@ final class SettingsController {
 		if ( array() !== $unknown_keys ) {
 			return new WP_Error(
 				'docsync_wp_unknown_settings',
-				__( 'DocSync WP received unknown settings.', 'docsync-wp' ),
+				__( 'Brasth Document Sync received unknown settings.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 400 )
 			);
 		}

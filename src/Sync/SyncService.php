@@ -117,7 +117,7 @@ final class SyncService {
 		if ( is_array( $current_source ) && self::STATUS_SYNCING === (string) $current_source['sync_status'] ) {
 			return new WP_Error(
 				'docsync_wp_source_syncing',
-				__( 'Wait for the current Google Doc sync to finish before changing this source.', 'docsync-wp' ),
+				__( 'Wait for the current Google Doc sync to finish before changing this source.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 409 )
 			);
 		}
@@ -148,7 +148,7 @@ final class SyncService {
 					'sync_error'         => '',
 					'sync_progress'      => 0,
 					'sync_step'          => 'linked',
-					'sync_message'       => __( 'Linked and ready to sync.', 'docsync-wp' ),
+					'sync_message'       => __( 'Linked and ready to sync.', 'brasth-document-sync-for-google-docs' ),
 					'sync_started_at'    => '',
 					'sync_updated_at'    => '',
 					'sync_error_code'    => '',
@@ -208,7 +208,7 @@ final class SyncService {
 		if ( is_wp_error( $post_id ) ) {
 			return new WP_Error(
 				'docsync_wp_create_post_failed',
-				__( 'DocSync WP could not create a draft post for this Google Doc.', 'docsync-wp' ),
+				__( 'Brasth Document Sync could not create a draft post for this Google Doc.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -227,7 +227,7 @@ final class SyncService {
 					'sync_error'         => '',
 					'sync_progress'      => 0,
 					'sync_step'          => 'linked',
-					'sync_message'       => __( 'Linked and ready to sync.', 'docsync-wp' ),
+					'sync_message'       => __( 'Linked and ready to sync.', 'brasth-document-sync-for-google-docs' ),
 					'sync_started_at'    => '',
 					'sync_updated_at'    => '',
 					'sync_error_code'    => '',
@@ -280,7 +280,7 @@ final class SyncService {
 		if ( null === $source ) {
 			return new WP_Error(
 				'docsync_wp_source_not_found',
-				__( 'This post is not linked to a Google Doc.', 'docsync-wp' ),
+				__( 'This post is not linked to a Google Doc.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 404 )
 			);
 		}
@@ -298,7 +298,7 @@ final class SyncService {
 			self::STATUS_SYNCING,
 			0,
 			'queued',
-			__( 'Sync queued.', 'docsync-wp' ),
+			__( 'Sync queued.', 'brasth-document-sync-for-google-docs' ),
 			array(
 				'sync_owner_user_id' => $user_id,
 				'sync_error'         => '',
@@ -327,7 +327,7 @@ final class SyncService {
 		if ( null === $source ) {
 			return new WP_Error(
 				'docsync_wp_source_not_found',
-				__( 'This post is not linked to a Google Doc.', 'docsync-wp' ),
+				__( 'This post is not linked to a Google Doc.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 404 )
 			);
 		}
@@ -371,7 +371,7 @@ final class SyncService {
 		if ( null === $source ) {
 			return new WP_Error(
 				'docsync_wp_source_not_found',
-				__( 'This post is not linked to a Google Doc.', 'docsync-wp' ),
+				__( 'This post is not linked to a Google Doc.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 404 )
 			);
 		}
@@ -379,7 +379,7 @@ final class SyncService {
 		if ( ! $this->sync_lock->acquire( $post_id ) ) {
 			return new WP_Error(
 				'docsync_wp_sync_locked',
-				__( 'This Google Doc sync is already running.', 'docsync-wp' ),
+				__( 'This Google Doc sync is already running.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 409 )
 			);
 		}
@@ -391,7 +391,7 @@ final class SyncService {
 				self::STATUS_SYNCING,
 				10,
 				'checking_google',
-				__( 'Checking Google Doc metadata.', 'docsync-wp' ),
+				__( 'Checking Google Doc metadata.', 'brasth-document-sync-for-google-docs' ),
 				array( 'sync_error' => '' )
 			);
 
@@ -427,7 +427,7 @@ final class SyncService {
 					self::STATUS_SKIPPED,
 					100,
 					'complete',
-					__( 'Google Doc has not changed.', 'docsync-wp' ),
+					__( 'Google Doc has not changed.', 'brasth-document-sync-for-google-docs' ),
 					array(
 						'last_synced_at'     => current_time( 'mysql', true ),
 						'sync_owner_user_id' => $sync_user_id,
@@ -448,7 +448,7 @@ final class SyncService {
 				self::STATUS_SYNCING,
 				25,
 				'exporting',
-				__( 'Exporting Google Doc.', 'docsync-wp' ),
+				__( 'Exporting Google Doc.', 'brasth-document-sync-for-google-docs' ),
 				array(
 					'sync_owner_user_id' => $sync_user_id,
 					'sync_error'         => '',
@@ -471,7 +471,7 @@ final class SyncService {
 				self::STATUS_SYNCING,
 				70,
 				'converting',
-				__( 'Converting content to WordPress blocks.', 'docsync-wp' ),
+				__( 'Converting content to WordPress blocks.', 'brasth-document-sync-for-google-docs' ),
 				array( 'sync_error' => '' )
 			);
 
@@ -494,7 +494,7 @@ final class SyncService {
 					self::STATUS_SKIPPED,
 					100,
 					'complete',
-					__( 'Imported content matches the current WordPress post.', 'docsync-wp' ),
+					__( 'Imported content matches the current WordPress post.', 'brasth-document-sync-for-google-docs' ),
 					array(
 						'last_hash'          => $hash,
 						'last_synced_at'     => current_time( 'mysql', true ),
@@ -517,7 +517,7 @@ final class SyncService {
 				self::STATUS_SYNCING,
 				90,
 				'updating_post',
-				__( 'Updating the WordPress post.', 'docsync-wp' ),
+				__( 'Updating the WordPress post.', 'brasth-document-sync-for-google-docs' ),
 				array( 'sync_error' => '' )
 			);
 
@@ -547,7 +547,7 @@ final class SyncService {
 					$source,
 					new WP_Error(
 						'docsync_wp_update_post_failed',
-						__( 'DocSync WP could not update this post with Google Docs content.', 'docsync-wp' ),
+						__( 'Brasth Document Sync could not update this post with Google Docs content.', 'brasth-document-sync-for-google-docs' ),
 						array( 'status' => 500 )
 					)
 				);
@@ -559,7 +559,7 @@ final class SyncService {
 				self::STATUS_SYNCED,
 				100,
 				'complete',
-				__( 'Sync complete.', 'docsync-wp' ),
+				__( 'Sync complete.', 'brasth-document-sync-for-google-docs' ),
 				array(
 					'last_hash'          => $hash,
 					'last_synced_at'     => current_time( 'mysql', true ),
@@ -725,7 +725,7 @@ final class SyncService {
 	private function sourceChangedError(): WP_Error {
 		return new WP_Error(
 			'docsync_wp_source_changed',
-			__( 'The linked Google Doc changed while this sync was running. Start a new sync if needed.', 'docsync-wp' ),
+			__( 'The linked Google Doc changed while this sync was running. Start a new sync if needed.', 'brasth-document-sync-for-google-docs' ),
 			array( 'status' => 409 )
 		);
 	}
@@ -785,7 +785,7 @@ final class SyncService {
 				self::STATUS_SYNCING,
 				55,
 				'importing',
-				__( 'Importing Google Doc HTML and assets.', 'docsync-wp' ),
+				__( 'Importing Google Doc HTML and assets.', 'brasth-document-sync-for-google-docs' ),
 				array( 'sync_error' => '' )
 			);
 
@@ -816,7 +816,7 @@ final class SyncService {
 			self::STATUS_SYNCING,
 			35,
 			'large_doc_fallback',
-			__( 'Drive export was too large. Switching to the large-doc fallback.', 'docsync-wp' ),
+			__( 'Drive export was too large. Switching to the large-doc fallback.', 'brasth-document-sync-for-google-docs' ),
 			array( 'sync_error' => '' ),
 			array(),
 			$zip_bytes->get_error_code()
@@ -833,7 +833,7 @@ final class SyncService {
 			self::STATUS_SYNCING,
 			55,
 			'importing',
-			__( 'Importing through the large-doc fallback.', 'docsync-wp' ),
+			__( 'Importing through the large-doc fallback.', 'brasth-document-sync-for-google-docs' ),
 			array( 'sync_error' => '' )
 		);
 
@@ -916,7 +916,7 @@ final class SyncService {
 			if ( is_wp_error( $updated ) ) {
 				return new WP_Error(
 					'docsync_wp_partial_update_post_failed',
-					__( 'DocSync WP could not save imported large-doc content yet.', 'docsync-wp' ),
+					__( 'Brasth Document Sync could not save imported large-doc content yet.', 'brasth-document-sync-for-google-docs' ),
 					array( 'status' => 500 )
 				);
 			}
@@ -931,7 +931,7 @@ final class SyncService {
 				self::STATUS_SYNCING,
 				$progress,
 				'large_doc_partial_import',
-				__( 'Imported part of the large Doc.', 'docsync-wp' ),
+				__( 'Imported part of the large Doc.', 'brasth-document-sync-for-google-docs' ),
 				array( 'sync_error' => '' )
 			);
 
@@ -960,7 +960,7 @@ final class SyncService {
 		if ( isset( $compatibility['canDownload'] ) && false === $compatibility['canDownload'] ) {
 			return new WP_Error(
 				'docsync_wp_drive_download_blocked',
-				__( 'Google says this Doc cannot be downloaded by the connected account. Adjust sharing or choose another Doc before syncing.', 'docsync-wp' ),
+				__( 'Google says this Doc cannot be downloaded by the connected account. Adjust sharing or choose another Doc before syncing.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 403 )
 			);
 		}
@@ -1041,7 +1041,7 @@ final class SyncService {
 
 		return new WP_Error(
 			'docsync_wp_invalid_export_format',
-			__( 'DocSync WP only supports HTML ZIP exports.', 'docsync-wp' ),
+			__( 'Brasth Document Sync only supports HTML ZIP exports.', 'brasth-document-sync-for-google-docs' ),
 			array( 'status' => 400 )
 		);
 	}

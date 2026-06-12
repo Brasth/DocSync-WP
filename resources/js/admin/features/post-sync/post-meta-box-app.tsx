@@ -31,13 +31,13 @@ export const PostMetaBoxApp = ({ postId, postType, initialSource }: Props): JSX.
     actions.setNotice({
       type: queued ? 'info' : 'success',
       message: queued
-        ? nextSource?.syncMessage || __('Google Doc sync queued.', 'docsync-wp')
-        : actions.source ? __('Google Doc changed.', 'docsync-wp') : __('Google Doc linked.', 'docsync-wp')
+        ? nextSource?.syncMessage || __('Google Doc sync queued.', 'brasth-document-sync-for-google-docs')
+        : actions.source ? __('Google Doc changed.', 'brasth-document-sync-for-google-docs') : __('Google Doc linked.', 'brasth-document-sync-for-google-docs')
     });
   };
 
   const applySyncedContent = async (source: SourceRecord) => {
-    actions.setNotice({ type: 'info', message: __('Applying synced Google Doc content.', 'docsync-wp') });
+    actions.setNotice({ type: 'info', message: __('Applying synced Google Doc content.', 'brasth-document-sync-for-google-docs') });
 
     try {
       const response = await getSourceContent(source.postId);
@@ -46,17 +46,17 @@ export const PostMetaBoxApp = ({ postId, postType, initialSource }: Props): JSX.
       actions.setSource(response.source ?? source);
 
       if (!applied) {
-        const message = __('Google Doc sync complete, but this editor cannot be updated without reopening the screen.', 'docsync-wp');
+        const message = __('Google Doc sync complete, but this editor cannot be updated without reopening the screen.', 'brasth-document-sync-for-google-docs');
         actions.setNotice({ type: 'warning', message });
         speak(message, 'assertive');
         return;
       }
 
-      const message = __('Synced Google Doc content applied to the editor.', 'docsync-wp');
+      const message = __('Synced Google Doc content applied to the editor.', 'brasth-document-sync-for-google-docs');
       actions.setNotice({ type: 'success', message });
       speak(message, 'polite');
     } catch (caught) {
-      const message = caught instanceof Error ? caught.message : __('Could not load synced Google Doc content.', 'docsync-wp');
+      const message = caught instanceof Error ? caught.message : __('Could not load synced Google Doc content.', 'brasth-document-sync-for-google-docs');
       actions.setNotice({ type: 'error', message });
       speak(message, 'assertive');
     }
@@ -65,7 +65,7 @@ export const PostMetaBoxApp = ({ postId, postType, initialSource }: Props): JSX.
   const onTerminal = (source: SourceRecord) => {
     const isError = source.syncStatus === 'error';
     actions.setSource(source);
-    const message = isError ? source.syncError || __('Google Doc sync failed.', 'docsync-wp') : source.syncMessage || __('Google Doc sync complete.', 'docsync-wp');
+    const message = isError ? source.syncError || __('Google Doc sync failed.', 'brasth-document-sync-for-google-docs') : source.syncMessage || __('Google Doc sync complete.', 'brasth-document-sync-for-google-docs');
 
     if (!isError) {
       const isDirty = getEditorDirtyState();
@@ -76,14 +76,14 @@ export const PostMetaBoxApp = ({ postId, postType, initialSource }: Props): JSX.
       }
 
       actions.setNotice({
-        actionLabel: __('Apply synced content', 'docsync-wp'),
+        actionLabel: __('Apply synced content', 'brasth-document-sync-for-google-docs'),
         onAction: () => {
           applySyncedContent(source).catch(() => undefined);
         },
         type: isDirty ? 'warning' : 'success',
         message: isDirty
-          ? __('Google Doc sync complete. Applying it will replace the current editor content.', 'docsync-wp')
-          : __('Google Doc sync complete. Apply the synced content to the editor.', 'docsync-wp')
+          ? __('Google Doc sync complete. Applying it will replace the current editor content.', 'brasth-document-sync-for-google-docs')
+          : __('Google Doc sync complete. Apply the synced content to the editor.', 'brasth-document-sync-for-google-docs')
       });
       speak(message, 'polite');
       return;
@@ -102,7 +102,7 @@ export const PostMetaBoxApp = ({ postId, postType, initialSource }: Props): JSX.
   };
 
   const onPollingTimeout = () => {
-    const message = __('Still syncing. Leave this editor open to keep checking progress.', 'docsync-wp');
+    const message = __('Still syncing. Leave this editor open to keep checking progress.', 'brasth-document-sync-for-google-docs');
 
     actions.setNotice({ type: 'warning', message });
     speak(message);
@@ -119,15 +119,15 @@ export const PostMetaBoxApp = ({ postId, postType, initialSource }: Props): JSX.
             updatedAt={actions.source.syncUpdatedAt}
           />
         ) : null}
-        {actions.source?.lastSyncedAt ? <p><strong>{__('Last sync:', 'docsync-wp')}</strong> {actions.source.lastSyncedAt}</p> : null}
+        {actions.source?.lastSyncedAt ? <p><strong>{__('Last sync:', 'brasth-document-sync-for-google-docs')}</strong> {actions.source.lastSyncedAt}</p> : null}
         {actions.source?.syncError ? <p className="docsync-wp-list-error">{actions.source.syncError}</p> : null}
         <AdminNotice className="inline" notice={actions.notice} />
         <div className="docsync-wp-post-box__actions">
           <AdminButton disabled={actions.busy || isSyncing} onClick={() => setModalTarget({ mode: 'existing', postId, postType })} variant="primary">
-            {actions.source ? __('Change Doc', 'docsync-wp') : __('Link Google Doc', 'docsync-wp')}
+            {actions.source ? __('Change Doc', 'brasth-document-sync-for-google-docs') : __('Link Google Doc', 'brasth-document-sync-for-google-docs')}
           </AdminButton>
-          {actions.source ? <AdminButton disabled={actions.busy} onClick={actions.syncNow}>{__('Sync now', 'docsync-wp')}</AdminButton> : null}
-          {actions.source ? <AdminButton disabled={actions.busy || isSyncing} onClick={actions.detach} variant="delete">{__('Detach', 'docsync-wp')}</AdminButton> : null}
+          {actions.source ? <AdminButton disabled={actions.busy} onClick={actions.syncNow}>{__('Sync now', 'brasth-document-sync-for-google-docs')}</AdminButton> : null}
+          {actions.source ? <AdminButton disabled={actions.busy || isSyncing} onClick={actions.detach} variant="delete">{__('Detach', 'brasth-document-sync-for-google-docs')}</AdminButton> : null}
         </div>
       </div>
       {actions.source?.syncStatus === 'syncing' ? (

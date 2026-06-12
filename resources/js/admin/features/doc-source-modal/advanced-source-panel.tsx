@@ -16,7 +16,7 @@ export const AdvancedSourcePanel = ({ sourceMode, documentInput, onInputChange }
       <p className="description">{docSourceHelp[sourceMode]}</p>
       <TextControl
         className="docsync-wp-field"
-        label={sourceMode === 'url' ? __('Google Docs URL', 'docsync-wp') : __('Google Drive file ID', 'docsync-wp')}
+        label={sourceMode === 'url' ? __('Google Docs URL', 'brasth-document-sync-for-google-docs') : __('Google Drive file ID', 'brasth-document-sync-for-google-docs')}
         onChange={onInputChange}
         placeholder={sourceMode === 'url' ? 'https://docs.google.com/document/d/...' : '1AbC...'}
         value={documentInput}

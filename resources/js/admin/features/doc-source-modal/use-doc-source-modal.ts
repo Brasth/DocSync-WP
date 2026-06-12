@@ -53,7 +53,7 @@ export const useDocSourceModal = ({ isOpen, target, onClose, onCompleted }: Args
       const inspected = await inspectDocument(documentInput, uiMode);
       setMetadata(inspected);
     } catch (caught) {
-      const message = caught instanceof Error ? caught.message : __('Could not inspect this Google Doc.', 'docsync-wp');
+      const message = caught instanceof Error ? caught.message : __('Could not inspect this Google Doc.', 'brasth-document-sync-for-google-docs');
       setMetadata(null);
       setError(message);
       speak(message, 'assertive');
@@ -80,12 +80,12 @@ export const useDocSourceModal = ({ isOpen, target, onClose, onCompleted }: Args
 
   const attach = async () => {
     if (!metadata || !target) {
-      setError(__('Select or inspect a Google Doc before linking it.', 'docsync-wp'));
+      setError(__('Select or inspect a Google Doc before linking it.', 'brasth-document-sync-for-google-docs'));
       return;
     }
 
     if (metadata.syncCompatibility?.canDownload === false) {
-      const message = metadata.syncCompatibility.warningMessage || __('Google says this Doc cannot be downloaded by the connected account.', 'docsync-wp');
+      const message = metadata.syncCompatibility.warningMessage || __('Google says this Doc cannot be downloaded by the connected account.', 'brasth-document-sync-for-google-docs');
       setError(message);
       speak(message, 'assertive');
       return;
@@ -107,7 +107,7 @@ export const useDocSourceModal = ({ isOpen, target, onClose, onCompleted }: Args
       onCompleted(result);
       onClose();
     } catch (caught) {
-      const message = caught instanceof Error ? caught.message : __('Could not link this Google Doc.', 'docsync-wp');
+      const message = caught instanceof Error ? caught.message : __('Could not link this Google Doc.', 'brasth-document-sync-for-google-docs');
       setError(message);
       speak(message, 'assertive');
     } finally {

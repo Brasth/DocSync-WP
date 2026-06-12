@@ -86,7 +86,7 @@ final class TokenStore {
 		if ( $user_id <= 0 ) {
 			return new WP_Error(
 				'docsync_wp_invalid_user',
-				__( 'DocSync WP cannot store Google tokens for an invalid user.', 'docsync-wp' ),
+				__( 'Brasth Document Sync cannot store Google tokens for an invalid user.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 400 )
 			);
 		}

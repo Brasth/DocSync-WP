@@ -4,7 +4,7 @@ Date: 2026-05-18
 
 ## Changes
 
-- Added post edit DocSync meta box for enabled post types.
+- Added post edit sync meta box for enabled post types.
 - Added post list Add Sync Doc action, row Link/Sync actions, and status column.
 - Added shared admin REST client, Google Picker helper, and source modal for Picker/URL/file ID input.
 - Replaced placeholder admin app with settings, account connection, source table, sync-one, sync-all, and pagination.
@@ -20,7 +20,7 @@ Passed:
 - `pnpm typecheck`
 - `pnpm lint`
 - `pnpm build`
-- corrected `/Users/huynguyen/Downloads/docsync-wp-installable-3bd9e00.zip` has `docsync-wp/docsync-wp.php` at the ZIP root
+- corrected installable ZIP layout has one plugin folder with the main plugin file at the ZIP root
 
 Blocked:
 - PHP syntax/composer/phpcs checks: no `php`, no `composer`, no `vendor/` in local shell.

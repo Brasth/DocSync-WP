@@ -206,7 +206,7 @@ final class Plugin {
 	 */
 	public function register(): void {
 		load_plugin_textdomain(
-			'docsync-wp',
+			'brasth-document-sync-for-google-docs',
 			false,
 			dirname( DOCSYNC_WP_BASENAME ) . '/languages'
 		);

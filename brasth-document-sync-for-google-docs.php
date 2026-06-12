@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name:       DocSync WP
+ * Plugin Name:       Brasth Document Sync for Google Docs
  * Description:       Sync Google Docs into WordPress posts and pages with self-managed Google OAuth.
  * Version:           1.0.0
  * Requires at least: 6.4
@@ -8,7 +8,7 @@
  * Author:            Brasth
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain:       docsync-wp
+ * Text Domain:       brasth-document-sync-for-google-docs
  * Domain Path:       /languages
  *
  * @package DocSyncWP
@@ -51,13 +51,35 @@ function docsync_wp_render_runtime_notice(): void {
 		esc_html(
 			sprintf(
 				/* translators: 1: required PHP version, 2: current PHP version, 3: required WordPress version, 4: current WordPress version. */
-				__( 'DocSync WP requires PHP %1$s or newer and WordPress %3$s or newer. Current versions are PHP %2$s and WordPress %4$s.', 'docsync-wp' ),
+				__( 'Brasth Document Sync requires PHP %1$s or newer and WordPress %3$s or newer. Current versions are PHP %2$s and WordPress %4$s.', 'brasth-document-sync-for-google-docs' ),
 				DOCSYNC_WP_MINIMUM_PHP_VERSION,
 				PHP_VERSION,
 				DOCSYNC_WP_MINIMUM_WP_VERSION,
 				(string) $wp_version
 			)
 		)
+	);
+}
+
+/**
+ * Check whether the current admin screen belongs to this plugin.
+ */
+function docsync_wp_is_plugin_admin_context(): bool {
+	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+
+	if ( ! $screen ) {
+		return false;
+	}
+
+	return in_array(
+		$screen->id,
+		array(
+			'plugins',
+			'toplevel_page_brasth-document-sync-for-google-docs',
+			'brasth-document-sync-for-google-docs_page_brasth-document-sync-for-google-docs-sources',
+			'brasth-document-sync-for-google-docs_page_brasth-document-sync-for-google-docs-logs',
+		),
+		true
 	);
 }
 
@@ -69,6 +91,10 @@ function docsync_wp_render_missing_autoload_notice(): void {
 		return;
 	}
 
+	if ( ! docsync_wp_is_plugin_admin_context() ) {
+		return;
+	}
+
 	?>
 	<div class="notice notice-error">
 		<p>
@@ -76,7 +102,7 @@ function docsync_wp_render_missing_autoload_notice(): void {
 			echo wp_kses(
 				sprintf(
 					/* translators: %s: command to install dependencies. */
-					__( 'DocSync WP could not find Composer autoloading. Run %s in the plugin directory before using the plugin.', 'docsync-wp' ),
+					__( 'Brasth Document Sync could not find Composer autoloading. Run %s in the plugin directory before using the plugin.', 'brasth-document-sync-for-google-docs' ),
 					'<code>composer install</code>'
 				),
 				array(
@@ -90,7 +116,7 @@ function docsync_wp_render_missing_autoload_notice(): void {
 }
 
 /**
- * Add suggested privacy policy content for DocSync WP data handling.
+ * Add suggested privacy policy content for Brasth Document Sync data handling.
  */
 function docsync_wp_add_privacy_policy_content(): void {
 	if ( ! function_exists( 'wp_add_privacy_policy_content' ) ) {
@@ -100,19 +126,19 @@ function docsync_wp_add_privacy_policy_content(): void {
 	$content = wp_kses_post(
 		wpautop(
 			__(
-				'DocSync WP lets authorized WordPress users connect their own Google account to import Google Docs content into WordPress. The site owner supplies a Google OAuth client ID and client secret. DocSync WP stores those site credentials, per-user Google access and refresh tokens, connected Google account email addresses, linked Google document metadata, source sync status, diagnostic sync events, and imported attachment metadata in the WordPress database.
+				'Brasth Document Sync lets authorized WordPress users connect their own Google account to import Google Docs content into WordPress. The site owner supplies a Google OAuth client ID and client secret. Brasth Document Sync stores those site credentials, per-user Google access and refresh tokens, connected Google account email addresses, linked Google document metadata, source sync status, diagnostic sync events, and imported attachment metadata in the WordPress database.
 
-When a user connects Google, DocSync WP sends OAuth authorization and token refresh requests to Google. During browsing and sync, DocSync WP sends connected-user access tokens, Google Drive file IDs, folder IDs, shared-drive IDs, Drive search text, pagination tokens, and document export or read requests to the Google Drive API and Google Docs API. Google can return account email, OAuth tokens, document titles, document metadata, document export content, document structure, and image content URLs used to import media into WordPress.
+When a user connects Google, Brasth Document Sync sends OAuth authorization and token refresh requests to Google. During browsing and sync, Brasth Document Sync sends connected-user access tokens, Google Drive file IDs, folder IDs, shared-drive IDs, Drive search text, pagination tokens, and document export or read requests to the Google Drive API and Google Docs API. Google can return account email, OAuth tokens, document titles, document metadata, document export content, document structure, and image content URLs used to import media into WordPress.
 
-Imported Google Docs images are stored in the WordPress Media Library. Synced posts, pages, imported media, and linked post metadata remain on the site until a user with sufficient permission changes or deletes them. Uninstall removes plugin settings, encrypted user Google tokens, and scheduled cron events. Linked post metadata is retained by default unless full DocSync WP uninstall cleanup is enabled. Synced posts and imported media are not deleted automatically.
+Imported Google Docs images are stored in the WordPress Media Library. Synced posts, pages, imported media, and linked post metadata remain on the site until a user with sufficient permission changes or deletes them. Uninstall removes plugin settings, encrypted user Google tokens, and scheduled cron events. Linked post metadata is retained by default unless full Brasth Document Sync uninstall cleanup is enabled. Synced posts and imported media are not deleted automatically.
 
 Google provides the OAuth, Drive, and Docs services used by this plugin. Google Privacy Policy: https://policies.google.com/privacy. Google API Services User Data Policy: https://developers.google.com/terms/api-services-user-data-policy. Google APIs Terms of Service: https://developers.google.com/terms.',
-				'docsync-wp'
+				'brasth-document-sync-for-google-docs'
 			)
 		)
 	);
 
-	wp_add_privacy_policy_content( 'DocSync WP', $content );
+	wp_add_privacy_policy_content( 'Brasth Document Sync', $content );
 }
 
 /**
@@ -131,10 +157,10 @@ function docsync_wp_activate(): void {
 
 	wp_die(
 		esc_html__(
-			'DocSync WP requires PHP 8.1 or newer and WordPress 6.4 or newer.',
-			'docsync-wp'
+			'Brasth Document Sync requires PHP 8.1 or newer and WordPress 6.4 or newer.',
+			'brasth-document-sync-for-google-docs'
 		),
-		esc_html__( 'DocSync WP activation error', 'docsync-wp' ),
+		esc_html__( 'Brasth Document Sync activation error', 'brasth-document-sync-for-google-docs' ),
 		array( 'back_link' => true )
 	);
 }

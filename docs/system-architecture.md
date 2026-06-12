@@ -1,14 +1,14 @@
 # System Architecture
 
-Last updated: 2026-05-30
+Last updated: 2026-06-12
 
 ## Overview
 
-DocSync WP is a WordPress plugin with four admin surfaces and one shared sync backend:
+Brasth Document Sync for Google Docs is a WordPress plugin with four admin surfaces and one shared sync backend:
 
-- `DocSync WP > Setup` for Google connection settings
-- `DocSync WP > Sources` for linked source operations
-- `DocSync WP > Logs` for bounded sync diagnostics
+- `Brasth Document Sync > Setup` for Google connection settings
+- `Brasth Document Sync > Sources` for linked source operations
+- `Brasth Document Sync > Logs` for bounded sync diagnostics
 - post/page edit meta boxes and list-table actions
 - REST API and sync services shared by all surfaces
 
@@ -64,7 +64,7 @@ Responsibilities:
 ### Sources Admin Page
 
 - Entry point: `src/Admin/AdminPage.php`
-- Menu slug: `docsync-wp-sources`
+- Menu slug: `brasth-document-sync-for-google-docs-sources`
 - React mount: `resources/js/admin/entries/admin-entry.tsx`
 
 Responsibilities:
@@ -78,7 +78,7 @@ Responsibilities:
 ### Logs Admin Page
 
 - Entry point: `src/Admin/AdminPage.php`
-- Menu slug: `docsync-wp-logs`
+- Menu slug: `brasth-document-sync-for-google-docs-logs`
 - React mount: `resources/js/admin/entries/admin-entry.tsx`
 
 Responsibilities:
@@ -110,7 +110,7 @@ The post sync UI imports `resources/css/post-sync-entry.css`, which composes sha
 - Vite builds two bundles from `resources/js/admin/entries/`.
 - REST access is split under `resources/js/admin/api/`, with `apiFetch` imported from `@wordpress/api-fetch` and query strings built with `@wordpress/url`.
 - Stateful workflows live in feature hooks, including Drive browser, source modal, setup/Sources admin, and post-sync actions.
-- Shared UI atoms under `resources/js/admin/shared/ui/` wrap WordPress components where useful while preserving DocSync CSS classes.
+- Shared UI atoms under `resources/js/admin/shared/ui/` wrap WordPress components where useful while preserving existing sync CSS classes.
 - `resources/js/admin/components/` remains as thin compatibility exports during the refactor.
 
 ### Post/Page List Table
@@ -122,12 +122,12 @@ Responsibilities:
 
 - render `Add Sync Doc` button for enabled post types
 - render inline `Link Google Doc` or `Sync Doc` row action
-- render optional `DocSync` status column
+- render optional sync status column
 - queue new synced drafts in the background, poll source status, and refresh visible list-table content after sync finishes
 
 ## REST Layer
 
-REST namespace: `docsync-wp/v1`
+REST namespace: `brasth-document-sync-for-google-docs/v1`
 
 Implemented routes:
 

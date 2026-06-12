@@ -31,7 +31,7 @@ final class DocsApiErrorMapper {
 		if ( 403 === $status && $this->isApiDisabledResponse( $body ) ) {
 			return new WP_Error(
 				'docsync_wp_docs_api_unavailable',
-				__( 'Enable Google Docs API in the same Google Cloud project, then retry sync.', 'docsync-wp' ),
+				__( 'Enable Google Docs API in the same Google Cloud project, then retry sync.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 502 )
 			);
 		}
@@ -39,7 +39,7 @@ final class DocsApiErrorMapper {
 		if ( in_array( $status, array( 401, 403, 404 ), true ) ) {
 			return new WP_Error(
 				'docsync_wp_docs_api_access_denied',
-				__( 'DocSync WP cannot access this Google Doc through the Docs API fallback. Reconnect Google Drive or choose a document your account can open, then try again.', 'docsync-wp' ),
+				__( 'Brasth Document Sync cannot access this Google Doc through the Docs API fallback. Reconnect Google Drive or choose a document your account can open, then try again.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 403 )
 			);
 		}
@@ -53,7 +53,7 @@ final class DocsApiErrorMapper {
 	public function badResponse(): WP_Error {
 		return new WP_Error(
 			'docsync_wp_bad_docs_response',
-			__( 'Google returned an unexpected Docs API response.', 'docsync-wp' ),
+			__( 'Google returned an unexpected Docs API response.', 'brasth-document-sync-for-google-docs' ),
 			array( 'status' => 502 )
 		);
 	}
@@ -64,7 +64,7 @@ final class DocsApiErrorMapper {
 	public function transientFailure(): WP_Error {
 		return new WP_Error(
 			'docsync_wp_docs_api_transient_failure',
-			__( 'Google Docs API is temporarily unavailable. Try again shortly.', 'docsync-wp' ),
+			__( 'Google Docs API is temporarily unavailable. Try again shortly.', 'brasth-document-sync-for-google-docs' ),
 			array( 'status' => 503 )
 		);
 	}

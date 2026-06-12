@@ -34,7 +34,7 @@ export const GoogleSetupCloudSteps = ({ redirectUri, copyMessage, onCopyValue }:
           <span>2</span>
           <div>
             <h3>Add OAuth URLs</h3>
-            <p>Paste and save this callback in the Google OAuth web client used by DocSync WP.</p>
+            <p>Paste and save this callback in the Google OAuth web client used by Brasth Document Sync.</p>
           </div>
         </div>
         <label className="docsync-wp-copy-field">

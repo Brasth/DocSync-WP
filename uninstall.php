@@ -1,6 +1,6 @@
 <?php
 /**
- * Fired when DocSync WP is uninstalled.
+ * Fired when Brasth Document Sync is uninstalled.
  *
  * @package DocSyncWP
  */

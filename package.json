@@ -1,5 +1,5 @@
 {
-  "name": "docsync-wp",
+  "name": "brasth-document-sync-for-google-docs",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -9,7 +9,7 @@
     "lint": "pnpm lint:js && pnpm lint:no-phpcs-ignore",
     "lint:fix": "eslint . --fix",
     "lint:js": "eslint . --max-warnings=0",
-    "lint:no-phpcs-ignore": "! rg --regexp \"phpcs:[i]gnore\" docsync-wp.php src uninstall.php",
+    "lint:no-phpcs-ignore": "! rg --regexp \"phpcs:[i]gnore\" brasth-document-sync-for-google-docs.php src uninstall.php",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {

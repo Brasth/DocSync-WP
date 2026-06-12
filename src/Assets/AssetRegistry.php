@@ -91,18 +91,33 @@ final class AssetRegistry {
 	public function renderMissingBuildNotice(): void {
 		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
 
-		if ( ! $screen || ! current_user_can( 'edit_posts' ) ) {
+		if ( ! $screen ) {
+			return;
+		}
+
+		$is_admin_app_screen = in_array(
+			$screen->id,
+			array( AdminPage::HOOK_SUFFIX, AdminPage::SOURCES_HOOK_SUFFIX, AdminPage::LOGS_HOOK_SUFFIX ),
+			true
+		) && current_user_can( 'manage_options' );
+
+		$is_post_sync_screen = in_array( $screen->base, array( 'post', 'edit' ), true )
+			&& is_user_logged_in()
+			&& ! empty( $screen->post_type )
+			&& in_array( (string) $screen->post_type, $this->settings->getEnabledPostTypes(), true );
+
+		if ( ! $is_admin_app_screen && ! $is_post_sync_screen ) {
 			return;
 		}
 
 		$missing_entry = null;
 
-		if ( in_array( $screen->id, array( AdminPage::HOOK_SUFFIX, AdminPage::SOURCES_HOOK_SUFFIX, AdminPage::LOGS_HOOK_SUFFIX ), true ) && current_user_can( 'manage_options' ) && ! $this->hasBuild( self::ADMIN_ENTRY, self::ADMIN_MANIFEST ) ) {
-			$missing_entry = 'DocSync WP admin';
+		if ( $is_admin_app_screen && ! $this->hasBuild( self::ADMIN_ENTRY, self::ADMIN_MANIFEST ) ) {
+			$missing_entry = 'Brasth Document Sync admin';
 		}
 
-		if ( in_array( $screen->base, array( 'post', 'edit' ), true ) && ! $this->hasBuild( self::POST_SYNC_ENTRY, self::POST_SYNC_MANIFEST ) ) {
-			$missing_entry = 'DocSync WP post actions';
+		if ( $is_post_sync_screen && ! $this->hasBuild( self::POST_SYNC_ENTRY, self::POST_SYNC_MANIFEST ) ) {
+			$missing_entry = 'Brasth Document Sync post actions';
 		}
 
 		if ( null === $missing_entry ) {
@@ -116,7 +131,7 @@ final class AssetRegistry {
 				echo wp_kses(
 					sprintf(
 						/* translators: 1: asset group, 2: command to build frontend assets. */
-						__( '%1$s assets are not built yet. Run %2$s before using this screen.', 'docsync-wp' ),
+						__( '%1$s assets are not built yet. Run %2$s before using this screen.', 'brasth-document-sync-for-google-docs' ),
 						esc_html( $missing_entry ),
 						'<code>pnpm build</code>'
 					),
@@ -311,7 +326,7 @@ final class AssetRegistry {
 		$settings = $this->settings->getPublicSettings();
 
 		return array(
-			'restUrl'             => esc_url_raw( rest_url( 'docsync-wp/v1' ) ),
+			'restUrl'             => esc_url_raw( rest_url( 'brasth-document-sync-for-google-docs/v1' ) ),
 			'nonce'               => wp_create_nonce( 'wp_rest' ),
 			'pluginUrl'           => esc_url_raw( $this->plugin_url ),
 			'version'             => $this->version,

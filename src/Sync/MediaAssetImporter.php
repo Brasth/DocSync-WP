@@ -35,7 +35,7 @@ final class MediaAssetImporter {
 		if ( ! is_readable( $file_path ) ) {
 			return new WP_Error(
 				'docsync_wp_missing_export_asset',
-				__( 'DocSync WP could not find an image from the Google Docs export.', 'docsync-wp' ),
+				__( 'Brasth Document Sync could not find an image from the Google Docs export.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -45,7 +45,7 @@ final class MediaAssetImporter {
 		if ( false === $image_hash ) {
 			return new WP_Error(
 				'docsync_wp_asset_hash_failed',
-				__( 'DocSync WP could not inspect an exported Google Docs image.', 'docsync-wp' ),
+				__( 'Brasth Document Sync could not inspect an exported Google Docs image.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -71,7 +71,7 @@ final class MediaAssetImporter {
 		if ( ! is_string( $url ) || '' === $url ) {
 			return new WP_Error(
 				'docsync_wp_attachment_url_failed',
-				__( 'DocSync WP uploaded an image but could not read its Media Library URL.', 'docsync-wp' ),
+				__( 'Brasth Document Sync uploaded an image but could not read its Media Library URL.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -143,7 +143,7 @@ final class MediaAssetImporter {
 		if ( empty( $file_type['type'] ) || ! str_starts_with( (string) $file_type['type'], 'image/' ) ) {
 			return new WP_Error(
 				'docsync_wp_invalid_export_image',
-				__( 'DocSync WP found an exported Google Docs asset that is not a supported image.', 'docsync-wp' ),
+				__( 'Brasth Document Sync found an exported Google Docs asset that is not a supported image.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 415 )
 			);
 		}
@@ -166,7 +166,7 @@ final class MediaAssetImporter {
 		if ( is_wp_error( $attachment_id ) ) {
 			return new WP_Error(
 				'docsync_wp_image_upload_failed',
-				__( 'DocSync WP could not upload an exported Google Docs image to the Media Library.', 'docsync-wp' ),
+				__( 'Brasth Document Sync could not upload an exported Google Docs image to the Media Library.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 500 )
 			);
 		}

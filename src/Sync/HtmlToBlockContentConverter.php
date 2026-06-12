@@ -88,7 +88,7 @@ final class HtmlToBlockContentConverter {
 		if ( ! $loaded ) {
 			return new WP_Error(
 				'docsync_wp_block_parse_failed',
-				__( 'DocSync WP could not prepare Google Docs content for the block editor.', 'docsync-wp' ),
+				__( 'Brasth Document Sync could not prepare Google Docs content for the block editor.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 500 )
 			);
 		}

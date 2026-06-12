@@ -1,10 +1,10 @@
 # Project Overview and PDR
 
-Last updated: 2026-05-20
+Last updated: 2026-06-12
 
 ## Purpose
 
-DocSync WP syncs Google Docs into WordPress posts, pages, and enabled public custom post types. The completed implementation centers on admin-driven linking and sync, not bidirectional collaboration.
+Brasth Document Sync for Google Docs syncs Google Docs into WordPress posts, pages, and enabled public custom post types. The completed implementation centers on admin-driven linking and sync, not bidirectional collaboration.
 
 ## Delivered Scope
 
@@ -27,7 +27,7 @@ DocSync WP syncs Google Docs into WordPress posts, pages, and enabled public cus
 - OAuth client credentials are configured per site.
 - Tokens are stored per WordPress user.
 - Default export format is `html_zip`.
-- DocSync WP uses `drive.readonly` and a custom Drive browser so users can search and select visible Google Docs without Google Picker.
+- Brasth Document Sync uses `drive.readonly` and a custom Drive browser so users can search and select visible Google Docs without Google Picker.
 - Supported targets are `post`, optional `page`, plus enabled public custom post types the current user can edit.
 - Uninstall keeps synced posts by default.
 

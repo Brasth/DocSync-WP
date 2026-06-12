@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
-<ruleset name="DocSync WP">
-	<description>WordPress coding standards for DocSync WP.</description>
+<ruleset name="Brasth Document Sync for Google Docs">
+	<description>WordPress coding standards for Brasth Document Sync for Google Docs.</description>
 
 	<arg name="basepath" value="."/>
 	<arg name="colors"/>
 	<arg name="extensions" value="php"/>
 	<arg name="parallel" value="8"/>
 
-	<file>docsync-wp.php</file>
+	<file>brasth-document-sync-for-google-docs.php</file>
 	<file>src</file>
 	<file>uninstall.php</file>
 
@@ -62,7 +62,7 @@
 	<rule ref="WordPress.WP.I18n">
 		<properties>
 			<property name="text_domain" type="array">
-				<element value="docsync-wp"/>
+				<element value="brasth-document-sync-for-google-docs"/>
 			</property>
 		</properties>
 	</rule>

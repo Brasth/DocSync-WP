@@ -43,10 +43,10 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
           <div className="docsync-wp-modal__header">
             <div className="docsync-wp-modal__title">
               <Dialog.Title asChild>
-                <h2>{__('Link Google Doc', 'docsync-wp')}</h2>
+                <h2>{__('Link Google Doc', 'brasth-document-sync-for-google-docs')}</h2>
               </Dialog.Title>
               <Dialog.Description asChild>
-                <p>{__('Google Docs is source of truth. Sync overwrites WordPress content.', 'docsync-wp')}</p>
+                <p>{__('Google Docs is source of truth. Sync overwrites WordPress content.', 'brasth-document-sync-for-google-docs')}</p>
               </Dialog.Description>
             </div>
             <div className="docsync-wp-modal__mode-switch">
@@ -57,7 +57,7 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
               />
             </div>
             <Dialog.Close asChild>
-              <button aria-label={__('Close', 'docsync-wp')} className="docsync-wp-modal__close" type="button">
+              <button aria-label={__('Close', 'brasth-document-sync-for-google-docs')} className="docsync-wp-modal__close" type="button">
                 <span aria-hidden="true">&times;</span>
               </button>
             </Dialog.Close>
@@ -91,7 +91,7 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
 
             {modal.metadata ? (
               <div className="docsync-wp-doc-preview">
-                <span>{__('Selected Google Doc', 'docsync-wp')}</span>
+                <span>{__('Selected Google Doc', 'brasth-document-sync-for-google-docs')}</span>
                 <strong>{modal.metadata.name}</strong>
                 <span>{modal.metadata.webViewLink || modal.metadata.fileId}</span>
               </div>
@@ -100,7 +100,7 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
 
           <div className="docsync-wp-modal__footer">
             <Dialog.Close asChild>
-              <AdminButton disabled={modal.busy}>{__('Cancel', 'docsync-wp')}</AdminButton>
+              <AdminButton disabled={modal.busy}>{__('Cancel', 'brasth-document-sync-for-google-docs')}</AdminButton>
             </Dialog.Close>
             {uiMode !== 'browse' ? (
               <AdminButton
@@ -108,7 +108,7 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
                 onClick={modal.inspect}
                 variant="secondary"
               >
-                {__('Inspect', 'docsync-wp')}
+                {__('Inspect', 'brasth-document-sync-for-google-docs')}
               </AdminButton>
             ) : null}
             <AdminButton
@@ -116,7 +116,7 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
               onClick={modal.attach}
               variant="primary"
             >
-              {target.mode === 'new' ? __('Create synced draft', 'docsync-wp') : __('Link source', 'docsync-wp')}
+              {target.mode === 'new' ? __('Create synced draft', 'brasth-document-sync-for-google-docs') : __('Link source', 'brasth-document-sync-for-google-docs')}
             </AdminButton>
           </div>
         </Dialog.Content>

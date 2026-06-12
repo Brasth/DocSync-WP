@@ -1,6 +1,29 @@
 # Project Changelog
 
-Last updated: 2026-06-06
+Last updated: 2026-06-12
+
+## 2026-06-12 - WordPress.org Pre-Review Rename And ZIP Scope
+
+Status: completed in codebase
+
+Resolved WordPress.org pre-review naming and packaging issues:
+
+- renamed the installable plugin entry file to `brasth-document-sync-for-google-docs.php`
+- set the display name to `Brasth Document Sync for Google Docs`
+- changed the public slug, text domain, admin slugs, and REST namespace to `brasth-document-sync-for-google-docs`
+- reviewer response slug: `brasth-document-sync-for-google-docs`
+- excluded WordPress.org listing assets under `assets/` from installable ZIPs
+- added ZIP/package validation so release artifacts fail if `assets/` is present
+- scoped missing Composer autoload and missing build notices to plugin-relevant admin screens
+
+Verification status:
+
+- `pnpm lint` passes
+- `pnpm typecheck` passes
+- `pnpm build` passes
+- stale public slug/name searches pass for runtime, docs, workflows, package metadata, PHPCS config, license, and listing SVGs
+- package dry run confirms one top-level `brasth-document-sync-for-google-docs/` folder, required main/build/readme/resources files, no listing assets, no local agent/tool directories, no excluded development paths, and no nested ZIP files
+- PHP and Composer checks are blocked in this shell because `php`, `composer`, and `vendor/` are unavailable
 
 ## 2026-06-06 - GitHub Release ZIP Asset Packaging
 
@@ -11,7 +34,7 @@ Changed GitHub Release packaging so published releases and manual backfills prod
 - changed the tagged release workflow to run on `release.published` and manual `workflow_dispatch` with a required tag input
 - made the workflow check out the target release tag before building package contents
 - validated the release tag, plugin header version, `DOCSYNC_WP_VERSION`, and `readme.txt` stable tag before packaging
-- created `docsync-wp-v<version>.zip` with a single top-level `docsync-wp/` folder
+- created `brasth-document-sync-for-google-docs-v<version>.zip` with a single top-level `brasth-document-sync-for-google-docs/` folder
 - uploaded the ZIP both as a GitHub Actions artifact and as a GitHub Release asset through `gh release upload --clobber`
 - added ZIP content checks for required plugin files, required `build/` and `resources/` directories, forbidden development paths, and nested ZIP files
 - added `*.zip` to `.distignore`
@@ -24,7 +47,7 @@ Verification status:
 - `pnpm lint` passes
 - `pnpm typecheck` passes
 - `pnpm build` passes
-- package dry run confirms `docsync-wp-v1.0.0.zip` has one top-level `docsync-wp/` folder, required runtime/build/source files, no excluded development paths, and no nested ZIP files
+- package dry run confirms `brasth-document-sync-for-google-docs-v1.0.0.zip` has one top-level `brasth-document-sync-for-google-docs/` folder, required runtime/build/source files, no excluded development paths, and no nested ZIP files
 - `git diff --check` passes
 
 ## 2026-05-31 - WordPress.org Readiness First Pass
@@ -65,7 +88,7 @@ Added bounded diagnostic event logging for source syncs:
 - appended events from queued syncs, progress milestones, large-doc fallback switches, partial fallback imports, terminal states, and errors
 - included stale recovery context with last heartbeat, last step, lock state, and cron-event state
 - changed `GET /sync-log` to return real events with `post_id`, `level`, `page`, and `per_page` filters
-- added `DocSync WP > Logs` with level/source filters, pagination, and a `View logs` action from Sources
+- added `Brasth Document Sync > Logs` with level/source filters, pagination, and a `View logs` action from Sources
 
 Verification status:
 
@@ -218,7 +241,7 @@ Status: completed in codebase
 Fixed the WordPress admin list layout regression and refined the Google Doc linking modal:
 
 - removed global Tailwind imports from the admin CSS entry bundles so Tailwind preflight no longer leaks into WordPress admin list screens
-- kept DocSync WP styles scoped through the existing admin, modal, Drive browser, and shared CSS partials
+- kept Brasth Document Sync styles scoped through the existing admin, modal, Drive browser, and shared CSS partials
 - replaced the full-width advanced linking toggle with a compact three-mode source switch for browsing, pasted Doc URLs, and raw file IDs
 - enlarged the modal close control to a 44px hit target with stronger hover and keyboard focus states
 - increased the Drive browser table region to a responsive internal scroll area with sticky headers
@@ -347,8 +370,8 @@ Status: completed in codebase
 
 Improved the source selection browser into a My Drive file-manager view:
 
-- added `GET /docsync-wp/v1/drive/items` for folder-scoped Drive browsing
-- added `GET /docsync-wp/v1/drive/shared-drives` and a Drive location selector for shared drives
+- added `GET /brasth-document-sync-for-google-docs/v1/drive/items` for folder-scoped Drive browsing
+- added `GET /brasth-document-sync-for-google-docs/v1/drive/shared-drives` and a Drive location selector for shared drives
 - listed Google Drive folders and Google Docs only; unsupported file types remain hidden
 - kept `GET /documents` and `POST /documents/inspect` behavior unchanged for compatibility and advanced linking
 - added folder navigation, breadcrumb backtracking, current-folder search, refresh, table rows, explicit row actions, empty/loading/error states, and pagination
@@ -369,9 +392,9 @@ Verification status:
 
 Status: completed in codebase
 
-Replaced Google Picker with a DocSync WP Drive browser:
+Replaced Google Picker with a Brasth Document Sync Drive browser:
 
-- added `GET /docsync-wp/v1/documents` for server-side Google Docs listing
+- added `GET /brasth-document-sync-for-google-docs/v1/documents` for server-side Google Docs listing
 - switched OAuth requests to `https://www.googleapis.com/auth/drive.readonly`
 - added account reconnect state for users still connected with the old scope
 - replaced the Picker modal action with search, pagination, selected-row state, and visible Doc preview
@@ -409,8 +432,8 @@ Status: completed in codebase
 
 Implemented the Sources and media sync slice:
 
-- moved linked sources to `DocSync WP > Sources`
-- kept `DocSync WP > Setup` focused on Google account and settings
+- moved linked sources to `Brasth Document Sync > Sources`
+- kept `Brasth Document Sync > Setup` focused on Google account and settings
 - added source search, post type, sync status, and pagination filters
 - added selectable `page` target support while keeping `post` required
 - added page-specific list table column hooks
@@ -469,7 +492,7 @@ Updated the admin UI and coding guardrails:
 
 Status: completed in codebase
 
-Fixed GitHub packaging artifacts so downloaded workflow artifacts are directly installable by WordPress instead of containing a nested plugin ZIP. Added a workflow validation gate for `docsync-wp/docsync-wp.php`, `vendor/autoload.php`, and `build/manifest.json`.
+Fixed GitHub packaging artifacts so downloaded workflow artifacts are directly installable by WordPress instead of containing a nested plugin ZIP. Added a workflow validation gate for `brasth-document-sync-for-google-docs/brasth-document-sync-for-google-docs.php`, `vendor/autoload.php`, and `build/manifest.json`.
 
 ## 2026-05-18 - PHPCS CI Fixes
 
@@ -483,7 +506,7 @@ Status: completed in codebase
 
 Implemented the admin actions slice for Google Docs sync:
 
-- central DocSync admin dashboard
+- central sync admin dashboard
 - Google OAuth connect/disconnect flow
 - document inspection by Picker, URL, or file ID
 - post edit meta box with link, change, sync now, and detach actions
@@ -495,7 +518,7 @@ Implemented the admin actions slice for Google Docs sync:
 
 Architecture notes:
 
-- REST namespace is `docsync-wp/v1`
+- REST namespace is `brasth-document-sync-for-google-docs/v1`
 - Google tokens are stored per user and encrypted
 - site settings are stored in `docsync_wp_settings`
 - source state lives in post meta on the linked post

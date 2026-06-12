@@ -1,10 +1,10 @@
 # Code Standards
 
-Last updated: 2026-05-30
+Last updated: 2026-06-12
 
 ## Purpose
 
-Standards here match the current DocSync WP implementation. Keep new work aligned with the code already shipped.
+Standards here match the current Brasth Document Sync implementation. Keep new work aligned with the code already shipped.
 
 ## PHP Standards
 
@@ -21,8 +21,9 @@ Standards here match the current DocSync WP implementation. Keep new work aligne
 ## WordPress Integration Standards
 
 - Register plugin hooks from `src/Plugin.php`.
-- Use `docsync-wp` as slug and text domain.
-- Use `docsync-wp/v1` for REST endpoints.
+- Use `brasth-document-sync-for-google-docs` as slug and text domain.
+- Use `brasth-document-sync-for-google-docs/v1` for REST endpoints.
+- Scope admin notices to plugin screens or screens where plugin UI is loaded, except critical activation/runtime failures.
 - Use WordPress HTTP APIs for Google requests.
 - Use WordPress packages for admin JS platform APIs: `wp-api-fetch`, `wp-element`, `wp-i18n`, `wp-url`, `wp-a11y`, `wp-components`, and `wp-data` where editor state is required.
 - Keep admin UI inside WordPress admin conventions.
