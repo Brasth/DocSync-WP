@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Release tag to package, for example v1.0.0"
+        description: "Release tag to package, for example 1.0.0 or v1.0.0"
         required: true
         type: string
 
@@ -34,12 +34,12 @@ jobs:
           set -euo pipefail
           TAG_NAME="${RELEASE_TAG_NAME:?Release tag is required.}"
 
-          if [[ "${TAG_NAME}" != v* ]]; then
-            echo "Release tag must start with v. Received: ${TAG_NAME}"
+          TAG_VERSION="${TAG_NAME#v}"
+
+          if [ -z "${TAG_VERSION}" ] || ! [[ "${TAG_VERSION}" =~ ^[0-9]+[.][0-9]+[.][0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+            echo "Release tag must be a plugin version with optional v prefix. Received: ${TAG_NAME}"
             exit 1
           fi
-
-          TAG_VERSION="${TAG_NAME#v}"
 
           PLUGIN_HEADER_VERSION="$(
             awk -F':' '/^[[:space:]]*\*[[:space:]]*Version:/ {gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2; exit}' docsync-wp.php

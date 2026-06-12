@@ -121,10 +121,10 @@ The release ZIP should include a single top-level `docsync-wp/` directory contai
 To backfill an existing release asset, run the same workflow manually from GitHub Actions with the release tag input. For the first public release, use:
 
 ```text
-tag=v1.0.0
+tag=1.0.0
 ```
 
-This rebuilds the plugin from the existing `v1.0.0` tag and replaces any existing `docsync-wp-v1.0.0.zip` release asset.
+This rebuilds the plugin from the existing `1.0.0` tag and replaces any existing `docsync-wp-v1.0.0.zip` release asset.
 
 WordPress.org/SVN submissions should keep the human-readable frontend source in `resources/` alongside the built assets in `build/`. Listing assets live in `assets/`.
 

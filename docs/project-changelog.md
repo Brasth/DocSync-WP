@@ -15,7 +15,7 @@ Changed GitHub Release packaging so published releases and manual backfills prod
 - uploaded the ZIP both as a GitHub Actions artifact and as a GitHub Release asset through `gh release upload --clobber`
 - added ZIP content checks for required plugin files, required `build/` and `resources/` directories, forbidden development paths, and nested ZIP files
 - added `*.zip` to `.distignore`
-- updated README release instructions with the `v1.0.0` manual backfill workflow
+- updated README release instructions with the `1.0.0` manual backfill workflow
 
 Verification status:
 
