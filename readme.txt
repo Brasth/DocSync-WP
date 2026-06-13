@@ -4,7 +4,7 @@ Tags: google-docs, google-drive, content-sync, editorial-workflow, blocks
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -65,7 +65,7 @@ Brasth Document Sync does not send Google data to a Brasth Document Sync vendor-
 
 = Does Brasth Document Sync provide a hosted Google connector? =
 
-No. Version 1.0.0 uses self-managed Google OAuth. The site owner supplies the Google Cloud project and OAuth web client.
+No. Version 1.0.1 uses self-managed Google OAuth. The site owner supplies the Google Cloud project and OAuth web client.
 
 = Which Google APIs are required? =
 
@@ -108,6 +108,10 @@ To rebuild the admin assets from source:
 The build uses Vite and writes `build/manifest.json`, `build/manifest.post-sync.json`, and hashed CSS/JS assets. Runtime React is provided by WordPress through `wp-element`.
 
 == Changelog ==
+
+= 1.0.1 =
+
+* Aligned plugin version metadata for the 1.0.1 GitHub release package.
 
 = 1.0.0 =
 

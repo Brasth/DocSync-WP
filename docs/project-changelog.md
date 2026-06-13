@@ -1,6 +1,28 @@
 # Project Changelog
 
-Last updated: 2026-06-12
+Last updated: 2026-06-13
+
+## 2026-06-13 - 1.0.1 Release Metadata Alignment
+
+Status: completed in codebase
+
+Fixed the tagged GitHub release packaging failure for `1.0.1`:
+
+- bumped the plugin header version, `DOCSYNC_WP_VERSION`, `readme.txt` stable tag, and package metadata to `1.0.1`
+- added a `1.0.1` WordPress.org readme changelog entry
+- kept the release workflow validation unchanged so future tags still fail when tag and plugin metadata drift
+
+Verification status:
+
+- local release metadata validation passes for `RELEASE_TAG_NAME=1.0.1`
+- local release metadata validation passes for `RELEASE_TAG_NAME=v1.0.1`
+- `php -l brasth-document-sync-for-google-docs.php` passes
+- `composer validate --no-check-publish` passes
+- `composer lint` passes
+- `pnpm lint` passes
+- `pnpm typecheck` passes
+- `pnpm build` passes
+- `git diff --check` passes
 
 ## 2026-06-12 - WordPress.org Pre-Review Rename And ZIP Scope
 
