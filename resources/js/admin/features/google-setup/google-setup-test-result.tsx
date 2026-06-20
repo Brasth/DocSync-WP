@@ -1,4 +1,5 @@
 import { createElement } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
 
 import type { SetupCheck } from './google-setup-utils';
 
@@ -11,11 +12,15 @@ export const GoogleSetupTestResult = ({ checks }: Props): JSX.Element => {
 
   return (
     <div className={`docsync-wp-setup-test ${isComplete ? 'is-complete' : 'is-warning'}`} role="status">
-      <strong>{isComplete ? 'Setup ready for Google connect.' : 'Setup still needs attention.'}</strong>
+      <strong>
+        {isComplete
+          ? __('Setup ready for Google connect.', 'brasth-document-sync-for-google-docs')
+          : __('Setup still needs attention.', 'brasth-document-sync-for-google-docs')}
+      </strong>
       <ul>
         {checks.map((check) => (
           <li className={check.complete ? 'is-complete' : 'is-missing'} key={check.id}>
-            <span>{check.complete ? 'Complete' : 'Missing'}</span>
+            <span>{check.complete ? __('Complete', 'brasth-document-sync-for-google-docs') : __('Missing', 'brasth-document-sync-for-google-docs')}</span>
             <div>
               <strong>{check.label}</strong>
               <p>{check.description}</p>

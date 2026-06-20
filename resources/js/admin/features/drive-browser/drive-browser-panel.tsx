@@ -1,11 +1,11 @@
 import { createElement } from '@wordpress/element';
+import { __, sprintf } from '@wordpress/i18n';
 
 import type { DocumentMetadata } from '../../api';
 import { AdminNotice } from '../../shared/ui/admin-notice';
 import { EmptyState } from '../../shared/ui/empty-state';
-import { LoadingState } from '../../shared/ui/loading-state';
 import { DriveBrowserBreadcrumbNav } from './drive-browser-breadcrumb';
-import { DriveBrowserTable } from './drive-browser-table';
+import { DriveBrowserTable, DriveBrowserTableSkeleton } from './drive-browser-table';
 import { DriveBrowserToolbar } from './drive-browser-toolbar';
 import { useDriveBrowser } from './use-drive-browser';
 
@@ -21,7 +21,7 @@ export const DriveBrowserPanel = ({ busy, selectedDocument, onSelect }: Props): 
   return (
     <div className="docsync-wp-drive-browser">
       <div className="docsync-wp-drive-browser__heading">
-        <strong>Choose from Google Drive</strong>
+        <strong>{__('Choose from Google Drive', 'brasth-document-sync-for-google-docs')}</strong>
         <DriveBrowserBreadcrumbNav
           breadcrumbs={browser.breadcrumbs}
           busy={busy}
@@ -47,14 +47,23 @@ export const DriveBrowserPanel = ({ busy, selectedDocument, onSelect }: Props): 
         sharedDrives={browser.sharedDrives}
       />
 
-      {browser.sharedDriveError ? <p className="docsync-wp-inline-warning">Shared drives are unavailable: {browser.sharedDriveError}</p> : null}
+      {browser.sharedDriveError ? (
+        <p className="docsync-wp-inline-warning">
+          {sprintf(__('Shared drives are unavailable: %s', 'brasth-document-sync-for-google-docs'), browser.sharedDriveError)}
+        </p>
+      ) : null}
 
       <AdminNotice className="inline" notice={browser.error ? { type: 'error', message: browser.error } : null} />
-      {browser.loading && browser.items.length === 0 ? <LoadingState>Loading Drive items...</LoadingState> : null}
+      {browser.loading && browser.items.length === 0 ? <DriveBrowserTableSkeleton /> : null}
       {!browser.loading && !browser.error && browser.items.length === 0 ? (
-        <EmptyState>
-          {browser.activeSearch ? `No folders or Google Docs found for "${browser.activeSearch}".` : 'This folder has no folders or Google Docs.'}
-        </EmptyState>
+        <EmptyState
+          description={browser.activeSearch
+            ? sprintf(__('No folders or Google Docs found for "%s".', 'brasth-document-sync-for-google-docs'), browser.activeSearch)
+            : __('This folder has no folders or Google Docs.', 'brasth-document-sync-for-google-docs')}
+          title={browser.activeSearch
+            ? __('No Drive items match this search.', 'brasth-document-sync-for-google-docs')
+            : __('No Drive items in this folder.', 'brasth-document-sync-for-google-docs')}
+        />
       ) : null}
 
       {browser.items.length > 0 ? (
@@ -70,7 +79,7 @@ export const DriveBrowserPanel = ({ busy, selectedDocument, onSelect }: Props): 
       ) : null}
 
       {browser.incompleteSearch ? (
-        <p className="docsync-wp-inline-warning">Google could not search every Drive item. Narrow the search if the Doc is missing.</p>
+        <p className="docsync-wp-inline-warning">{__('Google could not search every Drive item. Narrow the search if the Doc is missing.', 'brasth-document-sync-for-google-docs')}</p>
       ) : null}
 
     </div>

@@ -1,4 +1,5 @@
 import { useEffect } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
 
 import { getSource, type SourceRecord } from '../../api';
 
@@ -59,7 +60,7 @@ export const BackgroundSyncPoller = ({ postId, onError, onStatus, onTerminal, on
         consecutiveFailures += 1;
 
         if (consecutiveFailures >= 3 && consecutiveFailures % 3 === 0) {
-          onError(caught instanceof Error ? caught.message : 'Could not check sync status.');
+          onError(caught instanceof Error ? caught.message : __('Could not check sync status.', 'brasth-document-sync-for-google-docs'));
         }
 
         schedulePoll(Math.min(slowPollingIntervalMs, 3000 * consecutiveFailures));

@@ -110,4 +110,74 @@
     min-width: 2px;
     transition: width 0.2s ease;
   }
+
+  .docsync-wp-skeleton {
+    animation: docsync-wp-skeleton-pulse 1.35s ease-in-out infinite;
+    background: linear-gradient(90deg, #e7eceb 25%, #f6f7f7 37%, #e7eceb 63%);
+    background-size: 400% 100%;
+    border-radius: 999px;
+    display: block;
+    height: 12px;
+    max-width: 100%;
+  }
+
+  .docsync-wp-skeleton-row td {
+    padding-bottom: 13px;
+    padding-top: 13px;
+  }
+
+  .docsync-wp-skeleton-button {
+    height: 30px;
+  }
+
+  .docsync-wp-skeleton-stack,
+  .docsync-wp-loading-state__lines,
+  .docsync-wp-table-empty-state {
+    display: grid;
+    gap: 7px;
+  }
+
+  .docsync-wp-loading-state--skeleton {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .docsync-wp-loading-state__label {
+    text-align: center;
+  }
+
+  .docsync-wp-empty-state {
+    align-items: center;
+    flex-direction: column;
+  }
+
+  .docsync-wp-empty-state strong,
+  .docsync-wp-table-empty-state strong {
+    color: #1d2327;
+  }
+
+  .docsync-wp-empty-state span,
+  .docsync-wp-table-empty-state span {
+    color: #50575e;
+  }
+
+  .docsync-wp-table-empty-state {
+    padding: 6px 0;
+  }
+
+  @keyframes docsync-wp-skeleton-pulse {
+    0% {
+      background-position: 100% 50%;
+    }
+
+    100% {
+      background-position: 0 50%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .docsync-wp-skeleton {
+      animation: none;
+    }
+  }
 }

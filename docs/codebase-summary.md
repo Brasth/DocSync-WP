@@ -1,12 +1,12 @@
 # Brasth Document Sync Codebase Summary
 
-Last updated: 2026-06-12
+Last updated: 2026-06-20
 
 ## Snapshot
 
 Brasth Document Sync for Google Docs is a WordPress plugin for one-way Google Docs -> WordPress sync. This checkout includes Google OAuth, document inspection, post/page linking and sync, list-table actions, setup/Sources/Logs admin pages, HTML ZIP media import, Gutenberg block conversion, diagnostic sync events, WP-Cron scheduling, and first-pass WordPress.org release packaging.
 
-Summary reflects the current source tree after the Radix plus WordPress-native admin frontend refactor, Drive modal polish, OAuth JSON import, admin UI fixes, Gutenberg sync conversion, background sync progress, large-doc fallback, stale sync recovery, bounded sync logging, privacy disclosure, Picker settings cleanup, and CommonMark dependency removal.
+Summary reflects the current source tree after the Radix plus WordPress-native admin frontend refactor, Drive modal polish, OAuth JSON import, admin UI fixes, Gutenberg sync conversion, background sync progress, large-doc fallback, stale sync recovery, bounded sync logging, privacy disclosure, Picker settings cleanup, CommonMark dependency removal, listing artwork refresh, and `1.0.3` release hardening with admin loading/empty-state polish.
 
 - Total files tracked by `rg --files`: 131
 - Main languages: PHP, TypeScript, CSS
@@ -62,7 +62,7 @@ Summary reflects the current source tree after the Radix plus WordPress-native a
 - `resources/js/admin/features/post-sync/` - post edit meta box, list-table action mount, row DOM helpers, and sync action hook.
 - `resources/js/admin/features/sources/` - filterable linked source table and bulk sync action.
 - `resources/js/admin/features/sync-logs/` - diagnostic event table, filters, and pagination.
-- `resources/js/admin/shared/ui/` - small WordPress-backed sync UI atoms such as buttons, notices, loading states, and status pills.
+- `resources/js/admin/shared/ui/` - small WordPress-backed sync UI atoms such as buttons, notices, skeletons, loading states, empty states, and status pills.
 - `resources/js/admin/components/` - thin compatibility re-exports for older local imports.
 
 ## Frontend Style Modules
@@ -74,8 +74,9 @@ Summary reflects the current source tree after the Radix plus WordPress-native a
 
 ## Local Toolchain Status
 
-- `php`, `composer`, `pnpm`, and the installed PHP/Node dependencies are available in this checkout environment.
-- Current validation uses `composer validate --no-check-publish`, `composer lint`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, and targeted `php -l` checks.
+- `pnpm` and installed Node dependencies are available in this checkout environment.
+- `php` and `composer` are unavailable in this shell, so PHP validation must run in CI or another release environment.
+- Current local validation uses `pnpm lint`, `pnpm typecheck`, `pnpm build`, and non-PHP release metadata checks.
 
 ## Notes
 
@@ -83,6 +84,6 @@ Summary reflects the current source tree after the Radix plus WordPress-native a
 - REST namespace: `brasth-document-sync-for-google-docs/v1`.
 - Google tokens and the OAuth client secret are encrypted with WordPress salts.
 - WordPress privacy policy suggested text discloses Google OAuth, Drive API, Docs API, stored credentials/tokens, linked metadata, imported media, and uninstall retention.
-- Release packaging includes `resources/`, `package.json`, `pnpm-lock.yaml`, `vite.config.ts`, `composer.json`, `build/`, and WordPress.org `readme.txt` so reviewers can inspect human-readable source for built assets. Installable ZIP files exclude `assets/`; listing assets stay in the repository for WordPress.org SVN root upload.
+- Release packaging includes `resources/`, `package.json`, `pnpm-lock.yaml`, `vite.config.ts`, `composer.json`, `build/`, and WordPress.org `readme.txt` so reviewers can inspect human-readable source for built assets. Installable ZIP files exclude `assets/`; listing assets stay in the repository for WordPress.org SVN root upload. The release metadata currently targets `1.0.3`.
 - The admin app depends on WordPress packages for REST, i18n, a11y, URL helpers, components, and element runtime; Radix Dialog/Tabs remain the complex interaction primitives.
 - Frontend lint blocks inline PHPCS suppression comments in plugin source.

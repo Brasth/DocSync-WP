@@ -48,8 +48,25 @@ jobs:
       - name: Run PHPCS
         run: composer lint
 
+      - name: Validate WordPress.org readme metadata
+        run: |
+          set -euo pipefail
+
+          TAGS_LINE="$(awk -F':' '/^Tags:/ {print $2; exit}' readme.txt)"
+          TAG_COUNT="$(awk -v tags="${TAGS_LINE}" 'BEGIN {gsub(/^[[:space:]]+|[[:space:]]+$/, "", tags); if (tags == "") {print 0; exit} print split(tags, parts, /,[[:space:]]*/)}')"
+
+          if [ "${TAG_COUNT}" -gt 5 ]; then
+            echo "readme.txt must list no more than 5 WordPress.org tags. Found ${TAG_COUNT}."
+            exit 1
+          fi
+
+          if ! grep -Fq "== Source And Build Instructions ==" readme.txt; then
+            echo "readme.txt must document source and build instructions for bundled assets."
+            exit 1
+          fi
+
   js-lint:
-    name: JS/TS Lint (ESLint)
+    name: JS/TS Checks
     runs-on: ubuntu-latest
 
     steps:
@@ -70,3 +87,9 @@ jobs:
 
       - name: Run ESLint
         run: pnpm lint
+
+      - name: Run TypeScript typecheck
+        run: pnpm typecheck
+
+      - name: Build frontend assets
+        run: pnpm build

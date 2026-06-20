@@ -1,10 +1,10 @@
 === Brasth Document Sync for Google Docs ===
 Contributors: canvilled
-Tags: google-docs, google-drive, content-sync, editorial-workflow, blocks, google-doc-sync, wordpress-sync, import-docs
+Tags: google-docs, google-drive, content-sync, editorial-workflow, blocks
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 1.0.1
+Stable tag: 1.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -65,7 +65,7 @@ Brasth Document Sync does not send Google data to a Brasth Document Sync vendor-
 
 = Does Brasth Document Sync provide a hosted Google connector? =
 
-No. Version 1.0.1 uses self-managed Google OAuth. The site owner supplies the Google Cloud project and OAuth web client.
+No. This release uses self-managed Google OAuth. The site owner supplies the Google Cloud project and OAuth web client.
 
 = Which Google APIs are required? =
 
@@ -95,7 +95,27 @@ During document browsing and sync, Brasth Document Sync communicates with Google
 
 Uninstall removes plugin settings, encrypted user Google tokens, and scheduled cron events. Linked post metadata is retained by default; define `DOCSYNC_WP_FULL_UNINSTALL` or return true from the `docsync_wp_full_uninstall` filter to remove Brasth Document Sync post metadata. Synced posts and imported media are not deleted automatically.
 
+== Source And Build Instructions ==
+
+Human-readable frontend source is included in `resources/`. Built assets are included in `build/`.
+
+To rebuild the admin assets from source:
+
+1. Install PHP dependencies with `composer install`.
+2. Install frontend dependencies with `pnpm install --frozen-lockfile`.
+3. Build assets with `pnpm build`.
+
+The build uses Vite and writes `build/manifest.json`, `build/manifest.post-sync.json`, and hashed CSS/JS assets. Runtime React is provided by WordPress through `wp-element`.
+
 == Changelog ==
+
+= 1.0.3 =
+
+* Hardened release metadata, WordPress.org readme compliance, CI checks, and admin i18n coverage.
+
+= 1.0.2 =
+
+* Updated WordPress.org listing artwork and directory tags.
 
 = 1.0.1 =
 

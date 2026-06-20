@@ -1,7 +1,9 @@
 import { createElement, useEffect, useRef } from '@wordpress/element';
+import { __, sprintf } from '@wordpress/i18n';
 
 import type { DocumentMetadata, DriveItemSummary } from '../../api';
 import { AdminButton } from '../../shared/ui/admin-button';
+import { SkeletonTableRows } from '../../shared/ui/skeleton';
 import { driveItemTypeLabel, formatDriveModifiedTime } from './drive-browser-utils';
 
 type Props = {
@@ -12,6 +14,36 @@ type Props = {
   hasMore: boolean;
   onActivate: (item: DriveItemSummary) => Promise<void>;
   onLoadMore: () => Promise<void>;
+};
+
+const DriveBrowserTableHeader = (): JSX.Element => {
+  return (
+    <thead>
+      <tr>
+        <th scope="col">{__('Name', 'brasth-document-sync-for-google-docs')}</th>
+        <th scope="col">{__('Modified', 'brasth-document-sync-for-google-docs')}</th>
+        <th scope="col">{__('Type', 'brasth-document-sync-for-google-docs')}</th>
+        <th scope="col">{__('Action', 'brasth-document-sync-for-google-docs')}</th>
+      </tr>
+    </thead>
+  );
+};
+
+export const DriveBrowserTableSkeleton = (): JSX.Element => {
+  return (
+    <div
+      aria-busy="true"
+      aria-label={__('Loading Drive items...', 'brasth-document-sync-for-google-docs')}
+      className="docsync-wp-drive-browser__table-wrap"
+    >
+      <table className="widefat striped docsync-wp-drive-browser__table">
+        <DriveBrowserTableHeader />
+        <tbody>
+          <SkeletonTableRows columns={['70%', '50%', '44%', '62%']} rows={7} />
+        </tbody>
+      </table>
+    </div>
+  );
 };
 
 export const DriveBrowserTable = ({ busy, items, loading, selectedDocument, hasMore, onActivate, onLoadMore }: Props): JSX.Element => {
@@ -42,15 +74,8 @@ export const DriveBrowserTable = ({ busy, items, loading, selectedDocument, hasM
 
   return (
     <div className="docsync-wp-drive-browser__table-wrap" ref={scrollRoot}>
-      <table className="widefat striped docsync-wp-drive-browser__table">
-        <thead>
-          <tr>
-            <th scope="col">Name</th>
-            <th scope="col">Modified</th>
-            <th scope="col">Type</th>
-            <th scope="col">Action</th>
-          </tr>
-        </thead>
+      <table aria-busy={loading} className="widefat striped docsync-wp-drive-browser__table">
+        <DriveBrowserTableHeader />
         <tbody>
           {items.map((item) => {
             const selected = item.itemType === 'document' && selectedDocument?.fileId === item.fileId;
@@ -61,7 +86,9 @@ export const DriveBrowserTable = ({ busy, items, loading, selectedDocument, hasM
               <tr className={selected ? 'is-selected' : ''} key={item.fileId}>
                 <td className="docsync-wp-drive-browser__name-cell">
                   <button
-                    aria-label={item.itemType === 'folder' ? `Open folder ${item.name}` : `Select Google Doc ${item.name}`}
+                    aria-label={item.itemType === 'folder'
+                      ? sprintf(__('Open folder %s', 'brasth-document-sync-for-google-docs'), item.name)
+                      : sprintf(__('Select Google Doc %s', 'brasth-document-sync-for-google-docs'), item.name)}
                     aria-pressed={item.itemType === 'document' ? selected : undefined}
                     className="docsync-wp-drive-browser__row-button"
                     disabled={disabled}
@@ -89,7 +116,13 @@ export const DriveBrowserTable = ({ busy, items, loading, selectedDocument, hasM
                     onClick={() => onActivate(item)}
                     variant={selected ? 'primary' : 'secondary'}
                   >
-                    {item.itemType === 'folder' ? 'Open' : !item.selectable ? 'Blocked' : selected ? 'Selected' : 'Select'}
+                    {item.itemType === 'folder'
+                      ? __('Open', 'brasth-document-sync-for-google-docs')
+                      : !item.selectable
+                        ? __('Blocked', 'brasth-document-sync-for-google-docs')
+                        : selected
+                          ? __('Selected', 'brasth-document-sync-for-google-docs')
+                          : __('Select', 'brasth-document-sync-for-google-docs')}
                   </AdminButton>
                 </td>
               </tr>
@@ -103,7 +136,7 @@ export const DriveBrowserTable = ({ busy, items, loading, selectedDocument, hasM
           className="docsync-wp-drive-browser__sentinel"
           ref={sentinel}
         >
-          {loading ? 'Loading more...' : ''}
+          {loading ? __('Loading more...', 'brasth-document-sync-for-google-docs') : ''}
         </div>
       ) : null}
     </div>

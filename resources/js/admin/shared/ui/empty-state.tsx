@@ -1,11 +1,32 @@
-import { createElement } from '@wordpress/element';
+import { createElement, Fragment } from '@wordpress/element';
 import type { ReactNode } from 'react';
 
 type Props = {
-  children: ReactNode;
+  action?: ReactNode;
+  children?: ReactNode;
   className?: string;
+  description?: ReactNode;
+  title?: ReactNode;
 };
 
-export const EmptyState = ({ children, className = 'docsync-wp-drive-browser__state' }: Props): JSX.Element => {
-  return <div className={className}>{children}</div>;
+export const EmptyState = ({
+  action,
+  children,
+  className = 'docsync-wp-drive-browser__state',
+  description,
+  title
+}: Props): JSX.Element => {
+  const stateClassName = title || description || action ? `${className} docsync-wp-empty-state` : className;
+
+  return (
+    <div className={stateClassName}>
+      {children ?? (
+        <>
+          {title ? <strong>{title}</strong> : null}
+          {description ? <span>{description}</span> : null}
+          {action ?? null}
+        </>
+      )}
+    </div>
+  );
 };

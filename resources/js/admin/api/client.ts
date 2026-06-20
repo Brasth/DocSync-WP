@@ -1,4 +1,5 @@
 import apiFetch from '@wordpress/api-fetch';
+import { __ } from '@wordpress/i18n';
 
 import { getAdminConfig } from '../config';
 
@@ -30,7 +31,7 @@ export const request = async <T>(endpoint: string, options: ApiFetchOptions = {}
     if (caught && typeof caught === 'object' && 'message' in caught && typeof caught.message === 'string') {
       const code = 'code' in caught && typeof caught.code === 'string' ? caught.code : '';
       const message = code === 'docsync_wp_docs_api_unavailable' && !caught.message.includes('Google Docs API')
-        ? 'Enable Google Docs API in the same Google Cloud project, then retry sync.'
+        ? __('Enable Google Docs API in the same Google Cloud project, then retry sync.', 'brasth-document-sync-for-google-docs')
         : caught.message;
 
       throw new Error(message);

@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Brasth Document Sync for Google Docs
  * Description:       Sync Google Docs into WordPress posts and pages with self-managed Google OAuth.
- * Version:           1.0.1
+ * Version:           1.0.3
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Author:            Brasth
@@ -18,7 +18,7 @@ declare(strict_types=1);
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DOCSYNC_WP_VERSION', '1.0.1' );
+define( 'DOCSYNC_WP_VERSION', '1.0.3' );
 define( 'DOCSYNC_WP_MINIMUM_PHP_VERSION', '8.1' );
 define( 'DOCSYNC_WP_MINIMUM_WP_VERSION', '6.4' );
 define( 'DOCSYNC_WP_FILE', __FILE__ );

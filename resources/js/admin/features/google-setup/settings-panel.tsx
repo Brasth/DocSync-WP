@@ -1,4 +1,5 @@
 import { createElement, useEffect, useMemo, useState } from '@wordpress/element';
+import { __, sprintf } from '@wordpress/i18n';
 
 import type { SettingsResponse } from '../../api';
 import { GoogleSetupCloudSteps } from './google-setup-cloud-steps';
@@ -61,15 +62,15 @@ export const SettingsPanel = ({ settings, busy, redirectUri, onSave }: Props): J
     setCopyMessage('');
 
     if (!navigator.clipboard) {
-      setCopyMessage(`Copy the ${label} from the field.`);
+      setCopyMessage(sprintf(__('Copy the %s from the field.', 'brasth-document-sync-for-google-docs'), label));
       return;
     }
 
     try {
       await navigator.clipboard.writeText(value);
-      setCopyMessage(`${label} copied.`);
+      setCopyMessage(sprintf(__('%s copied.', 'brasth-document-sync-for-google-docs'), label));
     } catch {
-      setCopyMessage(`Copy the ${label} from the field.`);
+      setCopyMessage(sprintf(__('Copy the %s from the field.', 'brasth-document-sync-for-google-docs'), label));
     }
   };
 
@@ -94,15 +95,25 @@ export const SettingsPanel = ({ settings, busy, redirectUri, onSave }: Props): J
   return (
     <section className="docsync-wp-card">
       <div className="docsync-wp-card__header">
-        <p className="docsync-wp-kicker">Self-managed Google Cloud app</p>
-        <h2>Google setup wizard</h2>
-        <p>Complete these saved settings before each WordPress user connects Google.</p>
+        <p className="docsync-wp-kicker">{__('Self-managed Google Cloud app', 'brasth-document-sync-for-google-docs')}</p>
+        <h2>{__('Google setup wizard', 'brasth-document-sync-for-google-docs')}</h2>
+        <p>{__('Complete these saved settings before each WordPress user connects Google.', 'brasth-document-sync-for-google-docs')}</p>
       </div>
 
       <div className="docsync-wp-setup-summary">
         <div>
-          <strong>{completedChecks} of {setupChecks.length} setup checks complete</strong>
-          <span>{settings.hasRequiredSettings ? 'OAuth connection ready.' : 'OAuth client setup incomplete.'}</span>
+          <strong>
+            {sprintf(
+              __('%1$d of %2$d setup checks complete', 'brasth-document-sync-for-google-docs'),
+              completedChecks,
+              setupChecks.length
+            )}
+          </strong>
+          <span>
+            {settings.hasRequiredSettings
+              ? __('OAuth connection ready.', 'brasth-document-sync-for-google-docs')
+              : __('OAuth client setup incomplete.', 'brasth-document-sync-for-google-docs')}
+          </span>
         </div>
         <div className="docsync-wp-setup-progress" aria-hidden="true">
           <span style={{ width: `${setupProgress}%` }} />
@@ -120,8 +131,8 @@ export const SettingsPanel = ({ settings, busy, redirectUri, onSave }: Props): J
           <div className="docsync-wp-step-heading">
             <span>3</span>
             <div>
-              <h3>Save OAuth credentials</h3>
-              <p>The custom document browser uses these server-side credentials and the connected user's Drive read-only grant.</p>
+              <h3>{__('Save OAuth credentials', 'brasth-document-sync-for-google-docs')}</h3>
+              <p>{__("The custom document browser uses these server-side credentials and the connected user's Drive read-only grant.", 'brasth-document-sync-for-google-docs')}</p>
             </div>
           </div>
           <OAuthClientJsonImport
@@ -135,15 +146,15 @@ export const SettingsPanel = ({ settings, busy, redirectUri, onSave }: Props): J
           />
           <div className="docsync-wp-settings-grid">
             <label>
-              <span>OAuth client ID</span>
+              <span>{__('OAuth client ID', 'brasth-document-sync-for-google-docs')}</span>
               <input className="regular-text" onChange={(event) => setClientId(event.currentTarget.value)} type="text" value={clientId} />
             </label>
             <label>
-              <span>OAuth client secret</span>
+              <span>{__('OAuth client secret', 'brasth-document-sync-for-google-docs')}</span>
               <input
                 className="regular-text"
                 onChange={(event) => setClientSecret(event.currentTarget.value)}
-                placeholder={settings.hasClientSecret ? 'Saved. Enter a new secret to replace.' : ''}
+                placeholder={settings.hasClientSecret ? __('Saved. Enter a new secret to replace.', 'brasth-document-sync-for-google-docs') : ''}
                 type="password"
                 value={clientSecret}
               />
@@ -162,12 +173,12 @@ export const SettingsPanel = ({ settings, busy, redirectUri, onSave }: Props): J
 
       <div className="docsync-wp-settings-actions">
         <AdminButton disabled={busy} onClick={submit} variant="primary">
-          Save settings
+          {__('Save settings', 'brasth-document-sync-for-google-docs')}
         </AdminButton>
         <AdminButton disabled={busy} onClick={testSetup}>
-          Test setup
+          {__('Test setup', 'brasth-document-sync-for-google-docs')}
         </AdminButton>
-        {hasUnsavedChanges ? <span>Unsaved changes are not tested until saved.</span> : null}
+        {hasUnsavedChanges ? <span>{__('Unsaved changes are not tested until saved.', 'brasth-document-sync-for-google-docs')}</span> : null}
       </div>
 
       {testChecks ? <GoogleSetupTestResult checks={testChecks} /> : null}

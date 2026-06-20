@@ -1,10 +1,10 @@
 # Development Roadmap
 
-Last updated: 2026-06-13
+Last updated: 2026-06-20
 
 ## Status
 
-The Google Docs Sync Admin Actions implementation is complete in code. The self-managed Google onboarding, Drive-like My Drive/shared drive document browser, dedicated Sources submenu, Logs submenu, page target support, source filters, HTML ZIP media import, Gutenberg block conversion, admin frontend structure refactor, Drive modal polish, OAuth JSON import, fullscreen picker, dense picker layout, infinite Drive loading, non-blocking background draft sync, oversized Google Doc fallback, inline editor sync-completion apply, progressive empty-draft large-doc writes, large-doc stuck-state recovery, bounded sync diagnostic logging, first-pass WordPress.org release packaging, GitHub Release ZIP asset packaging, and WordPress.org pre-review rename/package scoping are also complete in code.
+The Google Docs Sync Admin Actions implementation is complete in code. The self-managed Google onboarding, Drive-like My Drive/shared drive document browser, dedicated Sources submenu, Logs submenu, page target support, source filters, HTML ZIP media import, Gutenberg block conversion, admin frontend structure refactor, Drive modal polish, OAuth JSON import, fullscreen picker, dense picker layout, infinite Drive loading, non-blocking background draft sync, oversized Google Doc fallback, inline editor sync-completion apply, progressive empty-draft large-doc writes, large-doc stuck-state recovery, bounded sync diagnostic logging, first-pass WordPress.org release packaging, GitHub Release ZIP asset packaging, WordPress.org pre-review rename/package scoping, listing artwork refresh, and `1.0.3` release hardening with admin loading/empty-state polish are also complete in code.
 
 ## Phase Summary
 
@@ -26,6 +26,7 @@ The Google Docs Sync Admin Actions implementation is complete in code. The self-
 | 14 | Non-Blocking Picker and Background Sync Feedback | Complete in code |
 | 15 | Oversized Google Doc Export Fallback | Complete in code |
 | 16 | WordPress.org Readiness First Pass | Complete in code, final validation pending |
+| 17 | 1.0.3 Release Hardening | Complete in code, external validation pending |
 
 ## What Is Shipped
 
@@ -34,6 +35,7 @@ The Google Docs Sync Admin Actions implementation is complete in code. The self-
 - source table and bulk sync
 - dedicated `Brasth Document Sync > Sources` submenu with search, post type, status, and pagination filters
 - dedicated `Brasth Document Sync > Logs` submenu with source, level, and pagination filters
+- skeleton first-load states for Sources, Logs, and the Drive browser, plus clearer log empty states for filtered and source-specific edge cases
 - self-managed Google setup wizard with redirect URI copy, setup checks, and Google Cloud links
 - post/page edit and list-table entry points
 - optional `page` target support while keeping `post` always enabled
@@ -53,7 +55,7 @@ The Google Docs Sync Admin Actions implementation is complete in code. The self-
 - per-source sync events retain the latest 50 diagnostic-safe entries for queued, progress, fallback, terminal, error, and stale-recovery states
 - post editor background sync completion applies synced content directly when no unsaved edits are present and otherwise offers an explicit apply action
 - terminal sync states no longer show stale 100 percent progress bars after reload
-- WordPress.org `readme.txt`, `LICENSE`, listing assets, source-inclusive distribution rules, and current `1.0.1` release metadata
+- WordPress.org `readme.txt`, `LICENSE`, listing assets, source-inclusive distribution rules, and current `1.0.3` release metadata
 - GitHub Release workflow that builds `brasth-document-sync-for-google-docs-v<version>.zip`, uploads it as an Actions artifact, and attaches it to the release asset list
 - privacy policy suggested content for Google OAuth, Drive API, Docs API, stored credentials/tokens, linked metadata, imported media, retention, and uninstall behavior
 - legacy Google Picker settings and unused Markdown/CommonMark runtime path removed before public release
@@ -74,8 +76,7 @@ The implementation is usable, but a few follow-ups remain open for future iterat
 
 - add automated PHP and JS tests
 - run official Plugin Check and readme validator in a release test site
-- complete admin i18n pass across remaining hardcoded strings
-- replace first-pass listing artwork with final polished screenshots/banner/icon before SVN submission if brand assets are available
+- add final WordPress.org screenshots before SVN submission if product screenshots are available
 - consider a custom sync-log table if support needs search-heavy or long-retention diagnostics
 - improve block-perfect conversion for complex Google Docs layouts if needed
 - add fixtures around Docs API fallback conversion when a test harness is introduced
@@ -90,4 +91,4 @@ The implementation is usable, but a few follow-ups remain open for future iterat
 - frontend lint blocks inline PHPCS suppression comments in plugin source
 - workflow packaging now uploads installer-ready GitHub Release ZIP assets instead of a staged folder artifact
 - local PHP and frontend verification completed for the latest oversized-doc fallback changes
-- production validation still needs Plugin Check, the official readme validator, and manual Google sync scenarios before SVN submission
+- production validation still needs CI PHP checks, Plugin Check, the official readme validator, and manual Google sync scenarios before SVN submission

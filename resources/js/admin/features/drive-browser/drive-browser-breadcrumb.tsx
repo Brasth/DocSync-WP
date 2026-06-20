@@ -1,4 +1,5 @@
 import { createElement } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
 
 import type { DriveBrowserBreadcrumb } from './drive-browser-utils';
 
@@ -20,7 +21,7 @@ export const DriveBrowserBreadcrumbNav = ({
   onOpen
 }: Props): JSX.Element => {
   return (
-    <nav aria-label="Google Drive folder path" className="docsync-wp-drive-browser__breadcrumb">
+    <nav aria-label={__('Google Drive folder path', 'brasth-document-sync-for-google-docs')} className="docsync-wp-drive-browser__breadcrumb">
       <ol>
         {breadcrumbs.map((breadcrumb, index) => {
           const isCurrent = breadcrumb.fileId === folderId;
