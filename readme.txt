@@ -1,6 +1,6 @@
 === Brasth Document Sync for Google Docs ===
 Contributors: canvilled
-Tags: google-docs, google-drive, content-sync, editorial-workflow, blocks
+Tags: google-docs, google-drive, content-sync, editorial-workflow, blocks, google-doc-sync, wordpress-sync, import-docs
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 8.1
@@ -94,18 +94,6 @@ Brasth Document Sync stores site-level Google OAuth client settings, encrypted p
 During document browsing and sync, Brasth Document Sync communicates with Google OAuth, Google Drive API, and Google Docs API as described in the External Services section. Imported Google Docs images are stored in the WordPress Media Library. Synced WordPress posts and imported media remain on the site until a user with sufficient permission changes or deletes them.
 
 Uninstall removes plugin settings, encrypted user Google tokens, and scheduled cron events. Linked post metadata is retained by default; define `DOCSYNC_WP_FULL_UNINSTALL` or return true from the `docsync_wp_full_uninstall` filter to remove Brasth Document Sync post metadata. Synced posts and imported media are not deleted automatically.
-
-== Source And Build Instructions ==
-
-Human-readable frontend source is included in `resources/`. Built assets are included in `build/`.
-
-To rebuild the admin assets from source:
-
-1. Install PHP dependencies with `composer install`.
-2. Install frontend dependencies with `pnpm install --frozen-lockfile`.
-3. Build assets with `pnpm build`.
-
-The build uses Vite and writes `build/manifest.json`, `build/manifest.post-sync.json`, and hashed CSS/JS assets. Runtime React is provided by WordPress through `wp-element`.
 
 == Changelog ==
 
