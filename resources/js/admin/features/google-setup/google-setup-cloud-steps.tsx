@@ -1,4 +1,5 @@
 import { createElement, Fragment } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
 
 import { googleCloudLinks } from './google-setup-utils';
 import { AdminButton } from '../../shared/ui/admin-button';
@@ -16,8 +17,8 @@ export const GoogleSetupCloudSteps = ({ redirectUri, copyMessage, onCopyValue }:
         <div className="docsync-wp-step-heading">
           <span>1</span>
           <div>
-            <h3>Create the Google Cloud pieces</h3>
-            <p>Use one Google Cloud project for Drive API, Docs API, OAuth consent, and OAuth web credentials.</p>
+            <h3>{__('Create the Google Cloud pieces', 'brasth-document-sync-for-google-docs')}</h3>
+            <p>{__('Use one Google Cloud project for Drive API, Docs API, OAuth consent, and OAuth web credentials.', 'brasth-document-sync-for-google-docs')}</p>
           </div>
         </div>
         <div className="docsync-wp-cloud-links">
@@ -33,16 +34,16 @@ export const GoogleSetupCloudSteps = ({ redirectUri, copyMessage, onCopyValue }:
         <div className="docsync-wp-step-heading">
           <span>2</span>
           <div>
-            <h3>Add OAuth URLs</h3>
-            <p>Paste and save this callback in the Google OAuth web client used by Brasth Document Sync.</p>
+            <h3>{__('Add OAuth URLs', 'brasth-document-sync-for-google-docs')}</h3>
+            <p>{__('Paste and save this callback in the Google OAuth web client used by Brasth Document Sync.', 'brasth-document-sync-for-google-docs')}</p>
           </div>
         </div>
         <label className="docsync-wp-copy-field">
-          <span>Authorized redirect URI in the OAuth client</span>
+          <span>{__('Authorized redirect URI in the OAuth client', 'brasth-document-sync-for-google-docs')}</span>
           <div className="docsync-wp-copy-row">
             <input className="regular-text code" readOnly type="text" value={redirectUri} />
-            <AdminButton onClick={() => onCopyValue(redirectUri, 'Redirect URI')}>
-              Copy
+            <AdminButton onClick={() => onCopyValue(redirectUri, __('Redirect URI', 'brasth-document-sync-for-google-docs'))}>
+              {__('Copy', 'brasth-document-sync-for-google-docs')}
             </AdminButton>
           </div>
         </label>

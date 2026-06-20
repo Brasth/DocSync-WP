@@ -1,5 +1,6 @@
 import { SearchControl, SelectControl } from '@wordpress/components';
 import { createElement } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
 
 import type { SharedDriveSummary } from '../../api';
 import { AdminButton } from '../../shared/ui/admin-button';
@@ -43,29 +44,29 @@ export const DriveBrowserToolbar = ({
     >
       <SelectControl
         disabled={busy || loading || loadingSharedDrives}
-        label="Location"
+        label={__('Location', 'brasth-document-sync-for-google-docs')}
         onChange={(value) => onDriveChange(value).catch(() => undefined)}
         options={[
-          { label: 'My Drive', value: '' },
+          { label: __('My Drive', 'brasth-document-sync-for-google-docs'), value: '' },
           ...sharedDrives.map((drive) => ({ label: drive.name, value: drive.driveId }))
         ]}
         value={driveId}
       />
       <SearchControl
-        label="Search this folder"
+        label={__('Search this folder', 'brasth-document-sync-for-google-docs')}
         onChange={(value) => onSearchInputChange(value)}
-        placeholder="Folder or document name"
+        placeholder={__('Folder or document name', 'brasth-document-sync-for-google-docs')}
         value={searchInput}
       />
       <AdminButton disabled={busy || loading} type="submit" variant="secondary">
-        Search
+        {__('Search', 'brasth-document-sync-for-google-docs')}
       </AdminButton>
       <AdminButton disabled={busy || loading} onClick={onRefresh} variant="secondary">
-        Refresh
+        {__('Refresh', 'brasth-document-sync-for-google-docs')}
       </AdminButton>
       {activeSearch ? (
         <AdminButton disabled={busy || loading} onClick={onClearSearch} variant="link">
-          Clear
+          {__('Clear', 'brasth-document-sync-for-google-docs')}
         </AdminButton>
       ) : null}
     </form>

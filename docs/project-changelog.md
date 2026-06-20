@@ -1,6 +1,35 @@
 # Project Changelog
 
-Last updated: 2026-06-13
+Last updated: 2026-06-20
+
+## 2026-06-20 - 1.0.3 Release Hardening
+
+Status: completed in codebase
+
+Prepared the `1.0.3` patch release for GitHub ZIP and WordPress.org/SVN distribution:
+
+- bumped the plugin header version, `DOCSYNC_WP_VERSION`, `readme.txt` stable tag, package metadata, and admin fallback config to `1.0.3`
+- restored WordPress.org source/build instructions in `readme.txt`
+- reduced WordPress.org readme tags to the documented 5-tag limit
+- added `1.0.3` and `1.0.2` readme changelog entries for release continuity
+- added CI checks for readme tag/source-instruction invariants
+- added `pnpm typecheck` and `pnpm build` to PR JS/TS checks
+- completed a focused admin i18n pass for setup, Sources, Drive browser, OAuth JSON import, and post-list sync status strings
+- added shared skeleton loading primitives plus first-load skeleton states for Sources, Logs, and the Drive browser
+- clarified Logs empty states for no events, source-specific misses, level-specific misses, and possibly unlinked source IDs
+- created `plans/20260620-2307-1-0-3-release-hardening/plan.md`
+
+Verification status:
+
+- `pnpm lint` passes
+- `pnpm typecheck` passes
+- `pnpm build` passes
+- `git diff --check` passes
+- workflow YAML parse check passes
+- local `1.0.3` release metadata validation passes
+- local readme tag/source-instruction validation passes
+- PHP and Composer checks are blocked in this shell because `php` and `composer` are unavailable
+- release still needs CI PHP checks, official Plugin Check, readme validator, and manual staging Google sync QA before SVN publish
 
 ## 2026-06-13 - 1.0.1 Release Metadata Alignment
 

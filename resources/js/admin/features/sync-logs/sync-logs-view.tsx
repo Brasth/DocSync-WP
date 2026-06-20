@@ -62,7 +62,9 @@ export const SyncLogsView = (): JSX.Element => {
   const [page, setPage] = useState(initialFilters.page);
   const [hasMore, setHasMore] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [notice, setNotice] = useState<AdminNoticeState | null>(null);
+  const hasActiveFilters = Boolean(postId.trim() || level);
 
   const loadEntries = async (nextPage = 1, nextPostId = postId, nextLevel = level) => {
     const trimmedPostId = nextPostId.trim();
@@ -70,6 +72,9 @@ export const SyncLogsView = (): JSX.Element => {
 
     if (trimmedPostId && (!Number.isInteger(parsedPostId) || parsedPostId <= 0)) {
       const message = __('Enter a valid source post ID.', 'brasth-document-sync-for-google-docs');
+      setEntries([]);
+      setHasMore(false);
+      setHasLoaded(true);
       setNotice({ type: 'error', message });
       speak(message, 'assertive');
       return;
@@ -92,10 +97,13 @@ export const SyncLogsView = (): JSX.Element => {
       updateLocation(trimmedPostId, nextLevel, nextPage);
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : __('Could not load sync logs.', 'brasth-document-sync-for-google-docs');
+      setEntries([]);
+      setHasMore(false);
       setNotice({ type: 'error', message });
       speak(message, 'assertive');
     } finally {
       setBusy(false);
+      setHasLoaded(true);
     }
   };
 
@@ -159,7 +167,14 @@ export const SyncLogsView = (): JSX.Element => {
             </div>
           </form>
 
-          <SyncLogEventsTable entries={entries} />
+          <SyncLogEventsTable
+            busy={busy}
+            entries={entries}
+            hasActiveFilters={hasActiveFilters}
+            hasLoaded={hasLoaded}
+            level={level}
+            postId={postId}
+          />
 
           <div className="docsync-wp-table-footer docsync-wp-logs-pagination">
             <AdminButton disabled={busy || page <= 1} onClick={() => loadEntries(page - 1)}>{__('Previous', 'brasth-document-sync-for-google-docs')}</AdminButton>

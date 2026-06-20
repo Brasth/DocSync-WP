@@ -4,7 +4,7 @@ import { __ } from '@wordpress/i18n';
 import { AccountPanel } from '../features/google-setup/account-panel';
 import { SettingsPanel } from '../features/google-setup/settings-panel';
 import { BackgroundSyncPoller } from '../features/post-sync/background-sync-poller';
-import { SourcesTable } from '../features/sources/sources-table';
+import { SourcesTable, SourcesTableSkeleton } from '../features/sources/sources-table';
 import { SyncLogsView } from '../features/sync-logs/sync-logs-view';
 import { AdminNotice } from '../shared/ui/admin-notice';
 import { useAdminApp, type AdminView as SetupAdminView } from './use-admin-app';
@@ -47,7 +47,13 @@ const SetupSourcesApp = ({ view }: { view: SetupAdminView }): JSX.Element => {
 
       <AdminNotice notice={app.notice} />
 
-      {!app.settings ? (
+      {!app.settings && view === 'sources' ? (
+        <div className="docsync-wp-admin-grid docsync-wp-admin-grid--single">
+          <div className="docsync-wp-admin-grid__main">
+            <SourcesTableSkeleton />
+          </div>
+        </div>
+      ) : !app.settings ? (
         <section className="docsync-wp-card">
           <p>{__('Loading settings...', 'brasth-document-sync-for-google-docs')}</p>
         </section>

@@ -1,3 +1,5 @@
+import { __ } from '@wordpress/i18n';
+
 import type { DocumentMetadata, DriveItemSummary } from '../../api';
 
 export type DriveBrowserBreadcrumb = {
@@ -5,12 +7,12 @@ export type DriveBrowserBreadcrumb = {
   name: string;
 };
 
-export const rootDriveBreadcrumb: DriveBrowserBreadcrumb = { fileId: 'root', name: 'My Drive' };
+export const rootDriveBreadcrumb: DriveBrowserBreadcrumb = { fileId: 'root', name: __('My Drive', 'brasth-document-sync-for-google-docs') };
 export const driveBrowserPageSize = 50;
 
 export const formatDriveModifiedTime = (value: string): string => {
   if (!value) {
-    return 'Unavailable';
+    return __('Unavailable', 'brasth-document-sync-for-google-docs');
   }
 
   const date = new Date(value);
@@ -26,7 +28,7 @@ export const formatDriveModifiedTime = (value: string): string => {
 };
 
 export const driveItemTypeLabel = (item: DriveItemSummary): string => {
-  return item.itemType === 'folder' ? 'Folder' : 'Google Doc';
+  return item.itemType === 'folder' ? __('Folder', 'brasth-document-sync-for-google-docs') : __('Google Doc', 'brasth-document-sync-for-google-docs');
 };
 
 export const driveItemToDocumentMetadata = (item: DriveItemSummary): DocumentMetadata | null => {

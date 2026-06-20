@@ -1,5 +1,6 @@
 import { speak } from '@wordpress/a11y';
 import { useEffect, useRef, useState } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
 
 import {
   listDriveItems,
@@ -43,7 +44,7 @@ export const useDriveBrowser = ({ onSelect }: Args) => {
       const response = await listSharedDrives();
       setSharedDrives(response.drives);
     } catch (caught) {
-      setSharedDriveError(caught instanceof Error ? caught.message : 'Could not load shared drives.');
+      setSharedDriveError(caught instanceof Error ? caught.message : __('Could not load shared drives.', 'brasth-document-sync-for-google-docs'));
     } finally {
       setLoadingSharedDrives(false);
     }
@@ -91,7 +92,7 @@ export const useDriveBrowser = ({ onSelect }: Args) => {
       if (requestId !== requestSequence.current) {
         return;
       }
-      const message = caught instanceof Error ? caught.message : 'Could not load Google Drive items.';
+      const message = caught instanceof Error ? caught.message : __('Could not load Google Drive items.', 'brasth-document-sync-for-google-docs');
       setError(message);
       speak(message, 'assertive');
     } finally {

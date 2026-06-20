@@ -1,3 +1,5 @@
+import { __, sprintf } from '@wordpress/i18n';
+
 import type { SourceRecord } from '../../api';
 import { shouldShowSyncProgress } from '../../shared/ui/sync-progress';
 
@@ -15,12 +17,12 @@ export const parseSource = (value: string | undefined): SourceRecord | null => {
 
 export const sourceLabel = (source: SourceRecord | null): string => {
   if (!source) {
-    return 'No Google Doc linked.';
+    return __('No Google Doc linked.', 'brasth-document-sync-for-google-docs');
   }
 
   const title = source.googleTitle || source.googleFileId;
   const status = source.syncStatus || 'linked';
-  return `${title} (${status})`;
+  return sprintf(__('%1$s (%2$s)', 'brasth-document-sync-for-google-docs'), title, sourceStatusLabel(status));
 };
 
 export const updateListRowSource = (source: SourceRecord | null): void => {
@@ -38,7 +40,7 @@ export const updateListRowSource = (source: SourceRecord | null): void => {
 
   if (rowAction) {
     rowAction.dataset.mode = 'sync';
-    rowAction.textContent = 'Sync Doc';
+    rowAction.textContent = __('Sync Doc', 'brasth-document-sync-for-google-docs');
   }
 };
 
@@ -109,7 +111,7 @@ const sourceStatusElement = (source: SourceRecord): HTMLDivElement => {
 
   wrapper.className = 'docsync-wp-list-status is-linked';
   title.textContent = source.googleTitle || source.googleFileId;
-  status.textContent = capitalizeStatus(source.syncStatus || 'linked');
+  status.textContent = sourceStatusLabel(source.syncStatus || 'linked');
   wrapper.append(title, document.createElement('br'), status);
 
   if (shouldShowSyncProgress(source)) {
@@ -143,7 +145,7 @@ const sourceProgressElement = (source: SourceRecord): HTMLDivElement => {
   wrapper.className = 'docsync-wp-sync-progress-wrap';
   bar.className = 'docsync-wp-sync-progress';
   bar.setAttribute('role', 'progressbar');
-  bar.setAttribute('aria-label', `Sync progress: ${progress}%`);
+  bar.setAttribute('aria-label', sprintf(__('Sync progress: %d%%', 'brasth-document-sync-for-google-docs'), progress));
   bar.setAttribute('aria-valuemin', '0');
   bar.setAttribute('aria-valuemax', '100');
   bar.setAttribute('aria-valuenow', String(progress));
@@ -155,6 +157,18 @@ const sourceProgressElement = (source: SourceRecord): HTMLDivElement => {
   return wrapper;
 };
 
-const capitalizeStatus = (status: string): string => {
-  return status ? `${status.charAt(0).toUpperCase()}${status.slice(1)}` : 'Linked';
+const sourceStatusLabel = (status: string): string => {
+  switch (status) {
+    case 'syncing':
+      return __('Syncing', 'brasth-document-sync-for-google-docs');
+    case 'synced':
+      return __('Synced', 'brasth-document-sync-for-google-docs');
+    case 'skipped':
+      return __('Skipped', 'brasth-document-sync-for-google-docs');
+    case 'error':
+      return __('Error', 'brasth-document-sync-for-google-docs');
+    case 'linked':
+    default:
+      return __('Linked', 'brasth-document-sync-for-google-docs');
+  }
 };
