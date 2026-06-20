@@ -1,14 +1,27 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
   <title id="title">Brasth Document Sync for Google Docs icon</title>
-  <desc id="desc">A centered document with colored content lines and sync arrows.</desc>
-  <rect width="256" height="256" rx="48" fill="#1D4ED8"/>
-  <path fill="#0F766E" opacity=".9" d="M256 0v256H0z"/>
-  <circle cx="128" cy="128" r="88" fill="#0F172A" opacity=".1"/>
-  <path fill="#FFFFFF" d="M70 40h84l38 38v138H70z"/>
-  <path fill="#DCEBFF" d="M154 40v38h38z"/>
-  <rect x="94" y="100" width="72" height="12" rx="6" fill="#1D4ED8"/>
-  <rect x="94" y="128" width="88" height="12" rx="6" fill="#0F766E"/>
-  <rect x="94" y="156" width="64" height="12" rx="6" fill="#334155"/>
-  <path fill="#0F766E" d="M94 182h48v-8l26 14-26 14v-8H94z"/>
-  <path fill="#1D4ED8" d="M164 204h-48v8l-26-14 26-14v8h48z"/>
+  <desc id="desc">A glowing cloud with a WordPress-branded document and the Brasth wordmark on a dark background.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="100%" stop-color="#1E293B"/>
+    </linearGradient>
+    <linearGradient id="cloud" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#22D3EE"/>
+      <stop offset="100%" stop-color="#2563EB"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="48" fill="url(#bg)"/>
+  <g transform="translate(128, 110)">
+    <path d="M-70 10C-70 -25 -42 -55 -5 -55C20 -55 38 -42 48 -25C70 -28 88 -10 88 15C88 42 65 62 35 62H-30C-55 62 -70 40 -70 10Z" fill="url(#cloud)"/>
+    <rect x="-32" y="-38" width="64" height="80" rx="6" fill="#F8FAFC"/>
+    <path d="M20 -38V-22H36L20 -38Z" fill="#CBD5E1"/>
+    <circle cx="0" cy="-2" r="18" fill="#2563EB"/>
+    <path d="M-8 8L-4 -8L0 0L4 -8L8 8" stroke="white" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="-9" cy="-2" r="2" fill="white"/>
+    <circle cx="9" cy="-2" r="2" fill="white"/>
+    <rect x="-22" y="28" width="44" height="5" rx="2.5" fill="#94A3B8"/>
+    <rect x="-22" y="38" width="32" height="5" rx="2.5" fill="#CBD5E1"/>
+  </g>
+  <text x="128" y="210" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="bold" fill="#F8FAFC">Brasth</text>
 </svg>
