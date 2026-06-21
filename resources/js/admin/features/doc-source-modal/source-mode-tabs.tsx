@@ -4,6 +4,12 @@ import { __ } from '@wordpress/i18n';
 
 import { docSourceLabels, type DocSourceUiMode } from './doc-source-modal-options';
 
+const tabIcons: Record<DocSourceUiMode, string> = {
+  browse: 'dashicons-browse',
+  url: 'dashicons-admin-links',
+  file_id: 'dashicons-media-code'
+};
+
 type Props<T extends DocSourceUiMode> = {
   sourceMode: T;
   onChange: (mode: T) => void;
@@ -24,6 +30,7 @@ export const SourceModeTabs = <T extends DocSourceUiMode>({ sourceMode, onChange
             key={mode}
             value={mode}
           >
+            <span aria-hidden="true" className={`dashicons ${tabIcons[mode]}`} />
             {docSourceLabels[mode]}
           </Tabs.Trigger>
         ))}

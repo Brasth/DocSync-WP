@@ -4,6 +4,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import type { SourceRecord } from '../../api';
 import type { AvailablePostType } from '../../config';
 import { AdminButton } from '../../shared/ui/admin-button';
+import { EmptyState } from '../../shared/ui/empty-state';
 import { SkeletonTableRows, SkeletonText } from '../../shared/ui/skeleton';
 import { StatusPill } from '../../shared/ui/status-pill';
 import { shouldShowSyncProgress, SyncProgress } from '../../shared/ui/sync-progress';
@@ -89,7 +90,7 @@ export const SourcesTableSkeleton = (): JSX.Element => {
       </div>
 
       <div className="docsync-wp-table-scroll">
-        <table className="widefat striped docsync-wp-sources-table">
+        <table className="docsync-wp-data-table docsync-wp-sources-table">
           <thead>
             <tr>
               <th>{__('WordPress target', 'brasth-document-sync-for-google-docs')}</th>
@@ -216,33 +217,50 @@ export const SourcesTable = ({
             ) : sources.length === 0 ? (
               <tr>
                 <td colSpan={5}>
-                  {hasActiveFilters
-                    ? __('No sources match these filters.', 'brasth-document-sync-for-google-docs')
-                    : __('No linked sources yet.', 'brasth-document-sync-for-google-docs')}
+                  <EmptyState
+                    className="docsync-wp-table-empty-state"
+                    description={hasActiveFilters
+                      ? __('Adjust the filters or reset to see all linked sources.', 'brasth-document-sync-for-google-docs')
+                      : __('Link a Google Doc from the post editor to get started.', 'brasth-document-sync-for-google-docs')}
+                    title={hasActiveFilters
+                      ? __('No sources match these filters.', 'brasth-document-sync-for-google-docs')
+                      : __('No linked sources yet.', 'brasth-document-sync-for-google-docs')}
+                  />
                 </td>
               </tr>
             ) : sources.map((source) => (
               <tr key={source.postId}>
                 <td>
                   <a href={source.editUrl}>{source.postTitle || sprintf(__('Post %d', 'brasth-document-sync-for-google-docs'), source.postId)}</a>
-                  <small>{source.postType} · {source.postStatus}</small>
+                  <span className="docsync-wp-row-tag">{source.postType}</span>
+                  <span className="docsync-wp-row-tag">{source.postStatus}</span>
                 </td>
                 <td>
                   {source.googleDocUrl ? <a href={source.googleDocUrl} rel="noreferrer" target="_blank">{source.googleTitle || source.googleFileId}</a> : source.googleTitle || source.googleFileId}
+                  {source.googleFileId ? <small>{source.googleFileId}</small> : null}
                 </td>
                 <td>
-                  <StatusPill status={statusLabel(source)} />
-                  {shouldShowSyncProgress(source) ? <SyncProgress message={source.syncMessage} progress={source.syncProgress} /> : null}
-                  {source.syncError ? <small>{source.syncError}</small> : null}
+                  <div className="docsync-wp-source-status-cell">
+                    <StatusPill status={statusLabel(source)} />
+                    {shouldShowSyncProgress(source) ? (
+                      <div className="docsync-wp-source-sync-block">
+                        <SyncProgress message={source.syncMessage} progress={source.syncProgress} />
+                      </div>
+                    ) : null}
+                    {source.syncError ? <small>{source.syncError}</small> : null}
+                  </div>
                 </td>
                 <td>
                   {source.lastSyncedAt || __('Never', 'brasth-document-sync-for-google-docs')}
-                  {syncMethodLabel(source) ? <small>{syncMethodLabel(source)}</small> : null}
+                  {syncMethodLabel(source) ? <span className="docsync-wp-row-tag">{syncMethodLabel(source)}</span> : null}
                 </td>
                 <td>
                   <div className="docsync-wp-source-actions">
-                    <AdminButton disabled={busy} onClick={() => onSync(source.postId)}>{__('Sync', 'brasth-document-sync-for-google-docs')}</AdminButton>
-                    <a className="button button-secondary" href={logsUrl(source.postId)}>{__('View logs', 'brasth-document-sync-for-google-docs')}</a>
+                    <AdminButton disabled={busy} onClick={() => onSync(source.postId)} variant="primary">{__('Sync', 'brasth-document-sync-for-google-docs')}</AdminButton>
+                    <a className="button button-secondary docsync-wp-view-logs-link" href={logsUrl(source.postId)}>
+                      <span aria-hidden="true" className="dashicons dashicons-list-view" />
+                      {__('View logs', 'brasth-document-sync-for-google-docs')}
+                    </a>
                   </div>
                 </td>
               </tr>

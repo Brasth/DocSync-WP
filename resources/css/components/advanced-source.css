@@ -1,7 +1,7 @@
 @layer components {
   .docsync-wp-advanced-source {
     background: #fff;
-    border: 1px solid #d9e2e1;
+    border: 1px solid var(--docsync-card-border);
     border-radius: 8px;
     padding: 14px;
   }

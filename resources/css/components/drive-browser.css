@@ -1,7 +1,7 @@
 @layer components {
   .docsync-wp-drive-browser {
     background: #fff;
-    border: 1px solid #d9e2e1;
+    border: 1px solid var(--docsync-card-border);
     border-radius: 8px;
     display: flex;
     flex: 1 1 auto;
@@ -36,16 +36,37 @@
     --docsync-wp-drive-control-height: 40px;
 
     align-items: end;
-    display: grid;
+    display: flex;
+    flex-wrap: wrap;
     gap: 10px;
-    grid-template-columns: minmax(170px, 230px) minmax(220px, 1fr) auto auto auto;
     margin-top: 10px;
   }
 
-  .docsync-wp-drive-browser__toolbar label {
+  .docsync-wp-drive-browser__toolbar-controls {
+    align-items: end;
+    display: flex;
+    flex: 1 1 auto;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .docsync-wp-drive-browser__toolbar-controls label {
     display: flex;
     flex-direction: column;
     gap: 6px;
+  }
+
+  .docsync-wp-drive-browser__toolbar-actions {
+    align-items: center;
+    display: flex;
+    flex: 0 0 auto;
+    gap: 8px;
+  }
+
+  .docsync-wp-drive-browser__toolbar-divider {
+    border-left: 1px solid var(--docsync-card-border);
+    flex: 0 0 auto;
+    height: 32px;
   }
 
   .docsync-wp-drive-browser__toolbar .components-base-control,
@@ -86,7 +107,7 @@
   }
 
   .docsync-wp-drive-browser__breadcrumb {
-    color: #50575e;
+    color: var(--docsync-text-muted);
     flex: 1 1 auto;
     font-size: 12px;
     min-width: 0;
@@ -114,39 +135,48 @@
     background: transparent;
     border: 0;
     border-radius: 4px;
-    color: #2271b1;
+    color: var(--docsync-teal);
     cursor: pointer;
     overflow-wrap: anywhere;
     padding: 1px 3px;
-    text-decoration: underline;
+    text-decoration: none;
   }
 
   .docsync-wp-drive-browser__breadcrumb-button:hover,
   .docsync-wp-drive-browser__breadcrumb-button:focus-visible {
-    color: #135e96;
+    background: var(--docsync-teal-bg);
+    color: var(--docsync-teal-text);
   }
 
   .docsync-wp-drive-browser__breadcrumb-button:focus-visible {
-    box-shadow: 0 0 0 2px #2271b1;
+    box-shadow: 0 0 0 2px var(--docsync-cyan);
     outline: none;
   }
 
   .docsync-wp-drive-browser__breadcrumb-current {
-    color: #1d2327;
+    color: var(--docsync-text-primary);
     font-weight: 600;
     overflow-wrap: anywhere;
   }
 
   .docsync-wp-drive-browser__breadcrumb-separator {
-    color: #8c8f94;
+    align-items: center;
+    color: var(--docsync-text-secondary);
+    display: inline-flex;
+  }
+
+  .docsync-wp-drive-browser__breadcrumb-separator .dashicons {
+    font-size: 14px;
+    height: 14px;
+    width: 14px;
   }
 
   .docsync-wp-drive-browser__state {
     align-items: center;
     background: #f6f7f7;
-    border: 1px dashed #c3c4c7;
+    border: 1px dashed var(--docsync-card-border);
     border-radius: 8px;
-    color: #50575e;
+    color: var(--docsync-text-muted);
     display: flex;
     gap: 8px;
     justify-content: center;
@@ -157,7 +187,16 @@
 
   @media (max-width: 760px) {
     .docsync-wp-drive-browser__toolbar {
-      grid-template-columns: 1fr;
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .docsync-wp-drive-browser__toolbar-controls {
+      flex-direction: column;
+    }
+
+    .docsync-wp-drive-browser__toolbar-divider {
+      display: none;
     }
 
     .docsync-wp-drive-browser__heading {

@@ -42,33 +42,38 @@ export const DriveBrowserToolbar = ({
         onSubmitSearch().catch(() => undefined);
       }}
     >
-      <SelectControl
-        disabled={busy || loading || loadingSharedDrives}
-        label={__('Location', 'brasth-document-sync-for-google-docs')}
-        onChange={(value) => onDriveChange(value).catch(() => undefined)}
-        options={[
-          { label: __('My Drive', 'brasth-document-sync-for-google-docs'), value: '' },
-          ...sharedDrives.map((drive) => ({ label: drive.name, value: drive.driveId }))
-        ]}
-        value={driveId}
-      />
-      <SearchControl
-        label={__('Search this folder', 'brasth-document-sync-for-google-docs')}
-        onChange={(value) => onSearchInputChange(value)}
-        placeholder={__('Folder or document name', 'brasth-document-sync-for-google-docs')}
-        value={searchInput}
-      />
-      <AdminButton disabled={busy || loading} type="submit" variant="secondary">
-        {__('Search', 'brasth-document-sync-for-google-docs')}
-      </AdminButton>
-      <AdminButton disabled={busy || loading} onClick={onRefresh} variant="secondary">
-        {__('Refresh', 'brasth-document-sync-for-google-docs')}
-      </AdminButton>
-      {activeSearch ? (
-        <AdminButton disabled={busy || loading} onClick={onClearSearch} variant="link">
-          {__('Clear', 'brasth-document-sync-for-google-docs')}
+      <div className="docsync-wp-drive-browser__toolbar-controls">
+        <SelectControl
+          disabled={busy || loading || loadingSharedDrives}
+          label={__('Location', 'brasth-document-sync-for-google-docs')}
+          onChange={(value) => onDriveChange(value).catch(() => undefined)}
+          options={[
+            { label: __('My Drive', 'brasth-document-sync-for-google-docs'), value: '' },
+            ...sharedDrives.map((drive) => ({ label: drive.name, value: drive.driveId }))
+          ]}
+          value={driveId}
+        />
+        <SearchControl
+          label={__('Search this folder', 'brasth-document-sync-for-google-docs')}
+          onChange={(value) => onSearchInputChange(value)}
+          placeholder={__('Folder or document name', 'brasth-document-sync-for-google-docs')}
+          value={searchInput}
+        />
+      </div>
+      <span className="docsync-wp-drive-browser__toolbar-divider" />
+      <div className="docsync-wp-drive-browser__toolbar-actions">
+        <AdminButton disabled={busy || loading} type="submit" variant="secondary">
+          {__('Search', 'brasth-document-sync-for-google-docs')}
         </AdminButton>
-      ) : null}
+        <AdminButton disabled={busy || loading} onClick={onRefresh} variant="secondary">
+          {__('Refresh', 'brasth-document-sync-for-google-docs')}
+        </AdminButton>
+        {activeSearch ? (
+          <AdminButton disabled={busy || loading} onClick={onClearSearch} variant="link">
+            {__('Clear', 'brasth-document-sync-for-google-docs')}
+          </AdminButton>
+        ) : null}
+      </div>
     </form>
   );
 };

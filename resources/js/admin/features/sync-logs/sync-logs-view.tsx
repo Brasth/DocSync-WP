@@ -1,5 +1,5 @@
 import { speak } from '@wordpress/a11y';
-import { createElement, useEffect, useMemo, useState } from '@wordpress/element';
+import { createElement, useEffect, useMemo, useRef, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 
 import { listSyncLogEntries, type SyncLogEntry } from '../../api';
@@ -9,6 +9,7 @@ import { AdminNotice, type AdminNoticeState } from '../../shared/ui/admin-notice
 import { SyncLogEventsTable } from './sync-log-events-table';
 
 const pageSize = 25;
+const autoRefreshInterval = 10000;
 
 const levelOptions = [
   { value: '', label: __('All levels', 'brasth-document-sync-for-google-docs') },
@@ -64,9 +65,11 @@ export const SyncLogsView = (): JSX.Element => {
   const [busy, setBusy] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [notice, setNotice] = useState<AdminNoticeState | null>(null);
+  const [autoRefresh, setAutoRefresh] = useState(false);
+  const autoRefreshRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const hasActiveFilters = Boolean(postId.trim() || level);
 
-  const loadEntries = async (nextPage = 1, nextPostId = postId, nextLevel = level) => {
+  const loadEntries = async (nextPage = 1, nextPostId = postId, nextLevel = level, silent = false) => {
     const trimmedPostId = nextPostId.trim();
     const parsedPostId = trimmedPostId ? Number(trimmedPostId) : 0;
 
@@ -80,8 +83,10 @@ export const SyncLogsView = (): JSX.Element => {
       return;
     }
 
-    setBusy(true);
-    setNotice(null);
+    if (!silent) {
+      setBusy(true);
+      setNotice(null);
+    }
 
     try {
       const response = await listSyncLogEntries({
@@ -96,20 +101,44 @@ export const SyncLogsView = (): JSX.Element => {
       setPage(nextPage);
       updateLocation(trimmedPostId, nextLevel, nextPage);
     } catch (caught) {
-      const message = caught instanceof Error ? caught.message : __('Could not load sync logs.', 'brasth-document-sync-for-google-docs');
-      setEntries([]);
-      setHasMore(false);
-      setNotice({ type: 'error', message });
-      speak(message, 'assertive');
+      if (!silent) {
+        const message = caught instanceof Error ? caught.message : __('Could not load sync logs.', 'brasth-document-sync-for-google-docs');
+        setEntries([]);
+        setHasMore(false);
+        setNotice({ type: 'error', message });
+        speak(message, 'assertive');
+      }
     } finally {
-      setBusy(false);
-      setHasLoaded(true);
+      if (!silent) {
+        setBusy(false);
+        setHasLoaded(true);
+      }
     }
   };
 
   useEffect(() => {
     void loadEntries(initialFilters.page);
   }, []);
+
+  useEffect(() => {
+    if (autoRefreshRef.current) {
+      clearInterval(autoRefreshRef.current);
+      autoRefreshRef.current = null;
+    }
+
+    if (autoRefresh) {
+      autoRefreshRef.current = setInterval(() => {
+        void loadEntries(page, postId, level, true);
+      }, autoRefreshInterval);
+    }
+
+    return () => {
+      if (autoRefreshRef.current) {
+        clearInterval(autoRefreshRef.current);
+        autoRefreshRef.current = null;
+      }
+    };
+  }, [autoRefresh, page, postId, level]);
 
   const applyFilters = async () => {
     await loadEntries(1);
@@ -131,7 +160,7 @@ export const SyncLogsView = (): JSX.Element => {
         </div>
         <div className="docsync-wp-hero__status">
           <strong>{entries.length}</strong>
-          <span>{entries.length === 1 ? __('shown event', 'brasth-document-sync-for-google-docs') : __('shown events', 'brasth-document-sync-for-google-docs')}</span>
+          <span>{entries.length === 1 ? __('event on this page', 'brasth-document-sync-for-google-docs') : __('events on this page', 'brasth-document-sync-for-google-docs')}</span>
         </div>
       </header>
 
@@ -144,7 +173,20 @@ export const SyncLogsView = (): JSX.Element => {
               <h2>{__('Logs', 'brasth-document-sync-for-google-docs')}</h2>
               <p>{__('Diagnostic sync events stored per linked source.', 'brasth-document-sync-for-google-docs')}</p>
             </div>
-            <AdminButton disabled={busy} onClick={() => loadEntries(page)}>{__('Refresh', 'brasth-document-sync-for-google-docs')}</AdminButton>
+            <div className="docsync-wp-actions-row">
+              <div className="docsync-wp-auto-refresh">
+                <button
+                  aria-label={__('Auto-refresh every 10 seconds', 'brasth-document-sync-for-google-docs')}
+                  aria-pressed={autoRefresh}
+                  className="docsync-wp-auto-refresh-toggle"
+                  onClick={() => setAutoRefresh(!autoRefresh)}
+                  type="button"
+                />
+                {autoRefresh ? <span aria-hidden="true" className="docsync-wp-auto-refresh-indicator" /> : null}
+                <span>{__('Auto-refresh', 'brasth-document-sync-for-google-docs')}</span>
+              </div>
+              <AdminButton disabled={busy} onClick={() => loadEntries(page)}>{__('Refresh', 'brasth-document-sync-for-google-docs')}</AdminButton>
+            </div>
           </div>
 
           <form className="docsync-wp-log-filters" onSubmit={(event) => {
@@ -179,7 +221,7 @@ export const SyncLogsView = (): JSX.Element => {
           <div className="docsync-wp-table-footer docsync-wp-logs-pagination">
             <AdminButton disabled={busy || page <= 1} onClick={() => loadEntries(page - 1)}>{__('Previous', 'brasth-document-sync-for-google-docs')}</AdminButton>
             <span>{sprintf(__('Page %d', 'brasth-document-sync-for-google-docs'), page)}</span>
-            <AdminButton disabled={busy || !hasMore} onClick={() => loadEntries(page + 1)}>{__('Next', 'brasth-document-sync-for-google-docs')}</AdminButton>
+            <AdminButton disabled={busy || !hasMore} onClick={() => loadEntries(page + 1)} variant="primary">{__('Next', 'brasth-document-sync-for-google-docs')}</AdminButton>
           </div>
         </section>
       </div>
