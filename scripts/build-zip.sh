@@ -43,9 +43,9 @@ if [ ! -f "${PROJECT_ROOT}/build/manifest.json" ]; then
   (cd "${PROJECT_ROOT}" && pnpm install --frozen-lockfile && pnpm build)
 fi
 
-# Stage files using .distignore (does NOT exclude build/)
+# Stage files using .distignore (keep leading / for root-only matching)
 mkdir -p "${STAGING_DIR}/${PLUGIN_SLUG}"
-sed 's|^/||' "${PROJECT_ROOT}/.distignore" > "${RSYNC_EXCLUDES}"
+cp "${PROJECT_ROOT}/.distignore" "${RSYNC_EXCLUDES}"
 printf '%s\n' '*.zip' >> "${RSYNC_EXCLUDES}"
 rsync -a "${PROJECT_ROOT}/" "${STAGING_DIR}/${PLUGIN_SLUG}/" --exclude-from="${RSYNC_EXCLUDES}"
 
