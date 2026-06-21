@@ -23,9 +23,25 @@ final class AdminPage {
 
 	public const HOOK_SUFFIX = 'toplevel_page_brasth-document-sync-for-google-docs';
 
-	public const SOURCES_HOOK_SUFFIX = 'brasth-document-sync-for-google-docs_page_brasth-document-sync-for-google-docs-sources';
+	/**
+	 * Hook suffix for the Sources submenu page.
+	 *
+	 * WordPress builds this from sanitize_title() of the translated top-level menu
+	 * title, not from the parent menu slug. The prefix is therefore
+	 * 'brasth-document-sync' in English, not 'brasth-document-sync-for-google-docs'.
+	 *
+	 * @internal Prefer matching against the stable SOURCES_MENU_SLUG when possible.
+	 */
+	public const SOURCES_HOOK_SUFFIX = 'brasth-document-sync_page_brasth-document-sync-for-google-docs-sources';
 
-	public const LOGS_HOOK_SUFFIX = 'brasth-document-sync-for-google-docs_page_brasth-document-sync-for-google-docs-logs';
+	/**
+	 * Hook suffix for the Logs submenu page.
+	 *
+	 * See SOURCES_HOOK_SUFFIX: the prefix depends on the translated top-level menu title.
+	 *
+	 * @internal Prefer matching against the stable LOGS_MENU_SLUG when possible.
+	 */
+	public const LOGS_HOOK_SUFFIX = 'brasth-document-sync_page_brasth-document-sync-for-google-docs-logs';
 
 	private const CAPABILITY = 'manage_options';
 

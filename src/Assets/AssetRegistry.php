@@ -75,7 +75,9 @@ final class AssetRegistry {
 	 * @param string $hook Current admin page hook suffix.
 	 */
 	public function enqueueAdminApp( string $hook ): void {
-		if ( in_array( $hook, array( AdminPage::HOOK_SUFFIX, AdminPage::SOURCES_HOOK_SUFFIX, AdminPage::LOGS_HOOK_SUFFIX ), true ) && current_user_can( 'manage_options' ) ) {
+		$plugin_page = $GLOBALS['plugin_page'] ?? '';
+
+		if ( in_array( $plugin_page, array( AdminPage::MENU_SLUG, AdminPage::SOURCES_MENU_SLUG, AdminPage::LOGS_MENU_SLUG ), true ) && current_user_can( 'manage_options' ) ) {
 			$this->enqueueEntry( self::ADMIN_ENTRY, self::ADMIN_MANIFEST, self::ADMIN_HANDLE );
 			return;
 		}
@@ -89,22 +91,25 @@ final class AssetRegistry {
 	 * Render an admin notice when a required Vite build is missing.
 	 */
 	public function renderMissingBuildNotice(): void {
-		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
-
-		if ( ! $screen ) {
-			return;
-		}
+		$plugin_page = $GLOBALS['plugin_page'] ?? '';
 
 		$is_admin_app_screen = in_array(
-			$screen->id,
-			array( AdminPage::HOOK_SUFFIX, AdminPage::SOURCES_HOOK_SUFFIX, AdminPage::LOGS_HOOK_SUFFIX ),
+			$plugin_page,
+			array( AdminPage::MENU_SLUG, AdminPage::SOURCES_MENU_SLUG, AdminPage::LOGS_MENU_SLUG ),
 			true
 		) && current_user_can( 'manage_options' );
 
-		$is_post_sync_screen = in_array( $screen->base, array( 'post', 'edit' ), true )
-			&& is_user_logged_in()
-			&& ! empty( $screen->post_type )
-			&& in_array( (string) $screen->post_type, $this->settings->getEnabledPostTypes(), true );
+		$is_post_sync_screen = false;
+
+		if ( ! $is_admin_app_screen ) {
+			$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+
+			$is_post_sync_screen = null !== $screen
+				&& in_array( $screen->base, array( 'post', 'edit' ), true )
+				&& is_user_logged_in()
+				&& ! empty( $screen->post_type )
+				&& in_array( (string) $screen->post_type, $this->settings->getEnabledPostTypes(), true );
+		}
 
 		if ( ! $is_admin_app_screen && ! $is_post_sync_screen ) {
 			return;
