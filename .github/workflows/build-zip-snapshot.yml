@@ -42,16 +42,14 @@ jobs:
       - name: Build frontend assets
         run: pnpm build
 
-      - name: Stage distribution files
+      - name: Build and stage installable plugin
         id: stage
         run: |
           set -euo pipefail
           PLUGIN_SLUG="brasth-document-sync-for-google-docs"
           STAGING_DIR="${RUNNER_TEMP}/${PLUGIN_SLUG}-package"
-          RSYNC_EXCLUDES="${RUNNER_TEMP}/distignore-rsync.txt"
-          mkdir -p "${STAGING_DIR}/${PLUGIN_SLUG}"
-          sed 's|^/||' .distignore > "${RSYNC_EXCLUDES}"
-          rsync -a ./ "${STAGING_DIR}/${PLUGIN_SLUG}/" --exclude-from="${RSYNC_EXCLUDES}"
+          ./scripts/build-zip.sh "${RUNNER_TEMP}"
+          unzip -q "${RUNNER_TEMP}/${PLUGIN_SLUG}-"*.zip -d "${STAGING_DIR}"
           echo "staging_dir=${STAGING_DIR}" >> "${GITHUB_OUTPUT}"
 
       - name: Validate installable plugin layout

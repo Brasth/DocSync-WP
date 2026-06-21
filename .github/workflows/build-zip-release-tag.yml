@@ -112,51 +112,14 @@ jobs:
       - name: Build frontend assets
         run: pnpm build
 
-      - name: Stage distribution files
-        id: stage
-        run: |
-          set -euo pipefail
-          STAGING_DIR="${RUNNER_TEMP}/${PLUGIN_SLUG}-package"
-          RSYNC_EXCLUDES="${RUNNER_TEMP}/distignore-rsync.txt"
-          rm -rf "${STAGING_DIR}"
-          mkdir -p "${STAGING_DIR}/${PLUGIN_SLUG}"
-          sed 's|^/||' .distignore > "${RSYNC_EXCLUDES}"
-          printf '%s\n' '*.zip' >> "${RSYNC_EXCLUDES}"
-          rsync -a ./ "${STAGING_DIR}/${PLUGIN_SLUG}/" --exclude-from="${RSYNC_EXCLUDES}"
-          echo "staging_dir=${STAGING_DIR}" >> "${GITHUB_OUTPUT}"
-
-      - name: Validate installable plugin layout
-        run: |
-          set -euo pipefail
-          STAGING_DIR="${{ steps.stage.outputs.staging_dir }}"
-          PLUGIN_DIR="${STAGING_DIR}/${PLUGIN_SLUG}"
-
-          test -f "${PLUGIN_DIR}/${PLUGIN_SLUG}.php"
-          test -f "${PLUGIN_DIR}/vendor/autoload.php"
-          test -f "${PLUGIN_DIR}/build/manifest.json"
-          test -f "${PLUGIN_DIR}/readme.txt"
-          test -d "${PLUGIN_DIR}/build"
-          test -d "${PLUGIN_DIR}/resources"
-          grep -q "Plugin Name:" "${PLUGIN_DIR}/${PLUGIN_SLUG}.php"
-
-      - name: Create release ZIP
+      - name: Build installable ZIP
         id: package
         run: |
           set -euo pipefail
           VERSION="${{ steps.validate.outputs.version }}"
-          STAGING_DIR="${{ steps.stage.outputs.staging_dir }}"
-          DIST_DIR="${RUNNER_TEMP}/${PLUGIN_SLUG}-dist"
+          ./scripts/build-zip.sh "${RUNNER_TEMP}"
           ZIP_NAME="${PLUGIN_SLUG}-v${VERSION}.zip"
-          ZIP_PATH="${DIST_DIR}/${ZIP_NAME}"
-
-          rm -rf "${DIST_DIR}"
-          mkdir -p "${DIST_DIR}"
-
-          (
-            cd "${STAGING_DIR}"
-            zip -qr "${ZIP_PATH}" "${PLUGIN_SLUG}"
-          )
-
+          ZIP_PATH="${RUNNER_TEMP}/${ZIP_NAME}"
           echo "zip_name=${ZIP_NAME}" >> "${GITHUB_OUTPUT}"
           echo "zip_path=${ZIP_PATH}" >> "${GITHUB_OUTPUT}"
 
