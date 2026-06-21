@@ -107,6 +107,14 @@ To rebuild the admin assets from source:
 
 The build uses Vite and writes `build/manifest.json`, `build/manifest.post-sync.json`, and hashed CSS/JS assets. Runtime React is provided by WordPress through `wp-element`.
 
+== Screenshots ==
+
+1. Setup wizard for the self-managed Google OAuth client.
+2. Sources list with filters and bulk sync controls.
+3. Drive browser with breadcrumbs, search, and folder navigation.
+4. Post edit screen side meta box for link, sync now, and detach actions.
+5. Sync logs with diagnostic events and source status filters.
+
 == Changelog ==
 
 = 1.0.3 =

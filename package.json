@@ -6,10 +6,11 @@
   "scripts": {
     "dev": "vite build --watch --mode admin",
     "build": "vite build --mode admin && vite build --mode post-sync",
-    "lint": "pnpm lint:js && pnpm lint:no-phpcs-ignore",
+    "lint": "pnpm lint:js && pnpm lint:no-phpcs-ignore && pnpm lint:screenshots",
     "lint:fix": "eslint . --fix",
     "lint:js": "eslint . --max-warnings=0",
     "lint:no-phpcs-ignore": "! rg --regexp \"phpcs:[i]gnore\" brasth-document-sync-for-google-docs.php src uninstall.php",
+    "lint:screenshots": "node scripts/lint-screenshots.mjs",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
