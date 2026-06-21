@@ -65,22 +65,23 @@ function docsync_wp_render_runtime_notice(): void {
  * Check whether the current admin screen belongs to this plugin.
  */
 function docsync_wp_is_plugin_admin_context(): bool {
-	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+	$plugin_page = $GLOBALS['plugin_page'] ?? '';
 
-	if ( ! $screen ) {
-		return false;
-	}
-
-	return in_array(
-		$screen->id,
+	if ( in_array(
+		$plugin_page,
 		array(
-			'plugins',
-			'toplevel_page_brasth-document-sync-for-google-docs',
-			'brasth-document-sync-for-google-docs_page_brasth-document-sync-for-google-docs-sources',
-			'brasth-document-sync-for-google-docs_page_brasth-document-sync-for-google-docs-logs',
+			'brasth-document-sync-for-google-docs',
+			'brasth-document-sync-for-google-docs-sources',
+			'brasth-document-sync-for-google-docs-logs',
 		),
 		true
-	);
+	) ) {
+		return true;
+	}
+
+	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+
+	return null !== $screen && 'plugins' === $screen->id;
 }
 
 /**
