@@ -88,6 +88,9 @@ jobs:
       - name: Run ESLint
         run: pnpm lint
 
+      - name: Run screenshot sync lint
+        run: pnpm lint:screenshots
+
       - name: Run TypeScript typecheck
         run: pnpm typecheck
 

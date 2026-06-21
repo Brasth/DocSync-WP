@@ -9,6 +9,16 @@ export default [
   },
   js.configs.recommended,
   {
+    files: ['scripts/**/*.mjs', 'scripts/**/*.cjs', 'scripts/**/*.js'],
+    languageOptions: {
+      sourceType: 'module',
+      ecmaVersion: 'latest',
+      globals: {
+        ...globals.node
+      }
+    }
+  },
+  {
     files: ['resources/js/**/*.{ts,tsx}', 'vite.config.ts'],
     languageOptions: {
       parser: tsParser,
