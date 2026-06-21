@@ -43,7 +43,11 @@
   }
 
   .docsync-wp-source-tabs__trigger[data-state="active"] {
-    background: var(--docsync-navy);
+    background: var(--docsync-teal);
+    color: #fff;
+  }
+
+  .docsync-wp-source-tabs__trigger[data-state="active"] .dashicons {
     color: #fff;
   }
 }
