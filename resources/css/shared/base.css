@@ -1,6 +1,59 @@
 @layer base {
   #docsync-wp-admin-root {
     margin-left: -20px;
+
+    /* Brand colors */
+    --docsync-navy: #0f172a;
+    --docsync-navy-light: #1e293b;
+    --docsync-cyan: #22d3ee;
+    --docsync-blue: #2563eb;
+    --docsync-teal: #0f766e;
+    --docsync-teal-bg: #e8f3ee;
+    --docsync-teal-text: #175a44;
+
+    /* Semantic colors */
+    --docsync-error: #b42318;
+    --docsync-error-bg: #f8d7da;
+    --docsync-warning: #8a4b00;
+    --docsync-warning-bg: #fff8e5;
+    --docsync-info: #2563eb;
+    --docsync-info-bg: #dbeafe;
+    --docsync-success: #175a44;
+    --docsync-success-bg: #d7f0e3;
+
+    /* Surface */
+    --docsync-card-bg: rgba(255, 255, 255, 0.94);
+    --docsync-card-border: #d9e2e1;
+    --docsync-card-radius: 14px;
+    --docsync-card-shadow: 0 18px 60px rgba(23, 32, 42, 0.08);
+
+    /* Text */
+    --docsync-text-primary: #17202a;
+    --docsync-text-secondary: #646970;
+    --docsync-text-muted: #50575e;
+
+    /* Status badge colors */
+    --docsync-status-linked-bg: #e8f3ee;
+    --docsync-status-linked-text: #175a44;
+    --docsync-status-linked-dot: #0f766e;
+    --docsync-status-syncing-bg: #dbeafe;
+    --docsync-status-syncing-text: #1e40af;
+    --docsync-status-syncing-dot: #2563eb;
+    --docsync-status-synced-bg: #d7f0e3;
+    --docsync-status-synced-text: #175a44;
+    --docsync-status-synced-dot: #15803d;
+    --docsync-status-skipped-bg: #f0f0f1;
+    --docsync-status-skipped-text: #646970;
+    --docsync-status-skipped-dot: #8c8f94;
+    --docsync-status-error-bg: #f8d7da;
+    --docsync-status-error-text: #b42318;
+    --docsync-status-error-dot: #dc2626;
+    --docsync-status-info-bg: #dbeafe;
+    --docsync-status-info-text: #1e40af;
+    --docsync-status-info-dot: #2563eb;
+    --docsync-status-warning-bg: #fff8e5;
+    --docsync-status-warning-text: #8a4b00;
+    --docsync-status-warning-dot: #d97706;
   }
 
   #docsync-wp-admin-root *,

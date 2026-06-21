@@ -1,16 +1,39 @@
 @layer components {
   .docsync-wp-log-filters {
     align-items: end;
+    background: #f6f7f7;
+    border: 1px solid var(--docsync-card-border);
+    border-radius: 10px;
     display: grid;
     gap: 12px;
     grid-template-columns: minmax(160px, 220px) minmax(150px, 190px) auto;
     margin-bottom: 16px;
+    padding: 14px;
   }
 
   .docsync-wp-log-filters label {
     display: flex;
     flex-direction: column;
     gap: 6px;
+  }
+
+  .docsync-wp-log-filters label > span {
+    color: var(--docsync-text-muted);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .docsync-wp-log-filters input,
+  .docsync-wp-log-filters select {
+    border-color: var(--docsync-card-border);
+    border-radius: 6px;
+  }
+
+  .docsync-wp-log-filters input:focus,
+  .docsync-wp-log-filters select:focus {
+    border-color: var(--docsync-cyan);
+    box-shadow: 0 0 0 1px var(--docsync-cyan);
+    outline: none;
   }
 
   .docsync-wp-log-filters__actions,
@@ -20,13 +43,169 @@
     gap: 8px;
   }
 
-  .docsync-wp-logs-table {
-    min-width: 1080px;
+  .docsync-wp-logs-pagination {
+    justify-content: center;
   }
 
-  .docsync-wp-logs-table small {
-    color: #646970;
+  .docsync-wp-logs-pagination span {
+    color: var(--docsync-text-secondary);
+    font-weight: 600;
+  }
+
+  .docsync-wp-logs-table {
+    min-width: 860px;
+  }
+
+  /* Level-specific row tinting */
+  .docsync-wp-logs-table tbody tr.docsync-wp-log-row--error td {
+    box-shadow: inset 3px 0 0 var(--docsync-error);
+  }
+
+  .docsync-wp-logs-table tbody tr.docsync-wp-log-row--error:hover td {
+    background: rgba(180, 35, 24, 0.04);
+  }
+
+  .docsync-wp-logs-table tbody tr.docsync-wp-log-row--warning td {
+    box-shadow: inset 3px 0 0 var(--docsync-warning);
+  }
+
+  .docsync-wp-logs-table tbody tr.docsync-wp-log-row--warning:hover td {
+    background: rgba(138, 75, 0, 0.04);
+  }
+
+  /* Expandable context rows */
+  .docsync-wp-log-row-toggle {
+    background: transparent;
+    border: 0;
+    color: var(--docsync-text-secondary);
+    cursor: pointer;
+    display: inline-flex;
+    height: 20px;
+    padding: 0;
+    width: 20px;
+  }
+
+  .docsync-wp-log-row-toggle:hover {
+    color: var(--docsync-teal);
+  }
+
+  .docsync-wp-log-row-toggle .dashicons {
+    font-size: 16px;
+    height: 16px;
+    width: 16px;
+  }
+
+  .docsync-wp-log-context-row td {
+    background: #f6f7f7;
+    border-bottom: 1px solid var(--docsync-card-border);
+    padding: 12px 14px 12px 20px;
+  }
+
+  .docsync-wp-log-context-grid {
+    display: grid;
+    gap: 8px 16px;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+
+  .docsync-wp-log-context-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .docsync-wp-log-context-item dt {
+    color: var(--docsync-text-muted);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .docsync-wp-log-context-item dd {
+    color: var(--docsync-text-primary);
+    margin: 0;
+  }
+
+  /* Error code tag in message cell */
+  .docsync-wp-log-error-code {
+    background: var(--docsync-error-bg);
+    border-radius: 4px;
+    color: var(--docsync-error);
+    display: inline-block;
+    font-family: monospace;
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 4px;
+    padding: 1px 6px;
+  }
+
+  /* Mini progress bar in status cell */
+  .docsync-wp-log-mini-progress {
+    background: #dcdcde;
+    border-radius: 999px;
     display: block;
-    margin-top: 3px;
+    height: 4px;
+    margin-top: 4px;
+    overflow: hidden;
+    width: 60px;
+  }
+
+  .docsync-wp-log-mini-progress span {
+    background: var(--docsync-blue);
+    display: block;
+    height: 100%;
+  }
+
+  /* Auto-refresh toggle */
+  .docsync-wp-auto-refresh {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+  }
+
+  .docsync-wp-auto-refresh-toggle {
+    align-items: center;
+    background: #f0f0f1;
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+    display: inline-flex;
+    height: 22px;
+    padding: 0;
+    position: relative;
+    width: 38px;
+  }
+
+  .docsync-wp-auto-refresh-toggle[aria-pressed="true"] {
+    background: var(--docsync-teal);
+  }
+
+  .docsync-wp-auto-refresh-toggle::after {
+    background: #fff;
+    border-radius: 50%;
+    content: "";
+    height: 16px;
+    left: 3px;
+    position: absolute;
+    transition: left 0.2s ease;
+    width: 16px;
+  }
+
+  .docsync-wp-auto-refresh-toggle[aria-pressed="true"]::after {
+    left: 19px;
+  }
+
+  .docsync-wp-auto-refresh-indicator {
+    animation: docsync-wp-pill-pulse 1.4s ease-in-out infinite;
+    background: var(--docsync-teal);
+    border-radius: 50%;
+    display: inline-block;
+    height: 7px;
+    width: 7px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .docsync-wp-auto-refresh-indicator {
+      animation: none;
+    }
   }
 }

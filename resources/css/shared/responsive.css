@@ -28,4 +28,73 @@
       gap: 16px;
     }
   }
+
+  @media (max-width: 768px) {
+    .docsync-wp-source-filters,
+    .docsync-wp-log-filters {
+      gap: 10px;
+    }
+
+    .docsync-wp-source-filters__actions,
+    .docsync-wp-log-filters__actions {
+      justify-content: stretch;
+    }
+
+    .docsync-wp-source-filters__actions .button,
+    .docsync-wp-log-filters__actions .button {
+      flex: 1 1 auto;
+      text-align: center;
+    }
+
+    .docsync-wp-source-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .docsync-wp-source-actions .button {
+      text-align: center;
+      width: 100%;
+    }
+
+    .docsync-wp-admin-shell {
+      padding: 16px;
+    }
+
+    .docsync-wp-hero {
+      padding: 20px;
+    }
+
+    .docsync-wp-hero h1 {
+      font-size: 26px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .docsync-wp-admin-shell {
+      padding: 12px;
+    }
+
+    .docsync-wp-hero {
+      padding: 16px;
+    }
+
+    .docsync-wp-hero__status {
+      align-self: stretch;
+      width: 100%;
+    }
+
+    .docsync-wp-card {
+      padding: 16px;
+    }
+
+    .docsync-wp-modal__header,
+    .docsync-wp-modal__body,
+    .docsync-wp-modal__footer {
+      padding: 14px;
+    }
+
+    .docsync-wp-source-tabs__trigger .dashicons {
+      display: none;
+    }
+  }
 }

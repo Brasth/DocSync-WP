@@ -29,7 +29,9 @@ export const DriveBrowserBreadcrumbNav = ({
           return (
             <li key={`${driveId || 'my-drive'}-${breadcrumb.fileId}`}>
               {index > 0 ? (
-                <span aria-hidden="true" className="docsync-wp-drive-browser__breadcrumb-separator">/</span>
+                <span aria-hidden="true" className="docsync-wp-drive-browser__breadcrumb-separator">
+                  <span className="dashicons dashicons-arrow-right-alt2" />
+                </span>
               ) : null}
               {isCurrent ? (
                 <span aria-current="page" className="docsync-wp-drive-browser__breadcrumb-current">

@@ -2,7 +2,7 @@
   .docsync-wp-setup-summary {
     align-items: center;
     background: #f6f7f7;
-    border: 1px solid #d9e2e1;
+    border: 1px solid var(--docsync-card-border);
     border-radius: 8px;
     display: flex;
     gap: 18px;
@@ -13,7 +13,7 @@
 
   .docsync-wp-setup-summary span,
   .docsync-wp-settings-actions span {
-    color: #646970;
+    color: var(--docsync-text-secondary);
   }
 
   .docsync-wp-setup-summary strong,
@@ -30,7 +30,7 @@
   }
 
   .docsync-wp-setup-progress span {
-    background: #0f766e;
+    background: var(--docsync-teal);
     display: block;
     height: 100%;
   }
@@ -47,7 +47,7 @@
 
   .docsync-wp-setup-steps > li,
   .docsync-wp-setup-test {
-    border: 1px solid #d9e2e1;
+    border: 1px solid var(--docsync-card-border);
     border-radius: 8px;
     padding: 14px;
   }
@@ -61,7 +61,7 @@
 
   .docsync-wp-step-heading > span {
     align-items: center;
-    background: #122620;
+    background: var(--docsync-navy);
     border-radius: 999px;
     color: #fff;
     display: inline-flex;
@@ -87,9 +87,9 @@
   }
 
   .docsync-wp-cloud-links a {
-    background: #e8f3ee;
+    background: var(--docsync-teal-bg);
     border-radius: 999px;
-    color: #175a44;
+    color: var(--docsync-teal-text);
     font-weight: 700;
     padding: 6px 10px;
     text-decoration: none;

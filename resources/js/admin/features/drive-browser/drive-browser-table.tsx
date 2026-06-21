@@ -2,7 +2,6 @@ import { createElement, useEffect, useRef } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 
 import type { DocumentMetadata, DriveItemSummary } from '../../api';
-import { AdminButton } from '../../shared/ui/admin-button';
 import { SkeletonTableRows } from '../../shared/ui/skeleton';
 import { driveItemTypeLabel, formatDriveModifiedTime } from './drive-browser-utils';
 
@@ -23,7 +22,6 @@ const DriveBrowserTableHeader = (): JSX.Element => {
         <th scope="col">{__('Name', 'brasth-document-sync-for-google-docs')}</th>
         <th scope="col">{__('Modified', 'brasth-document-sync-for-google-docs')}</th>
         <th scope="col">{__('Type', 'brasth-document-sync-for-google-docs')}</th>
-        <th scope="col">{__('Action', 'brasth-document-sync-for-google-docs')}</th>
       </tr>
     </thead>
   );
@@ -36,10 +34,10 @@ export const DriveBrowserTableSkeleton = (): JSX.Element => {
       aria-label={__('Loading Drive items...', 'brasth-document-sync-for-google-docs')}
       className="docsync-wp-drive-browser__table-wrap"
     >
-      <table className="widefat striped docsync-wp-drive-browser__table">
+      <table className="docsync-wp-drive-browser__table">
         <DriveBrowserTableHeader />
         <tbody>
-          <SkeletonTableRows columns={['70%', '50%', '44%', '62%']} rows={7} />
+          <SkeletonTableRows columns={['70%', '50%', '44%']} rows={7} />
         </tbody>
       </table>
     </div>
@@ -74,16 +72,20 @@ export const DriveBrowserTable = ({ busy, items, loading, selectedDocument, hasM
 
   return (
     <div className="docsync-wp-drive-browser__table-wrap" ref={scrollRoot}>
-      <table aria-busy={loading} className="widefat striped docsync-wp-drive-browser__table">
+      <table aria-busy={loading} className="docsync-wp-drive-browser__table">
         <DriveBrowserTableHeader />
         <tbody>
           {items.map((item) => {
             const selected = item.itemType === 'document' && selectedDocument?.fileId === item.fileId;
             const compatibility = item.syncCompatibility;
             const disabled = busy || loading || (item.itemType === 'document' && !item.selectable);
+            const rowClass = [
+              selected ? 'is-selected' : '',
+              item.itemType === 'folder' ? 'docsync-wp-drive-row--folder' : ''
+            ].filter(Boolean).join(' ');
 
             return (
-              <tr className={selected ? 'is-selected' : ''} key={item.fileId}>
+              <tr className={rowClass} key={item.fileId}>
                 <td className="docsync-wp-drive-browser__name-cell">
                   <button
                     aria-label={item.itemType === 'folder'
@@ -103,28 +105,20 @@ export const DriveBrowserTable = ({ busy, items, loading, selectedDocument, hasM
                   </button>
                   {compatibility?.warningMessage ? (
                     <small className={`docsync-wp-drive-browser__compat-warning is-${compatibility.warningCode ?? 'info'}`}>
-                      {compatibility.warningMessage}
+                      <span aria-hidden="true" className="dashicons dashicons-warning" />
+                      <span>{compatibility.warningMessage}</span>
                     </small>
                   ) : null}
+                  <span className="docsync-wp-drive-browser__row-indicator">
+                    {selected ? (
+                      <span aria-hidden="true" className="dashicons dashicons-yes" />
+                    ) : item.itemType === 'document' && !item.selectable ? (
+                      <span aria-hidden="true" className="dashicons dashicons-lock" title={__('Blocked', 'brasth-document-sync-for-google-docs')} />
+                    ) : null}
+                  </span>
                 </td>
                 <td>{formatDriveModifiedTime(item.modifiedTime)}</td>
                 <td>{driveItemTypeLabel(item)}</td>
-                <td>
-                  <AdminButton
-                    className="button-small"
-                    disabled={disabled}
-                    onClick={() => onActivate(item)}
-                    variant={selected ? 'primary' : 'secondary'}
-                  >
-                    {item.itemType === 'folder'
-                      ? __('Open', 'brasth-document-sync-for-google-docs')
-                      : !item.selectable
-                        ? __('Blocked', 'brasth-document-sync-for-google-docs')
-                        : selected
-                          ? __('Selected', 'brasth-document-sync-for-google-docs')
-                          : __('Select', 'brasth-document-sync-for-google-docs')}
-                  </AdminButton>
-                </td>
               </tr>
             );
           })}
