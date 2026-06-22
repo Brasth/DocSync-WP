@@ -21,25 +21,26 @@ defined( 'ABSPATH' ) || exit;
  * Stores one Google Doc source record per post.
  */
 final class SourceRepository {
-	public const META_FILE_ID       = '_docsync_wp_google_file_id';
-	public const META_DOC_URL       = '_docsync_wp_google_doc_url';
-	public const META_TITLE         = '_docsync_wp_google_title';
-	public const META_MODIFIED_TIME = '_docsync_wp_google_modified_time';
-	public const META_VERSION       = '_docsync_wp_google_version';
-	public const META_LAST_HASH     = '_docsync_wp_last_hash';
-	public const META_LAST_SYNCED   = '_docsync_wp_last_synced_at';
-	public const META_LAST_METHOD   = '_docsync_wp_last_sync_method';
-	public const META_OWNER_USER_ID = '_docsync_wp_sync_owner_user_id';
-	public const META_EXPORT_FORMAT = '_docsync_wp_export_format';
-	public const META_SYNC_STATUS   = '_docsync_wp_sync_status';
-	public const META_SYNC_ERROR    = '_docsync_wp_sync_error';
-	public const META_SYNC_PROGRESS = '_docsync_wp_sync_progress';
-	public const META_SYNC_STEP     = '_docsync_wp_sync_step';
-	public const META_SYNC_MESSAGE  = '_docsync_wp_sync_message';
-	public const META_SYNC_STARTED  = '_docsync_wp_sync_started_at';
-	public const META_SYNC_UPDATED  = '_docsync_wp_sync_updated_at';
-	public const META_SYNC_ERR_CODE = '_docsync_wp_sync_error_code';
-	public const META_SYNC_EVENTS   = '_docsync_wp_sync_events';
+	public const META_FILE_ID        = '_docsync_wp_google_file_id';
+	public const META_DOC_URL        = '_docsync_wp_google_doc_url';
+	public const META_TITLE          = '_docsync_wp_google_title';
+	public const META_MODIFIED_TIME  = '_docsync_wp_google_modified_time';
+	public const META_VERSION        = '_docsync_wp_google_version';
+	public const META_LAST_HASH      = '_docsync_wp_last_hash';
+	public const META_LAST_SYNCED    = '_docsync_wp_last_synced_at';
+	public const META_LAST_METHOD    = '_docsync_wp_last_sync_method';
+	public const META_OWNER_USER_ID  = '_docsync_wp_sync_owner_user_id';
+	public const META_EXPORT_FORMAT  = '_docsync_wp_export_format';
+	public const META_SYNC_STATUS    = '_docsync_wp_sync_status';
+	public const META_SYNC_ERROR     = '_docsync_wp_sync_error';
+	public const META_SYNC_PROGRESS  = '_docsync_wp_sync_progress';
+	public const META_SYNC_STEP      = '_docsync_wp_sync_step';
+	public const META_SYNC_MESSAGE   = '_docsync_wp_sync_message';
+	public const META_SYNC_STARTED   = '_docsync_wp_sync_started_at';
+	public const META_SYNC_UPDATED   = '_docsync_wp_sync_updated_at';
+	public const META_SYNC_ERR_CODE  = '_docsync_wp_sync_error_code';
+	public const META_SYNC_EVENTS    = '_docsync_wp_sync_events';
+	public const META_ELEMENTOR_SYNC = '_docsync_wp_elementor_sync';
 
 	private const EXPORT_FORMAT_HTML_ZIP = 'html_zip';
 	private const STATUS_SYNCING         = 'syncing';
@@ -97,6 +98,7 @@ final class SourceRepository {
 			'last_sync_method'     => $this->getStringMeta( $post_id, self::META_LAST_METHOD ),
 			'sync_owner_user_id'   => absint( get_post_meta( $post_id, self::META_OWNER_USER_ID, true ) ),
 			'export_format'        => $this->getStringMeta( $post_id, self::META_EXPORT_FORMAT ),
+			'elementor_sync'       => $this->getElementorSync( $post_id ),
 			'sync_status'          => $sync_status,
 			'sync_error'           => $this->getStringMeta( $post_id, self::META_SYNC_ERROR ),
 			'sync_progress'        => $this->getSyncProgress( $post_id, $sync_status ),
@@ -154,6 +156,11 @@ final class SourceRepository {
 		update_post_meta( $post_id, self::META_LAST_METHOD, $this->sanitizeLastSyncMethod( $source['last_sync_method'] ?? '' ) );
 		update_post_meta( $post_id, self::META_OWNER_USER_ID, isset( $source['sync_owner_user_id'] ) ? absint( $source['sync_owner_user_id'] ) : 0 );
 		update_post_meta( $post_id, self::META_EXPORT_FORMAT, $this->sanitizeExportFormat( $source['export_format'] ?? self::EXPORT_FORMAT_HTML_ZIP ) );
+
+		if ( array_key_exists( 'elementor_sync', $source ) ) {
+			update_post_meta( $post_id, self::META_ELEMENTOR_SYNC, $this->sanitizeElementorSync( $source['elementor_sync'] ) );
+		}
+
 		update_post_meta( $post_id, self::META_SYNC_STATUS, isset( $source['sync_status'] ) ? sanitize_key( (string) $source['sync_status'] ) : '' );
 		update_post_meta( $post_id, self::META_SYNC_ERROR, isset( $source['sync_error'] ) ? sanitize_textarea_field( (string) $source['sync_error'] ) : '' );
 		update_post_meta( $post_id, self::META_SYNC_PROGRESS, $this->sanitizeProgress( $source['sync_progress'] ?? 0 ) );
@@ -723,6 +730,7 @@ final class SourceRepository {
 			'lastSyncMethod'     => '' !== $source['last_sync_method'] ? $source['last_sync_method'] : null,
 			'syncOwnerUserId'    => $source['sync_owner_user_id'],
 			'exportFormat'       => $source['export_format'],
+			'elementorSync'      => $source['elementor_sync'],
 			'syncStatus'         => $source['sync_status'],
 			'syncError'          => $source['sync_error'],
 			'syncProgress'       => $source['sync_progress'],
@@ -951,6 +959,45 @@ final class SourceRepository {
 	}
 
 	/**
+	 * Get the per-post Elementor sync preference.
+	 *
+	 * Returns null when the user has never set a preference, so callers can
+	 * fall back to auto-detection based on the existing post state.
+	 *
+	 * @param int $post_id Post ID.
+	 */
+	public function getElementorSync( int $post_id ): ?bool {
+		if ( ! metadata_exists( 'post', $post_id, self::META_ELEMENTOR_SYNC ) ) {
+			return null;
+		}
+
+		$value = get_post_meta( $post_id, self::META_ELEMENTOR_SYNC, true );
+
+		if ( is_bool( $value ) ) {
+			return $value;
+		}
+
+		if ( is_string( $value ) ) {
+			$value = strtolower( trim( $value ) );
+
+			return in_array( $value, array( '1', 'true', 'yes', 'on' ), true );
+		}
+
+		return (bool) $value;
+	}
+
+	/**
+	 * Whether Elementor sync is explicitly enabled for a post.
+	 *
+	 * @param int $post_id Post ID.
+	 */
+	public function isElementorSyncEnabled( int $post_id ): bool {
+		$preference = $this->getElementorSync( $post_id );
+
+		return true === $preference;
+	}
+
+	/**
 	 * Sanitize a diagnostic sync event for storage and output.
 	 *
 	 * @param int                 $post_id Post ID.
@@ -1100,6 +1147,25 @@ final class SourceRepository {
 	}
 
 	/**
+	 * Sanitize the Elementor sync preference.
+	 *
+	 * @param mixed $elementor_sync Elementor sync preference.
+	 */
+	private function sanitizeElementorSync( mixed $elementor_sync ): bool {
+		if ( is_bool( $elementor_sync ) ) {
+			return $elementor_sync;
+		}
+
+		if ( is_string( $elementor_sync ) ) {
+			$value = strtolower( trim( $elementor_sync ) );
+
+			return in_array( $value, array( '1', 'true', 'yes', 'on' ), true );
+		}
+
+		return (bool) $elementor_sync;
+	}
+
+	/**
 	 * Sanitize the last successful sync method.
 	 *
 	 * @param mixed $method Sync method.
@@ -1127,6 +1193,7 @@ final class SourceRepository {
 			self::META_LAST_METHOD,
 			self::META_OWNER_USER_ID,
 			self::META_EXPORT_FORMAT,
+			self::META_ELEMENTOR_SYNC,
 			self::META_SYNC_STATUS,
 			self::META_SYNC_ERROR,
 			self::META_SYNC_PROGRESS,

@@ -2,7 +2,7 @@ import { speak } from '@wordpress/a11y';
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
-import { detachSource, syncSource, type SourceRecord } from '../../api';
+import { detachSource, syncSource, updateSource, type SourceRecord } from '../../api';
 import type { AdminNoticeState } from '../../shared/ui/admin-notice';
 
 export const usePostSyncActions = (postId: number, initialSource: SourceRecord | null) => {
@@ -48,6 +48,27 @@ export const usePostSyncActions = (postId: number, initialSource: SourceRecord |
     }
   };
 
+  const updateElementorSync = async (elementorSync: boolean) => {
+    setBusy(true);
+    setNotice(null);
+
+    try {
+      const updated = await updateSource(postId, { elementorSync });
+      setSource(updated);
+      const message = elementorSync
+        ? __('This post will sync as an Elementor layout.', 'brasth-document-sync-for-google-docs')
+        : __('This post will sync as WordPress blocks.', 'brasth-document-sync-for-google-docs');
+      setNotice({ type: 'success', message });
+      speak(message);
+    } catch (caught) {
+      const message = caught instanceof Error ? caught.message : __('Could not update Elementor sync preference.', 'brasth-document-sync-for-google-docs');
+      setNotice({ type: 'error', message });
+      speak(message, 'assertive');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return {
     busy,
     detach,
@@ -55,6 +76,7 @@ export const usePostSyncActions = (postId: number, initialSource: SourceRecord |
     setNotice,
     setSource,
     source,
-    syncNow
+    syncNow,
+    updateElementorSync
   };
 };

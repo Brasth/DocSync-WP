@@ -120,6 +120,7 @@ final class SettingsController {
 			'defaultExportFormat',
 			'syncInterval',
 			'connectionMode',
+			'elementorSyncEnabled',
 		);
 
 		$unknown_keys = array_diff( array_keys( $params ), $allowed_keys );
@@ -166,6 +167,10 @@ final class SettingsController {
 			$mapped['connection_mode'] = $params['connectionMode'];
 		}
 
+		if ( array_key_exists( 'elementorSyncEnabled', $params ) ) {
+			$mapped['elementor_sync_enabled'] = $params['elementorSyncEnabled'];
+		}
+
 		return $mapped;
 	}
 
@@ -178,17 +183,18 @@ final class SettingsController {
 		$settings = $this->settings->getPublicSettings();
 
 		return array(
-			'clientId'            => $settings['client_id'],
-			'scopeMode'           => $settings['scope_mode'],
-			'enabledPostTypes'    => $settings['enabled_post_types'],
-			'defaultPostStatus'   => $settings['default_post_status'],
-			'defaultExportFormat' => $settings['default_export_format'],
-			'syncInterval'        => $settings['sync_interval'],
-			'connectionMode'      => $settings['connection_mode'],
-			'hasClientId'         => $settings['has_client_id'],
-			'hasClientSecret'     => $settings['has_client_secret'],
-			'hasRequiredSettings' => $settings['has_required_settings'],
-			'availablePostTypes'  => $this->settings->getAvailablePostTypes(),
+			'clientId'             => $settings['client_id'],
+			'scopeMode'            => $settings['scope_mode'],
+			'enabledPostTypes'     => $settings['enabled_post_types'],
+			'defaultPostStatus'    => $settings['default_post_status'],
+			'defaultExportFormat'  => $settings['default_export_format'],
+			'syncInterval'         => $settings['sync_interval'],
+			'connectionMode'       => $settings['connection_mode'],
+			'elementorSyncEnabled' => $settings['elementor_sync_enabled'],
+			'hasClientId'          => $settings['has_client_id'],
+			'hasClientSecret'      => $settings['has_client_secret'],
+			'hasRequiredSettings'  => $settings['has_required_settings'],
+			'availablePostTypes'   => $this->settings->getAvailablePostTypes(),
 		);
 	}
 }

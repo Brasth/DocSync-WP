@@ -8,6 +8,7 @@ export type SettingsResponse = {
   defaultExportFormat: string;
   syncInterval: string;
   connectionMode: string;
+  elementorSyncEnabled: boolean;
   hasClientId: boolean;
   hasClientSecret: boolean;
   hasRequiredSettings: boolean;
@@ -118,6 +119,7 @@ export type SourceRecord = {
   syncOwnerUserId: number;
   exportFormat: string;
   lastSyncMethod?: 'html_zip' | 'docs_api_fallback' | null;
+  elementorSync?: boolean | null;
   syncStatus: 'linked' | 'syncing' | 'synced' | 'skipped' | 'error' | string;
   syncError: string;
   syncProgress: number;

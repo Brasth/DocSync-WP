@@ -25,6 +25,7 @@ final class SettingsRepository {
 	private const DEFAULT_EXPORT_FORMAT   = 'html_zip';
 	private const DEFAULT_SYNC_INTERVAL   = 'off';
 	private const DEFAULT_CONNECTION_MODE = 'self_managed';
+	private const DEFAULT_ELEMENTOR_SYNC  = true;
 
 	/**
 	 * Encryption service.
@@ -170,6 +171,8 @@ final class SettingsRepository {
 			);
 		}
 
+		$settings['elementor_sync_enabled'] = $this->sanitizeBooleanSetting( $settings['elementor_sync_enabled'] );
+
 		if ( array_key_exists( 'client_secret', $values ) ) {
 			$client_secret = sanitize_text_field( (string) $values['client_secret'] );
 
@@ -200,16 +203,17 @@ final class SettingsRepository {
 		$settings = $this->get();
 
 		return array(
-			'client_id'             => $settings['client_id'],
-			'scope_mode'            => $settings['scope_mode'],
-			'enabled_post_types'    => $settings['enabled_post_types'],
-			'default_post_status'   => $settings['default_post_status'],
-			'default_export_format' => $settings['default_export_format'],
-			'sync_interval'         => $settings['sync_interval'],
-			'connection_mode'       => $settings['connection_mode'],
-			'has_client_id'         => '' !== $settings['client_id'],
-			'has_client_secret'     => '' !== $settings['encrypted_client_secret'],
-			'has_required_settings' => '' !== $settings['client_id'] && '' !== $settings['encrypted_client_secret'],
+			'client_id'              => $settings['client_id'],
+			'scope_mode'             => $settings['scope_mode'],
+			'enabled_post_types'     => $settings['enabled_post_types'],
+			'default_post_status'    => $settings['default_post_status'],
+			'default_export_format'  => $settings['default_export_format'],
+			'sync_interval'          => $settings['sync_interval'],
+			'connection_mode'        => $settings['connection_mode'],
+			'elementor_sync_enabled' => $settings['elementor_sync_enabled'],
+			'has_client_id'          => '' !== $settings['client_id'],
+			'has_client_secret'      => '' !== $settings['encrypted_client_secret'],
+			'has_required_settings'  => '' !== $settings['client_id'] && '' !== $settings['encrypted_client_secret'],
 		);
 	}
 
@@ -233,6 +237,15 @@ final class SettingsRepository {
 		$settings = $this->get();
 
 		return is_array( $settings['enabled_post_types'] ) ? $settings['enabled_post_types'] : array( 'post' );
+	}
+
+	/**
+	 * Whether Elementor sync is enabled in the global settings.
+	 */
+	public function isElementorSyncEnabled(): bool {
+		$settings = $this->get();
+
+		return (bool) ( $settings['elementor_sync_enabled'] ?? false );
 	}
 
 	/**
@@ -327,6 +340,7 @@ final class SettingsRepository {
 			'default_export_format'   => self::DEFAULT_EXPORT_FORMAT,
 			'sync_interval'           => self::DEFAULT_SYNC_INTERVAL,
 			'connection_mode'         => self::DEFAULT_CONNECTION_MODE,
+			'elementor_sync_enabled'  => self::DEFAULT_ELEMENTOR_SYNC,
 		);
 	}
 
@@ -352,6 +366,7 @@ final class SettingsRepository {
 			'default_export_format',
 			'sync_interval',
 			'connection_mode',
+			'elementor_sync_enabled',
 		);
 	}
 
@@ -369,8 +384,28 @@ final class SettingsRepository {
 		$settings['default_export_format']   = sanitize_key( (string) $settings['default_export_format'] );
 		$settings['sync_interval']           = sanitize_key( (string) $settings['sync_interval'] );
 		$settings['connection_mode']         = sanitize_key( (string) $settings['connection_mode'] );
+		$settings['elementor_sync_enabled']  = $this->sanitizeBooleanSetting( $settings['elementor_sync_enabled'] ?? self::DEFAULT_ELEMENTOR_SYNC );
 
 		return $settings;
+	}
+
+	/**
+	 * Sanitize a boolean setting.
+	 *
+	 * @param mixed $value Setting value.
+	 */
+	private function sanitizeBooleanSetting( mixed $value ): bool {
+		if ( is_bool( $value ) ) {
+			return $value;
+		}
+
+		if ( is_string( $value ) ) {
+			$value = strtolower( trim( $value ) );
+
+			return in_array( $value, array( '1', 'true', 'yes', 'on' ), true );
+		}
+
+		return (bool) $value;
 	}
 
 	/**

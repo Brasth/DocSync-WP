@@ -103,6 +103,11 @@ final class SourceController {
 					'permission_callback' => array( RestPermissions::class, 'canUseAuthenticatedRest' ),
 				),
 				array(
+					'methods'             => WP_REST_Server::EDITABLE,
+					'callback'            => array( $this, 'updateSource' ),
+					'permission_callback' => array( RestPermissions::class, 'canUseAuthenticatedRest' ),
+				),
+				array(
 					'methods'             => WP_REST_Server::DELETABLE,
 					'callback'            => array( $this, 'detachSource' ),
 					'permission_callback' => array( RestPermissions::class, 'canUseAuthenticatedRest' ),
@@ -224,10 +229,11 @@ final class SourceController {
 			);
 		}
 
-		$mode          = sanitize_key( (string) ( $target['mode'] ?? '' ) );
-		$export_format = isset( $params['exportFormat'] ) ? sanitize_key( (string) $params['exportFormat'] ) : 'html_zip';
-		$sync_mode     = $this->getSyncMode( $params );
-		$user_id       = get_current_user_id();
+		$mode           = sanitize_key( (string) ( $target['mode'] ?? '' ) );
+		$export_format  = isset( $params['exportFormat'] ) ? sanitize_key( (string) $params['exportFormat'] ) : 'html_zip';
+		$sync_mode      = $this->getSyncMode( $params );
+		$elementor_sync = isset( $params['elementorSync'] ) ? (bool) $params['elementorSync'] : null;
+		$user_id        = get_current_user_id();
 
 		if ( is_wp_error( $sync_mode ) ) {
 			return $sync_mode;
@@ -241,7 +247,7 @@ final class SourceController {
 				return $allowed;
 			}
 
-			$result = $this->sync_service->attachSource( $post_id, $user_id, $file_id, $export_format );
+			$result = $this->sync_service->attachSource( $post_id, $user_id, $file_id, $export_format, $elementor_sync );
 
 			if ( is_wp_error( $result ) ) {
 				return $result;
@@ -271,7 +277,8 @@ final class SourceController {
 				$file_id,
 				$post_type,
 				$export_format,
-				self::SYNC_MODE_INLINE === $sync_mode
+				self::SYNC_MODE_INLINE === $sync_mode,
+				$elementor_sync
 			);
 
 			if ( is_wp_error( $result ) ) {
@@ -372,6 +379,67 @@ final class SourceController {
 		}
 
 		return rest_ensure_response( $source );
+	}
+
+	/**
+	 * Update editable source metadata for a post.
+	 *
+	 * Currently supports changing the per-post Elementor sync preference.
+	 *
+	 * @param WP_REST_Request $request REST request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function updateSource( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$post_id = absint( $request->get_param( 'postId' ) );
+		$user_id = get_current_user_id();
+		$allowed = $this->validateEditablePost( $post_id, $user_id );
+
+		if ( is_wp_error( $allowed ) ) {
+			return $allowed;
+		}
+
+		$source = $this->source_repository->getSource( $post_id );
+
+		if ( null === $source ) {
+			return new WP_Error(
+				'docsync_wp_source_not_found',
+				__( 'This post is not linked to a Google Doc.', 'brasth-document-sync-for-google-docs' ),
+				array( 'status' => 404 )
+			);
+		}
+
+		$params = $this->getOptionalRequestParams( $request );
+		$update = array( 'google_file_id' => $source['google_file_id'] );
+
+		if ( array_key_exists( 'elementorSync', $params ) ) {
+			$update['elementor_sync'] = (bool) $params['elementorSync'];
+		}
+
+		if ( 1 === count( $update ) ) {
+			return new WP_Error(
+				'docsync_wp_no_source_update',
+				__( 'Brasth Document Sync received no source fields to update.', 'brasth-document-sync-for-google-docs' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		$saved = $this->source_repository->saveSource( $post_id, $update );
+
+		if ( is_wp_error( $saved ) ) {
+			return $saved;
+		}
+
+		$formatted = $this->source_repository->formatSource( $post_id );
+
+		if ( null === $formatted ) {
+			return new WP_Error(
+				'docsync_wp_source_not_found',
+				__( 'This post is not linked to a Google Doc.', 'brasth-document-sync-for-google-docs' ),
+				array( 'status' => 404 )
+			);
+		}
+
+		return rest_ensure_response( $formatted );
 	}
 
 	/**

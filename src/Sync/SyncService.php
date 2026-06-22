@@ -10,6 +10,9 @@ declare(strict_types=1);
 namespace DocSyncWP\Sync;
 
 use DocSyncWP\Google\DriveClient;
+use DocSyncWP\Sync\Elementor\DataConverter as ElementorDataConverter;
+use DocSyncWP\Sync\Elementor\PostUpdater as ElementorPostUpdater;
+use DocSyncWP\Sync\Elementor\SyncDecider as ElementorSyncDecider;
 use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
@@ -71,14 +74,38 @@ final class SyncService {
 	private SyncLock $sync_lock;
 
 	/**
+	 * Elementor sync decider.
+	 *
+	 * @var ElementorSyncDecider|null
+	 */
+	private ?ElementorSyncDecider $elementor_decider;
+
+	/**
+	 * Elementor data converter.
+	 *
+	 * @var ElementorDataConverter
+	 */
+	private ElementorDataConverter $elementor_converter;
+
+	/**
+	 * Elementor post updater.
+	 *
+	 * @var ElementorPostUpdater
+	 */
+	private ElementorPostUpdater $elementor_updater;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param SourceRepository            $source_repository Source repository.
-	 * @param DriveClient                 $drive_client      Drive client.
-	 * @param HtmlZipImporter             $html_zip_importer HTML ZIP importer.
-	 * @param DocsApiHtmlImporter         $docs_api_importer Docs API fallback importer.
-	 * @param HtmlToBlockContentConverter $block_converter   HTML to block converter.
-	 * @param SyncLock                    $sync_lock         Sync lock.
+	 * @param SourceRepository            $source_repository   Source repository.
+	 * @param DriveClient                 $drive_client        Drive client.
+	 * @param HtmlZipImporter             $html_zip_importer   HTML ZIP importer.
+	 * @param DocsApiHtmlImporter         $docs_api_importer   Docs API fallback importer.
+	 * @param HtmlToBlockContentConverter $block_converter     HTML to block converter.
+	 * @param SyncLock                    $sync_lock           Sync lock.
+	 * @param ElementorSyncDecider|null   $elementor_decider   Elementor sync decider.
+	 * @param ElementorDataConverter|null $elementor_converter Elementor data converter.
+	 * @param ElementorPostUpdater|null   $elementor_updater   Elementor post updater.
 	 */
 	public function __construct(
 		SourceRepository $source_repository,
@@ -86,26 +113,42 @@ final class SyncService {
 		HtmlZipImporter $html_zip_importer,
 		DocsApiHtmlImporter $docs_api_importer,
 		HtmlToBlockContentConverter $block_converter,
-		SyncLock $sync_lock
+		SyncLock $sync_lock,
+		?ElementorSyncDecider $elementor_decider = null,
+		?ElementorDataConverter $elementor_converter = null,
+		?ElementorPostUpdater $elementor_updater = null
 	) {
-		$this->source_repository = $source_repository;
-		$this->drive_client      = $drive_client;
-		$this->html_zip_importer = $html_zip_importer;
-		$this->docs_api_importer = $docs_api_importer;
-		$this->block_converter   = $block_converter;
-		$this->sync_lock         = $sync_lock;
+		$this->source_repository   = $source_repository;
+		$this->drive_client        = $drive_client;
+		$this->html_zip_importer   = $html_zip_importer;
+		$this->docs_api_importer   = $docs_api_importer;
+		$this->block_converter     = $block_converter;
+		$this->sync_lock           = $sync_lock;
+		$this->elementor_decider   = $elementor_decider;
+		$this->elementor_converter = $elementor_converter ?? new ElementorDataConverter();
+		$this->elementor_updater   = $elementor_updater ?? new ElementorPostUpdater();
+	}
+
+	/**
+	 * Get the Elementor sync decider if available.
+	 *
+	 * @return ElementorSyncDecider|null
+	 */
+	public function getElementorDecider(): ?ElementorSyncDecider {
+		return $this->elementor_decider;
 	}
 
 	/**
 	 * Attach a Google Doc source to an existing post without importing content.
 	 *
-	 * @param int    $post_id       Post ID.
-	 * @param int    $user_id       User ID.
-	 * @param string $file_id       Google Drive file ID.
-	 * @param string $export_format Export format.
+	 * @param int       $post_id       Post ID.
+	 * @param int       $user_id       User ID.
+	 * @param string    $file_id       Google Drive file ID.
+	 * @param string    $export_format Export format.
+	 * @param bool|null $elementor_sync Whether to sync this post as an Elementor layout. Null falls back to detection.
 	 * @return array<string,mixed>|WP_Error
 	 */
-	public function attachSource( int $post_id, int $user_id, string $file_id, string $export_format = self::EXPORT_FORMAT_HTML_ZIP ): array|WP_Error {
+	public function attachSource( int $post_id, int $user_id, string $file_id, string $export_format = self::EXPORT_FORMAT_HTML_ZIP, ?bool $elementor_sync = null ): array|WP_Error {
 		$export_format = $this->sanitizeExportFormat( $export_format );
 
 		if ( is_wp_error( $export_format ) ) {
@@ -134,6 +177,10 @@ final class SyncService {
 			return $can_sync;
 		}
 
+		if ( null === $elementor_sync && null !== $this->elementor_decider ) {
+			$elementor_sync = $this->elementor_decider->getDefaultElementorSync( $post_id );
+		}
+
 		$saved = $this->source_repository->saveSource(
 			$post_id,
 			array_merge(
@@ -144,6 +191,7 @@ final class SyncService {
 					'last_sync_method'   => '',
 					'sync_owner_user_id' => $user_id,
 					'export_format'      => $export_format,
+					'elementor_sync'     => $elementor_sync,
 					'sync_status'        => self::STATUS_LINKED,
 					'sync_error'         => '',
 					'sync_progress'      => 0,
@@ -166,14 +214,15 @@ final class SyncService {
 	/**
 	 * Create a draft post, attach the source, and optionally sync it immediately.
 	 *
-	 * @param int    $user_id          User ID.
-	 * @param string $file_id          Google Drive file ID.
-	 * @param string $post_type        Post type.
-	 * @param string $export_format    Export format.
-	 * @param bool   $sync_immediately Whether to sync before returning.
+	 * @param int       $user_id          User ID.
+	 * @param string    $file_id          Google Drive file ID.
+	 * @param string    $post_type        Post type.
+	 * @param string    $export_format    Export format.
+	 * @param bool      $sync_immediately Whether to sync before returning.
+	 * @param bool|null $elementor_sync   Whether to sync this post as an Elementor layout. Null defaults to false for new drafts.
 	 * @return array<string,mixed>|WP_Error
 	 */
-	public function createDraftFromSource( int $user_id, string $file_id, string $post_type, string $export_format = self::EXPORT_FORMAT_HTML_ZIP, bool $sync_immediately = true ): array|WP_Error {
+	public function createDraftFromSource( int $user_id, string $file_id, string $post_type, string $export_format = self::EXPORT_FORMAT_HTML_ZIP, bool $sync_immediately = true, ?bool $elementor_sync = null ): array|WP_Error {
 		$export_format = $this->sanitizeExportFormat( $export_format );
 
 		if ( is_wp_error( $export_format ) ) {
@@ -191,6 +240,8 @@ final class SyncService {
 		if ( is_wp_error( $can_sync ) ) {
 			return $can_sync;
 		}
+
+		$elementor_sync = $elementor_sync ?? false;
 
 		$post_id = wp_insert_post(
 			wp_slash(
@@ -223,6 +274,7 @@ final class SyncService {
 					'last_sync_method'   => '',
 					'sync_owner_user_id' => $user_id,
 					'export_format'      => $export_format,
+					'elementor_sync'     => $elementor_sync,
 					'sync_status'        => self::STATUS_LINKED,
 					'sync_error'         => '',
 					'sync_progress'      => 0,
@@ -465,13 +517,17 @@ final class SyncService {
 				return $this->markError( $post_id, $source, $import );
 			}
 
+			$use_elementor = null !== $this->elementor_decider && $this->elementor_decider->shouldUseElementor( $post_id );
+
 			$source = $this->saveProgressState(
 				$post_id,
 				$source,
 				self::STATUS_SYNCING,
 				70,
 				'converting',
-				__( 'Converting content to WordPress blocks.', 'brasth-document-sync-for-google-docs' ),
+				$use_elementor
+				? __( 'Converting content to Elementor layout.', 'brasth-document-sync-for-google-docs' )
+				: __( 'Converting content to WordPress blocks.', 'brasth-document-sync-for-google-docs' ),
 				array( 'sync_error' => '' )
 			);
 
@@ -479,13 +535,25 @@ final class SyncService {
 				return $source;
 			}
 
-			$block_content = $this->block_converter->convert( $import['html'] );
+			if ( $use_elementor ) {
+				$elementor_json = $this->elementor_converter->convert( $import['html'], $post_id );
 
-			if ( is_wp_error( $block_content ) ) {
-				return $this->markError( $post_id, $source, $block_content );
+				if ( is_wp_error( $elementor_json ) ) {
+					return $this->markError( $post_id, $source, $elementor_json );
+				}
+
+				$content = $elementor_json;
+			} else {
+				$block_content = $this->block_converter->convert( $import['html'] );
+
+				if ( is_wp_error( $block_content ) ) {
+					return $this->markError( $post_id, $source, $block_content );
+				}
+
+				$content = $block_content;
 			}
 
-			$hash = hash( 'sha256', $block_content );
+			$hash = hash( 'sha256', $content );
 
 			if ( ! $force && hash_equals( (string) $source['last_hash'], $hash ) ) {
 				$source = $this->saveProgressState(
@@ -525,21 +593,39 @@ final class SyncService {
 				return $source;
 			}
 
-				$current_source = $this->assertCurrentSource( $post_id, $source );
+			$current_source = $this->assertCurrentSource( $post_id, $source );
 
 			if ( is_wp_error( $current_source ) ) {
 				return $current_source;
 			}
 
+			if ( $use_elementor ) {
+				$updated = $this->elementor_updater->update( $post_id, (string) $content );
+
+				if ( is_wp_error( $updated ) ) {
+					return $this->markError( $post_id, $source, $updated );
+				}
+
 				$updated = wp_update_post(
 					wp_slash(
 						array(
 							'ID'           => $post_id,
-							'post_content' => $block_content,
+							'post_content' => '',
 						)
 					),
 					true
 				);
+			} else {
+				$updated = wp_update_post(
+					wp_slash(
+						array(
+							'ID'           => $post_id,
+							'post_content' => $content,
+						)
+					),
+					true
+				);
+			}
 
 			if ( is_wp_error( $updated ) ) {
 				return $this->markError(
@@ -877,9 +963,10 @@ final class SyncService {
 	 * @param array<string,mixed> $source  Current source.
 	 */
 	private function progressiveFallbackFlushCallback( int $post_id, array &$source ): callable {
-		$last_hash = '';
+		$last_hash     = '';
+		$use_elementor = null !== $this->elementor_decider && $this->elementor_decider->shouldUseElementor( $post_id );
 
-		return function ( string $html, int $rendered, int $total ) use ( $post_id, &$source, &$last_hash ): true|WP_Error {
+		return function ( string $html, int $rendered, int $total ) use ( $post_id, &$source, &$last_hash, $use_elementor ): true|WP_Error {
 			$sanitized_html = wp_kses_post( $html );
 			$partial_hash   = hash( 'sha256', $sanitized_html );
 
@@ -887,14 +974,26 @@ final class SyncService {
 				return true;
 			}
 
-			$block_content = $this->block_converter->convert( $sanitized_html );
+			if ( $use_elementor ) {
+				$elementor_json = $this->elementor_converter->convert( $sanitized_html, $post_id );
 
-			if ( is_wp_error( $block_content ) ) {
-				return $block_content;
-			}
+				if ( is_wp_error( $elementor_json ) ) {
+					return $elementor_json;
+				}
 
-			if ( '' === trim( $block_content ) ) {
-				return true;
+				if ( '' === trim( $elementor_json ) ) {
+					return true;
+				}
+			} else {
+				$block_content = $this->block_converter->convert( $sanitized_html );
+
+				if ( is_wp_error( $block_content ) ) {
+					return $block_content;
+				}
+
+				if ( '' === trim( $block_content ) ) {
+					return true;
+				}
 			}
 
 			$current_source = $this->assertCurrentSource( $post_id, $source );
@@ -903,15 +1002,33 @@ final class SyncService {
 				return $current_source;
 			}
 
-			$updated = wp_update_post(
-				wp_slash(
-					array(
-						'ID'           => $post_id,
-						'post_content' => $block_content,
-					)
-				),
-				true
-			);
+			if ( $use_elementor ) {
+				$updated = $this->elementor_updater->update( $post_id, (string) $elementor_json );
+
+				if ( is_wp_error( $updated ) ) {
+					return $this->markError( $post_id, $source, $updated );
+				}
+
+				$updated = wp_update_post(
+					wp_slash(
+						array(
+							'ID'           => $post_id,
+							'post_content' => '',
+						)
+					),
+					true
+				);
+			} else {
+				$updated = wp_update_post(
+					wp_slash(
+						array(
+							'ID'           => $post_id,
+							'post_content' => $block_content,
+						)
+					),
+					true
+				);
+			}
 
 			if ( is_wp_error( $updated ) ) {
 				return new WP_Error(
