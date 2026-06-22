@@ -254,6 +254,32 @@ Skip behavior:
 - image import failure marks sync `error` before target content is overwritten
 - plugin never deletes synced posts on uninstall by default
 
+## Future Architecture (1.1.0+)
+
+The next major architectural addition is a **Layout Preset** layer between the sanitized HTML import and the two converters:
+
+```mermaid
+flowchart LR
+  Import["HtmlZipImporter / DocsApiHtmlImporter"] --> Sanitized["Sanitized HTML"]
+  Sanitized --> Preset["LayoutBlueprint / PresetRegistry"]
+  Preset --> Blocks["HtmlToBlockContentConverter"]
+  Preset --> Elementor["Elementor\DataConverter"]
+  Blocks --> WP["wp_update_post"]
+  Elementor --> PostUpdater["Elementor\PostUpdater"]
+  PostUpdater --> WP
+```
+
+Key future components:
+
+- `src/Sync/Layout/LayoutBlueprint.php` — interface for classifying DOM nodes into roles and rendering them into blocks or widgets.
+- `src/Sync/Layout/LayoutPresetRegistry.php` — built-in and site-defined presets, filtered by editor availability (Elementor, Elementor Pro).
+- `src/Sync/Layout/ContentRoleClassifier.php` — heuristic role detection (`hero`, `body`, `cover`, `callout`, `feature_list`, `code_block`, `cta`, `divider`).
+- `_docsync_wp_layout_preset` post meta — per-post override of the site default preset.
+- `GET /layout-presets` and `GET /layout-presets/{id}/preview` — REST routes for the wizard gallery and preview.
+- `resources/js/admin/features/layout-preset/` — React wizard step and preset gallery.
+
+Later phases (1.2.0+) add bulk Drive folder import, a custom preset builder, a Pro tier, a Google Docs Workspace Add-on, and optional managed OAuth. See `docs/project-roadmap.md` for the full phased plan.
+
 ## Operational Notes
 
 - WP-Cron only runs on site traffic; low-traffic sites and sites with disabled WP-Cron need real server cron for reliable scheduled and manual background sync completion

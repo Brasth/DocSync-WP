@@ -78,6 +78,18 @@ Summary reflects the current source tree after the Radix plus WordPress-native a
 - `php` and `composer` are unavailable in this shell, so PHP validation must run in CI or another release environment.
 - Current local validation uses `pnpm lint`, `pnpm typecheck`, `pnpm build`, and non-PHP release metadata checks.
 
+## Upcoming Work
+
+The 1.1.0 release introduces a **Layout Preset** layer to make synced Google Docs publishable without developer layout edits. Planned additions include:
+
+- `src/Sync/Layout/` — preset registry, blueprint interface, and content-role classifier.
+- `resources/js/admin/features/layout-preset/` — wizard step and preset gallery.
+- New REST routes for listing presets and previewing their output.
+- Per-post `_docsync_wp_layout_preset` meta and site-level default setting.
+- 4 built-in presets covering Gutenberg and Elementor output.
+
+Later releases add bulk Drive folder import, a Pro tier with a custom preset builder, a Google Docs Workspace Add-on, and optional managed OAuth. See `docs/project-roadmap.md` for the full phased plan and success metrics.
+
 ## Notes
 
 - The repo uses `brasth-document-sync-for-google-docs` as the plugin slug and text domain.
