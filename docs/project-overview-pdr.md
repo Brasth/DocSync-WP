@@ -82,3 +82,11 @@ Local verification in this checkout is blocked because:
 - Decide whether to add automated PHP and JS tests.
 - Decide whether to add richer sync history beyond last status and last error.
 - Decide whether to add a managed Google connector service for simpler setup.
+- Define the layout-preset JSON schema and role vocabulary for the 1.1.0 layout foundation release.
+- Choose the primary target niche (Elementor agencies vs. news publishers) before Phase 2 case studies.
+- Lock the Free/Pro tier boundary before writing Phase 2 feature-gating code.
+- Validate whether to register built-in presets as global block patterns in a later release.
+
+## Roadmap
+
+See `docs/project-roadmap.md` for the phased development roadmap, success metrics, and open decisions.
