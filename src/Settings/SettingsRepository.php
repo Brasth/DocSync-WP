@@ -25,7 +25,7 @@ final class SettingsRepository {
 	private const DEFAULT_EXPORT_FORMAT   = 'html_zip';
 	private const DEFAULT_SYNC_INTERVAL   = 'off';
 	private const DEFAULT_CONNECTION_MODE = 'self_managed';
-	private const DEFAULT_ELEMENTOR_SYNC  = true;
+	private const DEFAULT_ELEMENTOR_SYNC  = false;
 
 	/**
 	 * Encryption service.
