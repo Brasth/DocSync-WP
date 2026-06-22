@@ -114,6 +114,7 @@ final class PostUpdater {
 				}
 			} catch ( \Throwable $e ) {
 				// Fall through to global cache clear.
+				unset( $e );
 			}
 		}
 
