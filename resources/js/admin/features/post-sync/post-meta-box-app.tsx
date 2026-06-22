@@ -16,9 +16,10 @@ type Props = {
   postId: number;
   postType: string;
   initialSource: SourceRecord | null;
+  elementorAvailable: boolean;
 };
 
-export const PostMetaBoxApp = ({ postId, postType, initialSource }: Props): JSX.Element => {
+export const PostMetaBoxApp = ({ postId, postType, initialSource, elementorAvailable }: Props): JSX.Element => {
   const [modalTarget, setModalTarget] = useState<DocSourceTarget | null>(null);
   const actions = usePostSyncActions(postId, initialSource);
   const isSyncing = actions.source?.syncStatus === 'syncing';
@@ -129,6 +130,17 @@ export const PostMetaBoxApp = ({ postId, postType, initialSource }: Props): JSX.
           {actions.source ? <AdminButton disabled={actions.busy} onClick={actions.syncNow}>{__('Sync now', 'brasth-document-sync-for-google-docs')}</AdminButton> : null}
           {actions.source ? <AdminButton disabled={actions.busy || isSyncing} onClick={actions.detach} variant="delete">{__('Detach', 'brasth-document-sync-for-google-docs')}</AdminButton> : null}
         </div>
+        {elementorAvailable && actions.source ? (
+          <label className="docsync-wp-checkbox-row">
+            <input
+              checked={actions.source.elementorSync === true}
+              disabled={actions.busy || isSyncing}
+              onChange={(event) => actions.updateElementorSync(event.currentTarget.checked)}
+              type="checkbox"
+            />
+            <span>{__('Sync as Elementor layout', 'brasth-document-sync-for-google-docs')}</span>
+          </label>
+        ) : null}
       </div>
       {actions.source?.syncStatus === 'syncing' ? (
         <BackgroundSyncPoller

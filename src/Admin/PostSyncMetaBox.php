@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace DocSyncWP\Admin;
 
+use DocSyncWP\Settings\SettingsRepository;
+use DocSyncWP\Sync\Elementor\SyncDecider;
 use DocSyncWP\Sync\SourceRepository;
 use WP_Post;
 
@@ -28,12 +30,30 @@ final class PostSyncMetaBox {
 	private SourceRepository $source_repository;
 
 	/**
+	 * Settings repository.
+	 *
+	 * @var SettingsRepository
+	 */
+	private SettingsRepository $settings;
+
+	/**
+	 * Elementor sync decider.
+	 *
+	 * @var SyncDecider
+	 */
+	private SyncDecider $elementor_decider;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param SourceRepository $source_repository Source repository.
+	 * @param SourceRepository   $source_repository Source repository.
+	 * @param SettingsRepository $settings          Settings repository.
+	 * @param SyncDecider        $elementor_decider Elementor sync decider.
 	 */
-	public function __construct( SourceRepository $source_repository ) {
+	public function __construct( SourceRepository $source_repository, SettingsRepository $settings, SyncDecider $elementor_decider ) {
 		$this->source_repository = $source_repository;
+		$this->settings          = $settings;
+		$this->elementor_decider = $elementor_decider;
 	}
 
 	/**
@@ -81,12 +101,16 @@ final class PostSyncMetaBox {
 			$json = 'null';
 		}
 
+		$elementor_enabled = $this->settings->isElementorSyncEnabled();
+		$elementor_active  = $this->elementor_decider->isElementorSyncAvailable();
 		?>
 		<div
 			id="docsync-wp-post-sync-root"
 			data-post-id="<?php echo esc_attr( (string) $post->ID ); ?>"
 			data-post-type="<?php echo esc_attr( $post->post_type ); ?>"
 			data-source="<?php echo esc_attr( $json ); ?>"
+			data-elementor-available="<?php echo $elementor_active ? 'true' : 'false'; ?>"
+			data-elementor-enabled="<?php echo $elementor_enabled ? 'true' : 'false'; ?>"
 		>
 			<p><?php esc_html_e( 'Loading sync controls...', 'brasth-document-sync-for-google-docs' ); ?></p>
 		</div>

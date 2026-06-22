@@ -25,6 +25,7 @@ export const SettingsPanel = ({ settings, busy, redirectUri, onSave }: Props): J
   const [clientSecret, setClientSecret] = useState('');
   const [enabledPostTypes, setEnabledPostTypes] = useState(settings.enabledPostTypes);
   const [syncInterval, setSyncInterval] = useState(settings.syncInterval);
+  const [elementorSyncEnabled, setElementorSyncEnabled] = useState(settings.elementorSyncEnabled);
   const [copyMessage, setCopyMessage] = useState('');
   const [testChecks, setTestChecks] = useState<SetupCheck[] | null>(null);
   const setupChecks = useMemo(() => buildSetupChecks(settings), [settings]);
@@ -34,6 +35,7 @@ export const SettingsPanel = ({ settings, busy, redirectUri, onSave }: Props): J
     clientId !== settings.clientId ||
     clientSecret.trim() !== '' ||
     syncInterval !== settings.syncInterval ||
+    elementorSyncEnabled !== settings.elementorSyncEnabled ||
     !samePostTypes(enabledPostTypes, settings.enabledPostTypes);
 
   useEffect(() => {
@@ -41,6 +43,7 @@ export const SettingsPanel = ({ settings, busy, redirectUri, onSave }: Props): J
     setClientSecret('');
     setEnabledPostTypes(settings.enabledPostTypes);
     setSyncInterval(settings.syncInterval);
+    setElementorSyncEnabled(settings.elementorSyncEnabled);
     setTestChecks(null);
   }, [settings]);
 
@@ -80,6 +83,7 @@ export const SettingsPanel = ({ settings, busy, redirectUri, onSave }: Props): J
       ...(clientSecret ? { clientSecret } : {}),
       enabledPostTypes,
       syncInterval,
+      elementorSyncEnabled,
       connectionMode: settings.connectionMode || 'self_managed',
       defaultExportFormat: settings.defaultExportFormat,
       defaultPostStatus: settings.defaultPostStatus,
@@ -169,6 +173,24 @@ export const SettingsPanel = ({ settings, busy, redirectUri, onSave }: Props): J
           onTogglePostType={togglePostType}
           syncInterval={syncInterval}
         />
+
+        <li>
+          <div className="docsync-wp-step-heading">
+            <span>4</span>
+            <div>
+              <h3>{__('Elementor sync support', 'brasth-document-sync-for-google-docs')}</h3>
+              <p>{__('When Elementor is active, allow synced posts that are already built with Elementor to receive native Elementor layouts.', 'brasth-document-sync-for-google-docs')}</p>
+            </div>
+          </div>
+          <label className="docsync-wp-checkbox-row">
+            <input
+              checked={elementorSyncEnabled}
+              onChange={(event) => setElementorSyncEnabled(event.currentTarget.checked)}
+              type="checkbox"
+            />
+            <span>{__('Enable Elementor sync support', 'brasth-document-sync-for-google-docs')}</span>
+          </label>
+        </li>
       </ol>
 
       <div className="docsync-wp-settings-actions">

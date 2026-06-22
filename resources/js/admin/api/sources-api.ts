@@ -20,8 +20,16 @@ export const createSource = (payload: {
   target: { mode: 'existing'; postId: number } | { mode: 'new'; postType: string };
   exportFormat?: string;
   syncMode?: SyncMode;
+  elementorSync?: boolean;
 }): Promise<SyncResult> => {
   return request<SyncResult>('sources', {
+    method: 'POST',
+    data: payload
+  });
+};
+
+export const updateSource = (postId: number, payload: { elementorSync?: boolean }): Promise<SourceRecord> => {
+  return request<SourceRecord>(`sources/${postId}`, {
     method: 'POST',
     data: payload
   });

@@ -32,6 +32,12 @@ use DocSyncWP\Sync\DocsApiHtmlImporter;
 use DocSyncWP\Sync\DocsApiImageImporter;
 use DocSyncWP\Sync\DocsApiInlineRenderer;
 use DocSyncWP\Sync\DocsApiParagraphRenderer;
+use DocSyncWP\Sync\Elementor\CompatibilityChecker;
+use DocSyncWP\Sync\Elementor\DataConverter as ElementorDataConverter;
+use DocSyncWP\Sync\Elementor\LayoutBuilder as ElementorLayoutBuilder;
+use DocSyncWP\Sync\Elementor\PostUpdater as ElementorPostUpdater;
+use DocSyncWP\Sync\Elementor\SyncDecider as ElementorSyncDecider;
+use DocSyncWP\Sync\Elementor\WidgetFactory as ElementorWidgetFactory;
 use DocSyncWP\Sync\HtmlDocumentImageRewriter;
 use DocSyncWP\Sync\HtmlToBlockContentConverter;
 use DocSyncWP\Sync\HtmlZipImporter;
@@ -148,6 +154,13 @@ final class Plugin {
 		$docs_client        = new DocsClient( $google_oauth );
 		$document_id_parser = new DocumentIdParser();
 		$media_assets       = new MediaAssetImporter();
+		$elementor_checker  = new CompatibilityChecker();
+		$elementor_decider  = new ElementorSyncDecider( $settings, $source_repository, $elementor_checker );
+		$elementor_data     = new ElementorDataConverter(
+			new ElementorWidgetFactory(),
+			new ElementorLayoutBuilder( $elementor_checker )
+		);
+		$elementor_updater  = new ElementorPostUpdater( $elementor_checker );
 		$sync_service       = new SyncService(
 			$source_repository,
 			$drive_client,
@@ -166,7 +179,10 @@ final class Plugin {
 				)
 			),
 			new HtmlToBlockContentConverter(),
-			new SyncLock()
+			new SyncLock(),
+			$elementor_decider,
+			$elementor_data,
+			$elementor_updater
 		);
 
 		$plugin = new self(
@@ -191,7 +207,7 @@ final class Plugin {
 				),
 				new SyncLogController( $source_repository )
 			),
-			new PostSyncMetaBox( $source_repository ),
+			new PostSyncMetaBox( $source_repository, $settings, $sync_service->getElementorDecider() ),
 			new PostListActions( $source_repository ),
 			new SyncCron( $settings, $source_repository, $sync_service ),
 			$token_store,

@@ -153,6 +153,23 @@
     width: 100%;
   }
 
+  .docsync-wp-checkbox-row {
+    align-items: center;
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .docsync-wp-checkbox-row input[type="checkbox"] {
+    flex: 0 0 auto;
+    margin: 0;
+  }
+
+  .docsync-wp-checkbox-row span {
+    color: #1d2327;
+    line-height: 1.4;
+  }
+
   @media (max-width: 782px) {
     .docsync-wp-toast-stack {
       bottom: 16px;

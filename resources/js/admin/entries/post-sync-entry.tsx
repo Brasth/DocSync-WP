@@ -10,6 +10,7 @@ const postRoot = document.getElementById('docsync-wp-post-sync-root');
 if (postRoot) {
   createRoot(postRoot).render(
     <PostMetaBoxApp
+      elementorAvailable={postRoot.dataset.elementorAvailable === 'true'}
       initialSource={parseSource(postRoot.dataset.source)}
       postId={Number(postRoot.dataset.postId ?? 0)}
       postType={postRoot.dataset.postType ?? 'post'}
