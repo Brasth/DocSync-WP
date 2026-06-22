@@ -8,7 +8,7 @@ Stable tag: 1.0.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Sync Google Docs into WordPress posts and pages with self-managed Google OAuth, a Drive browser, background sync, Gutenberg output, and optional Elementor layout support.
+Sync Google Docs into WordPress posts and pages with self-managed Google OAuth and optional Elementor layout support.
 
 == Description ==
 
