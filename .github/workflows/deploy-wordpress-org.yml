@@ -1,0 +1,148 @@
+name: Deploy to WordPress.org SVN
+
+on:
+  release:
+    types:
+      - published
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to deploy, for example 1.0.4 or v1.0.4"
+        required: true
+        type: string
+      dry_run:
+        description: "Validate the build without committing to SVN"
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy to WordPress.org
+    runs-on: ubuntu-latest
+    env:
+      PLUGIN_SLUG: brasth-document-sync-for-google-docs
+      RELEASE_TAG_NAME: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.event.release.tag_name }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ env.RELEASE_TAG_NAME }}
+
+      - name: Validate tag and plugin versions
+        run: |
+          set -euo pipefail
+          TAG_NAME="${RELEASE_TAG_NAME:?Release tag is required.}"
+          TAG_VERSION="${TAG_NAME#v}"
+
+          if [ -z "${TAG_VERSION}" ] || ! [[ "${TAG_VERSION}" =~ ^[0-9]+[.][0-9]+[.][0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+            echo "Release tag must be a plugin version with optional v prefix. Received: ${TAG_NAME}"
+            exit 1
+          fi
+
+          PLUGIN_HEADER_VERSION="$(
+            awk -F':' '/^[[:space:]]*\*[[:space:]]*Version:/ {gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2; exit}' brasth-document-sync-for-google-docs.php
+          )"
+          PLUGIN_CONST_VERSION="$(
+            sed -nE "s/^define\([[:space:]]*'DOCSYNC_WP_VERSION',[[:space:]]*'([^']+)'.*\);$/\1/p" brasth-document-sync-for-google-docs.php | head -n 1
+          )"
+          README_STABLE_TAG="$(
+            awk -F':' '/^Stable tag:/ {gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2; exit}' readme.txt
+          )"
+
+          if [ -z "${PLUGIN_HEADER_VERSION}" ] || [ -z "${PLUGIN_CONST_VERSION}" ] || [ -z "${README_STABLE_TAG}" ]; then
+            echo "Could not parse plugin version metadata from brasth-document-sync-for-google-docs.php and readme.txt."
+            exit 1
+          fi
+
+          if [ "${PLUGIN_HEADER_VERSION}" != "${PLUGIN_CONST_VERSION}" ]; then
+            echo "Plugin header version (${PLUGIN_HEADER_VERSION}) does not match DOCSYNC_WP_VERSION (${PLUGIN_CONST_VERSION})."
+            exit 1
+          fi
+
+          if [ "${PLUGIN_HEADER_VERSION}" != "${README_STABLE_TAG}" ]; then
+            echo "Plugin header version (${PLUGIN_HEADER_VERSION}) does not match readme.txt Stable tag (${README_STABLE_TAG})."
+            exit 1
+          fi
+
+          if [ "${TAG_VERSION}" != "${PLUGIN_HEADER_VERSION}" ]; then
+            echo "Tag version from ${TAG_NAME} (${TAG_VERSION}) does not match plugin version (${PLUGIN_HEADER_VERSION})."
+            exit 1
+          fi
+
+          echo "version=${TAG_VERSION}" >> "${GITHUB_ENV}"
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          coverage: none
+          tools: composer:v2
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: pnpm
+
+      - name: Install production PHP dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+      - name: Install Node dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build frontend assets
+        run: pnpm build
+
+      - name: Deploy to WordPress.org
+        if: ${{ github.event_name == 'release' || inputs.dry_run == false }}
+        uses: 10up/action-wordpress-plugin-deploy@v2
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          SLUG: brasth-document-sync-for-google-docs
+          ASSETS_DIR: assets
+          VERSION: ${{ env.version }}
+
+      - name: Validate deployable artifact (dry run)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run == true }}
+        run: |
+          set -euo pipefail
+          echo "Dry run: validating deployable artifact for version ${version}"
+
+          if [ ! -f "brasth-document-sync-for-google-docs.php" ]; then
+            echo "Missing plugin main file."
+            exit 1
+          fi
+
+          if [ ! -f "vendor/autoload.php" ]; then
+            echo "Missing vendor/autoload.php."
+            exit 1
+          fi
+
+          if [ ! -f "build/manifest.json" ]; then
+            echo "Missing build/manifest.json."
+            exit 1
+          fi
+
+          if [ ! -f "readme.txt" ]; then
+            echo "Missing readme.txt."
+            exit 1
+          fi
+
+          FORBIDDEN_PATHS=(.git .github .claude .agents .codex node_modules .pnpm-store docs plans tests coverage assets)
+          for forbidden_path in "${FORBIDDEN_PATHS[@]}"; do
+            if [ -e "${forbidden_path}" ]; then
+              echo "Deployable artifact must not contain ${forbidden_path}."
+              exit 1
+            fi
+          done
+
+          echo "Dry-run validation passed. Nothing was committed to SVN."
