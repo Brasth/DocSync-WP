@@ -78,15 +78,20 @@ final class PostUpdater {
 		}
 
 		delete_post_meta( $post_id, '_elementor_css' );
-		$this->clearCache();
+		$this->clearCache( $post_id );
 
 		return true;
 	}
 
 	/**
 	 * Clear Elementor CSS caches so the new layout is rendered.
+	 *
+	 * Tries to delete only the synced post's CSS file before falling back to
+	 * the global Elementor cache clear.
+	 *
+	 * @param int $post_id Post ID.
 	 */
-	private function clearCache(): void {
+	private function clearCache( int $post_id ): void {
 		if ( ! $this->compatibility->isElementorActive() ) {
 			return;
 		}
@@ -98,6 +103,19 @@ final class PostUpdater {
 		}
 
 		$files_manager = $plugin->files_manager;
+
+		if ( class_exists( '\Elementor\Core\Files\CSS\Post_CSS' ) ) {
+			try {
+				$post_css = \Elementor\Core\Files\CSS\Post_CSS::create( $post_id );
+
+				if ( method_exists( $post_css, 'delete' ) ) {
+					$post_css->delete();
+					return;
+				}
+			} catch ( \Throwable $e ) {
+				// Fall through to global cache clear.
+			}
+		}
 
 		if ( method_exists( $files_manager, 'clear_cache' ) ) {
 			$files_manager->clear_cache();

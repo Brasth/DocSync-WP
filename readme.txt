@@ -4,11 +4,11 @@ Tags: google-docs, google-drive, content-sync, editorial-workflow, blocks
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Sync Google Docs into WordPress posts and pages with self-managed Google OAuth, a Drive browser, background sync, and Gutenberg output.
+Sync Google Docs into WordPress posts and pages with self-managed Google OAuth, a Drive browser, background sync, Gutenberg output, and optional Elementor layout support.
 
 == Description ==
 
@@ -116,6 +116,13 @@ The build uses Vite and writes `build/manifest.json`, `build/manifest.post-sync.
 5. Sync logs with diagnostic events and source status filters.
 
 == Changelog ==
+
+= 1.0.5 =
+
+* Added Elementor sync support (opt-in via settings).
+* Added per-post Elementor/block sync toggle in the post sync meta box.
+* Synced Elementor posts use native Elementor widget layouts with container or section/column wrapping.
+* Scoped Elementor CSS cache invalidation to the synced post, with global cache clear as fallback.
 
 = 1.0.4 =
 
