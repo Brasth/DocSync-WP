@@ -4,7 +4,7 @@ Tags: google-docs, google-drive, content-sync, editorial-workflow, blocks
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -116,6 +116,15 @@ The build uses Vite and writes `build/manifest.json`, `build/manifest.post-sync.
 5. Sync logs with diagnostic events and source status filters.
 
 == Changelog ==
+
+= 1.0.4 =
+
+* Improved admin UI/UX for Sources, Logs, and Drive Browser.
+* Fixed Sources table row tag rendering and layout.
+* Fixed color and high-contrast accessibility issues.
+* Fixed admin asset enqueuing on Sources and Logs pages.
+* Added WordPress.org screenshot assets and readme sync lint.
+* Hardened the build pipeline and installable ZIP artifact layout.
 
 = 1.0.3 =
 
