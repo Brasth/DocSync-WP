@@ -65,8 +65,12 @@
   }
 
   .docsync-wp-source-actions .docsync-wp-view-logs-link .dashicons {
+    align-items: center;
+    display: inline-flex;
     font-size: 16px;
     height: 16px;
+    justify-content: center;
+    line-height: 1;
     width: 16px;
   }
 
