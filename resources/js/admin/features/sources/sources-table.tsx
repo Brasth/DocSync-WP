@@ -201,7 +201,7 @@ export const SourcesTable = ({
       </form>
 
       <div className="docsync-wp-table-scroll">
-        <table aria-busy={busy && sources.length === 0} className="widefat striped docsync-wp-sources-table">
+        <table aria-busy={busy && sources.length === 0} className="docsync-wp-data-table docsync-wp-sources-table">
           <thead>
             <tr>
               <th>{__('WordPress target', 'brasth-document-sync-for-google-docs')}</th>
@@ -231,13 +231,29 @@ export const SourcesTable = ({
             ) : sources.map((source) => (
               <tr key={source.postId}>
                 <td>
-                  <a href={source.editUrl}>{source.postTitle || sprintf(__('Post %d', 'brasth-document-sync-for-google-docs'), source.postId)}</a>
-                  <span className="docsync-wp-row-tag">{source.postType}</span>
-                  <span className="docsync-wp-row-tag">{source.postStatus}</span>
+                  <div className="docsync-wp-source-target">
+                    <a className="docsync-wp-source-target__title" href={source.editUrl}>
+                      {source.postTitle || sprintf(__('Post %d', 'brasth-document-sync-for-google-docs'), source.postId)}
+                    </a>
+                    <div className="docsync-wp-source-target__meta">
+                      {source.postType ? <span className="docsync-wp-row-tag">{source.postType}</span> : null}
+                      {source.postStatus ? <span className="docsync-wp-row-tag">{source.postStatus}</span> : null}
+                    </div>
+                  </div>
                 </td>
                 <td>
-                  {source.googleDocUrl ? <a href={source.googleDocUrl} rel="noreferrer" target="_blank">{source.googleTitle || source.googleFileId}</a> : source.googleTitle || source.googleFileId}
-                  {source.googleFileId ? <small>{source.googleFileId}</small> : null}
+                  <div className="docsync-wp-source-doc">
+                    {source.googleDocUrl ? (
+                      <a className="docsync-wp-source-doc__title" href={source.googleDocUrl} rel="noreferrer" target="_blank">
+                        {source.googleTitle || source.googleFileId}
+                      </a>
+                    ) : (
+                      <span className="docsync-wp-source-doc__title">{source.googleTitle || source.googleFileId}</span>
+                    )}
+                    {source.googleFileId && source.googleTitle ? (
+                      <small className="docsync-wp-source-doc__id">{source.googleFileId}</small>
+                    ) : null}
+                  </div>
                 </td>
                 <td>
                   <div className="docsync-wp-source-status-cell">
@@ -247,12 +263,14 @@ export const SourcesTable = ({
                         <SyncProgress message={source.syncMessage} progress={source.syncProgress} />
                       </div>
                     ) : null}
-                    {source.syncError ? <small>{source.syncError}</small> : null}
+                    {source.syncError ? <small className="docsync-wp-source-error-text">{source.syncError}</small> : null}
                   </div>
                 </td>
                 <td>
-                  {source.lastSyncedAt || __('Never', 'brasth-document-sync-for-google-docs')}
-                  {syncMethodLabel(source) ? <span className="docsync-wp-row-tag">{syncMethodLabel(source)}</span> : null}
+                  <div className="docsync-wp-source-last-sync">
+                    <span>{source.lastSyncedAt || __('Never', 'brasth-document-sync-for-google-docs')}</span>
+                    {syncMethodLabel(source) ? <span className="docsync-wp-row-tag">{syncMethodLabel(source)}</span> : null}
+                  </div>
                 </td>
                 <td>
                   <div className="docsync-wp-source-actions">
