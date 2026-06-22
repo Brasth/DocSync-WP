@@ -325,4 +325,41 @@
     margin-top: 3px;
     padding: 1px 6px;
   }
+
+  /* Ensure primary/secondary buttons keep readable text on hover/focus. */
+  #docsync-wp-admin-root .button-primary,
+  #docsync-wp-admin-root .button-primary:focus,
+  #docsync-wp-admin-root .button-primary:active {
+    background: var(--docsync-blue);
+    border-color: var(--docsync-blue);
+    color: #fff;
+  }
+
+  #docsync-wp-admin-root .button-primary:hover {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+    color: #fff;
+  }
+
+  #docsync-wp-admin-root .button-primary:disabled,
+  #docsync-wp-admin-root .button-primary[disabled] {
+    background: var(--docsync-blue);
+    border-color: var(--docsync-blue);
+    color: #fff;
+    opacity: 0.6;
+  }
+
+  #docsync-wp-admin-root .button-secondary,
+  #docsync-wp-admin-root .button-secondary:focus,
+  #docsync-wp-admin-root .button-secondary:active {
+    background: #fff;
+    border-color: var(--docsync-blue);
+    color: var(--docsync-blue);
+  }
+
+  #docsync-wp-admin-root .button-secondary:hover {
+    background: #eff6ff;
+    border-color: var(--docsync-blue);
+    color: var(--docsync-blue);
+  }
 }
