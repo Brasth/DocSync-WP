@@ -87,6 +87,6 @@ Local verification in this checkout is blocked because:
 - Lock the Free/Pro tier boundary before writing Phase 2 feature-gating code.
 - Validate whether to register built-in presets as global block patterns in a later release.
 
-## Roadmap
+## Roadmap and Release Process
 
-See `docs/project-roadmap.md` for the phased development roadmap, success metrics, and open decisions.
+See `docs/project-roadmap.md` for the phased development roadmap, success metrics, and open decisions. See `docs/deployment-guide.md` for the release cadence, pre-release checklist, and WordPress.org release procedure.
