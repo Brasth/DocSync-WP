@@ -1,12 +1,12 @@
 # Brasth Document Sync Codebase Summary
 
-Last updated: 2026-06-20
+Last updated: 2026-06-23
 
 ## Snapshot
 
 Brasth Document Sync for Google Docs is a WordPress plugin for one-way Google Docs -> WordPress sync. This checkout includes Google OAuth, document inspection, post/page linking and sync, list-table actions, setup/Sources/Logs admin pages, HTML ZIP media import, Gutenberg block conversion, diagnostic sync events, WP-Cron scheduling, and first-pass WordPress.org release packaging.
 
-Summary reflects the current source tree after the Radix plus WordPress-native admin frontend refactor, Drive modal polish, OAuth JSON import, admin UI fixes, Gutenberg sync conversion, background sync progress, large-doc fallback, stale sync recovery, bounded sync logging, privacy disclosure, Picker settings cleanup, CommonMark dependency removal, listing artwork refresh, and `1.0.3` release hardening with admin loading/empty-state polish.
+Summary reflects the current source tree after the Radix plus WordPress-native admin frontend refactor, Drive modal polish, OAuth JSON import, admin UI fixes, Gutenberg sync conversion, background sync progress, large-doc fallback, stale sync recovery, bounded sync logging, privacy disclosure, Elementor sync support, and the `1.0.6` admin asset split.
 
 - Total files tracked by `rg --files`: 131
 - Main languages: PHP, TypeScript, CSS
@@ -15,8 +15,9 @@ Summary reflects the current source tree after the Radix plus WordPress-native a
 
 - `src/` - PHP plugin runtime
 - `resources/js/admin/` - React admin app and post-level controls
-- `resources/css/admin-entry.css` - setup, Sources, and Logs admin styles
-- `resources/css/post-sync-entry.css` - post edit/list-table source modal styles
+- `resources/css/setup-entry.css`, `sources-entry.css`, and `logs-entry.css` - screen-specific admin styles
+- `resources/css/post-sync-entry.css` - post edit/list-table initial styles
+- `resources/css/doc-source-modal-entry.css` and `drive-browser-entry.css` - lazy source modal and Drive browser styles
 - `resources/css/shared/` and `resources/css/components/` - reusable CSS partials
 - `docs/` - project documentation and research
 - `plans/` - implementation plans and phase notes
@@ -27,8 +28,8 @@ Summary reflects the current source tree after the Radix plus WordPress-native a
 
 1. WordPress loads `brasth-document-sync-for-google-docs.php`.
 2. `DocSyncWP\Plugin::boot()` wires settings, OAuth, Drive client, source repository, sync service, cron, REST, and admin UI.
-3. The central admin screen mounts the React app through `resources/js/admin/entries/admin-entry.tsx`.
-4. Post/page edit and list-table screens mount through `resources/js/admin/entries/post-sync-entry.tsx`.
+3. Setup, Sources, and Logs mount through separate React entries under `resources/js/admin/entries/`.
+4. Post/page edit and list-table screens mount through `resources/js/admin/entries/post-sync-entry.tsx`, with source modal and Drive browser assets loaded lazily.
 5. REST controllers handle settings, OAuth, My Drive/shared drive folder browsing, document inspection, source management, sync logs, and sync triggers.
 6. `SyncService` reads Google metadata, exports an HTML ZIP package, imports local images into Media Library, converts sanitized HTML to block content, updates the target post, and persists sync state plus diagnostic events.
 
@@ -53,8 +54,8 @@ Summary reflects the current source tree after the Radix plus WordPress-native a
 
 ## Key Frontend Modules
 
-- `resources/js/admin/entries/` - Vite entrypoints for admin and post-sync bundles.
-- `resources/js/admin/app/` - central setup/Sources/Logs shell and app state hook.
+- `resources/js/admin/entries/` - Vite entrypoints for Setup, Sources, Logs, post-sync, source modal styles, and Drive browser.
+- `resources/js/admin/app/` - screen-specific Setup and Sources shells plus app state hooks.
 - `resources/js/admin/api/` - REST client, typed API modules, and shared wire types.
 - `resources/js/admin/features/drive-browser/` - Google Drive browser hook, toolbar, breadcrumb, table, and panel.
 - `resources/js/admin/features/doc-source-modal/` - Radix-backed source modal, mode tabs, advanced input, and modal hook.
@@ -67,16 +68,16 @@ Summary reflects the current source tree after the Radix plus WordPress-native a
 
 ## Frontend Style Modules
 
-- `resources/css/admin.css` remains a compatibility wrapper that imports `admin-entry.css`.
-- `resources/css/admin-entry.css` imports shared primitives plus setup, admin shell, Sources table, and sync log partials.
-- `resources/css/post-sync-entry.css` imports shared primitives plus post sync box, modal, tabs, Drive browser layout/table, and advanced source partials.
+- `resources/css/admin.css` remains a compatibility wrapper that imports the legacy `admin-entry.css`.
+- Screen entries import only their needed shared primitives and component partials.
+- `resources/css/post-sync-entry.css` imports the initial post sync box styles; source modal and Drive browser CSS load only when needed.
 - Component-level CSS lives under `resources/css/components/`; cross-entry primitives and responsive rules live under `resources/css/shared/`.
 
 ## Local Toolchain Status
 
 - `pnpm` and installed Node dependencies are available in this checkout environment.
-- `php` and `composer` are unavailable in this shell, so PHP validation must run in CI or another release environment.
-- Current local validation uses `pnpm lint`, `pnpm typecheck`, `pnpm build`, and non-PHP release metadata checks.
+- Composer, PHPCS, PHP syntax linting, pnpm, and Node dependencies are available in this checkout environment.
+- Current local validation uses `composer validate --no-check-publish`, `composer lint`, `vendor/bin/phpcs -i`, `pnpm lint`, `pnpm typecheck`, and `pnpm build`.
 
 ## Upcoming Work
 
@@ -96,6 +97,6 @@ Later releases add bulk Drive folder import, a Pro tier with a custom preset bui
 - REST namespace: `brasth-document-sync-for-google-docs/v1`.
 - Google tokens and the OAuth client secret are encrypted with WordPress salts.
 - WordPress privacy policy suggested text discloses Google OAuth, Drive API, Docs API, stored credentials/tokens, linked metadata, imported media, and uninstall retention.
-- Release packaging includes `resources/`, `package.json`, `pnpm-lock.yaml`, `vite.config.ts`, `composer.json`, `build/`, and WordPress.org `readme.txt` so reviewers can inspect human-readable source for built assets. Installable ZIP files exclude `assets/`; listing assets stay in the repository for WordPress.org SVN root upload. The release metadata currently targets `1.0.3`.
+- Release packaging includes `resources/`, `package.json`, `pnpm-lock.yaml`, `vite.config.ts`, `composer.json`, `build/`, and WordPress.org `readme.txt` so reviewers can inspect human-readable source for built assets. Installable ZIP files exclude `assets/`; listing assets stay in the repository for WordPress.org SVN root upload. The release metadata currently targets `1.0.6`.
 - The admin app depends on WordPress packages for REST, i18n, a11y, URL helpers, components, and element runtime; Radix Dialog/Tabs remain the complex interaction primitives.
 - Frontend lint blocks inline PHPCS suppression comments in plugin source.

@@ -18,6 +18,9 @@ export type DocSyncWPAdminConfig = {
   hasClientId: boolean;
   hasClientSecret: boolean;
   hasRequiredSettings: boolean;
+  docSourceModalStyleUrls: string[];
+  driveBrowserScriptUrl: string;
+  driveBrowserStyleUrls: string[];
 };
 
 declare global {
@@ -40,7 +43,10 @@ const fallbackConfig: DocSyncWPAdminConfig = {
   syncInterval: 'off',
   hasClientId: false,
   hasClientSecret: false,
-  hasRequiredSettings: false
+  hasRequiredSettings: false,
+  docSourceModalStyleUrls: [],
+  driveBrowserScriptUrl: '',
+  driveBrowserStyleUrls: []
 };
 
 export const getAdminConfig = (): DocSyncWPAdminConfig => {

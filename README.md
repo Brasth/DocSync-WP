@@ -36,7 +36,7 @@ Watch frontend assets during development:
 pnpm dev
 ```
 
-The Vite build writes hashed assets plus `build/manifest.json` and `build/manifest.post-sync.json`. WordPress reads those manifests and enqueues the central admin bundle on the Brasth Document Sync setup and sources pages, plus the post sync bundle on enabled post/page edit and list screens.
+The Vite build writes hashed assets plus screen-specific manifests for Setup, Sources, Logs, Post Sync, and the lazy Drive browser. WordPress reads those manifests and enqueues only the bundle needed by the current plugin admin screen, plus the post sync bundle on enabled post/page edit and list screens.
 
 ## Google Cloud Setup
 

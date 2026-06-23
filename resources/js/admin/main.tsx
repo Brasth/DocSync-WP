@@ -1,1 +1,1 @@
-import './entries/admin-entry';
+import './entries/setup-entry';

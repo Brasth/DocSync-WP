@@ -1,11 +1,11 @@
 {
   "name": "brasth-document-sync-for-google-docs",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite build --watch --mode admin",
-    "build": "vite build --mode admin && vite build --mode post-sync",
+    "dev": "vite build --watch --mode setup",
+    "build": "vite build --mode setup && vite build --mode sources && vite build --mode logs && vite build --mode post-sync && vite build --mode doc-source-modal && vite build --mode drive-browser",
     "lint": "pnpm lint:js && pnpm lint:no-phpcs-ignore && pnpm lint:screenshots && pnpm lint:blueprint",
     "lint:fix": "eslint . --fix",
     "lint:js": "eslint . --max-warnings=0",

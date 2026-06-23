@@ -55,14 +55,14 @@ The Google Docs Sync Admin Actions implementation is complete in code. The self-
 - per-source sync events retain the latest 50 diagnostic-safe entries for queued, progress, fallback, terminal, error, and stale-recovery states
 - post editor background sync completion applies synced content directly when no unsaved edits are present and otherwise offers an explicit apply action
 - terminal sync states no longer show stale 100 percent progress bars after reload
-- WordPress.org `readme.txt`, `LICENSE`, listing assets, source-inclusive distribution rules, and current `1.0.3` release metadata
+- WordPress.org `readme.txt`, `LICENSE`, listing assets, source-inclusive distribution rules, and current `1.0.6` release metadata
 - GitHub Release workflow that builds `brasth-document-sync-for-google-docs-v<version>.zip`, uploads it as an Actions artifact, and attaches it to the release asset list
 - privacy policy suggested content for Google OAuth, Drive API, Docs API, stored credentials/tokens, linked metadata, imported media, retention, and uninstall behavior
 - legacy Google Picker settings and unused Markdown/CommonMark runtime path removed before public release
 - common REST login/nonce/settings permission checks centralized
 - Google account connection disclosure and disconnect confirmation added to setup UI
 - setup wizard and README now require Drive API and Docs API in the same Google Cloud project
-- entry-specific CSS files with shared and component partials for admin setup, Sources, and post sync UI maintenance
+- entry-specific CSS files with shared and component partials for Setup, Sources, Logs, post sync, source modal, and Drive browser UI maintenance
 - HTML ZIP import that sideloads exported images into Media Library and rewrites content URLs
 - attachment dedupe by Google file ID, asset path, and image hash
 - per-post sync state and error tracking

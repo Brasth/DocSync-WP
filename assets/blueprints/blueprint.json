@@ -2,7 +2,7 @@
   "$schema": "https://playground.wordpress.net/blueprint-schema.json",
   "landingPage": "/wp-admin/admin.php?page=brasth-document-sync-for-google-docs-sources",
   "preferredVersions": {
-    "php": "8.1",
+    "php": "8.2",
     "wp": "6.4"
   },
   "phpExtensionBundles": [

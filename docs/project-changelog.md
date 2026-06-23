@@ -1,5 +1,12 @@
 # Project Changelog
 
+## 2026-06-23 - 1.0.6 combined hardening/performance scope
+
+- realigned the roadmap so `1.0.5` remains the released Elementor scope and `1.0.6` carries the combined hardening and performance patch
+- bumped plugin header version, `DOCSYNC_WP_VERSION`, `readme.txt` stable tag, and package metadata to `1.0.6`
+- split Setup, Sources, and Logs admin bundles into screen-specific Vite entries and manifests
+- moved the Drive browser into a lazy post-sync modal bundle and removed the unused post-sync `wp-data` dependency
+
 Last updated: 2026-06-20
 
 ## 2026-06-20 - 1.0.3 Release Hardening

@@ -1,11 +1,12 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import { createElement } from '@wordpress/element';
+import { createElement, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
-import { DriveBrowserPanel } from '../drive-browser/drive-browser-panel';
 import { AdminButton } from '../../shared/ui/admin-button';
 import { AdminNotice } from '../../shared/ui/admin-notice';
 import type { SyncResult } from '../../api';
+import { getAdminConfig } from '../../config';
+import { ensureLazyStyle, useLazyDriveBrowserPanel } from './lazy-drive-browser-panel';
 import { AdvancedSourcePanel } from './advanced-source-panel';
 import { SourceModeTabs } from './source-mode-tabs';
 import { type DocSourceTarget, useDocSourceModal } from './use-doc-source-modal';
@@ -23,6 +24,18 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
   const modal = useDocSourceModal({ isOpen, target, onClose, onCompleted });
   const uiMode = modal.uiMode;
   const compatibility = modal.metadata?.syncCompatibility;
+  const driveBrowser = useLazyDriveBrowserPanel(isOpen && uiMode === 'browse');
+  const DriveBrowserPanel = driveBrowser.Component;
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    getAdminConfig().docSourceModalStyleUrls.forEach((href, index) => {
+      ensureLazyStyle(href, `docsync-wp-doc-source-modal-style-${index}`);
+    });
+  }, [isOpen]);
 
   if (!isOpen || !target) {
     return null;
@@ -65,11 +78,17 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
 
           <div className="docsync-wp-modal__body">
             {uiMode === 'browse' ? (
-              <DriveBrowserPanel
-                busy={modal.busy}
-                onSelect={modal.selectDocument}
-                selectedDocument={modal.metadata}
-              />
+              DriveBrowserPanel ? (
+                <DriveBrowserPanel
+                  busy={modal.busy}
+                  onSelect={modal.selectDocument}
+                  selectedDocument={modal.metadata}
+                />
+              ) : (
+                <section aria-busy={driveBrowser.loading} className="docsync-wp-drive-browser-loading" role="status">
+                  <p>{driveBrowser.error || __('Loading Google Drive browser...', 'brasth-document-sync-for-google-docs')}</p>
+                </section>
+              )
             ) : null}
 
             {uiMode !== 'browse' ? (

@@ -51,8 +51,8 @@ flowchart LR
 ### Setup Admin Page
 
 - Entry point: `src/Admin/AdminPage.php`
-- React mount: `resources/js/admin/entries/admin-entry.tsx`
-- Main UI: `resources/js/admin/app/admin-app.tsx`
+- React mount: `resources/js/admin/entries/setup-entry.tsx`
+- Main UI: `resources/js/admin/app/setup-app.tsx`
 
 Responsibilities:
 
@@ -65,7 +65,7 @@ Responsibilities:
 
 - Entry point: `src/Admin/AdminPage.php`
 - Menu slug: `brasth-document-sync-for-google-docs-sources`
-- React mount: `resources/js/admin/entries/admin-entry.tsx`
+- React mount: `resources/js/admin/entries/sources-entry.tsx`
 
 Responsibilities:
 
@@ -79,7 +79,7 @@ Responsibilities:
 
 - Entry point: `src/Admin/AdminPage.php`
 - Menu slug: `brasth-document-sync-for-google-docs-logs`
-- React mount: `resources/js/admin/entries/admin-entry.tsx`
+- React mount: `resources/js/admin/entries/logs-entry.tsx`
 
 Responsibilities:
 
@@ -101,13 +101,13 @@ Responsibilities:
 - show active sync progress, terminal status, last sync, and error state
 - prompt or reload the editor after background sync completes so stale editor content is not silently shown
 
-The Google Doc source modal uses Radix UI Dialog and Tabs primitives for focus management, escape handling, and keyboard tab navigation. WordPress packages provide the runtime React provider, REST client, i18n, URL helpers, a11y announcements, simple admin controls, and post editor dirty-state access for safe reload behavior.
+The Google Doc source modal uses Radix UI Dialog and Tabs primitives for focus management, escape handling, and keyboard tab navigation. WordPress packages provide the runtime React provider, REST client, i18n, URL helpers, a11y announcements, and simple admin controls. The Drive browser panel is a lazy IIFE bundle loaded only when the modal browse mode opens.
 
-The post sync UI imports `resources/css/post-sync-entry.css`, which composes shared CSS primitives with modal, tab, Drive browser, advanced source, and post sync box partials.
+The post sync UI imports `resources/css/post-sync-entry.css` for initial controls. Source modal CSS and Drive browser CSS are separate lazy assets exposed through `window.DocSyncWPAdmin`.
 
 ## Frontend Architecture
 
-- Vite builds two bundles from `resources/js/admin/entries/`.
+- Vite builds screen-specific Setup, Sources, Logs, post-sync, source-modal-style, and Drive-browser entries from `resources/js/admin/entries/`.
 - REST access is split under `resources/js/admin/api/`, with `apiFetch` imported from `@wordpress/api-fetch` and query strings built with `@wordpress/url`.
 - Stateful workflows live in feature hooks, including Drive browser, source modal, setup/Sources admin, and post-sync actions.
 - Shared UI atoms under `resources/js/admin/shared/ui/` wrap WordPress components where useful while preserving existing sync CSS classes.
@@ -287,7 +287,7 @@ Later phases (1.2.0+) add bulk Drive folder import, a custom preset builder, a P
 - self-managed Google Cloud setup must enable both Drive API and Docs API; no additional OAuth scope is required beyond `drive.readonly`
 - the Drive browser loads pages of 50 results and uses an IntersectionObserver sentinel for infinite loading
 - the post-list picker is fullscreen below the WordPress admin bar, closes after background queueing, and uses toast polling feedback instead of blocking the modal
-- setup and Sources screens import `resources/css/admin-entry.css`; the legacy `resources/css/admin.css` file remains as a compatibility wrapper
+- Setup, Sources, and Logs screens import screen-specific CSS; the legacy `resources/css/admin.css` file remains as a compatibility wrapper
 - the current connection mode is `self_managed`; a later managed connector can own the verified Google app without proxying document content by default
 - pasted Docs or raw file IDs only work when the connected Google account already has access
 - Vite externalizes Radix React peer imports and WordPress package imports to WordPress globals, and aliases Radix JSX runtime imports to the local WordPress JSX runtime shim; avoid direct app imports from `react` or `react-dom`
