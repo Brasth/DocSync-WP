@@ -11,6 +11,9 @@ on:
     branches-ignore:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   php-lint:
     name: PHP Lint (PHPCS)

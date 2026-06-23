@@ -11,6 +11,14 @@ PLUGIN_SLUG="brasth-document-sync-for-google-docs"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 OUTPUT_DIR="${1:-${PROJECT_ROOT}}"
+REQUIRED_BUILD_MANIFESTS=(
+  "manifest.setup.json"
+  "manifest.sources.json"
+  "manifest.logs.json"
+  "manifest.post-sync.json"
+  "manifest.doc-source-modal.json"
+  "manifest.drive-browser.json"
+)
 VERSION="$(
   awk -F':' '/^[[:space:]]*\*[[:space:]]*Version:/ {gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2; exit}' \
     "${PROJECT_ROOT}/${PLUGIN_SLUG}.php"
@@ -33,8 +41,34 @@ cleanup() {
 }
 trap cleanup EXIT
 
+has_build_manifests() {
+  local build_dir="$1"
+  local manifest
+
+  for manifest in "${REQUIRED_BUILD_MANIFESTS[@]}"; do
+    if [ ! -f "${build_dir}/${manifest}" ]; then
+      return 1
+    fi
+  done
+
+  return 0
+}
+
+validate_build_manifests() {
+  local build_dir="$1"
+  local label="$2"
+  local manifest
+
+  for manifest in "${REQUIRED_BUILD_MANIFESTS[@]}"; do
+    if [ ! -f "${build_dir}/${manifest}" ]; then
+      echo "${label}: build/${manifest} is missing." >&2
+      exit 1
+    fi
+  done
+}
+
 # Build assets if missing
-if [ ! -f "${PROJECT_ROOT}/build/manifest.json" ]; then
+if ! has_build_manifests "${PROJECT_ROOT}/build"; then
   echo "Built assets not found. Running pnpm build..."
   if ! command -v pnpm >/dev/null 2>&1; then
     echo "pnpm is not installed. Install it first: https://pnpm.io/installation" >&2
@@ -50,10 +84,7 @@ printf '%s\n' '*.zip' >> "${RSYNC_EXCLUDES}"
 rsync -a "${PROJECT_ROOT}/" "${STAGING_DIR}/${PLUGIN_SLUG}/" --exclude-from="${RSYNC_EXCLUDES}"
 
 # Validate
-if [ ! -f "${STAGING_DIR}/${PLUGIN_SLUG}/build/manifest.json" ]; then
-  echo "Staging failed: build/manifest.json is missing." >&2
-  exit 1
-fi
+validate_build_manifests "${STAGING_DIR}/${PLUGIN_SLUG}/build" "Staging failed"
 
 # Create ZIP
 rm -f "${ZIP_PATH}"

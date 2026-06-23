@@ -127,10 +127,20 @@ jobs:
             exit 1
           fi
 
-          if [ ! -f "build/manifest.json" ]; then
-            echo "Missing build/manifest.json."
-            exit 1
-          fi
+          REQUIRED_BUILD_MANIFESTS=(
+            manifest.setup.json
+            manifest.sources.json
+            manifest.logs.json
+            manifest.post-sync.json
+            manifest.doc-source-modal.json
+            manifest.drive-browser.json
+          )
+          for manifest in "${REQUIRED_BUILD_MANIFESTS[@]}"; do
+            if [ ! -f "build/${manifest}" ]; then
+              echo "Missing build/${manifest}."
+              exit 1
+            fi
+          done
 
           if [ ! -f "readme.txt" ]; then
             echo "Missing readme.txt."

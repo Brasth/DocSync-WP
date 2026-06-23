@@ -6,8 +6,10 @@
 - bumped plugin header version, `DOCSYNC_WP_VERSION`, `readme.txt` stable tag, and package metadata to `1.0.6`
 - split Setup, Sources, and Logs admin bundles into screen-specific Vite entries and manifests
 - moved the Drive browser into a lazy post-sync modal bundle and removed the unused post-sync `wp-data` dependency
+- aligned ZIP and deploy validation with the screen-specific Vite manifests
+- limited the PR lint workflow `GITHUB_TOKEN` permissions to read-only contents access
 
-Last updated: 2026-06-20
+Last updated: 2026-06-23
 
 ## 2026-06-20 - 1.0.3 Release Hardening
 
@@ -550,7 +552,7 @@ Updated the admin UI and coding guardrails:
 
 Status: completed in codebase
 
-Fixed GitHub packaging artifacts so downloaded workflow artifacts are directly installable by WordPress instead of containing a nested plugin ZIP. Added a workflow validation gate for `brasth-document-sync-for-google-docs/brasth-document-sync-for-google-docs.php`, `vendor/autoload.php`, and `build/manifest.json`.
+Fixed GitHub packaging artifacts so downloaded workflow artifacts are directly installable by WordPress instead of containing a nested plugin ZIP. Added a workflow validation gate for `brasth-document-sync-for-google-docs/brasth-document-sync-for-google-docs.php`, `vendor/autoload.php`, and the built Vite manifests.
 
 ## 2026-05-18 - PHPCS CI Fixes
 

@@ -140,7 +140,12 @@ jobs:
           REQUIRED_FILES=(
             "${PLUGIN_SLUG}/${PLUGIN_SLUG}.php"
             "${PLUGIN_SLUG}/vendor/autoload.php"
-            "${PLUGIN_SLUG}/build/manifest.json"
+            "${PLUGIN_SLUG}/build/manifest.setup.json"
+            "${PLUGIN_SLUG}/build/manifest.sources.json"
+            "${PLUGIN_SLUG}/build/manifest.logs.json"
+            "${PLUGIN_SLUG}/build/manifest.post-sync.json"
+            "${PLUGIN_SLUG}/build/manifest.doc-source-modal.json"
+            "${PLUGIN_SLUG}/build/manifest.drive-browser.json"
             "${PLUGIN_SLUG}/readme.txt"
           )
 
