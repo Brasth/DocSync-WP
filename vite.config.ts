@@ -3,8 +3,21 @@ import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 
 const entryByMode: Record<string, string> = {
-  admin: 'resources/js/admin/entries/admin-entry.tsx',
-  'post-sync': 'resources/js/admin/entries/post-sync-entry.tsx'
+  setup: 'resources/js/admin/entries/setup-entry.tsx',
+  sources: 'resources/js/admin/entries/sources-entry.tsx',
+  logs: 'resources/js/admin/entries/logs-entry.tsx',
+  'post-sync': 'resources/js/admin/entries/post-sync-entry.tsx',
+  'doc-source-modal': 'resources/js/admin/entries/doc-source-modal-entry.ts',
+  'drive-browser': 'resources/js/admin/entries/drive-browser-entry.tsx'
+};
+
+const entryNameByMode: Record<string, string> = {
+  setup: 'setup',
+  sources: 'sources',
+  logs: 'logs',
+  'post-sync': 'postSync',
+  'doc-source-modal': 'docSourceModal',
+  'drive-browser': 'driveBrowser'
 };
 
 const wordpressExternals = new Set([
@@ -19,8 +32,8 @@ const wordpressExternals = new Set([
 ]);
 
 export default defineConfig(({ mode }) => {
-  const entryName = mode === 'post-sync' ? 'postSync' : 'admin';
-  const entryPath = entryByMode[mode] ?? entryByMode.admin;
+  const entryName = entryNameByMode[mode] ?? entryNameByMode.setup;
+  const entryPath = entryByMode[mode] ?? entryByMode.setup;
 
   return {
     plugins: [tailwindcss()],
@@ -39,9 +52,9 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       outDir: 'build',
-      emptyOutDir: mode !== 'post-sync',
+      emptyOutDir: mode === 'setup',
       cssCodeSplit: false,
-      manifest: mode === 'post-sync' ? 'manifest.post-sync.json' : 'manifest.json',
+      manifest: `manifest.${mode}.json`,
       modulePreload: false,
       sourcemap: true,
       rollupOptions: {
@@ -62,7 +75,7 @@ export default defineConfig(({ mode }) => {
         },
         output: {
           format: 'iife',
-          name: entryName === 'postSync' ? 'DocSyncWPPostSyncBundle' : 'DocSyncWPAdminBundle',
+          name: `DocSyncWP${entryName.charAt(0).toUpperCase()}${entryName.slice(1)}Bundle`,
           globals: {
             '@wordpress/a11y': 'wp.a11y',
             '@wordpress/api-fetch': 'wp.apiFetch',

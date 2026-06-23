@@ -1,4 +1,5 @@
 @import "./shared/base.css";
 @import "./shared/primitives.css";
-@import "./components/post-sync-box.css";
+@import "./components/admin-shell.css";
+@import "./components/sync-logs.css";
 @import "./shared/responsive.css";

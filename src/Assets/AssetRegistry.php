@@ -18,13 +18,23 @@ defined( 'ABSPATH' ) || exit;
  * Enqueues compiled admin assets from Vite manifests.
  */
 final class AssetRegistry {
-	private const ADMIN_ENTRY        = 'resources/js/admin/entries/admin-entry.tsx';
-	private const POST_SYNC_ENTRY    = 'resources/js/admin/entries/post-sync-entry.tsx';
-	private const ADMIN_MANIFEST     = 'manifest.json';
-	private const POST_SYNC_MANIFEST = 'manifest.post-sync.json';
-	private const ADMIN_HANDLE       = 'docsync-wp-admin';
-	private const POST_SYNC_HANDLE   = 'docsync-wp-post-sync';
-	private const POST_SYNC_HOOKS    = array( 'post.php', 'post-new.php', 'edit.php' );
+	private const SETUP_ENTRY               = 'resources/js/admin/entries/setup-entry.tsx';
+	private const SOURCES_ENTRY             = 'resources/js/admin/entries/sources-entry.tsx';
+	private const LOGS_ENTRY                = 'resources/js/admin/entries/logs-entry.tsx';
+	private const POST_SYNC_ENTRY           = 'resources/js/admin/entries/post-sync-entry.tsx';
+	private const DOC_SOURCE_MODAL_ENTRY    = 'resources/js/admin/entries/doc-source-modal-entry.ts';
+	private const DRIVE_BROWSER_ENTRY       = 'resources/js/admin/entries/drive-browser-entry.tsx';
+	private const SETUP_MANIFEST            = 'manifest.setup.json';
+	private const SOURCES_MANIFEST          = 'manifest.sources.json';
+	private const LOGS_MANIFEST             = 'manifest.logs.json';
+	private const POST_SYNC_MANIFEST        = 'manifest.post-sync.json';
+	private const DOC_SOURCE_MODAL_MANIFEST = 'manifest.doc-source-modal.json';
+	private const DRIVE_BROWSER_MANIFEST    = 'manifest.drive-browser.json';
+	private const SETUP_HANDLE              = 'docsync-wp-setup';
+	private const SOURCES_HANDLE            = 'docsync-wp-sources';
+	private const LOGS_HANDLE               = 'docsync-wp-logs';
+	private const POST_SYNC_HANDLE          = 'docsync-wp-post-sync';
+	private const POST_SYNC_HOOKS           = array( 'post.php', 'post-new.php', 'edit.php' );
 
 	/**
 	 * Absolute plugin directory path.
@@ -77,8 +87,10 @@ final class AssetRegistry {
 	public function enqueueAdminApp( string $hook ): void {
 		$plugin_page = $GLOBALS['plugin_page'] ?? '';
 
-		if ( in_array( $plugin_page, array( AdminPage::MENU_SLUG, AdminPage::SOURCES_MENU_SLUG, AdminPage::LOGS_MENU_SLUG ), true ) && current_user_can( 'manage_options' ) ) {
-			$this->enqueueEntry( self::ADMIN_ENTRY, self::ADMIN_MANIFEST, self::ADMIN_HANDLE );
+		$admin_entry = $this->adminEntryForPluginPage( is_string( $plugin_page ) ? $plugin_page : '' );
+
+		if ( null !== $admin_entry && current_user_can( 'manage_options' ) ) {
+			$this->enqueueEntry( $admin_entry['entry'], $admin_entry['manifest'], $admin_entry['handle'] );
 			return;
 		}
 
@@ -92,12 +104,9 @@ final class AssetRegistry {
 	 */
 	public function renderMissingBuildNotice(): void {
 		$plugin_page = $GLOBALS['plugin_page'] ?? '';
+		$admin_entry = $this->adminEntryForPluginPage( is_string( $plugin_page ) ? $plugin_page : '' );
 
-		$is_admin_app_screen = in_array(
-			$plugin_page,
-			array( AdminPage::MENU_SLUG, AdminPage::SOURCES_MENU_SLUG, AdminPage::LOGS_MENU_SLUG ),
-			true
-		) && current_user_can( 'manage_options' );
+		$is_admin_app_screen = null !== $admin_entry && current_user_can( 'manage_options' );
 
 		$is_post_sync_screen = false;
 
@@ -115,17 +124,25 @@ final class AssetRegistry {
 			return;
 		}
 
-		$missing_entry = null;
+		$missing_entries = array();
 
-		if ( $is_admin_app_screen && ! $this->hasBuild( self::ADMIN_ENTRY, self::ADMIN_MANIFEST ) ) {
-			$missing_entry = 'Brasth Document Sync admin';
+		if ( $is_admin_app_screen && null !== $admin_entry && ! $this->hasBuild( $admin_entry['entry'], $admin_entry['manifest'] ) ) {
+			$missing_entries[] = $admin_entry['label'];
 		}
 
 		if ( $is_post_sync_screen && ! $this->hasBuild( self::POST_SYNC_ENTRY, self::POST_SYNC_MANIFEST ) ) {
-			$missing_entry = 'Brasth Document Sync post actions';
+			$missing_entries[] = 'Brasth Document Sync post actions';
 		}
 
-		if ( null === $missing_entry ) {
+		if ( $is_post_sync_screen && ! $this->hasBuild( self::DRIVE_BROWSER_ENTRY, self::DRIVE_BROWSER_MANIFEST ) ) {
+			$missing_entries[] = 'Brasth Document Sync Drive browser';
+		}
+
+		if ( $is_post_sync_screen && ! $this->hasBuild( self::DOC_SOURCE_MODAL_ENTRY, self::DOC_SOURCE_MODAL_MANIFEST ) ) {
+			$missing_entries[] = 'Brasth Document Sync source modal';
+		}
+
+		if ( array() === $missing_entries ) {
 			return;
 		}
 
@@ -137,7 +154,7 @@ final class AssetRegistry {
 					sprintf(
 						/* translators: 1: asset group, 2: command to build frontend assets. */
 						__( '%1$s assets are not built yet. Run %2$s before using this screen.', 'brasth-document-sync-for-google-docs' ),
-						esc_html( $missing_entry ),
+						esc_html( implode( ', ', $missing_entries ) ),
 						'<code>pnpm build</code>'
 					),
 					array(
@@ -156,7 +173,7 @@ final class AssetRegistry {
 	 * @param string $entry_name    Vite entry name.
 	 * @param string $manifest_file Manifest file name.
 	 */
-	public function hasBuild( string $entry_name = self::ADMIN_ENTRY, string $manifest_file = self::ADMIN_MANIFEST ): bool {
+	public function hasBuild( string $entry_name = self::SETUP_ENTRY, string $manifest_file = self::SETUP_MANIFEST ): bool {
 		$entry = $this->getManifestEntry( $entry_name, $manifest_file );
 
 		return null !== $entry
@@ -188,7 +205,7 @@ final class AssetRegistry {
 		wp_enqueue_script(
 			$handle,
 			$this->plugin_url . 'build/' . ltrim( $entry['file'], '/' ),
-			$this->scriptDependencies( $handle ),
+			$this->scriptDependencies(),
 			$this->assetVersion( $script_path ),
 			true
 		);
@@ -222,17 +239,47 @@ final class AssetRegistry {
 	/**
 	 * Get WordPress script dependencies for a bundle.
 	 *
-	 * @param string $handle Script handle.
 	 * @return array<int,string>
 	 */
-	private function scriptDependencies( string $handle ): array {
-		$dependencies = array( 'wp-a11y', 'wp-api-fetch', 'wp-components', 'wp-element', 'wp-i18n', 'wp-url' );
+	private function scriptDependencies(): array {
+		return array( 'wp-a11y', 'wp-api-fetch', 'wp-components', 'wp-element', 'wp-i18n', 'wp-url' );
+	}
 
-		if ( self::POST_SYNC_HANDLE === $handle ) {
-			$dependencies[] = 'wp-data';
+	/**
+	 * Get the Vite entry metadata for a plugin admin page.
+	 *
+	 * @param string $plugin_page Current plugin page slug.
+	 * @return array{entry:string,manifest:string,handle:string,label:string}|null
+	 */
+	private function adminEntryForPluginPage( string $plugin_page ): ?array {
+		if ( AdminPage::MENU_SLUG === $plugin_page ) {
+			return array(
+				'entry'    => self::SETUP_ENTRY,
+				'manifest' => self::SETUP_MANIFEST,
+				'handle'   => self::SETUP_HANDLE,
+				'label'    => 'Brasth Document Sync setup',
+			);
 		}
 
-		return $dependencies;
+		if ( AdminPage::SOURCES_MENU_SLUG === $plugin_page ) {
+			return array(
+				'entry'    => self::SOURCES_ENTRY,
+				'manifest' => self::SOURCES_MANIFEST,
+				'handle'   => self::SOURCES_HANDLE,
+				'label'    => 'Brasth Document Sync sources',
+			);
+		}
+
+		if ( AdminPage::LOGS_MENU_SLUG === $plugin_page ) {
+			return array(
+				'entry'    => self::LOGS_ENTRY,
+				'manifest' => self::LOGS_MANIFEST,
+				'handle'   => self::LOGS_HANDLE,
+				'label'    => 'Brasth Document Sync logs',
+			);
+		}
+
+		return null;
 	}
 
 	/**
@@ -331,20 +378,86 @@ final class AssetRegistry {
 		$settings = $this->settings->getPublicSettings();
 
 		return array(
-			'restUrl'             => esc_url_raw( rest_url( 'brasth-document-sync-for-google-docs/v1' ) ),
-			'nonce'               => wp_create_nonce( 'wp_rest' ),
-			'pluginUrl'           => esc_url_raw( $this->plugin_url ),
-			'version'             => $this->version,
-			'currentUserId'       => get_current_user_id(),
-			'clientId'            => $settings['client_id'],
-			'connectionMode'      => $settings['connection_mode'],
-			'enabledPostTypes'    => $settings['enabled_post_types'],
-			'availablePostTypes'  => $this->settings->getAvailablePostTypes(),
-			'defaultExportFormat' => $settings['default_export_format'],
-			'syncInterval'        => $settings['sync_interval'],
-			'hasClientId'         => (bool) $settings['has_client_id'],
-			'hasClientSecret'     => (bool) $settings['has_client_secret'],
-			'hasRequiredSettings' => (bool) $settings['has_required_settings'],
+			'restUrl'                 => esc_url_raw( rest_url( 'brasth-document-sync-for-google-docs/v1' ) ),
+			'nonce'                   => wp_create_nonce( 'wp_rest' ),
+			'pluginUrl'               => esc_url_raw( $this->plugin_url ),
+			'version'                 => $this->version,
+			'currentUserId'           => get_current_user_id(),
+			'clientId'                => $settings['client_id'],
+			'connectionMode'          => $settings['connection_mode'],
+			'enabledPostTypes'        => $settings['enabled_post_types'],
+			'availablePostTypes'      => $this->settings->getAvailablePostTypes(),
+			'defaultExportFormat'     => $settings['default_export_format'],
+			'syncInterval'            => $settings['sync_interval'],
+			'hasClientId'             => (bool) $settings['has_client_id'],
+			'hasClientSecret'         => (bool) $settings['has_client_secret'],
+			'hasRequiredSettings'     => (bool) $settings['has_required_settings'],
+			'docSourceModalStyleUrls' => $this->entryStyleUrls( self::DOC_SOURCE_MODAL_ENTRY, self::DOC_SOURCE_MODAL_MANIFEST ),
+			'driveBrowserScriptUrl'   => $this->entryScriptUrl( self::DRIVE_BROWSER_ENTRY, self::DRIVE_BROWSER_MANIFEST ),
+			'driveBrowserStyleUrls'   => $this->entryStyleUrls( self::DRIVE_BROWSER_ENTRY, self::DRIVE_BROWSER_MANIFEST ),
+		);
+	}
+
+	/**
+	 * Get a built entry script URL with its asset version.
+	 *
+	 * @param string $entry_name    Vite entry name.
+	 * @param string $manifest_file Manifest file name.
+	 */
+	private function entryScriptUrl( string $entry_name, string $manifest_file ): string {
+		$entry = $this->getManifestEntry( $entry_name, $manifest_file );
+
+		if ( null === $entry || empty( $entry['file'] ) || ! is_string( $entry['file'] ) ) {
+			return '';
+		}
+
+		return $this->buildAssetUrl( $entry['file'] );
+	}
+
+	/**
+	 * Get built entry stylesheet URLs with asset versions.
+	 *
+	 * @param string $entry_name    Vite entry name.
+	 * @param string $manifest_file Manifest file name.
+	 * @return array<int,string>
+	 */
+	private function entryStyleUrls( string $entry_name, string $manifest_file ): array {
+		$entry = $this->getManifestEntry( $entry_name, $manifest_file );
+
+		if ( null === $entry ) {
+			return array();
+		}
+
+		$urls = array();
+
+		foreach ( $this->getStylesheetFiles( $entry, $manifest_file ) as $css_file ) {
+			$url = $this->buildAssetUrl( $css_file );
+
+			if ( '' !== $url ) {
+				$urls[] = $url;
+			}
+		}
+
+		return $urls;
+	}
+
+	/**
+	 * Build a versioned URL for a built asset.
+	 *
+	 * @param string $asset_file Built asset file relative to build directory.
+	 */
+	private function buildAssetUrl( string $asset_file ): string {
+		$asset_file = ltrim( $asset_file, '/' );
+		$asset_path = $this->plugin_path . 'build/' . $asset_file;
+
+		if ( ! file_exists( $asset_path ) ) {
+			return '';
+		}
+
+		return add_query_arg(
+			'ver',
+			rawurlencode( $this->assetVersion( $asset_path ) ),
+			$this->plugin_url . 'build/' . $asset_file
 		);
 	}
 

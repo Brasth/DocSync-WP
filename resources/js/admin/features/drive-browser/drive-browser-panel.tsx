@@ -9,13 +9,13 @@ import { DriveBrowserTable, DriveBrowserTableSkeleton } from './drive-browser-ta
 import { DriveBrowserToolbar } from './drive-browser-toolbar';
 import { useDriveBrowser } from './use-drive-browser';
 
-type Props = {
+export type DriveBrowserPanelProps = {
   busy: boolean;
   selectedDocument: DocumentMetadata | null;
   onSelect: (document: DocumentMetadata | null) => void;
 };
 
-export const DriveBrowserPanel = ({ busy, selectedDocument, onSelect }: Props): JSX.Element => {
+export const DriveBrowserPanel = ({ busy, selectedDocument, onSelect }: DriveBrowserPanelProps): JSX.Element => {
   const browser = useDriveBrowser({ onSelect });
 
   return (

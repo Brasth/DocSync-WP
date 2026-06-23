@@ -4,7 +4,7 @@ Tags: google-docs, google-drive, content-sync, editorial-workflow, blocks
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 1.0.5
+Stable tag: 1.0.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -105,7 +105,7 @@ To rebuild the admin assets from source:
 2. Install frontend dependencies with `pnpm install --frozen-lockfile`.
 3. Build assets with `pnpm build`.
 
-The build uses Vite and writes `build/manifest.json`, `build/manifest.post-sync.json`, and hashed CSS/JS assets. Runtime React is provided by WordPress through `wp-element`.
+The build uses Vite and writes screen-specific manifests for Setup, Sources, Logs, Post Sync, and the lazy Drive browser, plus hashed CSS/JS assets. Runtime React is provided by WordPress through `wp-element`.
 
 == Screenshots ==
 
@@ -116,6 +116,14 @@ The build uses Vite and writes `build/manifest.json`, `build/manifest.post-sync.
 5. Sync logs with diagnostic events and source status filters.
 
 == Changelog ==
+
+= 1.0.6 =
+
+* Combined the roadmap hardening and performance patch scope after 1.0.5 shipped.
+* Split Setup, Sources, and Logs into separate admin bundles with screen-specific CSS.
+* Lazy-loaded the Google Drive browser assets from the post sync modal.
+* Removed an unused WordPress data script dependency from post sync admin screens.
+* Improved loading semantics for admin and Drive browser states.
 
 = 1.0.5 =
 
