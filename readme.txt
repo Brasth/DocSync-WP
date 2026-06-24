@@ -4,7 +4,7 @@ Tags: google-docs, google-drive, content-sync, editorial-workflow, blocks
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 1.0.6
+Stable tag: 1.0.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -116,6 +116,15 @@ The build uses Vite and writes screen-specific manifests for Setup, Sources, Log
 5. Sync logs with diagnostic events and source status filters.
 
 == Changelog ==
+
+= 1.0.7 =
+
+* Updated npm dev dependencies to latest patch and minor compatible versions.
+* Fixed known development-only vulnerabilities in Vite and js-yaml via dependency updates.
+* Expanded CI PHP lint matrix to PHP 8.2 and 8.3 with PHPCompatibilityWP 8.3 checks.
+* Added Composer and pnpm security audits to the CI pipeline.
+* Verified PHP 8.2/8.3 compatibility through PHPCompatibilityWP static analysis.
+* Verified REST permissions, media sideloading, OAuth token storage, and admin output escaping.
 
 = 1.0.6 =
 
