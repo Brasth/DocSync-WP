@@ -1,0 +1,54 @@
+.docsync-wp-modal {
+  --docsync-navy: #0f172a;
+  --docsync-cyan: #22d3ee;
+  --docsync-blue: #2563eb;
+  --docsync-teal: #0f766e;
+  --docsync-teal-bg: #e8f3ee;
+  --docsync-teal-text: #175a44;
+  --docsync-error: #b42318;
+  --docsync-error-bg: #f8d7da;
+  --docsync-warning: #8a4b00;
+  --docsync-warning-bg: #fff8e5;
+  --docsync-card-bg: #fff;
+  --docsync-card-border: #d9e2e1;
+  --docsync-text-primary: #17202a;
+  --docsync-text-secondary: #646970;
+  --docsync-text-muted: #50575e;
+
+  color: var(--docsync-text-primary);
+  font-size: 13px;
+}
+
+.docsync-wp-modal *,
+.docsync-wp-modal *::before,
+.docsync-wp-modal *::after {
+  box-sizing: border-box;
+}
+
+.docsync-wp-modal .button-primary,
+.docsync-wp-modal .button-primary:focus,
+.docsync-wp-modal .button-primary:active {
+  background: var(--docsync-blue);
+  border-color: var(--docsync-blue);
+  color: #fff;
+}
+
+.docsync-wp-modal .button-primary:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  color: #fff;
+}
+
+.docsync-wp-modal .button-secondary,
+.docsync-wp-modal .button-secondary:focus,
+.docsync-wp-modal .button-secondary:active {
+  background: #fff;
+  border-color: var(--docsync-blue);
+  color: var(--docsync-blue);
+}
+
+.docsync-wp-modal .button-secondary:hover {
+  background: #eff6ff;
+  border-color: var(--docsync-blue);
+  color: var(--docsync-blue);
+}

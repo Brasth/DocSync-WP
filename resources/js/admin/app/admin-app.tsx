@@ -54,9 +54,13 @@ const SetupSourcesApp = ({ view }: { view: SetupAdminView }): JSX.Element => {
           </div>
         </div>
       ) : !app.settings ? (
-        <section className="docsync-wp-card">
-          <p>{__('Loading settings...', 'brasth-document-sync-for-google-docs')}</p>
-        </section>
+        <div className="docsync-wp-admin-grid docsync-wp-admin-grid--single">
+          <div className="docsync-wp-admin-grid__main">
+            <section aria-busy="true" className="docsync-wp-card" role="status">
+              <p>{__('Loading settings...', 'brasth-document-sync-for-google-docs')}</p>
+            </section>
+          </div>
+        </div>
       ) : view === 'sources' ? (
         <div className="docsync-wp-admin-grid docsync-wp-admin-grid--single">
           {app.trackedSourceIds.map((postId) => (

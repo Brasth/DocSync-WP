@@ -1,0 +1,78 @@
+.docsync-wp-modal .docsync-wp-drive-browser {
+  margin-bottom: 0;
+}
+
+.docsync-wp-modal .docsync-wp-drive-browser__heading {
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.docsync-wp-modal .docsync-wp-drive-browser__breadcrumb {
+  flex: 0 1 auto;
+}
+
+.docsync-wp-modal .docsync-wp-drive-browser__breadcrumb ol {
+  justify-content: flex-start;
+}
+
+.docsync-wp-modal .docsync-wp-drive-browser__toolbar {
+  align-items: end;
+  column-gap: 10px;
+  row-gap: 8px;
+}
+
+.docsync-wp-modal .docsync-wp-drive-browser__toolbar-controls {
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+}
+
+.docsync-wp-modal .docsync-wp-drive-browser__toolbar-actions {
+  align-items: end;
+}
+
+.docsync-wp-modal .docsync-wp-drive-browser__toolbar-divider {
+  display: none;
+}
+
+.docsync-wp-modal .docsync-wp-drive-browser__toolbar .components-base-control {
+  flex: 0 0 auto;
+}
+
+.docsync-wp-modal .docsync-wp-drive-browser__toolbar .components-base-control__label {
+  color: var(--docsync-text-primary);
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.docsync-wp-modal .docsync-wp-drive-browser__toolbar .components-search-control {
+  flex: 0 1 320px;
+  width: min(320px, calc(100vw - 64px));
+}
+
+.docsync-wp-modal .docsync-wp-drive-browser__toolbar select {
+  width: auto;
+}
+
+.docsync-wp-modal .docsync-wp-drive-browser__toolbar .button {
+  min-width: 82px;
+}
+
+@media (max-width: 760px) {
+  .docsync-wp-modal .docsync-wp-drive-browser__heading,
+  .docsync-wp-modal .docsync-wp-drive-browser__toolbar,
+  .docsync-wp-modal .docsync-wp-drive-browser__toolbar-controls,
+  .docsync-wp-modal .docsync-wp-drive-browser__toolbar-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .docsync-wp-modal .docsync-wp-drive-browser__toolbar .components-base-control,
+  .docsync-wp-modal .docsync-wp-drive-browser__toolbar .components-search-control,
+  .docsync-wp-modal .docsync-wp-drive-browser__toolbar .button {
+    width: 100%;
+  }
+}

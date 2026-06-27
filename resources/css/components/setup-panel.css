@@ -52,6 +52,14 @@
     padding: 14px;
   }
 
+  .docsync-wp-setup-steps > li {
+    list-style: none;
+  }
+
+  .docsync-wp-setup-steps > li::marker {
+    content: "";
+  }
+
   .docsync-wp-step-heading {
     align-items: flex-start;
     display: flex;
@@ -65,9 +73,12 @@
     border-radius: 999px;
     color: #fff;
     display: inline-flex;
+    flex: 0 0 26px;
     font-weight: 700;
     height: 26px;
     justify-content: center;
+    line-height: 26px;
+    min-width: 26px;
     width: 26px;
   }
 

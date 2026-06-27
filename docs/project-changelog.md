@@ -7,6 +7,7 @@ Last updated: 2026-06-27
 - reworked Setup into a checklist for Google APIs, exact redirect URI, OAuth credentials, account connection, and first synced draft handoff
 - added connected-state Create synced draft links to the existing Posts list Add Sync Doc flow
 - extended shared empty states with variants, actions, and decorative illustrations for Sources, Logs, and Drive browser screens
+- polished admin UI alignment for setup loading, setup step badges, source log actions, and the Google Drive source modal
 - added `languages/brasth-document-sync-for-google-docs.pot`, repeatable i18n scripts, script translation loading, and translated OAuth JSON parser errors
 - bumped plugin header version, `DOCSYNC_WP_VERSION`, `readme.txt` stable tag, and package metadata to `1.0.8`
 

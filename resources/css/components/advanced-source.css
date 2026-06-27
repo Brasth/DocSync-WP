@@ -3,6 +3,38 @@
     background: #fff;
     border: 1px solid var(--docsync-card-border);
     border-radius: 8px;
-    padding: 14px;
+    max-width: 560px;
+    padding: 16px;
   }
+}
+
+.docsync-wp-modal .docsync-wp-advanced-source .description {
+  color: var(--docsync-text-muted);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0 0 14px;
+}
+
+.docsync-wp-modal .docsync-wp-advanced-source .components-base-control,
+.docsync-wp-modal .docsync-wp-advanced-source .components-base-control__field {
+  margin-bottom: 0;
+  max-width: 360px;
+}
+
+.docsync-wp-modal .docsync-wp-advanced-source .components-base-control__label {
+  color: var(--docsync-text-primary);
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  margin: 0 0 6px;
+  text-transform: uppercase;
+}
+
+.docsync-wp-modal .docsync-wp-advanced-source input[type="text"] {
+  font-size: 14px;
+  line-height: 1.4;
+  min-height: 38px;
+  padding: 7px 10px;
+  width: 100%;
 }
