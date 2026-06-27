@@ -4,7 +4,7 @@ Tags: google-docs, google-drive, content-sync, editorial-workflow, blocks
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 1.0.7
+Stable tag: 1.0.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -109,13 +109,21 @@ The build uses Vite and writes screen-specific manifests for Setup, Sources, Log
 
 == Screenshots ==
 
-1. Setup wizard for the self-managed Google OAuth client.
-2. Sources list with filters and bulk sync controls.
-3. Drive browser with breadcrumbs, search, and folder navigation.
-4. Post edit screen side meta box for link, sync now, and detach actions.
-5. Sync logs with diagnostic events and source status filters.
+1. Setup wizard with self-managed OAuth progress, redirect URI copy, and account connection state.
+2. Posts list Add Sync Doc flow with linked source status and background sync progress.
+3. Drive browser modal with breadcrumbs, search, and folder navigation.
+4. Drive browser empty folder state with search and access-check guidance.
+5. Synced draft editor with the Brasth Document Sync meta box.
 
 == Changelog ==
+
+= 1.0.8 =
+
+* Reworked the setup flow into a first-sync checklist with clearer Google API, OAuth redirect URI, credential, account connection, and first draft guidance.
+* Added a connected-state Create synced draft path that links to the existing Posts list Add Sync Doc flow.
+* Improved empty states for Sources, Logs, and the Drive browser with next actions and decorative illustrations.
+* Added POT generation, JS translation JSON generation plumbing, and script translation loading for admin bundles.
+* Translated OAuth JSON import parser errors and refreshed placeholder guidance for translators.
 
 = 1.0.7 =
 

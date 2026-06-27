@@ -2,6 +2,7 @@ import { createElement } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 
 import type { DocumentMetadata } from '../../api';
+import { AdminButton } from '../../shared/ui/admin-button';
 import { AdminNotice } from '../../shared/ui/admin-notice';
 import { EmptyState } from '../../shared/ui/empty-state';
 import { DriveBrowserBreadcrumbNav } from './drive-browser-breadcrumb';
@@ -57,12 +58,26 @@ export const DriveBrowserPanel = ({ busy, selectedDocument, onSelect }: DriveBro
       {browser.loading && browser.items.length === 0 ? <DriveBrowserTableSkeleton /> : null}
       {!browser.loading && !browser.error && browser.items.length === 0 ? (
         <EmptyState
+          action={browser.activeSearch ? (
+            <AdminButton disabled={busy} onClick={browser.clearSearch}>
+              {__('Clear search', 'brasth-document-sync-for-google-docs')}
+            </AdminButton>
+          ) : (
+            <AdminButton disabled={busy} onClick={browser.refreshFolder}>
+              {__('Refresh Drive', 'brasth-document-sync-for-google-docs')}
+            </AdminButton>
+          )}
           description={browser.activeSearch
-            ? sprintf(__('No folders or Google Docs found for "%s".', 'brasth-document-sync-for-google-docs'), browser.activeSearch)
-            : __('This folder has no folders or Google Docs.', 'brasth-document-sync-for-google-docs')}
+            ? sprintf(
+              /* translators: %s: Google Drive search query. */
+              __('No folders or Google Docs found for "%s". Try another search, switch shared drives, or confirm this Google account can open the Doc.', 'brasth-document-sync-for-google-docs'),
+              browser.activeSearch
+            )
+            : __('No folders or Google Docs were found here. Try a search, switch shared drives, or confirm this Google account has access.', 'brasth-document-sync-for-google-docs')}
           title={browser.activeSearch
             ? __('No Drive items match this search.', 'brasth-document-sync-for-google-docs')
             : __('No Drive items in this folder.', 'brasth-document-sync-for-google-docs')}
+          variant="drive"
         />
       ) : null}
 

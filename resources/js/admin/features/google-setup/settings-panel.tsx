@@ -1,8 +1,11 @@
 import { createElement, useEffect, useMemo, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 
-import type { SettingsResponse } from '../../api';
+import type { GoogleAccount, SettingsResponse } from '../../api';
+import { AdminButton } from '../../shared/ui/admin-button';
 import { GoogleSetupCloudSteps } from './google-setup-cloud-steps';
+import { GoogleSetupCredentialsStep } from './google-setup-credentials-step';
+import { GoogleSetupFirstSyncStep } from './google-setup-first-sync-step';
 import { GoogleSetupTargetsStep } from './google-setup-targets-step';
 import { GoogleSetupTestResult } from './google-setup-test-result';
 import {
@@ -10,17 +13,24 @@ import {
   samePostTypes,
   type SetupCheck
 } from './google-setup-utils';
-import { OAuthClientJsonImport } from './oauth-client-json-import';
-import { AdminButton } from '../../shared/ui/admin-button';
 
 type Props = {
+  account: GoogleAccount;
   settings: SettingsResponse;
   busy: boolean;
+  createSyncedDraftUrl: string;
   redirectUri: string;
   onSave: (settings: Partial<SettingsResponse> & { clientSecret?: string }) => Promise<void>;
 };
 
-export const SettingsPanel = ({ settings, busy, redirectUri, onSave }: Props): JSX.Element => {
+export const SettingsPanel = ({
+  account,
+  settings,
+  busy,
+  createSyncedDraftUrl,
+  redirectUri,
+  onSave
+}: Props): JSX.Element => {
   const [clientId, setClientId] = useState(settings.clientId);
   const [clientSecret, setClientSecret] = useState('');
   const [enabledPostTypes, setEnabledPostTypes] = useState(settings.enabledPostTypes);
@@ -28,9 +38,10 @@ export const SettingsPanel = ({ settings, busy, redirectUri, onSave }: Props): J
   const [elementorSyncEnabled, setElementorSyncEnabled] = useState(settings.elementorSyncEnabled);
   const [copyMessage, setCopyMessage] = useState('');
   const [testChecks, setTestChecks] = useState<SetupCheck[] | null>(null);
-  const setupChecks = useMemo(() => buildSetupChecks(settings), [settings]);
+  const setupChecks = useMemo(() => buildSetupChecks(settings, account), [settings, account]);
   const completedChecks = setupChecks.filter((check) => check.complete).length;
   const setupProgress = Math.round((completedChecks / setupChecks.length) * 100);
+  const canCreateDraft = settings.hasRequiredSettings && account.connected && account.hasRequiredScope;
   const hasUnsavedChanges =
     clientId !== settings.clientId ||
     clientSecret.trim() !== '' ||
@@ -93,7 +104,7 @@ export const SettingsPanel = ({ settings, busy, redirectUri, onSave }: Props): J
   };
 
   const testSetup = () => {
-    setTestChecks(buildSetupChecks(settings));
+    setTestChecks(buildSetupChecks(settings, account));
   };
 
   return (
@@ -108,15 +119,18 @@ export const SettingsPanel = ({ settings, busy, redirectUri, onSave }: Props): J
         <div>
           <strong>
             {sprintf(
+              /* translators: 1: completed setup check count, 2: total setup check count. */
               __('%1$d of %2$d setup checks complete', 'brasth-document-sync-for-google-docs'),
               completedChecks,
               setupChecks.length
             )}
           </strong>
           <span>
-            {settings.hasRequiredSettings
-              ? __('OAuth connection ready.', 'brasth-document-sync-for-google-docs')
-              : __('OAuth client setup incomplete.', 'brasth-document-sync-for-google-docs')}
+            {canCreateDraft
+              ? __('Ready to create the first synced draft.', 'brasth-document-sync-for-google-docs')
+              : settings.hasRequiredSettings
+                ? __('OAuth settings saved. Connect Google next.', 'brasth-document-sync-for-google-docs')
+                : __('OAuth client setup incomplete.', 'brasth-document-sync-for-google-docs')}
           </span>
         </div>
         <div className="docsync-wp-setup-progress" aria-hidden="true">
@@ -131,66 +145,39 @@ export const SettingsPanel = ({ settings, busy, redirectUri, onSave }: Props): J
           redirectUri={redirectUri}
         />
 
-        <li>
-          <div className="docsync-wp-step-heading">
-            <span>3</span>
-            <div>
-              <h3>{__('Save OAuth credentials', 'brasth-document-sync-for-google-docs')}</h3>
-              <p>{__("The custom document browser uses these server-side credentials and the connected user's Drive read-only grant.", 'brasth-document-sync-for-google-docs')}</p>
-            </div>
-          </div>
-          <OAuthClientJsonImport
-            busy={busy}
-            onImported={(credentials) => {
-              setClientId(credentials.clientId);
-              setClientSecret(credentials.clientSecret);
-              setTestChecks(null);
-            }}
-            redirectUri={redirectUri}
-          />
-          <div className="docsync-wp-settings-grid">
-            <label>
-              <span>{__('OAuth client ID', 'brasth-document-sync-for-google-docs')}</span>
-              <input className="regular-text" onChange={(event) => setClientId(event.currentTarget.value)} type="text" value={clientId} />
-            </label>
-            <label>
-              <span>{__('OAuth client secret', 'brasth-document-sync-for-google-docs')}</span>
-              <input
-                className="regular-text"
-                onChange={(event) => setClientSecret(event.currentTarget.value)}
-                placeholder={settings.hasClientSecret ? __('Saved. Enter a new secret to replace.', 'brasth-document-sync-for-google-docs') : ''}
-                type="password"
-                value={clientSecret}
-              />
-            </label>
-          </div>
-        </li>
+        <GoogleSetupCredentialsStep
+          busy={busy}
+          clientId={clientId}
+          clientSecret={clientSecret}
+          hasClientSecret={settings.hasClientSecret}
+          onClientIdChange={setClientId}
+          onClientSecretChange={setClientSecret}
+          onImported={(credentials) => {
+            setClientId(credentials.clientId);
+            setClientSecret(credentials.clientSecret);
+            setTestChecks(null);
+          }}
+          redirectUri={redirectUri}
+          stepNumber={3}
+        />
 
         <GoogleSetupTargetsStep
           availablePostTypes={settings.availablePostTypes}
+          elementorSyncEnabled={elementorSyncEnabled}
           enabledPostTypes={enabledPostTypes}
+          onElementorSyncChange={setElementorSyncEnabled}
           onSyncIntervalChange={setSyncInterval}
           onTogglePostType={togglePostType}
+          stepNumber={4}
           syncInterval={syncInterval}
         />
 
-        <li>
-          <div className="docsync-wp-step-heading">
-            <span>4</span>
-            <div>
-              <h3>{__('Elementor sync support', 'brasth-document-sync-for-google-docs')}</h3>
-              <p>{__('When Elementor is active, allow synced posts that are already built with Elementor to receive native Elementor layouts.', 'brasth-document-sync-for-google-docs')}</p>
-            </div>
-          </div>
-          <label className="docsync-wp-checkbox-row">
-            <input
-              checked={elementorSyncEnabled}
-              onChange={(event) => setElementorSyncEnabled(event.currentTarget.checked)}
-              type="checkbox"
-            />
-            <span>{__('Enable Elementor sync support', 'brasth-document-sync-for-google-docs')}</span>
-          </label>
-        </li>
+        <GoogleSetupFirstSyncStep
+          account={account}
+          canCreateDraft={canCreateDraft}
+          createSyncedDraftUrl={createSyncedDraftUrl}
+          stepNumber={5}
+        />
       </ol>
 
       <div className="docsync-wp-settings-actions">

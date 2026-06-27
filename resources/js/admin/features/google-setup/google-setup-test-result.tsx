@@ -14,7 +14,7 @@ export const GoogleSetupTestResult = ({ checks }: Props): JSX.Element => {
     <div className={`docsync-wp-setup-test ${isComplete ? 'is-complete' : 'is-warning'}`} role="status">
       <strong>
         {isComplete
-          ? __('Setup ready for Google connect.', 'brasth-document-sync-for-google-docs')
+          ? __('Setup ready for the first synced draft.', 'brasth-document-sync-for-google-docs')
           : __('Setup still needs attention.', 'brasth-document-sync-for-google-docs')}
       </strong>
       <ul>

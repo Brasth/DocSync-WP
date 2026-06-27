@@ -79,6 +79,7 @@
 
   .docsync-wp-cloud-links,
   .docsync-wp-copy-row,
+  .docsync-wp-step-actions,
   .docsync-wp-settings-actions {
     align-items: center;
     display: flex;
@@ -93,6 +94,18 @@
     font-weight: 700;
     padding: 6px 10px;
     text-decoration: none;
+  }
+
+  .docsync-wp-step-notes {
+    color: var(--docsync-text-secondary);
+    display: grid;
+    gap: 6px;
+    margin: 0 0 12px 38px;
+    padding: 0;
+  }
+
+  .docsync-wp-step-actions {
+    margin-left: 38px;
   }
 
   .docsync-wp-copy-row input {

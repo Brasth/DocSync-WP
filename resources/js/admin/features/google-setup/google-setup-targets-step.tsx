@@ -5,25 +5,31 @@ import type { AvailablePostType } from '../../config';
 
 type Props = {
   availablePostTypes: AvailablePostType[];
+  elementorSyncEnabled: boolean;
   enabledPostTypes: string[];
   syncInterval: string;
+  stepNumber: number;
+  onElementorSyncChange: (enabled: boolean) => void;
   onTogglePostType: (postType: string) => void;
   onSyncIntervalChange: (syncInterval: string) => void;
 };
 
 export const GoogleSetupTargetsStep = ({
   availablePostTypes,
+  elementorSyncEnabled,
   enabledPostTypes,
   syncInterval,
+  stepNumber,
+  onElementorSyncChange,
   onTogglePostType,
   onSyncIntervalChange
 }: Props): JSX.Element => {
   return (
     <li>
       <div className="docsync-wp-step-heading">
-        <span>4</span>
+        <span>{stepNumber}</span>
         <div>
-          <h3>{__('Choose WordPress targets', 'brasth-document-sync-for-google-docs')}</h3>
+          <h3>{__('Choose WordPress targets and sync options', 'brasth-document-sync-for-google-docs')}</h3>
           <p>{__('Post is required. Page and public custom post types can also accept synced drafts.', 'brasth-document-sync-for-google-docs')}</p>
         </div>
       </div>
@@ -51,6 +57,15 @@ export const GoogleSetupTargetsStep = ({
           <option value="twicedaily">{__('Twice daily', 'brasth-document-sync-for-google-docs')}</option>
           <option value="daily">{__('Daily', 'brasth-document-sync-for-google-docs')}</option>
         </select>
+      </label>
+
+      <label className="docsync-wp-checkbox-row">
+        <input
+          checked={elementorSyncEnabled}
+          onChange={(event) => onElementorSyncChange(event.currentTarget.checked)}
+          type="checkbox"
+        />
+        <span>{__('Enable Elementor sync support when Elementor is active', 'brasth-document-sync-for-google-docs')}</span>
       </label>
     </li>
   );

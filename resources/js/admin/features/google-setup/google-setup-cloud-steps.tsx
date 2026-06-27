@@ -18,9 +18,14 @@ export const GoogleSetupCloudSteps = ({ redirectUri, copyMessage, onCopyValue }:
           <span>1</span>
           <div>
             <h3>{__('Create the Google Cloud pieces', 'brasth-document-sync-for-google-docs')}</h3>
-            <p>{__('Use one Google Cloud project for Drive API, Docs API, OAuth consent, and OAuth web credentials.', 'brasth-document-sync-for-google-docs')}</p>
+            <p>{__('Use one Google Cloud project for the Drive API, Docs API, OAuth consent screen, and OAuth web credentials.', 'brasth-document-sync-for-google-docs')}</p>
           </div>
         </div>
+        <ul className="docsync-wp-step-notes">
+          <li>{__('Enable both Google Drive API and Google Docs API in that same project.', 'brasth-document-sync-for-google-docs')}</li>
+          <li>{__('If the OAuth app is in Google test mode, add each WordPress user as a test user before they connect.', 'brasth-document-sync-for-google-docs')}</li>
+          <li>{__('Brasth Document Sync requests drive.readonly so the connected account can browse and sync readable Docs.', 'brasth-document-sync-for-google-docs')}</li>
+        </ul>
         <div className="docsync-wp-cloud-links">
           {googleCloudLinks.map((link) => (
             <a href={link.href} key={link.href} rel="noreferrer" target="_blank">
@@ -34,8 +39,8 @@ export const GoogleSetupCloudSteps = ({ redirectUri, copyMessage, onCopyValue }:
         <div className="docsync-wp-step-heading">
           <span>2</span>
           <div>
-            <h3>{__('Add OAuth URLs', 'brasth-document-sync-for-google-docs')}</h3>
-            <p>{__('Paste and save this callback in the Google OAuth web client used by Brasth Document Sync.', 'brasth-document-sync-for-google-docs')}</p>
+            <h3>{__('Add the exact redirect URI', 'brasth-document-sync-for-google-docs')}</h3>
+            <p>{__('Paste this callback into Authorized redirect URIs for the Google OAuth web client. It must match exactly, including protocol, domain, path, and trailing slash state.', 'brasth-document-sync-for-google-docs')}</p>
           </div>
         </div>
         <label className="docsync-wp-copy-field">

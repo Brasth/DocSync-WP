@@ -41,7 +41,9 @@ export const SetupApp = (): JSX.Element => {
         <div className="docsync-wp-admin-grid">
           <div className="docsync-wp-admin-grid__main">
             <SettingsPanel
+              account={app.account}
               busy={app.busy}
+              createSyncedDraftUrl={app.config.createSyncedDraftUrl}
               onSave={app.persistSettings}
               redirectUri={app.redirectUri}
               settings={app.settings}
@@ -52,6 +54,7 @@ export const SetupApp = (): JSX.Element => {
               account={app.account}
               busy={app.busy}
               canConnect={app.settings.hasRequiredSettings}
+              createSyncedDraftUrl={app.config.createSyncedDraftUrl}
               onConnect={app.connectGoogle}
               onDisconnect={app.disconnectGoogle}
             />
