@@ -22,6 +22,8 @@ defined( 'ABSPATH' ) || exit;
  * Handles Google document REST endpoints.
  */
 final class DocumentController {
+	private const MAX_PAGE_SIZE = 50;
+
 	/**
 	 * Document ID parser.
 	 *
@@ -101,16 +103,10 @@ final class DocumentController {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function listSharedDrives( WP_REST_Request $request ): WP_REST_Response|WP_Error {
-		$page_size = absint( $request->get_param( 'page_size' ) );
-
-		if ( $page_size <= 0 ) {
-			$page_size = 50;
-		}
-
 		$drives = $this->drive_client->listSharedDrives(
 			get_current_user_id(),
 			sanitize_text_field( (string) $request->get_param( 'page_token' ) ),
-			$page_size
+			$this->pageSize( $request, self::MAX_PAGE_SIZE )
 		);
 
 		if ( is_wp_error( $drives ) ) {
@@ -127,19 +123,13 @@ final class DocumentController {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function listDriveItems( WP_REST_Request $request ): WP_REST_Response|WP_Error {
-		$page_size = absint( $request->get_param( 'page_size' ) );
-
-		if ( $page_size <= 0 ) {
-			$page_size = 20;
-		}
-
 		$items = $this->drive_client->listDriveItems(
 			get_current_user_id(),
 			sanitize_text_field( (string) $request->get_param( 'folder_id' ) ),
 			sanitize_text_field( (string) $request->get_param( 'drive_id' ) ),
 			sanitize_text_field( (string) $request->get_param( 'search' ) ),
 			sanitize_text_field( (string) $request->get_param( 'page_token' ) ),
-			$page_size
+			$this->pageSize( $request, 20 )
 		);
 
 		if ( is_wp_error( $items ) ) {
@@ -156,17 +146,11 @@ final class DocumentController {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function listDocuments( WP_REST_Request $request ): WP_REST_Response|WP_Error {
-		$page_size = absint( $request->get_param( 'page_size' ) );
-
-		if ( $page_size <= 0 ) {
-			$page_size = 20;
-		}
-
 		$documents = $this->drive_client->listGoogleDocs(
 			get_current_user_id(),
 			sanitize_text_field( (string) $request->get_param( 'search' ) ),
 			sanitize_text_field( (string) $request->get_param( 'page_token' ) ),
-			$page_size
+			$this->pageSize( $request, 20 )
 		);
 
 		if ( is_wp_error( $documents ) ) {
@@ -197,6 +181,16 @@ final class DocumentController {
 			);
 		}
 
+		$unknown_keys = array_diff( array_keys( $params ), array( 'document', 'source' ) );
+
+		if ( array() !== $unknown_keys ) {
+			return new WP_Error(
+				'docsync_wp_unknown_document_fields',
+				__( 'Brasth Document Sync received unknown document inspection fields.', 'brasth-document-sync-for-google-docs' ),
+				array( 'status' => 400 )
+			);
+		}
+
 		$file_id = $this->document_id_parser->parse(
 			$params['document'] ?? '',
 			isset( $params['source'] ) ? (string) $params['source'] : ''
@@ -213,5 +207,21 @@ final class DocumentController {
 		}
 
 		return rest_ensure_response( $metadata );
+	}
+
+	/**
+	 * Clamp Google list page size at the controller boundary.
+	 *
+	 * @param WP_REST_Request $request  REST request.
+	 * @param int             $fallback Fallback page size.
+	 */
+	private function pageSize( WP_REST_Request $request, int $fallback ): int {
+		$page_size = absint( $request->get_param( 'page_size' ) );
+
+		if ( $page_size <= 0 ) {
+			$page_size = $fallback;
+		}
+
+		return max( 1, min( self::MAX_PAGE_SIZE, $page_size ) );
 	}
 }

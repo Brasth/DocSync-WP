@@ -100,7 +100,7 @@ final class SourceRepository {
 			'export_format'        => $this->getStringMeta( $post_id, self::META_EXPORT_FORMAT ),
 			'elementor_sync'       => $this->getElementorSync( $post_id ),
 			'sync_status'          => $sync_status,
-			'sync_error'           => $this->getStringMeta( $post_id, self::META_SYNC_ERROR ),
+			'sync_error'           => $this->sanitizeErrorMessage( $this->getStringMeta( $post_id, self::META_SYNC_ERROR ) ),
 			'sync_progress'        => $this->getSyncProgress( $post_id, $sync_status ),
 			'sync_step'            => $sync_step,
 			'sync_message'         => $this->getSyncMessage( $post_id, $sync_step ),
@@ -162,7 +162,7 @@ final class SourceRepository {
 		}
 
 		update_post_meta( $post_id, self::META_SYNC_STATUS, isset( $source['sync_status'] ) ? sanitize_key( (string) $source['sync_status'] ) : '' );
-		update_post_meta( $post_id, self::META_SYNC_ERROR, isset( $source['sync_error'] ) ? sanitize_textarea_field( (string) $source['sync_error'] ) : '' );
+			update_post_meta( $post_id, self::META_SYNC_ERROR, isset( $source['sync_error'] ) ? $this->sanitizeErrorMessage( $source['sync_error'] ) : '' );
 		update_post_meta( $post_id, self::META_SYNC_PROGRESS, $this->sanitizeProgress( $source['sync_progress'] ?? 0 ) );
 		update_post_meta( $post_id, self::META_SYNC_STEP, isset( $source['sync_step'] ) ? sanitize_key( (string) $source['sync_step'] ) : 'linked' );
 		update_post_meta( $post_id, self::META_SYNC_MESSAGE, $this->sanitizeProgressMessage( $source['sync_message'] ?? __( 'Linked and ready to sync.', 'brasth-document-sync-for-google-docs' ) ) );
@@ -1080,7 +1080,7 @@ final class SourceRepository {
 	 * @param int   $length Maximum length.
 	 */
 	private function truncateDiagnosticText( mixed $text, int $length ): string {
-		$text = sanitize_text_field( (string) $text );
+		$text = $this->redactSensitiveText( sanitize_text_field( (string) $text ) );
 
 		return function_exists( 'mb_substr' ) ? mb_substr( $text, 0, $length ) : substr( $text, 0, $length );
 	}
@@ -1095,7 +1095,7 @@ final class SourceRepository {
 		$message = $this->getStringMeta( $post_id, self::META_SYNC_MESSAGE );
 
 		if ( '' !== $message ) {
-			return $message;
+			return $this->sanitizeProgressMessage( $message );
 		}
 
 		return 'linked' === $step ? __( 'Linked and ready to sync.', 'brasth-document-sync-for-google-docs' ) : '';
@@ -1130,9 +1130,42 @@ final class SourceRepository {
 	 * @param mixed $message Message.
 	 */
 	private function sanitizeProgressMessage( mixed $message ): string {
-		$message = sanitize_text_field( (string) $message );
+		$message = $this->redactSensitiveText( sanitize_text_field( (string) $message ) );
 
 		return function_exists( 'mb_substr' ) ? mb_substr( $message, 0, 240 ) : substr( $message, 0, 240 );
+	}
+
+	/**
+	 * Sanitize a short source error message.
+	 *
+	 * @param mixed $message Message.
+	 */
+	private function sanitizeErrorMessage( mixed $message ): string {
+		$message = $this->redactSensitiveText( sanitize_textarea_field( (string) $message ) );
+
+		return function_exists( 'mb_substr' ) ? mb_substr( $message, 0, 500 ) : substr( $message, 0, 500 );
+	}
+
+	/**
+	 * Redact token-like values before diagnostic text is stored or returned.
+	 *
+	 * @param string $text Diagnostic text.
+	 */
+	private function redactSensitiveText( string $text ): string {
+		$patterns = array(
+			'/Bearer\s+[A-Za-z0-9._~+\/=-]+/i' => 'Bearer [redacted]',
+			'/(access_token|refresh_token|client_secret|authorization)\s*[:=]\s*[^\s,\]}]+/i' => '$1=[redacted]',
+		);
+
+		foreach ( $patterns as $pattern => $replacement ) {
+			$redacted = preg_replace( $pattern, $replacement, $text );
+
+			if ( is_string( $redacted ) ) {
+				$text = $redacted;
+			}
+		}
+
+		return $text;
 	}
 
 	/**

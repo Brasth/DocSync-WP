@@ -108,7 +108,7 @@ const header = [
 	'# This file is distributed under the GPLv2 or later.',
 	'msgid ""',
 	'msgstr ""',
-	'"Project-Id-Version: Brasth Document Sync for Google Docs 1.0.8\\n"',
+	'"Project-Id-Version: Brasth Document Sync for Google Docs 1.0.9\\n"',
 	`"POT-Creation-Date: ${now}\\n"`,
 	'"MIME-Version: 1.0\\n"',
 	'"Content-Type: text/plain; charset=UTF-8\\n"',

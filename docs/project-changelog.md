@@ -2,6 +2,22 @@
 
 Last updated: 2026-06-27
 
+## 2026-06-27 - 1.0.9 security hardening
+
+- added shared DocSync use permission for administrators or users who can edit/create at least one enabled target post type
+- required `X-WP-Nonce` for mutating REST requests and kept `_wpnonce` as a read-only `GET` fallback
+- tightened source, Drive browser, document inspection, settings, and sync-log request validation
+- limited post/list-table assets, notices, columns, and source metadata output to capable users
+- added defensive sync diagnostic redaction for token-like values
+- bumped plugin header version, `DOCSYNC_WP_VERSION`, `readme.txt` stable tag, package metadata, admin fallback config, and POT metadata to `1.0.9`
+- documented local security audit results in `plans/reports/1.0.9-security-audit.md`
+
+Unresolved:
+
+- staging role matrix still needs execution before tag
+- final manual Google OAuth and first-sync QA still needs a configured WordPress site and connected Google test account
+- WordPress.org screenshot slot 6 still needs a real Sources-table capture from local/staging WordPress admin
+
 ## 2026-06-27 - 1.0.8 first successful sync onboarding
 
 - reworked Setup into a checklist for Google APIs, exact redirect URI, OAuth credentials, account connection, and first synced draft handoff

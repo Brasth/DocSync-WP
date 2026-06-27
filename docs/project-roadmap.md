@@ -20,7 +20,7 @@ Each release must pass the existing validation pipeline (`pnpm lint`, `pnpm type
 
 ## Current State
 
-- Version 1.0.7 is released and closed. Version 1.0.8 is the active onboarding patch line.
+- Version 1.0.8 is prepared in the codebase. Version 1.0.9 is the active security hardening patch line pending staging QA.
 - Core sync engine is stable: Google export, media import, Gutenberg block conversion, Elementor JSON conversion, background sync, and sync logging.
 - The plugin supports one-way sync from Google Docs to WordPress posts, pages, and enabled public custom post types.
 - The editor decision layer (`Elementor\SyncDecider`) is in place, but the conversion is purely structural: every document becomes the same flat layout.

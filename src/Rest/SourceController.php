@@ -25,12 +25,14 @@ defined( 'ABSPATH' ) || exit;
  * Handles source attach, sync, detach, and listing routes.
  */
 final class SourceController {
-	private const SYNC_MODE_INLINE     = 'inline';
-	private const SYNC_MODE_BACKGROUND = 'background';
-	private const SYNC_ALL_BATCH_SIZE  = 20;
-	private const SYNC_ALL_SCAN_LIMIT  = 100;
-	private const SYNC_ALL_MAX_SCANS   = 5;
-	private const SYNC_STALE_SECONDS   = 600;
+	private const SYNC_MODE_INLINE       = 'inline';
+	private const SYNC_MODE_BACKGROUND   = 'background';
+	private const SYNC_ALL_BATCH_SIZE    = 20;
+	private const SYNC_ALL_SCAN_LIMIT    = 100;
+	private const SYNC_ALL_MAX_SCANS     = 5;
+	private const SYNC_STALE_SECONDS     = 600;
+	private const EXPORT_FORMAT_HTML_ZIP = 'html_zip';
+	private const MAX_PAGE_SIZE          = 100;
 
 	/**
 	 * Source repository.
@@ -185,17 +187,8 @@ final class SourceController {
 			);
 		}
 
-		$per_page = absint( $request->get_param( 'per_page' ) );
-
-		if ( $per_page <= 0 ) {
-			$per_page = 100;
-		}
-
-		$page = absint( $request->get_param( 'page' ) );
-
-		if ( $page <= 0 ) {
-			$page = 1;
-		}
+		$per_page = $this->clampPositiveInt( $request->get_param( 'per_page' ), self::MAX_PAGE_SIZE, self::MAX_PAGE_SIZE );
+		$page     = $this->clampPositiveInt( $request->get_param( 'page' ), 1, PHP_INT_MAX );
 
 		return rest_ensure_response( $this->source_repository->listSourcesPage( $post_types, $user_id, $per_page, $page, $search, $status ) );
 	}
@@ -207,7 +200,11 @@ final class SourceController {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function createSource( WP_REST_Request $request ): WP_REST_Response|WP_Error {
-		$params = $this->getRequestParams( $request );
+		$params = $this->getRequestParams(
+			$request,
+			array( 'fileId', 'target', 'exportFormat', 'syncMode', 'elementorSync' ),
+			'docsync_wp_unknown_source_fields'
+		);
 
 		if ( is_wp_error( $params ) ) {
 			return $params;
@@ -229,18 +226,42 @@ final class SourceController {
 			);
 		}
 
+		$target_fields = $this->rejectUnknownFields(
+			$target,
+			array( 'mode', 'postId', 'postType' ),
+			'docsync_wp_unknown_source_target_fields',
+			__( 'Brasth Document Sync received unknown source target fields.', 'brasth-document-sync-for-google-docs' )
+		);
+
+		if ( is_wp_error( $target_fields ) ) {
+			return $target_fields;
+		}
+
 		$mode           = sanitize_key( (string) ( $target['mode'] ?? '' ) );
-		$export_format  = isset( $params['exportFormat'] ) ? sanitize_key( (string) $params['exportFormat'] ) : 'html_zip';
+		$export_format  = $this->getExportFormat( $params );
 		$sync_mode      = $this->getSyncMode( $params );
-		$elementor_sync = isset( $params['elementorSync'] ) ? (bool) $params['elementorSync'] : null;
+		$elementor_sync = $this->getOptionalBoolean( $params, 'elementorSync' );
 		$user_id        = get_current_user_id();
+
+		if ( is_wp_error( $export_format ) ) {
+			return $export_format;
+		}
 
 		if ( is_wp_error( $sync_mode ) ) {
 			return $sync_mode;
 		}
 
+		if ( is_wp_error( $elementor_sync ) ) {
+			return $elementor_sync;
+		}
+
 		if ( 'existing' === $mode ) {
-			$post_id = absint( $target['postId'] ?? 0 );
+			$post_id = $this->getTargetPostId( $target );
+
+			if ( is_wp_error( $post_id ) ) {
+				return $post_id;
+			}
+
 			$allowed = $this->validateEditablePost( $post_id, $user_id );
 
 			if ( is_wp_error( $allowed ) ) {
@@ -313,13 +334,26 @@ final class SourceController {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function syncSource( WP_REST_Request $request ): WP_REST_Response|WP_Error {
-		$post_id = absint( $request->get_param( 'postId' ) );
+		$post_id = $this->getPostIdParam( $request );
+
+		if ( is_wp_error( $post_id ) ) {
+			return $post_id;
+		}
+
 		$user_id = get_current_user_id();
 		$allowed = $this->validateEditablePost( $post_id, $user_id );
-		$params  = $this->getOptionalRequestParams( $request );
+		$params  = $this->getOptionalRequestParams(
+			$request,
+			array( 'syncMode' ),
+			'docsync_wp_unknown_sync_fields'
+		);
 
 		if ( is_wp_error( $allowed ) ) {
 			return $allowed;
+		}
+
+		if ( is_wp_error( $params ) ) {
+			return $params;
 		}
 
 		$sync_mode = $this->getSyncMode( $params );
@@ -354,7 +388,12 @@ final class SourceController {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function getSource( WP_REST_Request $request ): WP_REST_Response|WP_Error {
-		$post_id = absint( $request->get_param( 'postId' ) );
+		$post_id = $this->getPostIdParam( $request );
+
+		if ( is_wp_error( $post_id ) ) {
+			return $post_id;
+		}
+
 		$user_id = get_current_user_id();
 		$allowed = $this->validateEditablePost( $post_id, $user_id );
 
@@ -390,7 +429,12 @@ final class SourceController {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function updateSource( WP_REST_Request $request ): WP_REST_Response|WP_Error {
-		$post_id = absint( $request->get_param( 'postId' ) );
+		$post_id = $this->getPostIdParam( $request );
+
+		if ( is_wp_error( $post_id ) ) {
+			return $post_id;
+		}
+
 		$user_id = get_current_user_id();
 		$allowed = $this->validateEditablePost( $post_id, $user_id );
 
@@ -408,11 +452,26 @@ final class SourceController {
 			);
 		}
 
-		$params = $this->getOptionalRequestParams( $request );
+		$params = $this->getOptionalRequestParams(
+			$request,
+			array( 'elementorSync' ),
+			'docsync_wp_unknown_source_update_fields'
+		);
+
+		if ( is_wp_error( $params ) ) {
+			return $params;
+		}
+
 		$update = array( 'google_file_id' => $source['google_file_id'] );
 
 		if ( array_key_exists( 'elementorSync', $params ) ) {
-			$update['elementor_sync'] = (bool) $params['elementorSync'];
+			$elementor_sync = $this->getOptionalBoolean( $params, 'elementorSync' );
+
+			if ( is_wp_error( $elementor_sync ) ) {
+				return $elementor_sync;
+			}
+
+			$update['elementor_sync'] = $elementor_sync;
 		}
 
 		if ( 1 === count( $update ) ) {
@@ -449,7 +508,12 @@ final class SourceController {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function getSourceContent( WP_REST_Request $request ): WP_REST_Response|WP_Error {
-		$post_id = absint( $request->get_param( 'postId' ) );
+		$post_id = $this->getPostIdParam( $request );
+
+		if ( is_wp_error( $post_id ) ) {
+			return $post_id;
+		}
+
 		$user_id = get_current_user_id();
 		$allowed = $this->validateEditablePost( $post_id, $user_id );
 
@@ -489,9 +553,20 @@ final class SourceController {
 	/**
 	 * Sync all editable linked sources for the current user.
 	 *
-	 * @return WP_REST_Response
+	 * @param WP_REST_Request $request REST request.
+	 * @return WP_REST_Response|WP_Error
 	 */
-	public function syncAllSources(): WP_REST_Response {
+	public function syncAllSources( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$params = $this->getOptionalRequestParams(
+			$request,
+			array(),
+			'docsync_wp_unknown_sync_all_fields'
+		);
+
+		if ( is_wp_error( $params ) ) {
+			return $params;
+		}
+
 		$user_id  = get_current_user_id();
 		$before   = gmdate( 'Y-m-d H:i:s', time() - 1 );
 		$results  = array();
@@ -581,7 +656,12 @@ final class SourceController {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function detachSource( WP_REST_Request $request ): WP_REST_Response|WP_Error {
-		$post_id = absint( $request->get_param( 'postId' ) );
+		$post_id = $this->getPostIdParam( $request );
+
+		if ( is_wp_error( $post_id ) ) {
+			return $post_id;
+		}
+
 		$user_id = get_current_user_id();
 		$allowed = $this->validateEditablePost( $post_id, $user_id );
 
@@ -620,10 +700,12 @@ final class SourceController {
 	/**
 	 * Get request parameters.
 	 *
-	 * @param WP_REST_Request $request REST request.
+	 * @param WP_REST_Request   $request      REST request.
+	 * @param array<int,string> $allowed_keys Allowed payload keys.
+	 * @param string            $error_code   Error code for unknown keys.
 	 * @return array<string,mixed>|WP_Error
 	 */
-	private function getRequestParams( WP_REST_Request $request ): array|WP_Error {
+	private function getRequestParams( WP_REST_Request $request, ?array $allowed_keys = null, string $error_code = 'docsync_wp_unknown_source_fields' ): array|WP_Error {
 		$params = $request->get_json_params();
 
 		if ( ! is_array( $params ) ) {
@@ -638,23 +720,191 @@ final class SourceController {
 			);
 		}
 
+		if ( null !== $allowed_keys ) {
+			$allowed = $this->rejectUnknownFields(
+				$params,
+				$allowed_keys,
+				$error_code,
+				__( 'Brasth Document Sync received unknown source request fields.', 'brasth-document-sync-for-google-docs' )
+			);
+
+			if ( is_wp_error( $allowed ) ) {
+				return $allowed;
+			}
+		}
+
 		return $params;
 	}
 
 	/**
 	 * Get optional request parameters.
 	 *
-	 * @param WP_REST_Request $request REST request.
-	 * @return array<string,mixed>
+	 * @param WP_REST_Request   $request      REST request.
+	 * @param array<int,string> $allowed_keys Allowed payload keys.
+	 * @param string            $error_code   Error code for unknown keys.
+	 * @return array<string,mixed>|WP_Error
 	 */
-	private function getOptionalRequestParams( WP_REST_Request $request ): array {
+	private function getOptionalRequestParams( WP_REST_Request $request, ?array $allowed_keys = null, string $error_code = 'docsync_wp_unknown_source_fields' ): array|WP_Error {
 		$params = $request->get_json_params();
 
 		if ( ! is_array( $params ) ) {
 			$params = $request->get_body_params();
 		}
 
-		return is_array( $params ) ? $params : array();
+		if ( ! is_array( $params ) ) {
+			$params = array();
+		}
+
+		if ( null !== $allowed_keys ) {
+			$allowed = $this->rejectUnknownFields(
+				$params,
+				$allowed_keys,
+				$error_code,
+				__( 'Brasth Document Sync received unknown source request fields.', 'brasth-document-sync-for-google-docs' )
+			);
+
+			if ( is_wp_error( $allowed ) ) {
+				return $allowed;
+			}
+		}
+
+		return $params;
+	}
+
+	/**
+	 * Reject payload fields outside a known route shape.
+	 *
+	 * @param array<string,mixed> $params       Request params.
+	 * @param array<int,string>   $allowed_keys Allowed payload keys.
+	 * @param string              $error_code   Error code.
+	 * @param string              $message      Error message.
+	 * @return true|WP_Error
+	 */
+	private function rejectUnknownFields( array $params, array $allowed_keys, string $error_code, string $message ): true|WP_Error {
+		$unknown_keys = array_diff( array_keys( $params ), $allowed_keys );
+
+		if ( array() === $unknown_keys ) {
+			return true;
+		}
+
+		return new WP_Error(
+			$error_code,
+			$message,
+			array( 'status' => 400 )
+		);
+	}
+
+	/**
+	 * Clamp a positive integer request value.
+	 *
+	 * @param mixed $value    Raw value.
+	 * @param int   $fallback Fallback value.
+	 * @param int   $maximum  Maximum value.
+	 */
+	private function clampPositiveInt( mixed $value, int $fallback, int $maximum ): int {
+		$number = absint( $value );
+
+		if ( $number <= 0 ) {
+			$number = $fallback;
+		}
+
+		return max( 1, min( $maximum, $number ) );
+	}
+
+	/**
+	 * Get a positive source post ID from the route.
+	 *
+	 * @param WP_REST_Request $request REST request.
+	 * @return int|WP_Error
+	 */
+	private function getPostIdParam( WP_REST_Request $request ): int|WP_Error {
+		$post_id = absint( $request->get_param( 'postId' ) );
+
+		return $post_id > 0 ? $post_id : $this->invalidPostIdError();
+	}
+
+	/**
+	 * Get a positive existing target post ID from source target params.
+	 *
+	 * @param array<string,mixed> $target Source target params.
+	 * @return int|WP_Error
+	 */
+	private function getTargetPostId( array $target ): int|WP_Error {
+		$post_id = absint( $target['postId'] ?? 0 );
+
+		return $post_id > 0 ? $post_id : $this->invalidPostIdError();
+	}
+
+	/**
+	 * Get and validate source export format.
+	 *
+	 * @param array<string,mixed> $params Request params.
+	 * @return string|WP_Error
+	 */
+	private function getExportFormat( array $params ): string|WP_Error {
+		$export_format = isset( $params['exportFormat'] ) ? sanitize_key( (string) $params['exportFormat'] ) : self::EXPORT_FORMAT_HTML_ZIP;
+
+		if ( in_array( $export_format, array( self::EXPORT_FORMAT_HTML_ZIP, 'markdown' ), true ) ) {
+			return self::EXPORT_FORMAT_HTML_ZIP;
+		}
+
+		return new WP_Error(
+			'docsync_wp_invalid_export_format',
+			__( 'Brasth Document Sync received an unsupported export format.', 'brasth-document-sync-for-google-docs' ),
+			array( 'status' => 400 )
+		);
+	}
+
+	/**
+	 * Get an optional boolean request field.
+	 *
+	 * @param array<string,mixed> $params Request params.
+	 * @param string              $key    Field key.
+	 * @return bool|null|WP_Error
+	 */
+	private function getOptionalBoolean( array $params, string $key ): bool|null|WP_Error {
+		if ( ! array_key_exists( $key, $params ) ) {
+			return null;
+		}
+
+		$value = $params[ $key ];
+
+		if ( is_bool( $value ) ) {
+			return $value;
+		}
+
+		if ( is_int( $value ) && in_array( $value, array( 0, 1 ), true ) ) {
+			return (bool) $value;
+		}
+
+		if ( is_string( $value ) ) {
+			$value = strtolower( trim( $value ) );
+
+			if ( in_array( $value, array( '1', 'true', 'yes', 'on' ), true ) ) {
+				return true;
+			}
+
+			if ( in_array( $value, array( '0', 'false', 'no', 'off', '' ), true ) ) {
+				return false;
+			}
+		}
+
+		return new WP_Error(
+			'docsync_wp_invalid_boolean_field',
+			__( 'Brasth Document Sync received an invalid boolean field.', 'brasth-document-sync-for-google-docs' ),
+			array( 'status' => 400 )
+		);
+	}
+
+	/**
+	 * Invalid source post ID error.
+	 */
+	private function invalidPostIdError(): WP_Error {
+		return new WP_Error(
+			'docsync_wp_invalid_post_id',
+			__( 'Brasth Document Sync requires a valid post ID.', 'brasth-document-sync-for-google-docs' ),
+			array( 'status' => 400 )
+		);
 	}
 
 	/**

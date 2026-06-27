@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace DocSyncWP\Admin;
 
+use DocSyncWP\Rest\RestPermissions;
 use DocSyncWP\Sync\SourceRepository;
 use WP_Post;
 
@@ -97,6 +98,10 @@ final class PostListActions {
 	 * @return array<string,string>
 	 */
 	public function addStatusColumn( array $columns ): array {
+		if ( ! RestPermissions::currentUserCanUseDocSync() ) {
+			return $columns;
+		}
+
 		$columns[ self::STATUS_COLUMN ] = __( 'Sync', 'brasth-document-sync-for-google-docs' );
 
 		return $columns;
@@ -110,6 +115,10 @@ final class PostListActions {
 	 */
 	public function renderStatusColumn( string $column, int $post_id ): void {
 		if ( self::STATUS_COLUMN !== $column ) {
+			return;
+		}
+
+		if ( ! $this->source_repository->userCanSyncPost( $post_id, get_current_user_id() ) ) {
 			return;
 		}
 

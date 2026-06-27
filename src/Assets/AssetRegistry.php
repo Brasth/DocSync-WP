@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace DocSyncWP\Assets;
 
 use DocSyncWP\Admin\AdminPage;
+use DocSyncWP\Rest\RestPermissions;
 use DocSyncWP\Settings\SettingsRepository;
 
 defined( 'ABSPATH' ) || exit;
@@ -115,9 +116,9 @@ final class AssetRegistry {
 
 			$is_post_sync_screen = null !== $screen
 				&& in_array( $screen->base, array( 'post', 'edit' ), true )
-				&& is_user_logged_in()
 				&& ! empty( $screen->post_type )
-				&& in_array( (string) $screen->post_type, $this->settings->getEnabledPostTypes(), true );
+				&& in_array( (string) $screen->post_type, $this->settings->getEnabledPostTypes(), true )
+				&& RestPermissions::currentUserCanUsePostType( (string) $screen->post_type );
 		}
 
 		if ( ! $is_admin_app_screen && ! $is_post_sync_screen ) {
@@ -290,7 +291,7 @@ final class AssetRegistry {
 	 * @param string $hook Current admin page hook suffix.
 	 */
 	private function shouldEnqueuePostSyncEntry( string $hook ): bool {
-		if ( ! in_array( $hook, self::POST_SYNC_HOOKS, true ) || ! is_user_logged_in() ) {
+		if ( ! in_array( $hook, self::POST_SYNC_HOOKS, true ) || ! RestPermissions::currentUserCanUseDocSync() ) {
 			return false;
 		}
 
@@ -300,7 +301,8 @@ final class AssetRegistry {
 			return false;
 		}
 
-		return in_array( (string) $screen->post_type, $this->settings->getEnabledPostTypes(), true );
+		return in_array( (string) $screen->post_type, $this->settings->getEnabledPostTypes(), true )
+			&& RestPermissions::currentUserCanUsePostType( (string) $screen->post_type );
 	}
 
 	/**

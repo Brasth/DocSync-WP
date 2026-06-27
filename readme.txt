@@ -4,7 +4,7 @@ Tags: google-docs, google-drive, content-sync, editorial-workflow, blocks
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 1.0.8
+Stable tag: 1.0.9
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -116,6 +116,14 @@ The build uses Vite and writes screen-specific manifests for Setup, Sources, Log
 5. Synced draft editor with the Brasth Document Sync meta box.
 
 == Changelog ==
+
+= 1.0.9 =
+
+* Hardened REST access so logged-in users must also be administrators or have edit/create capability on at least one enabled target post type.
+* Required `X-WP-Nonce` for mutating DocSync REST requests while keeping `_wpnonce` only as a read-only GET fallback.
+* Tightened source, Drive browser, document inspection, sync log, and settings request validation before service calls.
+* Limited post/list-table DocSync assets, notices, and source metadata output to users with applicable target capabilities.
+* Confirmed public settings, OAuth account status, admin inline config, and sync diagnostics do not expose client secrets or Google tokens.
 
 = 1.0.8 =
 

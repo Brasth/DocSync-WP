@@ -21,6 +21,8 @@ defined( 'ABSPATH' ) || exit;
  * Exposes source status entries for support visibility.
  */
 final class SyncLogController {
+	private const MAX_PAGE_SIZE = 100;
+
 	/**
 	 * Source repository.
 	 *
@@ -86,15 +88,15 @@ final class SyncLogController {
 		$user_id  = get_current_user_id();
 		$post_id  = absint( $request->get_param( 'post_id' ) );
 		$level    = sanitize_key( (string) $request->get_param( 'level' ) );
-		$per_page = absint( $request->get_param( 'per_page' ) );
-		$page     = absint( $request->get_param( 'page' ) );
+		$per_page = $this->clampPositiveInt( $request->get_param( 'per_page' ), 50, self::MAX_PAGE_SIZE );
+		$page     = $this->clampPositiveInt( $request->get_param( 'page' ), 1, PHP_INT_MAX );
 
-		if ( $per_page <= 0 ) {
-			$per_page = 50;
-		}
-
-		if ( $page <= 0 ) {
-			$page = 1;
+		if ( '' !== $level && ! in_array( $level, $this->source_repository->getSyncEventLevels(), true ) ) {
+			return new WP_Error(
+				'docsync_wp_invalid_sync_log_level',
+				__( 'Brasth Document Sync received an unsupported sync log level filter.', 'brasth-document-sync-for-google-docs' ),
+				array( 'status' => 400 )
+			);
 		}
 
 		return rest_ensure_response(
@@ -107,5 +109,22 @@ final class SyncLogController {
 				$page
 			)
 		);
+	}
+
+	/**
+	 * Clamp a positive integer request value.
+	 *
+	 * @param mixed $value    Raw value.
+	 * @param int   $fallback Fallback value.
+	 * @param int   $maximum  Maximum value.
+	 */
+	private function clampPositiveInt( mixed $value, int $fallback, int $maximum ): int {
+		$number = absint( $value );
+
+		if ( $number <= 0 ) {
+			$number = $fallback;
+		}
+
+		return max( 1, min( $maximum, $number ) );
 	}
 }
