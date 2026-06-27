@@ -118,7 +118,7 @@ const getEmptyCopy = (postId: string, level: string, hasActiveFilters: boolean):
 
   return {
     title: __('No sync events recorded yet.', 'brasth-document-sync-for-google-docs'),
-    description: __('Manual and scheduled sync events appear here after a source runs.', 'brasth-document-sync-for-google-docs')
+    description: __('Manual and scheduled sync events appear here after a linked Doc syncs. Check Sources to sync or inspect linked Docs.', 'brasth-document-sync-for-google-docs')
   };
 };
 
@@ -209,9 +209,15 @@ export const SyncLogEventsTable = ({ busy, entries, hasActiveFilters, hasLoaded,
             <tr>
               <td colSpan={6}>
                 <EmptyState
+                  action={(
+                    <a className="button button-secondary" href="admin.php?page=brasth-document-sync-for-google-docs-sources">
+                      {__('View Sources', 'brasth-document-sync-for-google-docs')}
+                    </a>
+                  )}
                   className="docsync-wp-table-empty-state"
                   description={emptyCopy.description}
                   title={emptyCopy.title}
+                  variant="logs"
                 />
               </td>
             </tr>

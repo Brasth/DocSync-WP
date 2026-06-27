@@ -1,6 +1,6 @@
 import { __ } from '@wordpress/i18n';
 
-import type { SettingsResponse } from '../../api';
+import type { GoogleAccount, SettingsResponse } from '../../api';
 
 export type SetupCheck = {
   id: string;
@@ -20,7 +20,7 @@ export const samePostTypes = (left: string[], right: string[]): boolean => {
   return [...left].sort().join('|') === [...right].sort().join('|');
 };
 
-export const buildSetupChecks = (settings: SettingsResponse): SetupCheck[] => [
+export const buildSetupChecks = (settings: SettingsResponse, account?: GoogleAccount): SetupCheck[] => [
   {
     id: 'client-id',
     label: __('OAuth client ID', 'brasth-document-sync-for-google-docs'),
@@ -32,5 +32,13 @@ export const buildSetupChecks = (settings: SettingsResponse): SetupCheck[] => [
     label: __('OAuth client secret', 'brasth-document-sync-for-google-docs'),
     description: __('Stored encrypted in WordPress options.', 'brasth-document-sync-for-google-docs'),
     complete: settings.hasClientSecret
+  },
+  {
+    id: 'google-account',
+    label: __('Connected Google account', 'brasth-document-sync-for-google-docs'),
+    description: account?.connected && !account.hasRequiredScope
+      ? __('Reconnect to grant Drive read-only access before browsing or syncing Docs.', 'brasth-document-sync-for-google-docs')
+      : __('Each WordPress user connects their own Google account before selecting Docs.', 'brasth-document-sync-for-google-docs'),
+    complete: Boolean(account?.connected && account.hasRequiredScope)
   }
 ];

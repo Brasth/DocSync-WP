@@ -210,6 +210,8 @@ final class AssetRegistry {
 			true
 		);
 
+		wp_set_script_translations( $handle, 'brasth-document-sync-for-google-docs', $this->plugin_path . 'languages' );
+
 		wp_add_inline_script(
 			$handle,
 			'window.DocSyncWPAdmin = ' . wp_json_encode( $this->adminConfig() ) . ';',
@@ -392,6 +394,7 @@ final class AssetRegistry {
 			'hasClientId'             => (bool) $settings['has_client_id'],
 			'hasClientSecret'         => (bool) $settings['has_client_secret'],
 			'hasRequiredSettings'     => (bool) $settings['has_required_settings'],
+			'createSyncedDraftUrl'    => esc_url_raw( admin_url( 'edit.php' ) ),
 			'docSourceModalStyleUrls' => $this->entryStyleUrls( self::DOC_SOURCE_MODAL_ENTRY, self::DOC_SOURCE_MODAL_MANIFEST ),
 			'driveBrowserScriptUrl'   => $this->entryScriptUrl( self::DRIVE_BROWSER_ENTRY, self::DRIVE_BROWSER_MANIFEST ),
 			'driveBrowserStyleUrls'   => $this->entryStyleUrls( self::DRIVE_BROWSER_ENTRY, self::DRIVE_BROWSER_MANIFEST ),

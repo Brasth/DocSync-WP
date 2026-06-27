@@ -1,3 +1,5 @@
+import { __ } from '@wordpress/i18n';
+
 export type OAuthClientJsonCredentials = {
   clientId: string;
   clientSecret: string;
@@ -18,21 +20,21 @@ export const parseOAuthClientJson = (json: string): OAuthClientJsonCredentials =
   try {
     parsed = JSON.parse(json) as OAuthClientJsonShape;
   } catch {
-    throw new Error('Could not parse this OAuth JSON file.');
+    throw new Error(__('Could not parse this OAuth JSON file.', 'brasth-document-sync-for-google-docs'));
   }
 
   const web = parsed.web;
 
   if (!web || typeof web !== 'object') {
-    throw new Error('Use the OAuth client JSON for a Google Web application.');
+    throw new Error(__('Use the OAuth client JSON for a Google Web application.', 'brasth-document-sync-for-google-docs'));
   }
 
   if (typeof web.client_id !== 'string' || web.client_id.trim() === '') {
-    throw new Error('OAuth JSON is missing web.client_id.');
+    throw new Error(__('OAuth JSON is missing web.client_id.', 'brasth-document-sync-for-google-docs'));
   }
 
   if (typeof web.client_secret !== 'string' || web.client_secret.trim() === '') {
-    throw new Error('OAuth JSON is missing web.client_secret.');
+    throw new Error(__('OAuth JSON is missing web.client_secret.', 'brasth-document-sync-for-google-docs'));
   }
 
   return {

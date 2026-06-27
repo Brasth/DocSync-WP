@@ -1,5 +1,6 @@
 @import "./shared/base.css";
 @import "./shared/primitives.css";
+@import "./shared/empty-state.css";
 @import "./components/admin-shell.css";
 @import "./components/setup-panel.css";
 @import "./components/setup-settings.css";

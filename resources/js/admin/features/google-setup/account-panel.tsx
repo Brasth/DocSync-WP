@@ -8,12 +8,21 @@ type Props = {
   account: GoogleAccount;
   busy: boolean;
   canConnect: boolean;
+  createSyncedDraftUrl: string;
   onConnect: () => Promise<void>;
   onDisconnect: () => Promise<void>;
 };
 
-export const AccountPanel = ({ account, busy, canConnect, onConnect, onDisconnect }: Props): JSX.Element => {
+export const AccountPanel = ({
+  account,
+  busy,
+  canConnect,
+  createSyncedDraftUrl,
+  onConnect,
+  onDisconnect
+}: Props): JSX.Element => {
   const needsReconnect = account.connected && !account.hasRequiredScope;
+  const canCreateDraft = account.connected && account.hasRequiredScope && canConnect;
   const disconnect = async () => {
     if (!window.confirm(__('Disconnect this Google account from Brasth Document Sync? Existing linked posts stay linked, but this user cannot browse or sync Google Docs until they reconnect.', 'brasth-document-sync-for-google-docs'))) {
       return;
@@ -37,6 +46,11 @@ export const AccountPanel = ({ account, busy, canConnect, onConnect, onDisconnec
             <AdminButton disabled={busy || !canConnect} onClick={onConnect} variant="primary">
               {__('Reconnect Google', 'brasth-document-sync-for-google-docs')}
             </AdminButton>
+          ) : null}
+          {canCreateDraft ? (
+            <a className="button button-primary" href={createSyncedDraftUrl}>
+              {__('Create synced draft', 'brasth-document-sync-for-google-docs')}
+            </a>
           ) : null}
           <AdminButton disabled={busy} onClick={disconnect} variant="delete">
             {__('Disconnect', 'brasth-document-sync-for-google-docs')}

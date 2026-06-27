@@ -1,5 +1,20 @@
 # Project Changelog
 
+Last updated: 2026-06-27
+
+## 2026-06-27 - 1.0.8 first successful sync onboarding
+
+- reworked Setup into a checklist for Google APIs, exact redirect URI, OAuth credentials, account connection, and first synced draft handoff
+- added connected-state Create synced draft links to the existing Posts list Add Sync Doc flow
+- extended shared empty states with variants, actions, and decorative illustrations for Sources, Logs, and Drive browser screens
+- added `languages/brasth-document-sync-for-google-docs.pot`, repeatable i18n scripts, script translation loading, and translated OAuth JSON parser errors
+- bumped plugin header version, `DOCSYNC_WP_VERSION`, `readme.txt` stable tag, and package metadata to `1.0.8`
+
+Unresolved:
+
+- WordPress.org screenshot slot 6 still needs a real Sources-table capture from local/staging WordPress admin
+- final manual Google OAuth and first-sync QA still needs a configured WordPress site and connected Google test account
+
 ## 2026-06-23 - 1.0.6 combined hardening/performance scope
 
 - realigned the roadmap so `1.0.5` remains the released Elementor scope and `1.0.6` carries the combined hardening and performance patch
@@ -8,8 +23,6 @@
 - moved the Drive browser into a lazy post-sync modal bundle and removed the unused post-sync `wp-data` dependency
 - aligned ZIP and deploy validation with the screen-specific Vite manifests
 - limited the PR lint workflow `GITHUB_TOKEN` permissions to read-only contents access
-
-Last updated: 2026-06-23
 
 ## 2026-06-20 - 1.0.3 Release Hardening
 

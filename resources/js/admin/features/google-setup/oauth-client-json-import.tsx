@@ -36,7 +36,7 @@ export const OAuthClientJsonImport = ({ busy, redirectUri, onImported }: Props):
     <div className="docsync-wp-oauth-import">
       <div>
         <strong>{__('Import OAuth JSON', 'brasth-document-sync-for-google-docs')}</strong>
-        <p>{__('Optional. Fill the credential fields from the Web application JSON downloaded from Google Cloud.', 'brasth-document-sync-for-google-docs')}</p>
+        <p>{__('Optional. Fill the credential fields from the Web application JSON downloaded from Google Cloud, then confirm the redirect URI is present exactly.', 'brasth-document-sync-for-google-docs')}</p>
       </div>
       <div className="docsync-wp-oauth-import__control">
         <input
@@ -58,7 +58,7 @@ export const OAuthClientJsonImport = ({ busy, redirectUri, onImported }: Props):
                 const message = redirectMatches
                   ? __('OAuth client ID and secret imported.', 'brasth-document-sync-for-google-docs')
                   : __(
-                    'OAuth credentials imported. Add the redirect URI from step 2 to this Google OAuth client before connecting.',
+                    'OAuth credentials imported. Add the exact redirect URI from step 2 to this Google OAuth client before connecting.',
                     'brasth-document-sync-for-google-docs'
                   );
 

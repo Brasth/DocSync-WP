@@ -142,6 +142,13 @@
     text-transform: uppercase;
   }
 
+  .docsync-wp-checkbox-row {
+    align-items: center;
+    display: inline-flex;
+    gap: 8px;
+    margin-top: 14px;
+  }
+
   @media (max-width: 720px) {
     .docsync-wp-oauth-import {
       grid-template-columns: 1fr;
