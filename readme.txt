@@ -122,6 +122,7 @@ The build uses Vite and writes screen-specific manifests for Setup, Sources, Log
 * Reworked the setup flow into a first-sync checklist with clearer Google API, OAuth redirect URI, credential, account connection, and first draft guidance.
 * Added a connected-state Create synced draft path that links to the existing Posts list Add Sync Doc flow.
 * Improved empty states for Sources, Logs, and the Drive browser with next actions and decorative illustrations.
+* Polished admin UI alignment for setup loading, setup step badges, source log actions, and the Google Drive source modal.
 * Added POT generation, JS translation JSON generation plumbing, and script translation loading for admin bundles.
 * Translated OAuth JSON import parser errors and refreshed placeholder guidance for translators.
 

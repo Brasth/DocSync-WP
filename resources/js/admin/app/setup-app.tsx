@@ -34,9 +34,13 @@ export const SetupApp = (): JSX.Element => {
       <AdminNotice notice={app.notice} />
 
       {!app.settings ? (
-        <section aria-busy="true" className="docsync-wp-card" role="status">
-          <p>{__('Loading settings...', 'brasth-document-sync-for-google-docs')}</p>
-        </section>
+        <div className="docsync-wp-admin-grid docsync-wp-admin-grid--single">
+          <div className="docsync-wp-admin-grid__main">
+            <section aria-busy="true" className="docsync-wp-card" role="status">
+              <p>{__('Loading settings...', 'brasth-document-sync-for-google-docs')}</p>
+            </section>
+          </div>
+        </div>
       ) : (
         <div className="docsync-wp-admin-grid">
           <div className="docsync-wp-admin-grid__main">
