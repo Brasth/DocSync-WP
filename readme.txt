@@ -22,7 +22,7 @@ Features include:
 * Server-side Google Drive document browser for My Drive and shared drives.
 * Advanced Google Docs URL and raw file ID linking.
 * Background sync through WP-Cron with source status and diagnostic logs.
-* Searchable sync logs with level, status, step, and source filters.
+* Searchable Sync Activity logs with troubleshooting views, advanced filters, and recovery hints.
 * Safe log clearing for one source or all visible sources without deleting synced content or source links.
 * One-way Google Docs to WordPress sync for posts, pages, and enabled public custom post types.
 * Media import for images exported from Google Docs.
@@ -131,7 +131,9 @@ The build uses Vite and writes screen-specific manifests for Setup, Sources, Log
 * Limited post/list-table DocSync assets, notices, and source metadata output to users with applicable target capabilities.
 * Confirmed public settings, OAuth account status, admin inline config, and sync diagnostics do not expose client secrets or Google tokens.
 * Added setup next-action guidance for saving credentials, connecting Google, reconnecting scope, and creating the first synced draft.
-* Added searchable sync logs with level, status, step, source filters, summary metrics, and recovery hints.
+* Shortened the setup wizard with compact disclosure sections for Google Cloud detail and sync defaults.
+* Compact source row actions keep Sync and Logs controls easier to scan.
+* Added searchable Sync Activity logs with troubleshooting views, advanced filters, summary metrics, and recovery hints.
 * Added safe clear-log actions for one source or all visible sources without deleting source links, sync status, credentials, progress, or synced content.
 
 = 1.0.8 =

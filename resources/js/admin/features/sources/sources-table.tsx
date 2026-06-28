@@ -285,10 +285,24 @@ export const SourcesTable = ({
                 </td>
                 <td>
                   <div className="docsync-wp-source-actions">
-                    <AdminButton disabled={busy} onClick={() => onSync(source.postId)} variant="primary">{__('Sync', 'brasth-document-sync-for-google-docs')}</AdminButton>
-                    <a className="button button-secondary docsync-wp-view-logs-link" href={logsUrl(source.postId)}>
+                    <AdminButton
+                      className="docsync-wp-source-sync-button"
+                      disabled={busy}
+                      onClick={() => onSync(source.postId)}
+                      variant="primary"
+                    >
+                      {__('Sync', 'brasth-document-sync-for-google-docs')}
+                    </AdminButton>
+                    <a
+                      aria-label={sprintf(
+                        __('View logs for %s', 'brasth-document-sync-for-google-docs'),
+                        source.postTitle || sprintf(__('Post %d', 'brasth-document-sync-for-google-docs'), source.postId)
+                      )}
+                      className="button button-secondary docsync-wp-view-logs-link"
+                      href={logsUrl(source.postId)}
+                    >
                       <span aria-hidden="true" className="dashicons dashicons-list-view" />
-                      {__('View logs', 'brasth-document-sync-for-google-docs')}
+                      <span>{__('Logs', 'brasth-document-sync-for-google-docs')}</span>
                     </a>
                   </div>
                 </td>

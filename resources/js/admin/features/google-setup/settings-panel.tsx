@@ -47,13 +47,15 @@ export const SettingsPanel = ({
   const canCreateDraft = settings.hasRequiredSettings && account.connected && account.hasRequiredScope;
   const hasCredentialChanges = clientId !== settings.clientId || clientSecret.trim() !== '';
   const canSaveCredentials = clientId.trim() !== '' && (clientSecret.trim() !== '' || settings.hasClientSecret);
-  const hasUnsavedChanges =
-    hasCredentialChanges ||
+  const hasSyncDefaultChanges =
     syncInterval !== settings.syncInterval ||
     elementorSyncEnabled !== settings.elementorSyncEnabled ||
     !samePostTypes(enabledPostTypes, settings.enabledPostTypes);
+  const hasUnsavedChanges =
+    hasCredentialChanges ||
+    hasSyncDefaultChanges;
   const credentialStepState = settings.hasRequiredSettings && !hasCredentialChanges ? 'complete' : 'needs-action';
-  const targetStepState = settings.hasRequiredSettings ? 'ready' : 'needs-action';
+  const syncDefaultsStepState = hasSyncDefaultChanges ? 'needs-action' : 'ready';
   const firstSyncStepState = canCreateDraft ? 'ready' : 'needs-action';
 
   useEffect(() => {
@@ -190,6 +192,7 @@ export const SettingsPanel = ({
         <GoogleSetupCloudSteps
           cloudStepState="manual"
           copyMessage={copyMessage}
+          initialOpen={!settings.hasRequiredSettings}
           onCopyValue={copyValue}
           redirectUri={redirectUri}
           redirectStepState="manual"
@@ -207,11 +210,23 @@ export const SettingsPanel = ({
             setClientSecret(credentials.clientSecret);
             setTestChecks(null);
           }}
+          initialOpen={!settings.hasRequiredSettings || hasCredentialChanges}
           redirectUri={redirectUri}
           stepNumber={3}
           stepState={credentialStepState}
         />
 
+        <GoogleSetupFirstSyncStep
+          account={account}
+          canCreateDraft={canCreateDraft}
+          createSyncedDraftUrl={createSyncedDraftUrl}
+          initialOpen={canCreateDraft || (account.connected && !account.hasRequiredScope)}
+          stepNumber={4}
+          stepState={firstSyncStepState}
+        />
+      </ol>
+
+      <div className="docsync-wp-setup-secondary">
         <GoogleSetupTargetsStep
           availablePostTypes={settings.availablePostTypes}
           elementorSyncEnabled={elementorSyncEnabled}
@@ -219,19 +234,11 @@ export const SettingsPanel = ({
           onElementorSyncChange={setElementorSyncEnabled}
           onSyncIntervalChange={setSyncInterval}
           onTogglePostType={togglePostType}
-          stepNumber={4}
-          stepState={targetStepState}
+          initialOpen={hasSyncDefaultChanges}
+          stepState={syncDefaultsStepState}
           syncInterval={syncInterval}
         />
-
-        <GoogleSetupFirstSyncStep
-          account={account}
-          canCreateDraft={canCreateDraft}
-          createSyncedDraftUrl={createSyncedDraftUrl}
-          stepNumber={5}
-          stepState={firstSyncStepState}
-        />
-      </ol>
+      </div>
 
       <div className="docsync-wp-settings-actions">
         <AdminButton disabled={busy} onClick={submit}>

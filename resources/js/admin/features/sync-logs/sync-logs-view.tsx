@@ -7,7 +7,7 @@ import { getAdminConfig } from '../../config';
 import { AdminButton } from '../../shared/ui/admin-button';
 import { AdminNotice, type AdminNoticeState } from '../../shared/ui/admin-notice';
 import { SyncLogEventsTable } from './sync-log-events-table';
-import { levelOptions, quickFilters, statusOptions, stepOptions, type SyncLogQuickFilter } from './sync-log-filter-options';
+import { levelOptions, statusOptions, stepOptions } from './sync-log-filter-options';
 import { SyncLogSummaryStrip } from './sync-log-summary-strip';
 
 const pageSize = 25;
@@ -20,6 +20,35 @@ type LogFilters = {
   status: string;
   step: string;
 };
+
+type LogView = {
+  id: 'all' | 'needs-attention' | 'large-doc-fallback' | 'stalled-cron';
+  label: string;
+  filters: Pick<LogFilters, 'level' | 'search' | 'status' | 'step'>;
+};
+
+const logViews: LogView[] = [
+  {
+    id: 'all',
+    label: __('All events', 'brasth-document-sync-for-google-docs'),
+    filters: { level: '', search: '', status: '', step: '' }
+  },
+  {
+    id: 'needs-attention',
+    label: __('Needs attention', 'brasth-document-sync-for-google-docs'),
+    filters: { level: 'error', search: '', status: '', step: '' }
+  },
+  {
+    id: 'stalled-cron',
+    label: __('Stalled / WP-Cron', 'brasth-document-sync-for-google-docs'),
+    filters: { level: '', search: 'docsync_wp_sync_stalled', status: '', step: '' }
+  },
+  {
+    id: 'large-doc-fallback',
+    label: __('Large doc fallback', 'brasth-document-sync-for-google-docs'),
+    filters: { level: '', search: '', status: '', step: 'large_doc_fallback' }
+  }
+];
 
 const positivePage = (value: string | null): number => {
   const page = Number(value ?? '1');
@@ -207,13 +236,13 @@ export const SyncLogsView = (): JSX.Element => {
     });
   };
 
-  const applyQuickFilter = async (quickFilter: SyncLogQuickFilter) => {
+  const applyLogView = async (logView: LogView) => {
     const nextFilters = {
-      level: quickFilter.filters.level ?? '',
+      level: logView.filters.level,
       postId,
-      search: quickFilter.filters.search ?? '',
-      status: quickFilter.filters.status ?? '',
-      step: quickFilter.filters.step ?? ''
+      search: logView.filters.search,
+      status: logView.filters.status,
+      step: logView.filters.step
     };
 
     setLevel(nextFilters.level);
@@ -223,11 +252,11 @@ export const SyncLogsView = (): JSX.Element => {
     await loadEntries(1, nextFilters);
   };
 
-  const isQuickFilterActive = (quickFilter: SyncLogQuickFilter): boolean => {
-    return (quickFilter.filters.level ?? '') === level
-      && (quickFilter.filters.search ?? '') === search.trim()
-      && (quickFilter.filters.status ?? '') === status
-      && (quickFilter.filters.step ?? '') === step;
+  const isLogViewActive = (logView: LogView): boolean => {
+    return logView.filters.level === level
+      && logView.filters.search === search.trim()
+      && logView.filters.status === status
+      && logView.filters.step === step;
   };
 
   const clearLogs = async (scope: 'source' | 'all') => {
@@ -278,7 +307,7 @@ export const SyncLogsView = (): JSX.Element => {
       <header className="docsync-wp-hero">
         <div>
           <p>{__('Brasth Document Sync', 'brasth-document-sync-for-google-docs')}</p>
-          <h1>{__('Sync Logs', 'brasth-document-sync-for-google-docs')}</h1>
+          <h1>{__('Sync Activity', 'brasth-document-sync-for-google-docs')}</h1>
           <span>{__('Version', 'brasth-document-sync-for-google-docs')} {config.version}</span>
         </div>
         <div className="docsync-wp-hero__status">
@@ -293,116 +322,104 @@ export const SyncLogsView = (): JSX.Element => {
         <section className="docsync-wp-card docsync-wp-card--wide">
           <div className="docsync-wp-card__header docsync-wp-card__header--row">
             <div>
-              <h2>{__('Logs', 'brasth-document-sync-for-google-docs')}</h2>
-              <p>{__('Diagnostic sync events stored per linked source.', 'brasth-document-sync-for-google-docs')}</p>
-            </div>
-            <div className="docsync-wp-actions-row">
-              <div className="docsync-wp-auto-refresh">
-                <button
-                  aria-label={__('Auto-refresh every 10 seconds', 'brasth-document-sync-for-google-docs')}
-                  aria-pressed={autoRefresh}
-                  className="docsync-wp-auto-refresh-toggle"
-                  onClick={() => setAutoRefresh(!autoRefresh)}
-                  type="button"
-                />
-                {autoRefresh ? <span aria-hidden="true" className="docsync-wp-auto-refresh-indicator" /> : null}
-                <span>{__('Auto-refresh', 'brasth-document-sync-for-google-docs')}</span>
-              </div>
-              <AdminButton disabled={busy} onClick={() => loadEntries(page)}>{__('Refresh', 'brasth-document-sync-for-google-docs')}</AdminButton>
+              <h2>{__('Activity console', 'brasth-document-sync-for-google-docs')}</h2>
+              <p>{__('Search source events, switch troubleshooting views, and inspect recovery hints.', 'brasth-document-sync-for-google-docs')}</p>
             </div>
           </div>
 
-          <form className="docsync-wp-log-filters" onSubmit={(event) => {
+          <form className="docsync-wp-log-console" onSubmit={(event) => {
             event.preventDefault();
             void applyFilters();
           }}>
-            <label className="docsync-wp-log-filters__search">
-              <span>{__('Search logs', 'brasth-document-sync-for-google-docs')}</span>
-              <input
-                className="regular-text"
-                onChange={(event) => setSearch(event.currentTarget.value)}
-                placeholder={__('Post title, Google Doc, message, code, step, status, or post ID', 'brasth-document-sync-for-google-docs')}
-                type="search"
-                value={search}
-              />
-            </label>
-            <label>
-              <span>{__('Level', 'brasth-document-sync-for-google-docs')}</span>
-              <select onChange={(event) => setLevel(event.currentTarget.value)} value={level}>
-                {levelOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
-              </select>
-            </label>
-            <label>
-              <span>{__('Status', 'brasth-document-sync-for-google-docs')}</span>
-              <select onChange={(event) => setStatus(event.currentTarget.value)} value={status}>
-                {statusOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
-              </select>
-            </label>
-            <label>
-              <span>{__('Step', 'brasth-document-sync-for-google-docs')}</span>
-              <select onChange={(event) => setStep(event.currentTarget.value)} value={step}>
-                {stepOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
-              </select>
-            </label>
-            <div className="docsync-wp-log-filters__actions">
-              <AdminButton disabled={busy} type="submit" variant="primary">{__('Apply filters', 'brasth-document-sync-for-google-docs')}</AdminButton>
-              <AdminButton disabled={busy || !hasActiveFilters} onClick={resetFilters}>{__('Reset', 'brasth-document-sync-for-google-docs')}</AdminButton>
+            <div className="docsync-wp-log-command-bar">
+              <label className="docsync-wp-log-search">
+                <span>{__('Search sync activity', 'brasth-document-sync-for-google-docs')}</span>
+                <input
+                  className="regular-text"
+                  onChange={(event) => setSearch(event.currentTarget.value)}
+                  placeholder={__('Title, Google Doc, message, code, step, status, or post ID', 'brasth-document-sync-for-google-docs')}
+                  type="search"
+                  value={search}
+                />
+              </label>
+              <div className="docsync-wp-log-command-actions">
+                <AdminButton disabled={busy} type="submit" variant="primary">{__('Search', 'brasth-document-sync-for-google-docs')}</AdminButton>
+                <AdminButton disabled={busy || !hasActiveFilters} onClick={resetFilters}>{__('Reset', 'brasth-document-sync-for-google-docs')}</AdminButton>
+                <div className="docsync-wp-auto-refresh">
+                  <button
+                    aria-label={__('Auto-refresh every 10 seconds', 'brasth-document-sync-for-google-docs')}
+                    aria-pressed={autoRefresh}
+                    className="docsync-wp-auto-refresh-toggle"
+                    onClick={() => setAutoRefresh(!autoRefresh)}
+                    type="button"
+                  />
+                  {autoRefresh ? <span aria-hidden="true" className="docsync-wp-auto-refresh-indicator" /> : null}
+                  <span>{__('Auto-refresh', 'brasth-document-sync-for-google-docs')}</span>
+                </div>
+                <AdminButton disabled={busy} onClick={() => loadEntries(page)}>{__('Refresh', 'brasth-document-sync-for-google-docs')}</AdminButton>
+              </div>
             </div>
-            <div className="docsync-wp-log-quick-filters" aria-label={__('Quick log filters', 'brasth-document-sync-for-google-docs')}>
-              {quickFilters.map((quickFilter) => (
+
+            <div className="docsync-wp-log-viewbar" aria-label={__('Sync activity views', 'brasth-document-sync-for-google-docs')}>
+              <span>{__('View', 'brasth-document-sync-for-google-docs')}</span>
+              {logViews.map((logView) => (
                 <button
-                  aria-pressed={isQuickFilterActive(quickFilter)}
+                  aria-pressed={isLogViewActive(logView)}
                   className="button button-secondary"
                   disabled={busy}
-                  key={quickFilter.id}
-                  onClick={() => void applyQuickFilter(quickFilter)}
+                  key={logView.id}
+                  onClick={() => void applyLogView(logView)}
                   type="button"
                 >
-                  {quickFilter.label}
+                  {logView.label}
                 </button>
               ))}
-            </div>
-            <div className="docsync-wp-log-advanced">
               <button
                 aria-expanded={showAdvancedFilters}
-                className="button-link"
+                className="button-link docsync-wp-log-advanced-toggle"
                 onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
                 type="button"
               >
                 {postId.trim()
-                  ? __('Source filter active', 'brasth-document-sync-for-google-docs')
-                  : __('Narrow by source post ID', 'brasth-document-sync-for-google-docs')}
+                  ? __('Advanced filters active', 'brasth-document-sync-for-google-docs')
+                  : __('Advanced filters', 'brasth-document-sync-for-google-docs')}
               </button>
-              {showAdvancedFilters ? (
-                <label>
-                  <span>{__('Source post ID', 'brasth-document-sync-for-google-docs')}</span>
-                  <input
-                    className="small-text"
-                    inputMode="numeric"
-                    onChange={(event) => setPostId(event.currentTarget.value)}
-                    type="number"
-                    value={postId}
-                  />
-                </label>
-              ) : null}
+            </div>
+
+            <div className="docsync-wp-log-advanced-panel" hidden={!showAdvancedFilters}>
+              <label>
+                <span>{__('Level', 'brasth-document-sync-for-google-docs')}</span>
+                <select onChange={(event) => setLevel(event.currentTarget.value)} value={level}>
+                  {levelOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+                </select>
+              </label>
+              <label>
+                <span>{__('Status', 'brasth-document-sync-for-google-docs')}</span>
+                <select onChange={(event) => setStatus(event.currentTarget.value)} value={status}>
+                  {statusOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+                </select>
+              </label>
+              <label>
+                <span>{__('Step', 'brasth-document-sync-for-google-docs')}</span>
+                <select onChange={(event) => setStep(event.currentTarget.value)} value={step}>
+                  {stepOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+                </select>
+              </label>
+              <label>
+                <span>{__('Source post ID', 'brasth-document-sync-for-google-docs')}</span>
+                <input
+                  className="small-text"
+                  inputMode="numeric"
+                  onChange={(event) => setPostId(event.currentTarget.value)}
+                  type="number"
+                  value={postId}
+                />
+              </label>
+              <AdminButton disabled={busy} type="submit">{__('Apply advanced filters', 'brasth-document-sync-for-google-docs')}</AdminButton>
             </div>
           </form>
 
           <SyncLogSummaryStrip entries={entries} />
-
-          <div className="docsync-wp-log-clear-actions">
-            <span>{__('Clears stored events only. Source links, sync status, credentials, progress, and synced content stay intact.', 'brasth-document-sync-for-google-docs')}</span>
-            <div>
-              {postId.trim() ? (
-                <AdminButton disabled={busy} onClick={() => clearLogs('source')} variant="delete">
-                  {__('Clear source logs', 'brasth-document-sync-for-google-docs')}
-                </AdminButton>
-              ) : null}
-              <AdminButton disabled={busy} onClick={() => clearLogs('all')} variant="delete">
-                {__('Clear all logs', 'brasth-document-sync-for-google-docs')}
-              </AdminButton>
-            </div>
-          </div>
 
           <SyncLogEventsTable
             busy={busy}
@@ -415,6 +432,23 @@ export const SyncLogsView = (): JSX.Element => {
             status={status}
             step={step}
           />
+
+          <div className="docsync-wp-log-clear-actions">
+            <div>
+              <strong>{__('Danger zone', 'brasth-document-sync-for-google-docs')}</strong>
+              <span>{__('Clears stored events only. Source links, sync status, credentials, progress, and synced content stay intact.', 'brasth-document-sync-for-google-docs')}</span>
+            </div>
+            <div>
+              {postId.trim() ? (
+                <AdminButton disabled={busy} onClick={() => clearLogs('source')} variant="delete">
+                  {__('Clear source logs', 'brasth-document-sync-for-google-docs')}
+                </AdminButton>
+              ) : null}
+              <AdminButton disabled={busy} onClick={() => clearLogs('all')} variant="delete">
+                {__('Clear all logs', 'brasth-document-sync-for-google-docs')}
+              </AdminButton>
+            </div>
+          </div>
 
           <div className="docsync-wp-table-footer docsync-wp-logs-pagination">
             <AdminButton disabled={busy || page <= 1} onClick={() => loadEntries(page - 1)}>{__('Previous', 'brasth-document-sync-for-google-docs')}</AdminButton>
