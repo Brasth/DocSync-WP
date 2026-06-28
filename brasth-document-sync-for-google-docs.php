@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name:       Brasth Document Sync for Google Docs
- * Description:       Sync Google Docs into WordPress posts and pages with self-managed Google OAuth and optional Elementor layout support.
- * Version:           1.0.9
+ * Description:       Sync Google Docs into WordPress posts and pages with layout presets, self-managed Google OAuth, and optional Elementor layout support.
+ * Version:           1.1.0
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Author:            Brasth
@@ -18,7 +18,7 @@ declare(strict_types=1);
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DOCSYNC_WP_VERSION', '1.0.9' );
+define( 'DOCSYNC_WP_VERSION', '1.1.0' );
 define( 'DOCSYNC_WP_MINIMUM_PHP_VERSION', '8.1' );
 define( 'DOCSYNC_WP_MINIMUM_WP_VERSION', '6.4' );
 define( 'DOCSYNC_WP_FILE', __FILE__ );
@@ -146,24 +146,33 @@ Google provides the OAuth, Drive, and Docs services used by this plugin. Google 
  * Activation callback.
  */
 function docsync_wp_activate(): void {
-	if ( docsync_wp_runtime_is_supported() ) {
-		return;
+	if ( ! docsync_wp_runtime_is_supported() ) {
+		if ( ! function_exists( 'deactivate_plugins' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+
+		deactivate_plugins( DOCSYNC_WP_BASENAME );
+
+		wp_die(
+			esc_html__(
+				'Brasth Document Sync requires PHP 8.1 or newer and WordPress 6.4 or newer.',
+				'brasth-document-sync-for-google-docs'
+			),
+			esc_html__( 'Brasth Document Sync activation error', 'brasth-document-sync-for-google-docs' ),
+			array( 'back_link' => true )
+		);
 	}
 
-	if ( ! function_exists( 'deactivate_plugins' ) ) {
-		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+	if ( false === get_option( 'docsync_wp_settings', false ) ) {
+		add_option(
+			'docsync_wp_settings',
+			array(
+				'default_layout_preset' => 'clean_article',
+			),
+			'',
+			false
+		);
 	}
-
-	deactivate_plugins( DOCSYNC_WP_BASENAME );
-
-	wp_die(
-		esc_html__(
-			'Brasth Document Sync requires PHP 8.1 or newer and WordPress 6.4 or newer.',
-			'brasth-document-sync-for-google-docs'
-		),
-		esc_html__( 'Brasth Document Sync activation error', 'brasth-document-sync-for-google-docs' ),
-		array( 'back_link' => true )
-	);
 }
 register_activation_hook( __FILE__, 'docsync_wp_activate' );
 

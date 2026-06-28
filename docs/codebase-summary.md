@@ -1,12 +1,12 @@
 # Brasth Document Sync Codebase Summary
 
-Last updated: 2026-06-23
+Last updated: 2026-06-28
 
 ## Snapshot
 
 Brasth Document Sync for Google Docs is a WordPress plugin for one-way Google Docs -> WordPress sync. This checkout includes Google OAuth, document inspection, post/page linking and sync, list-table actions, setup/Sources/Logs admin pages, HTML ZIP media import, Gutenberg block conversion, diagnostic sync events, WP-Cron scheduling, and first-pass WordPress.org release packaging.
 
-Summary reflects the current source tree after the Radix plus WordPress-native admin frontend refactor, Drive modal polish, OAuth JSON import, admin UI fixes, Gutenberg sync conversion, background sync progress, large-doc fallback, stale sync recovery, bounded sync logging, privacy disclosure, Elementor sync support, and the `1.0.6` admin asset split.
+Summary reflects the current source tree after the Radix plus WordPress-native admin frontend refactor, Drive modal polish, OAuth JSON import, admin UI fixes, Gutenberg sync conversion, layout preset foundation, background sync progress, large-doc fallback, stale sync recovery, bounded sync logging, privacy disclosure, Elementor sync support, and the screen-specific admin asset split.
 
 - Total files tracked by `rg --files`: 131
 - Main languages: PHP, TypeScript, CSS
@@ -44,7 +44,11 @@ Summary reflects the current source tree after the Radix plus WordPress-native a
 - `src/Sync/HtmlZipImporter.php` - coordinates HTML ZIP import and sanitization.
 - `src/Sync/HtmlZipPackageExtractor.php` - extracts Google Docs ZIP exports and locates HTML.
 - `src/Sync/HtmlDocumentImageRewriter.php` - rewrites local image refs to attachment URLs.
-- `src/Sync/HtmlToBlockContentConverter.php` - maps sanitized HTML fragments to serialized Gutenberg blocks.
+- `src/Sync/HtmlToBlockContentConverter.php` - legacy plain-block converter for current output compatibility.
+- `src/Sync/Layout/LayoutConversionService.php` - resolves the effective layout preset, fingerprints output policy, and converts Gutenberg sync content.
+- `src/Sync/Layout/LayoutPresetRegistry.php` - built-in presets: Clean Article, Documentation, and Plain Blocks.
+- `src/Sync/Layout/LayoutBlueprint.php` - immutable preset metadata and behavior switches.
+- `src/Sync/Layout/ContentRoleClassifier.php` - detects headings, images, lists, tables, code, callouts, and containers.
 - `src/Sync/HtmlBlockFactory.php` - creates common core block arrays from DOM elements.
 - `src/Sync/HtmlBlockMarkupSanitizer.php` - strips export-specific markup from block inner HTML.
 - `src/Sync/MediaAssetImporter.php` - uploads and dedupes Media Library images.
@@ -81,13 +85,15 @@ Summary reflects the current source tree after the Radix plus WordPress-native a
 
 ## Upcoming Work
 
-The 1.1.0 release introduces a **Layout Preset** layer to make synced Google Docs publishable without developer layout edits. Planned additions include:
+The 1.1.0 release introduces a **Layout Preset** layer to make synced Google Docs publishable without developer layout edits. Shipped additions include:
 
-- `src/Sync/Layout/` — preset registry, blueprint interface, and content-role classifier.
-- `resources/js/admin/features/layout-preset/` — wizard step and preset gallery.
-- New REST routes for listing presets and previewing their output.
-- Per-post `_docsync_wp_layout_preset` meta and site-level default setting.
-- 4 built-in presets covering Gutenberg and Elementor output.
+- `src/Sync/Layout/` — preset registry, blueprint, conversion service, and content-role classifier.
+- Setup sync defaults dropdown backed by `GET/POST /settings`.
+- Site-level `default_layout_preset`, optional per-post `_docsync_wp_layout_preset`, and `_docsync_wp_last_layout_fingerprint`.
+- Built-in Gutenberg presets covering Clean Article, Documentation, and legacy Plain Blocks.
+- Golden fixtures plus `scripts/verify-layout-fixtures.php`.
+
+Preview/gallery UI, per-post selector UI, and Elementor presets remain future work.
 
 Later releases add bulk Drive folder import, a Pro tier with a custom preset builder, a Google Docs Workspace Add-on, and optional managed OAuth. See `docs/project-roadmap.md` for the full phased plan and success metrics.
 
@@ -97,6 +103,6 @@ Later releases add bulk Drive folder import, a Pro tier with a custom preset bui
 - REST namespace: `brasth-document-sync-for-google-docs/v1`.
 - Google tokens and the OAuth client secret are encrypted with WordPress salts.
 - WordPress privacy policy suggested text discloses Google OAuth, Drive API, Docs API, stored credentials/tokens, linked metadata, imported media, and uninstall retention.
-- Release packaging includes `resources/`, `package.json`, `pnpm-lock.yaml`, `vite.config.ts`, `composer.json`, `build/`, and WordPress.org `readme.txt` so reviewers can inspect human-readable source for built assets. Installable ZIP files exclude `assets/`; listing assets stay in the repository for WordPress.org SVN root upload. The release metadata currently targets `1.0.9`.
+- Release packaging includes `resources/`, `package.json`, `pnpm-lock.yaml`, `vite.config.ts`, `composer.json`, `build/`, and WordPress.org `readme.txt` so reviewers can inspect human-readable source for built assets. Installable ZIP files exclude `assets/`; listing assets stay in the repository for WordPress.org SVN root upload. The release metadata currently targets `1.1.0`.
 - The admin app depends on WordPress packages for REST, i18n, a11y, URL helpers, components, and element runtime; Radix Dialog/Tabs remain the complex interaction primitives.
 - Frontend lint blocks inline PHPCS suppression comments in plugin source.

@@ -20,12 +20,12 @@ Each release must pass the existing validation pipeline (`pnpm lint`, `pnpm type
 
 ## Current State
 
-- Version 1.0.8 is prepared in the codebase. Version 1.0.9 is the active security hardening and productized admin UI patch line pending staging QA.
+- Version 1.1.0 is prepared in the codebase as the layout preset foundation release.
 - Core sync engine is stable: Google export, media import, Gutenberg block conversion, Elementor JSON conversion, background sync, and sync logging.
 - The plugin supports one-way sync from Google Docs to WordPress posts, pages, and enabled public custom post types.
 - Setup now uses a task-first Brasth workspace with one primary next action, Sources keeps a tighter table workflow with compact row actions, and Logs presents a searchable Sync Activity workspace with Radix confirmation dialogs, recovery hints, and safe clear actions.
-- The editor decision layer (`Elementor\SyncDecider`) is in place, but the conversion is purely structural: every document becomes the same flat layout.
-- Self-managed Google OAuth is the only connection mode. There is no Pro tier, no managed connector, and no layout template system.
+- The Gutenberg sync path now has a layout preset layer with Clean Article, Documentation, and legacy Plain Blocks; Elementor sync remains on its existing Elementor conversion path.
+- Self-managed Google OAuth is the only connection mode. There is no Pro tier, no managed connector, and no custom preset builder.
 
 ## Strategic Themes
 
@@ -45,14 +45,14 @@ Each release must pass the existing validation pipeline (`pnpm lint`, `pnpm type
 | **1.0.6** | Released | Bug fixes from 1.0.4/1.0.5 feedback, WP 6.5 compatibility, accessibility audit fixes, lazy-load Drive browser, smaller admin bundles, faster first paint | Snappier and more compatible admin experience |
 | **1.0.7** | Released | PHP 8.2/8.3 deprecation cleanup, dependency updates, security audit | Future-proof, broader hosting compatibility |
 | **1.0.8** | Released | First-sync setup checklist, translation infrastructure, action-oriented empty states, screenshot refresh follow-up | Smoother onboarding |
-| **1.0.9** | Now | Security audit fixes, nonce hardening, role-capability review, productized Brasth admin shell, task-first setup, compact source actions, searchable Sync Activity logs, Radix-confirmed safe log clearing | Hardened plugin with clearer onboarding and troubleshooting |
+| **1.0.9** | Released | Security audit fixes, nonce hardening, role-capability review, productized Brasth admin shell, task-first setup, compact source actions, searchable Sync Activity logs, Radix-confirmed safe log clearing | Hardened plugin with clearer onboarding and troubleshooting |
 
 ### 1.1.x line — Layout foundation: backend
 
 | Version | Target Date | Scope | User-visible value |
 |---|---|---|---|
-| **1.1.0** | +10 weeks | Layout Preset registry (`LayoutBlueprint`, `LayoutPresetRegistry`, `ContentRoleClassifier`), 2 Gutenberg presets (`Clean Article`, `Documentation`), site default setting, `_docsync_wp_layout_preset` post meta | Site admin sets a default layout; all synced posts look better |
-| **1.1.1** | +12 weeks | Regression fixes for default sync path, golden tests for 2 Gutenberg presets | Stable preset output |
+| **1.1.0** | Now | Layout preset registry (`LayoutBlueprint`, `LayoutPresetRegistry`, `ContentRoleClassifier`, `LayoutConversionService`), 2 enhanced Gutenberg presets (`Clean Article`, `Documentation`), legacy `Plain Blocks`, site default setting, tiny Setup dropdown, layout fingerprints, and 5 golden fixtures | Site admin sets a default layout; all synced posts look better |
+| **1.1.1** | +12 weeks | Regression fixes for default sync path and edge-case fixture expansion | Stable preset output |
 | **1.1.2** | +14 weeks | 2 Elementor presets (`Elementor Hero Page`, `Elementor Feature Block`) | Elementor users get layouts too |
 | **1.1.3** | +16 weeks | Golden test suite for all 4 presets, sync logging for preset usage | QA confidence and usage analytics |
 
@@ -122,8 +122,8 @@ Each release must pass the existing validation pipeline (`pnpm lint`, `pnpm type
 
 | Horizon | Versions | Focus | Key Deliverables |
 |---|---|---|---|
-| **Now** | 1.0.8 - 1.0.9 | Momentum and hardening | Onboarding polish, troubleshooting UX, screenshot refresh, security |
-| **Next** | 1.1.0 - 1.2.3 | Layout foundation | Backend presets, wizard UI, preview, per-post override |
+| **Now** | 1.1.0 | Layout preset foundation | Setup default layout dropdown, Gutenberg presets, layout fingerprints, golden fixtures |
+| **Next** | 1.1.1 - 1.2.3 | Layout UI expansion | Regression fixes, Elementor presets, wizard gallery, preview, per-post override |
 | **Later** | 1.3.0 - 1.4.3 | Agency scale and monetization | Bulk import, Pro tier, custom preset builder |
 | **Future** | 1.5.0 - 2.2.0 | Writer discovery, smart sync, expansion | Add-on, AI, managed OAuth, Notion, team workflows |
 

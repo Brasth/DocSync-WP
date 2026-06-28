@@ -1,28 +1,34 @@
 import { createElement, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
-import type { AvailablePostType } from '../../config';
+import type { AvailableLayoutPreset, AvailablePostType } from '../../config';
 import { SetupStepStateBadge, type SetupStepState } from './setup-step-state';
 
 type Props = {
+  availableLayoutPresets: AvailableLayoutPreset[];
   availablePostTypes: AvailablePostType[];
+  defaultLayoutPreset: string;
   elementorSyncEnabled: boolean;
   enabledPostTypes: string[];
   initialOpen: boolean;
   syncInterval: string;
   stepState: SetupStepState;
+  onDefaultLayoutPresetChange: (presetId: string) => void;
   onElementorSyncChange: (enabled: boolean) => void;
   onTogglePostType: (postType: string) => void;
   onSyncIntervalChange: (syncInterval: string) => void;
 };
 
 export const GoogleSetupTargetsStep = ({
+  availableLayoutPresets,
   availablePostTypes,
+  defaultLayoutPreset,
   elementorSyncEnabled,
   enabledPostTypes,
   initialOpen,
   syncInterval,
   stepState,
+  onDefaultLayoutPresetChange,
   onElementorSyncChange,
   onTogglePostType,
   onSyncIntervalChange
@@ -66,6 +72,18 @@ export const GoogleSetupTargetsStep = ({
             <option value="twicedaily">{__('Twice daily', 'brasth-document-sync-for-google-docs')}</option>
             <option value="daily">{__('Daily', 'brasth-document-sync-for-google-docs')}</option>
           </select>
+        </label>
+
+        <label className="docsync-wp-field docsync-wp-field--compact">
+          <span>{__('Default synced layout', 'brasth-document-sync-for-google-docs')}</span>
+          <select onChange={(event) => onDefaultLayoutPresetChange(event.currentTarget.value)} value={defaultLayoutPreset}>
+            {availableLayoutPresets.map((preset) => (
+              <option key={preset.id} value={preset.id}>{preset.label}</option>
+            ))}
+          </select>
+          <small className="docsync-wp-field-help">
+            {__('Applies to block editor sync. Elementor layouts use existing Elementor sync.', 'brasth-document-sync-for-google-docs')}
+          </small>
         </label>
 
         <label className="docsync-wp-checkbox-row">

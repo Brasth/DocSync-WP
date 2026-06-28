@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace DocSyncWP\Sync;
 
 use DocSyncWP\Settings\SettingsRepository;
+use DocSyncWP\Sync\Layout\LayoutPresetRegistry;
 use WP_Error;
 use WP_Post;
 use WP_Post_Type;
@@ -41,6 +42,8 @@ final class SourceRepository {
 	public const META_SYNC_ERR_CODE  = '_docsync_wp_sync_error_code';
 	public const META_SYNC_EVENTS    = '_docsync_wp_sync_events';
 	public const META_ELEMENTOR_SYNC = '_docsync_wp_elementor_sync';
+	public const META_LAYOUT_PRESET  = '_docsync_wp_layout_preset';
+	public const META_LAYOUT_HASH    = '_docsync_wp_last_layout_fingerprint';
 
 	private const EXPORT_FORMAT_HTML_ZIP = 'html_zip';
 	private const STATUS_SYNCING         = 'syncing';
@@ -55,12 +58,21 @@ final class SourceRepository {
 	private SettingsRepository $settings;
 
 	/**
+	 * Layout preset registry.
+	 *
+	 * @var LayoutPresetRegistry
+	 */
+	private LayoutPresetRegistry $layout_presets;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param SettingsRepository $settings Settings repository.
+	 * @param SettingsRepository        $settings       Settings repository.
+	 * @param LayoutPresetRegistry|null $layout_presets Layout preset registry.
 	 */
-	public function __construct( SettingsRepository $settings ) {
-		$this->settings = $settings;
+	public function __construct( SettingsRepository $settings, ?LayoutPresetRegistry $layout_presets = null ) {
+		$this->settings       = $settings;
+		$this->layout_presets = $layout_presets ?? new LayoutPresetRegistry();
 	}
 
 	/**
@@ -96,6 +108,8 @@ final class SourceRepository {
 			'last_hash'            => $this->getStringMeta( $post_id, self::META_LAST_HASH ),
 			'last_synced_at'       => $this->getStringMeta( $post_id, self::META_LAST_SYNCED ),
 			'last_sync_method'     => $this->getStringMeta( $post_id, self::META_LAST_METHOD ),
+			'layout_preset'        => $this->getLayoutPreset( $post_id ),
+			'last_layout_hash'     => $this->getStringMeta( $post_id, self::META_LAYOUT_HASH ),
 			'sync_owner_user_id'   => absint( get_post_meta( $post_id, self::META_OWNER_USER_ID, true ) ),
 			'export_format'        => $this->getStringMeta( $post_id, self::META_EXPORT_FORMAT ),
 			'elementor_sync'       => $this->getElementorSync( $post_id ),
@@ -154,6 +168,8 @@ final class SourceRepository {
 		update_post_meta( $post_id, self::META_LAST_HASH, isset( $source['last_hash'] ) ? sanitize_text_field( (string) $source['last_hash'] ) : '' );
 		update_post_meta( $post_id, self::META_LAST_SYNCED, isset( $source['last_synced_at'] ) ? sanitize_text_field( (string) $source['last_synced_at'] ) : '' );
 		update_post_meta( $post_id, self::META_LAST_METHOD, $this->sanitizeLastSyncMethod( $source['last_sync_method'] ?? '' ) );
+		update_post_meta( $post_id, self::META_LAYOUT_PRESET, $this->sanitizeLayoutPreset( $source['layout_preset'] ?? '' ) );
+		update_post_meta( $post_id, self::META_LAYOUT_HASH, isset( $source['last_layout_hash'] ) ? sanitize_text_field( (string) $source['last_layout_hash'] ) : '' );
 		update_post_meta( $post_id, self::META_OWNER_USER_ID, isset( $source['sync_owner_user_id'] ) ? absint( $source['sync_owner_user_id'] ) : 0 );
 		update_post_meta( $post_id, self::META_EXPORT_FORMAT, $this->sanitizeExportFormat( $source['export_format'] ?? self::EXPORT_FORMAT_HTML_ZIP ) );
 
@@ -756,30 +772,32 @@ final class SourceRepository {
 		$edit_link = get_edit_post_link( $post_id, 'raw' );
 
 		return array(
-			'postId'             => $post_id,
-			'postType'           => $post->post_type,
-			'postStatus'         => $post->post_status,
-			'postTitle'          => get_the_title( $post_id ),
-			'editUrl'            => is_string( $edit_link ) ? esc_url_raw( $edit_link ) : '',
-			'googleFileId'       => $source['google_file_id'],
-			'googleDocUrl'       => $source['google_doc_url'],
-			'googleTitle'        => $source['google_title'],
-			'googleModifiedTime' => $source['google_modified_time'],
-			'googleVersion'      => $source['google_version'],
-			'lastHash'           => $source['last_hash'],
-			'lastSyncedAt'       => $source['last_synced_at'],
-			'lastSyncMethod'     => '' !== $source['last_sync_method'] ? $source['last_sync_method'] : null,
-			'syncOwnerUserId'    => $source['sync_owner_user_id'],
-			'exportFormat'       => $source['export_format'],
-			'elementorSync'      => $source['elementor_sync'],
-			'syncStatus'         => $source['sync_status'],
-			'syncError'          => $source['sync_error'],
-			'syncProgress'       => $source['sync_progress'],
-			'syncStep'           => $source['sync_step'],
-			'syncMessage'        => $source['sync_message'],
-			'syncStartedAt'      => $source['sync_started_at'],
-			'syncUpdatedAt'      => $source['sync_updated_at'],
-			'syncErrorCode'      => $source['sync_error_code'],
+			'postId'                => $post_id,
+			'postType'              => $post->post_type,
+			'postStatus'            => $post->post_status,
+			'postTitle'             => get_the_title( $post_id ),
+			'editUrl'               => is_string( $edit_link ) ? esc_url_raw( $edit_link ) : '',
+			'googleFileId'          => $source['google_file_id'],
+			'googleDocUrl'          => $source['google_doc_url'],
+			'googleTitle'           => $source['google_title'],
+			'googleModifiedTime'    => $source['google_modified_time'],
+			'googleVersion'         => $source['google_version'],
+			'lastHash'              => $source['last_hash'],
+			'lastSyncedAt'          => $source['last_synced_at'],
+			'lastSyncMethod'        => '' !== $source['last_sync_method'] ? $source['last_sync_method'] : null,
+			'layoutPreset'          => '' !== $source['layout_preset'] ? $source['layout_preset'] : null,
+			'lastLayoutFingerprint' => $source['last_layout_hash'],
+			'syncOwnerUserId'       => $source['sync_owner_user_id'],
+			'exportFormat'          => $source['export_format'],
+			'elementorSync'         => $source['elementor_sync'],
+			'syncStatus'            => $source['sync_status'],
+			'syncError'             => $source['sync_error'],
+			'syncProgress'          => $source['sync_progress'],
+			'syncStep'              => $source['sync_step'],
+			'syncMessage'           => $source['sync_message'],
+			'syncStartedAt'         => $source['sync_started_at'],
+			'syncUpdatedAt'         => $source['sync_updated_at'],
+			'syncErrorCode'         => $source['sync_error_code'],
 		);
 	}
 
@@ -1057,6 +1075,19 @@ final class SourceRepository {
 	}
 
 	/**
+	 * Get an optional per-post layout preset override.
+	 *
+	 * Empty or invalid values mean callers should use the site default.
+	 *
+	 * @param int $post_id Post ID.
+	 */
+	private function getLayoutPreset( int $post_id ): string {
+		$preset_id = sanitize_key( $this->getStringMeta( $post_id, self::META_LAYOUT_PRESET ) );
+
+		return $this->layout_presets->isValidPresetId( $preset_id ) ? $preset_id : '';
+	}
+
+	/**
 	 * Get the per-post Elementor sync preference.
 	 *
 	 * Returns null when the user has never set a preference, so callers can
@@ -1308,6 +1339,17 @@ final class SourceRepository {
 	}
 
 	/**
+	 * Sanitize an optional layout preset override.
+	 *
+	 * @param mixed $preset_id Layout preset ID.
+	 */
+	private function sanitizeLayoutPreset( mixed $preset_id ): string {
+		$preset_id = sanitize_key( (string) $preset_id );
+
+		return '' !== $preset_id && $this->layout_presets->isValidPresetId( $preset_id ) ? $preset_id : '';
+	}
+
+	/**
 	 * Source meta keys.
 	 *
 	 * @return array<int,string>
@@ -1322,6 +1364,8 @@ final class SourceRepository {
 			self::META_LAST_HASH,
 			self::META_LAST_SYNCED,
 			self::META_LAST_METHOD,
+			self::META_LAYOUT_PRESET,
+			self::META_LAYOUT_HASH,
 			self::META_OWNER_USER_ID,
 			self::META_EXPORT_FORMAT,
 			self::META_ELEMENTOR_SYNC,

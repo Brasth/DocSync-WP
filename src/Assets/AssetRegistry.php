@@ -392,6 +392,8 @@ final class AssetRegistry {
 			'enabledPostTypes'        => $settings['enabled_post_types'],
 			'availablePostTypes'      => $this->settings->getAvailablePostTypes(),
 			'defaultExportFormat'     => $settings['default_export_format'],
+			'defaultLayoutPreset'     => $settings['default_layout_preset'],
+			'availableLayoutPresets'  => $this->settings->getAvailableLayoutPresets(),
 			'syncInterval'            => $settings['sync_interval'],
 			'hasClientId'             => (bool) $settings['has_client_id'],
 			'hasClientSecret'         => (bool) $settings['has_client_secret'],

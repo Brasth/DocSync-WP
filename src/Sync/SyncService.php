@@ -13,6 +13,8 @@ use DocSyncWP\Google\DriveClient;
 use DocSyncWP\Sync\Elementor\DataConverter as ElementorDataConverter;
 use DocSyncWP\Sync\Elementor\PostUpdater as ElementorPostUpdater;
 use DocSyncWP\Sync\Elementor\SyncDecider as ElementorSyncDecider;
+use DocSyncWP\Sync\Layout\LayoutConversionService;
+use DocSyncWP\Sync\Layout\LayoutPresetRegistry;
 use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
@@ -60,11 +62,11 @@ final class SyncService {
 	private DocsApiHtmlImporter $docs_api_importer;
 
 	/**
-	 * HTML to block content converter.
+	 * Layout conversion service.
 	 *
-	 * @var HtmlToBlockContentConverter
+	 * @var LayoutConversionService
 	 */
-	private HtmlToBlockContentConverter $block_converter;
+	private LayoutConversionService $layout_converter;
 
 	/**
 	 * Sync lock.
@@ -101,7 +103,7 @@ final class SyncService {
 	 * @param DriveClient                 $drive_client        Drive client.
 	 * @param HtmlZipImporter             $html_zip_importer   HTML ZIP importer.
 	 * @param DocsApiHtmlImporter         $docs_api_importer   Docs API fallback importer.
-	 * @param HtmlToBlockContentConverter $block_converter     HTML to block converter.
+	 * @param LayoutConversionService     $layout_converter    Layout conversion service.
 	 * @param SyncLock                    $sync_lock           Sync lock.
 	 * @param ElementorSyncDecider|null   $elementor_decider   Elementor sync decider.
 	 * @param ElementorDataConverter|null $elementor_converter Elementor data converter.
@@ -112,7 +114,7 @@ final class SyncService {
 		DriveClient $drive_client,
 		HtmlZipImporter $html_zip_importer,
 		DocsApiHtmlImporter $docs_api_importer,
-		HtmlToBlockContentConverter $block_converter,
+		LayoutConversionService $layout_converter,
 		SyncLock $sync_lock,
 		?ElementorSyncDecider $elementor_decider = null,
 		?ElementorDataConverter $elementor_converter = null,
@@ -122,7 +124,7 @@ final class SyncService {
 		$this->drive_client        = $drive_client;
 		$this->html_zip_importer   = $html_zip_importer;
 		$this->docs_api_importer   = $docs_api_importer;
-		$this->block_converter     = $block_converter;
+		$this->layout_converter    = $layout_converter;
 		$this->sync_lock           = $sync_lock;
 		$this->elementor_decider   = $elementor_decider;
 		$this->elementor_converter = $elementor_converter ?? new ElementorDataConverter();
@@ -466,13 +468,26 @@ final class SyncService {
 
 			$previous_source = $source;
 			$source          = array_merge( $source, $this->sourceFromMetadata( $metadata ) );
+			$use_elementor   = null !== $this->elementor_decider && $this->elementor_decider->shouldUseElementor( $post_id );
+			$layout_hash     = $use_elementor ? '' : $this->layout_converter->fingerprintForSource( $source );
 
 			if (
 				! $force
 				&& '' !== (string) $source['last_hash']
 				&& (string) $previous_source['google_modified_time'] === (string) $metadata['modifiedTime']
 				&& (string) $previous_source['google_version'] === (string) $metadata['version']
+				&& ( $use_elementor || $this->isLayoutFingerprintCurrent( $source, $layout_hash ) )
 			) {
+				$skip_updates = array(
+					'last_synced_at'     => current_time( 'mysql', true ),
+					'sync_owner_user_id' => $sync_user_id,
+					'sync_error'         => '',
+				);
+
+				if ( ! $use_elementor ) {
+					$skip_updates['last_layout_hash'] = $layout_hash;
+				}
+
 				$source = $this->saveProgressState(
 					$post_id,
 					$source,
@@ -480,11 +495,7 @@ final class SyncService {
 					100,
 					'complete',
 					__( 'Google Doc has not changed.', 'brasth-document-sync-for-google-docs' ),
-					array(
-						'last_synced_at'     => current_time( 'mysql', true ),
-						'sync_owner_user_id' => $sync_user_id,
-						'sync_error'         => '',
-					)
+					$skip_updates
 				);
 
 				if ( is_wp_error( $source ) ) {
@@ -517,8 +528,6 @@ final class SyncService {
 				return $this->markError( $post_id, $source, $import );
 			}
 
-			$use_elementor = null !== $this->elementor_decider && $this->elementor_decider->shouldUseElementor( $post_id );
-
 			$source = $this->saveProgressState(
 				$post_id,
 				$source,
@@ -544,7 +553,7 @@ final class SyncService {
 
 				$content = $elementor_json;
 			} else {
-				$block_content = $this->block_converter->convert( $import['html'] );
+				$block_content = $this->layout_converter->convertForSource( $import['html'], $source );
 
 				if ( is_wp_error( $block_content ) ) {
 					return $this->markError( $post_id, $source, $block_content );
@@ -556,6 +565,18 @@ final class SyncService {
 			$hash = hash( 'sha256', $content );
 
 			if ( ! $force && hash_equals( (string) $source['last_hash'], $hash ) ) {
+				$skip_updates = array(
+					'last_hash'          => $hash,
+					'last_synced_at'     => current_time( 'mysql', true ),
+					'last_sync_method'   => $import['method'],
+					'sync_owner_user_id' => $sync_user_id,
+					'sync_error'         => '',
+				);
+
+				if ( ! $use_elementor ) {
+					$skip_updates['last_layout_hash'] = $layout_hash;
+				}
+
 				$source = $this->saveProgressState(
 					$post_id,
 					$source,
@@ -563,13 +584,7 @@ final class SyncService {
 					100,
 					'complete',
 					__( 'Imported content matches the current WordPress post.', 'brasth-document-sync-for-google-docs' ),
-					array(
-						'last_hash'          => $hash,
-						'last_synced_at'     => current_time( 'mysql', true ),
-						'last_sync_method'   => $import['method'],
-						'sync_owner_user_id' => $sync_user_id,
-						'sync_error'         => '',
-					)
+					$skip_updates
 				);
 
 				if ( is_wp_error( $source ) ) {
@@ -639,6 +654,18 @@ final class SyncService {
 				);
 			}
 
+			$success_updates = array(
+				'last_hash'          => $hash,
+				'last_synced_at'     => current_time( 'mysql', true ),
+				'last_sync_method'   => $import['method'],
+				'sync_owner_user_id' => $sync_user_id,
+				'sync_error'         => '',
+			);
+
+			if ( ! $use_elementor ) {
+				$success_updates['last_layout_hash'] = $layout_hash;
+			}
+
 			$source = $this->saveProgressState(
 				$post_id,
 				$source,
@@ -646,13 +673,7 @@ final class SyncService {
 				100,
 				'complete',
 				__( 'Sync complete.', 'brasth-document-sync-for-google-docs' ),
-				array(
-					'last_hash'          => $hash,
-					'last_synced_at'     => current_time( 'mysql', true ),
-					'last_sync_method'   => $import['method'],
-					'sync_owner_user_id' => $sync_user_id,
-					'sync_error'         => '',
-				)
+				$success_updates
 			);
 
 			if ( is_wp_error( $source ) ) {
@@ -756,6 +777,26 @@ final class SyncService {
 		);
 
 		return $next_source;
+	}
+
+	/**
+	 * Whether the stored layout fingerprint matches current Gutenberg output policy.
+	 *
+	 * Legacy sources synced before 1.1.0 have no layout fingerprint. Treat those
+	 * as current only when the effective preset is still the legacy plain_blocks
+	 * preset, preserving upgraded-site skip behavior.
+	 *
+	 * @param array<string,mixed> $source      Source metadata.
+	 * @param string              $layout_hash Current layout fingerprint.
+	 */
+	private function isLayoutFingerprintCurrent( array $source, string $layout_hash ): bool {
+		$last_layout_hash = isset( $source['last_layout_hash'] ) ? (string) $source['last_layout_hash'] : '';
+
+		if ( '' === $last_layout_hash ) {
+			return LayoutPresetRegistry::PRESET_PLAIN_BLOCKS === $this->layout_converter->resolvePresetForSource( $source );
+		}
+
+		return hash_equals( $last_layout_hash, $layout_hash );
 	}
 
 	/**
@@ -985,7 +1026,7 @@ final class SyncService {
 					return true;
 				}
 			} else {
-				$block_content = $this->block_converter->convert( $sanitized_html );
+				$block_content = $this->layout_converter->convertForSource( $sanitized_html, $source );
 
 				if ( is_wp_error( $block_content ) ) {
 					return $block_content;

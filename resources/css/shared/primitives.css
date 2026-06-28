@@ -59,6 +59,11 @@
     max-width: 260px;
   }
 
+  .docsync-wp-field-help {
+    color: var(--docsync-text-muted);
+    line-height: 1.4;
+  }
+
   .docsync-wp-table-scroll {
     overflow-x: auto;
   }

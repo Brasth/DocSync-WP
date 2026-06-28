@@ -4,11 +4,11 @@ Tags: google-docs, google-drive, content-sync, editorial-workflow, blocks
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 1.0.9
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Sync Google Docs into WordPress posts and pages with self-managed Google OAuth and optional Elementor layout support.
+Sync Google Docs into WordPress posts and pages with layout presets, self-managed Google OAuth, and optional Elementor layout support.
 
 == Description ==
 
@@ -26,7 +26,8 @@ Features include:
 * Safe log clearing for one source or all visible sources without deleting synced content or source links.
 * One-way Google Docs to WordPress sync for posts, pages, and enabled public custom post types.
 * Media import for images exported from Google Docs.
-* Gutenberg block markup for common headings, paragraphs, lists, tables, and images.
+* Default synced layout presets for Gutenberg imports: Clean Article, Documentation, and legacy Plain Blocks.
+* Gutenberg block markup for common headings, paragraphs, lists, tables, code, callouts, and images.
 * Uninstall cleanup for settings, encrypted user tokens, and scheduled events.
 
 = External Services =
@@ -122,6 +123,15 @@ The build uses Vite and writes screen-specific manifests for Setup, Sources, Log
 5. Synced draft editor with the Brasth Document Sync meta box.
 
 == Changelog ==
+
+= 1.1.0 =
+
+* Added a Default synced layout setting in Setup sync defaults for block editor imports.
+* Added Clean Article, Documentation, and Plain Blocks Gutenberg layout presets.
+* Kept existing installs on Plain Blocks by default while new installs start with Clean Article.
+* Added layout fingerprints so preset changes re-convert content even when Google metadata is unchanged.
+* Kept Elementor sync on the existing Elementor conversion path.
+* Added golden fixture coverage for article, image, documentation, table/callout/list, and legacy plain-block output.
 
 = 1.0.9 =
 

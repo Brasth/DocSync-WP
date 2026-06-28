@@ -118,6 +118,7 @@ final class SettingsController {
 			'enabledPostTypes',
 			'defaultPostStatus',
 			'defaultExportFormat',
+			'defaultLayoutPreset',
 			'syncInterval',
 			'connectionMode',
 			'elementorSyncEnabled',
@@ -159,6 +160,10 @@ final class SettingsController {
 			$mapped['default_export_format'] = $params['defaultExportFormat'];
 		}
 
+		if ( array_key_exists( 'defaultLayoutPreset', $params ) ) {
+			$mapped['default_layout_preset'] = $params['defaultLayoutPreset'];
+		}
+
 		if ( array_key_exists( 'syncInterval', $params ) ) {
 			$mapped['sync_interval'] = $params['syncInterval'];
 		}
@@ -183,18 +188,20 @@ final class SettingsController {
 		$settings = $this->settings->getPublicSettings();
 
 		return array(
-			'clientId'             => $settings['client_id'],
-			'scopeMode'            => $settings['scope_mode'],
-			'enabledPostTypes'     => $settings['enabled_post_types'],
-			'defaultPostStatus'    => $settings['default_post_status'],
-			'defaultExportFormat'  => $settings['default_export_format'],
-			'syncInterval'         => $settings['sync_interval'],
-			'connectionMode'       => $settings['connection_mode'],
-			'elementorSyncEnabled' => $settings['elementor_sync_enabled'],
-			'hasClientId'          => $settings['has_client_id'],
-			'hasClientSecret'      => $settings['has_client_secret'],
-			'hasRequiredSettings'  => $settings['has_required_settings'],
-			'availablePostTypes'   => $this->settings->getAvailablePostTypes(),
+			'clientId'               => $settings['client_id'],
+			'scopeMode'              => $settings['scope_mode'],
+			'enabledPostTypes'       => $settings['enabled_post_types'],
+			'defaultPostStatus'      => $settings['default_post_status'],
+			'defaultExportFormat'    => $settings['default_export_format'],
+			'defaultLayoutPreset'    => $settings['default_layout_preset'],
+			'syncInterval'           => $settings['sync_interval'],
+			'connectionMode'         => $settings['connection_mode'],
+			'elementorSyncEnabled'   => $settings['elementor_sync_enabled'],
+			'hasClientId'            => $settings['has_client_id'],
+			'hasClientSecret'        => $settings['has_client_secret'],
+			'hasRequiredSettings'    => $settings['has_required_settings'],
+			'availablePostTypes'     => $this->settings->getAvailablePostTypes(),
+			'availableLayoutPresets' => $this->settings->getAvailableLayoutPresets(),
 		);
 	}
 }

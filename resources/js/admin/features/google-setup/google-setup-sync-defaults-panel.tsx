@@ -19,10 +19,12 @@ export const GoogleSetupSyncDefaultsPanel = ({
 }: Props): JSX.Element => {
   const [enabledPostTypes, setEnabledPostTypes] = useState(settings.enabledPostTypes);
   const [syncInterval, setSyncInterval] = useState(settings.syncInterval);
+  const [defaultLayoutPreset, setDefaultLayoutPreset] = useState(settings.defaultLayoutPreset);
   const [elementorSyncEnabled, setElementorSyncEnabled] = useState(settings.elementorSyncEnabled);
 
   const hasChanges =
     syncInterval !== settings.syncInterval ||
+    defaultLayoutPreset !== settings.defaultLayoutPreset ||
     elementorSyncEnabled !== settings.elementorSyncEnabled ||
     !samePostTypes(enabledPostTypes, settings.enabledPostTypes);
   const stepState = hasChanges ? 'needs-action' : 'ready';
@@ -30,6 +32,7 @@ export const GoogleSetupSyncDefaultsPanel = ({
   useEffect(() => {
     setEnabledPostTypes(settings.enabledPostTypes);
     setSyncInterval(settings.syncInterval);
+    setDefaultLayoutPreset(settings.defaultLayoutPreset);
     setElementorSyncEnabled(settings.elementorSyncEnabled);
   }, [settings]);
 
@@ -51,6 +54,7 @@ export const GoogleSetupSyncDefaultsPanel = ({
     await onSave({
       enabledPostTypes,
       syncInterval,
+      defaultLayoutPreset,
       elementorSyncEnabled
     });
   };
@@ -58,10 +62,13 @@ export const GoogleSetupSyncDefaultsPanel = ({
   return (
     <section className={`docsync-wp-setup-sidebar-panel${hasChanges ? ' is-dirty' : ''}`}>
       <GoogleSetupTargetsStep
+        availableLayoutPresets={settings.availableLayoutPresets}
         availablePostTypes={settings.availablePostTypes}
+        defaultLayoutPreset={defaultLayoutPreset}
         elementorSyncEnabled={elementorSyncEnabled}
         enabledPostTypes={enabledPostTypes}
         initialOpen={hasChanges}
+        onDefaultLayoutPresetChange={setDefaultLayoutPreset}
         onElementorSyncChange={setElementorSyncEnabled}
         onSyncIntervalChange={setSyncInterval}
         onTogglePostType={togglePostType}
