@@ -1,4 +1,4 @@
-import type { AvailablePostType } from '../config';
+import type { AvailableLayoutPreset, AvailablePostType } from '../config';
 
 export type SettingsResponse = {
   clientId: string;
@@ -6,6 +6,7 @@ export type SettingsResponse = {
   enabledPostTypes: string[];
   defaultPostStatus: string;
   defaultExportFormat: string;
+  defaultLayoutPreset: string;
   syncInterval: string;
   connectionMode: string;
   elementorSyncEnabled: boolean;
@@ -13,6 +14,7 @@ export type SettingsResponse = {
   hasClientSecret: boolean;
   hasRequiredSettings: boolean;
   availablePostTypes: AvailablePostType[];
+  availableLayoutPresets: AvailableLayoutPreset[];
 };
 
 export type GoogleAccount = {
@@ -119,6 +121,8 @@ export type SourceRecord = {
   syncOwnerUserId: number;
   exportFormat: string;
   lastSyncMethod?: 'html_zip' | 'docs_api_fallback' | null;
+  layoutPreset?: string | null;
+  lastLayoutFingerprint?: string;
   elementorSync?: boolean | null;
   syncStatus: 'linked' | 'syncing' | 'synced' | 'skipped' | 'error' | string;
   syncError: string;

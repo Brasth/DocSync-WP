@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace DocSyncWP\Settings;
 
 use DocSyncWP\Security\EncryptionService;
+use DocSyncWP\Sync\Layout\LayoutPresetRegistry;
 use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
@@ -28,6 +29,13 @@ final class SettingsRepository {
 	private const DEFAULT_ELEMENTOR_SYNC  = false;
 
 	/**
+	 * Layout preset registry.
+	 *
+	 * @var LayoutPresetRegistry
+	 */
+	private LayoutPresetRegistry $layout_presets;
+
+	/**
 	 * Encryption service.
 	 *
 	 * @var EncryptionService
@@ -37,10 +45,12 @@ final class SettingsRepository {
 	/**
 	 * Constructor.
 	 *
-	 * @param EncryptionService $encryption Encryption service.
+	 * @param EncryptionService         $encryption     Encryption service.
+	 * @param LayoutPresetRegistry|null $layout_presets Layout preset registry.
 	 */
-	public function __construct( EncryptionService $encryption ) {
-		$this->encryption = $encryption;
+	public function __construct( EncryptionService $encryption, ?LayoutPresetRegistry $layout_presets = null ) {
+		$this->encryption     = $encryption;
+		$this->layout_presets = $layout_presets ?? new LayoutPresetRegistry();
 	}
 
 	/**
@@ -85,6 +95,10 @@ final class SettingsRepository {
 
 		if ( ! $this->isValidConnectionMode( $settings['connection_mode'] ) ) {
 			$settings['connection_mode'] = self::DEFAULT_CONNECTION_MODE;
+		}
+
+		if ( ! $this->layout_presets->isValidPresetId( $settings['default_layout_preset'] ) ) {
+			$settings['default_layout_preset'] = LayoutPresetRegistry::DEFAULT_EXISTING_INSTALL;
 		}
 
 		return $settings;
@@ -171,6 +185,14 @@ final class SettingsRepository {
 			);
 		}
 
+		if ( ! $this->layout_presets->isValidPresetId( $settings['default_layout_preset'] ) ) {
+			return new WP_Error(
+				'docsync_wp_invalid_layout_preset',
+				__( 'Brasth Document Sync received an unsupported default synced layout.', 'brasth-document-sync-for-google-docs' ),
+				array( 'status' => 400 )
+			);
+		}
+
 		$settings['elementor_sync_enabled'] = $this->sanitizeBooleanSetting( $settings['elementor_sync_enabled'] );
 
 		if ( array_key_exists( 'client_secret', $values ) ) {
@@ -208,6 +230,7 @@ final class SettingsRepository {
 			'enabled_post_types'     => $settings['enabled_post_types'],
 			'default_post_status'    => $settings['default_post_status'],
 			'default_export_format'  => $settings['default_export_format'],
+			'default_layout_preset'  => $settings['default_layout_preset'],
 			'sync_interval'          => $settings['sync_interval'],
 			'connection_mode'        => $settings['connection_mode'],
 			'elementor_sync_enabled' => $settings['elementor_sync_enabled'],
@@ -246,6 +269,15 @@ final class SettingsRepository {
 		$settings = $this->get();
 
 		return (bool) ( $settings['elementor_sync_enabled'] ?? false );
+	}
+
+	/**
+	 * Get layout presets available to the block editor sync path.
+	 *
+	 * @return array<int,array{id:string,label:string,description:string}>
+	 */
+	public function getAvailableLayoutPresets(): array {
+		return $this->layout_presets->getAvailablePresets();
 	}
 
 	/**
@@ -338,6 +370,7 @@ final class SettingsRepository {
 			'enabled_post_types'      => array( 'post' ),
 			'default_post_status'     => self::DEFAULT_POST_STATUS,
 			'default_export_format'   => self::DEFAULT_EXPORT_FORMAT,
+			'default_layout_preset'   => LayoutPresetRegistry::DEFAULT_EXISTING_INSTALL,
 			'sync_interval'           => self::DEFAULT_SYNC_INTERVAL,
 			'connection_mode'         => self::DEFAULT_CONNECTION_MODE,
 			'elementor_sync_enabled'  => self::DEFAULT_ELEMENTOR_SYNC,
@@ -364,6 +397,7 @@ final class SettingsRepository {
 			'scope_mode',
 			'default_post_status',
 			'default_export_format',
+			'default_layout_preset',
 			'sync_interval',
 			'connection_mode',
 			'elementor_sync_enabled',
@@ -382,6 +416,7 @@ final class SettingsRepository {
 		$settings['scope_mode']              = sanitize_key( (string) $settings['scope_mode'] );
 		$settings['default_post_status']     = sanitize_key( (string) $settings['default_post_status'] );
 		$settings['default_export_format']   = sanitize_key( (string) $settings['default_export_format'] );
+		$settings['default_layout_preset']   = sanitize_key( (string) $settings['default_layout_preset'] );
 		$settings['sync_interval']           = sanitize_key( (string) $settings['sync_interval'] );
 		$settings['connection_mode']         = sanitize_key( (string) $settings['connection_mode'] );
 		$settings['elementor_sync_enabled']  = $this->sanitizeBooleanSetting( $settings['elementor_sync_enabled'] ?? self::DEFAULT_ELEMENTOR_SYNC );

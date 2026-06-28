@@ -32,8 +32,9 @@ flowchart LR
   Sync --> DocsAPI["Google Docs API fallback"]
   Sync --> Import["HtmlZipImporter"]
   DocsAPI --> FallbackImport["DocsApiHtmlImporter"]
-  Import --> Blocks["HtmlToBlockContentConverter"]
-  FallbackImport --> Blocks
+  Import --> Layouts["LayoutConversionService"]
+  FallbackImport --> Layouts
+  Layouts --> Blocks["HtmlToBlockContentConverter / preset renderer"]
   Sync --> Lock["SyncLock"]
   Import --> Media["Media Library attachments"]
   Blocks --> WP["wp_update_post / wp_insert_post"]
@@ -131,8 +132,8 @@ REST namespace: `brasth-document-sync-for-google-docs/v1`
 
 Implemented routes:
 
-- `GET /settings`
-- `POST /settings`
+- `GET /settings`, including `defaultLayoutPreset` and `availableLayoutPresets`
+- `POST /settings`, including `defaultLayoutPreset`
 - `GET /oauth/google/url`
 - `GET /oauth/google/account`
 - `DELETE /oauth/google/account`
@@ -170,7 +171,7 @@ Common permission model:
 ### Site Options
 
 - `docsync_wp_settings`
-- stores Google connection mode, client id, encrypted client secret, enabled post types, default post status, default export format, and sync interval
+- stores Google connection mode, client id, encrypted client secret, enabled post types, default post status, default export format, default layout preset, and sync interval
 
 ### User Meta
 
@@ -187,6 +188,8 @@ Common permission model:
 - `_docsync_wp_last_hash`
 - `_docsync_wp_last_synced_at`
 - `_docsync_wp_last_sync_method`
+- `_docsync_wp_layout_preset`
+- `_docsync_wp_last_layout_fingerprint`
 - `_docsync_wp_sync_owner_user_id`
 - `_docsync_wp_export_format`
 - `_docsync_wp_sync_status`
@@ -221,14 +224,17 @@ These identify images imported from a Google Docs HTML ZIP export so re-sync can
 10. `DriveClient` exports an HTML ZIP package by default; progress moves to `exporting`.
 11. If Google returns the 10 MB export-size failure, progress moves to `large_doc_fallback`, then `DocsApiHtmlImporter` reads the same document through `documents.get?includeTabsContent=true`, converts supported Docs structures to sanitized HTML, and imports inline image `contentUri` assets into Media Library.
 12. `HtmlZipImporter` extracts the normal ZIP package, imports local images into Media Library, rewrites image URLs, and sanitizes HTML; progress moves through `importing`.
-13. `HtmlToBlockContentConverter` maps common document nodes to Gutenberg core blocks and keeps unsupported nodes as `core/html` fallback blocks; progress moves to `converting`.
+13. `LayoutConversionService` resolves the effective Gutenberg layout preset from `_docsync_wp_layout_preset` or the site default, then either delegates `plain_blocks` to `HtmlToBlockContentConverter` or renders the selected preset; progress moves to `converting`.
 14. WordPress post content is updated only after export/import or fallback conversion and block conversion succeed; progress moves to `updating_post`.
 15. Source state is saved back to post meta with `lastSyncMethod` set to `html_zip` or `docs_api_fallback` after successful content import.
 16. Result state becomes `linked`, `syncing`, `synced`, `skipped`, or `error`; `synced` and `skipped` finish at `100`, while queued API responses use top-level `status: queued` and persisted state remains `syncing`.
 
 Skip behavior:
 
-- if Google `modifiedTime`, `version`, and last hash show no change, sync is marked `skipped`
+- if Google `modifiedTime`, `version`, last hash, and the current layout fingerprint show no change, sync is marked `skipped`
+- upgraded sources without a layout fingerprint are treated as current only when the effective preset is `plain_blocks`
+- changing the default Gutenberg layout preset forces re-conversion even when Google metadata is unchanged; if converted content still hashes the same, the sync safely updates `_docsync_wp_last_layout_fingerprint` and finishes as `skipped`
+- Elementor sync bypasses Gutenberg layout presets and keeps the existing Elementor conversion and skip behavior
 - lock prevents duplicate concurrent syncs for the same post
 - repeated manual sync requests keep active scheduled/running sync progress, refresh the sync lock during milestone saves, and can requeue a stale `syncing` source when no matching cron event or active lock remains
 - source changes and detaches are blocked while a sync is running; stale background work stops if the linked Google file changes before a progress save or post update
@@ -257,31 +263,34 @@ Skip behavior:
 - image import failure marks sync `error` before target content is overwritten
 - plugin never deletes synced posts on uninstall by default
 
-## Future Architecture (1.1.0+)
+## Layout Preset Architecture
 
-The next major architectural addition is a **Layout Preset** layer between the sanitized HTML import and the two converters:
+Version 1.1.0 adds a **Layout Preset** layer between sanitized HTML import and Gutenberg conversion:
 
 ```mermaid
 flowchart LR
   Import["HtmlZipImporter / DocsApiHtmlImporter"] --> Sanitized["Sanitized HTML"]
-  Sanitized --> Preset["LayoutBlueprint / PresetRegistry"]
-  Preset --> Blocks["HtmlToBlockContentConverter"]
-  Preset --> Elementor["Elementor\DataConverter"]
+  Sanitized --> Preset["LayoutConversionService"]
+  Preset --> Registry["LayoutBlueprint / LayoutPresetRegistry"]
+  Preset --> Roles["ContentRoleClassifier"]
+  Preset --> Blocks["Gutenberg blocks"]
+  Sanitized --> Elementor["Elementor\DataConverter"]
   Blocks --> WP["wp_update_post"]
   Elementor --> PostUpdater["Elementor\PostUpdater"]
   PostUpdater --> WP
 ```
 
-Key future components:
+Current components:
 
-- `src/Sync/Layout/LayoutBlueprint.php` — interface for classifying DOM nodes into roles and rendering them into blocks or widgets.
-- `src/Sync/Layout/LayoutPresetRegistry.php` — built-in and site-defined presets, filtered by editor availability (Elementor, Elementor Pro).
-- `src/Sync/Layout/ContentRoleClassifier.php` — heuristic role detection (`hero`, `body`, `cover`, `callout`, `feature_list`, `code_block`, `cta`, `divider`).
-- `_docsync_wp_layout_preset` post meta — per-post override of the site default preset.
-- `GET /layout-presets` and `GET /layout-presets/{id}/preview` — REST routes for the wizard gallery and preview.
-- `resources/js/admin/features/layout-preset/` — React wizard step and preset gallery.
+- `src/Sync/Layout/LayoutBlueprint.php` — immutable preset metadata and behavior switches.
+- `src/Sync/Layout/LayoutPresetRegistry.php` — built-in presets: `clean_article`, `documentation`, and `plain_blocks`.
+- `src/Sync/Layout/ContentRoleClassifier.php` — role detection for headings, images, lists, tables, code blocks, callouts, and containers.
+- `src/Sync/Layout/LayoutConversionService.php` — effective preset resolution, fingerprinting, and Gutenberg conversion.
+- `_docsync_wp_layout_preset` post meta — optional per-post override reserved for future UI; missing or empty means use the site default.
+- `_docsync_wp_last_layout_fingerprint` post meta — prevents preset changes from being hidden by unchanged Google metadata.
+- Setup sync defaults expose a compact `Default synced layout` dropdown through `GET/POST /settings`.
 
-Later phases (1.2.0+) add bulk Drive folder import, a custom preset builder, a Pro tier, a Google Docs Workspace Add-on, and optional managed OAuth. See `docs/project-roadmap.md` for the full phased plan.
+Later phases add an in-linking preset gallery, preview endpoint, per-post selector UI, Elementor presets, bulk Drive folder import, a custom preset builder, a Pro tier, a Google Docs Workspace Add-on, and optional managed OAuth. See `docs/project-roadmap.md` for the full phased plan.
 
 ## Operational Notes
 

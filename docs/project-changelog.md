@@ -2,6 +2,24 @@
 
 Last updated: 2026-06-28
 
+## 2026-06-28 - 1.1.0 layout preset foundation
+
+- added Gutenberg layout preset backend with `LayoutBlueprint`, `LayoutPresetRegistry`, `ContentRoleClassifier`, and `LayoutConversionService`
+- added Clean Article, Documentation, and legacy Plain Blocks presets
+- added `default_layout_preset` setting, `defaultLayoutPreset` REST field, and `availableLayoutPresets` REST field
+- seeded new installs with Clean Article while upgraded settings without the new key resolve to Plain Blocks
+- added optional `_docsync_wp_layout_preset` and `_docsync_wp_last_layout_fingerprint` source meta
+- changed Gutenberg skip behavior so preset changes force re-conversion even when Google metadata is unchanged
+- kept Elementor sync on the existing Elementor conversion path
+- added Setup sync defaults dropdown for Default synced layout
+- added 5 golden fixtures plus `scripts/verify-layout-fixtures.php`
+- bumped release metadata to `1.1.0`
+
+Unresolved:
+
+- manual staging sync still needs a configured WordPress site and connected Google test account
+- official Plugin Check and readme validator still need release-site execution
+
 ## 2026-06-28 - Branded admin UI cleanup
 
 - added shared Brasth admin shell with compact masthead, runtime mark asset, contained notices, and status chip

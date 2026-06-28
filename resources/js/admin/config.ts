@@ -3,6 +3,12 @@ export type AvailablePostType = {
   label: string;
 };
 
+export type AvailableLayoutPreset = {
+  id: string;
+  label: string;
+  description: string;
+};
+
 export type DocSyncWPAdminConfig = {
   restUrl: string;
   nonce: string;
@@ -14,6 +20,8 @@ export type DocSyncWPAdminConfig = {
   enabledPostTypes: string[];
   availablePostTypes: AvailablePostType[];
   defaultExportFormat: string;
+  defaultLayoutPreset: string;
+  availableLayoutPresets: AvailableLayoutPreset[];
   syncInterval: string;
   hasClientId: boolean;
   hasClientSecret: boolean;
@@ -34,13 +42,21 @@ const fallbackConfig: DocSyncWPAdminConfig = {
   restUrl: '',
   nonce: '',
   pluginUrl: '',
-  version: '1.0.9',
+  version: '1.1.0',
   currentUserId: 0,
   clientId: '',
   connectionMode: 'self_managed',
   enabledPostTypes: ['post'],
   availablePostTypes: [{ name: 'post', label: 'Post' }],
   defaultExportFormat: 'html_zip',
+  defaultLayoutPreset: 'plain_blocks',
+  availableLayoutPresets: [
+    {
+      id: 'plain_blocks',
+      label: 'Plain Blocks',
+      description: 'Legacy conversion that preserves the current synced block output.'
+    }
+  ],
   syncInterval: 'off',
   hasClientId: false,
   hasClientSecret: false,

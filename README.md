@@ -58,6 +58,7 @@ Save:
 
 - OAuth client ID and OAuth client secret. The wizard can import the downloaded Web application OAuth JSON to fill these fields locally in the browser.
 - Enabled post types. `post` is always enabled; `page` and public custom post types are optional.
+- Default synced layout for block editor imports. New installs start with `Clean Article`; upgraded installs without this setting keep `Plain Blocks`.
 - Optional WP-Cron sync interval
 
 Each WordPress user must connect their own Google account before inspecting or syncing documents.
@@ -72,6 +73,7 @@ The Sources screen keeps the table-based workflow for linked Docs, with compact 
 
 - Google Docs is the source of truth. Manual sync overwrites WordPress post content while preserving normal WordPress revisions.
 - Sync exports Google Docs as an HTML ZIP package, imports local images into the WordPress Media Library, rewrites image URLs, sanitizes HTML, converts common elements to Gutenberg blocks, then updates the target post.
+- Site admins can choose the default Gutenberg sync layout from `Clean Article`, `Documentation`, and `Plain Blocks`. Elementor sync keeps the existing Elementor conversion path in 1.1.0.
 - If Google blocks an HTML ZIP export because the exported Workspace document exceeds its 10 MB export limit, Brasth Document Sync automatically retries through the Google Docs API large-doc fallback before changing WordPress content.
 - Manual admin syncs run in the background through WP-Cron and show milestone-based progress. Percent values reflect sync steps, not byte-level Google export progress.
 - Default Google scope is `https://www.googleapis.com/auth/drive.readonly`.

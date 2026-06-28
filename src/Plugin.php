@@ -42,6 +42,7 @@ use DocSyncWP\Sync\HtmlDocumentImageRewriter;
 use DocSyncWP\Sync\HtmlToBlockContentConverter;
 use DocSyncWP\Sync\HtmlZipImporter;
 use DocSyncWP\Sync\HtmlZipPackageExtractor;
+use DocSyncWP\Sync\Layout\LayoutConversionService;
 use DocSyncWP\Sync\MediaAssetImporter;
 use DocSyncWP\Sync\SourceRepository;
 use DocSyncWP\Sync\SyncLock;
@@ -178,7 +179,7 @@ final class Plugin {
 					)
 				)
 			),
-			new HtmlToBlockContentConverter(),
+			new LayoutConversionService( $settings, new HtmlToBlockContentConverter() ),
 			new SyncLock(),
 			$elementor_decider,
 			$elementor_data,

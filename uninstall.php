@@ -44,6 +44,8 @@ foreach (
 		'_docsync_wp_last_hash',
 		'_docsync_wp_last_synced_at',
 		'_docsync_wp_last_sync_method',
+		'_docsync_wp_layout_preset',
+		'_docsync_wp_last_layout_fingerprint',
 		'_docsync_wp_sync_owner_user_id',
 		'_docsync_wp_export_format',
 		'_docsync_wp_sync_status',
