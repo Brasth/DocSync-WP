@@ -6,6 +6,7 @@
     display: grid;
     gap: 12px;
     margin-bottom: 0;
+    min-width: 0;
     padding: 12px;
   }
 
@@ -14,6 +15,7 @@
     display: grid;
     gap: 12px;
     grid-template-columns: minmax(260px, 1fr) auto;
+    min-width: 0;
   }
 
   .docsync-wp-log-search,
@@ -21,6 +23,7 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
+    min-width: 0;
   }
 
   .docsync-wp-log-search input {
@@ -39,6 +42,8 @@
   .docsync-wp-log-console select {
     border-color: var(--docsync-card-border);
     border-radius: 6px;
+    min-height: 36px;
+    width: 100%;
   }
 
   .docsync-wp-log-console input:focus,
@@ -93,11 +98,21 @@
   }
 
   .docsync-wp-log-advanced-panel {
+    align-items: end;
     border-top: 1px solid var(--docsync-card-border);
     display: grid;
     gap: 12px;
-    grid-template-columns: repeat(4, minmax(132px, 1fr)) auto;
+    grid-template-columns:
+      repeat(3, minmax(150px, 1fr))
+      minmax(112px, 136px)
+      auto;
+    min-width: 0;
     padding-top: 12px;
+  }
+
+  .docsync-wp-log-advanced-panel > .docsync-wp-button {
+    justify-self: end;
+    min-width: 168px;
   }
 
   .docsync-wp-log-advanced-panel[hidden] {
