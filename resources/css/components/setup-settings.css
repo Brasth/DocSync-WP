@@ -15,7 +15,21 @@
 
   .docsync-wp-settings-actions {
     border-top: 1px solid var(--docsync-card-border);
+    margin-top: 16px;
     padding-top: 16px;
+  }
+
+  .docsync-wp-setup-secondary {
+    margin-bottom: 18px;
+  }
+
+  .docsync-wp-setup-defaults {
+    background: #fbfcfc;
+  }
+
+  .docsync-wp-setup-defaults .docsync-wp-step-heading > span {
+    background: #f0f0f1;
+    color: var(--docsync-text-muted);
   }
 
   .docsync-wp-oauth-import {
@@ -122,7 +136,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
-    margin: 18px 0;
+    margin: 0 0 16px;
     padding: 14px;
   }
 
@@ -150,6 +164,10 @@
   }
 
   @media (max-width: 720px) {
+    .docsync-wp-settings-grid {
+      grid-template-columns: 1fr;
+    }
+
     .docsync-wp-oauth-import {
       grid-template-columns: 1fr;
     }

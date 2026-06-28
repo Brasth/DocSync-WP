@@ -1,4 +1,4 @@
-import { createElement, Fragment, useState } from '@wordpress/element';
+import { createElement } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 
 import type { SyncLogEntry } from '../../api';
@@ -127,7 +127,6 @@ const getEmptyCopy = (postId: string, level: string, search: string, status: str
 };
 
 const LogRow = ({ entry, level }: { entry: SyncLogEntry; level: string }): JSX.Element => {
-  const [expanded, setExpanded] = useState(false);
   const contextDetails = eventContext(entry);
   const hasContext = contextDetails.length > 0;
   const hint = syncLogRecoveryHint(entry);
@@ -136,47 +135,41 @@ const LogRow = ({ entry, level }: { entry: SyncLogEntry; level: string }): JSX.E
   const showProgress = typeof entry.progress === 'number' && entry.progress > 0 && entry.progress < 100;
 
   return (
-    <>
-      <tr className={rowClass}>
-        <td>
-          <span title={relativeTime}>{entry.timestamp}</span>
-          {relativeTime ? <small>{relativeTime}</small> : null}
-        </td>
-        <td><StatusPill status={entry.level} /></td>
-        <td>
-          <strong>{entry.postTitle || sprintf(__('Post %d', 'brasth-document-sync-for-google-docs'), entry.postId)}</strong>
-          <small>{sprintf(__('ID %d', 'brasth-document-sync-for-google-docs'), entry.postId)}</small>
-          <small>{entry.googleTitle || __('Untitled Google Doc', 'brasth-document-sync-for-google-docs')}</small>
-        </td>
-        <td>
-          {entry.status}
-          {showProgress ? (
-            <span className="docsync-wp-log-mini-progress" aria-label={sprintf(__('Progress: %d%%', 'brasth-document-sync-for-google-docs'), entry.progress)}>
-              <span style={{ width: `${entry.progress}%` }} />
-            </span>
-          ) : null}
-          {entry.step ? <small>{entry.step}</small> : null}
-        </td>
-        <td>
-          {hasContext ? (
-            <button
-              aria-expanded={expanded}
-              aria-label={expanded ? __('Hide context', 'brasth-document-sync-for-google-docs') : __('Show context', 'brasth-document-sync-for-google-docs')}
-              className="docsync-wp-log-row-toggle"
-              onClick={() => setExpanded(!expanded)}
-              type="button"
-            >
-              <span aria-hidden="true" className={`dashicons ${expanded ? 'dashicons-arrow-down' : 'dashicons-arrow-right'}`} />
-            </button>
-          ) : null}
-          {entry.message}
-          {entry.errorCode ? <span className="docsync-wp-log-error-code">{entry.errorCode}</span> : null}
-          {hint ? <p className="docsync-wp-log-recovery-hint">{hint}</p> : null}
-        </td>
-      </tr>
-      {expanded && hasContext ? (
-        <tr className="docsync-wp-log-context-row">
-          <td colSpan={5}>
+    <tr className={rowClass}>
+      <td className="docsync-wp-log-time-cell">
+        <span title={relativeTime}>{entry.timestamp}</span>
+        {relativeTime ? <small>{relativeTime}</small> : null}
+      </td>
+      <td className="docsync-wp-log-source-cell">
+        <strong>{entry.postTitle || sprintf(__('Post %d', 'brasth-document-sync-for-google-docs'), entry.postId)}</strong>
+        <small>{entry.googleTitle || __('Untitled Google Doc', 'brasth-document-sync-for-google-docs')}</small>
+        <small>{sprintf(__('Source ID %d', 'brasth-document-sync-for-google-docs'), entry.postId)}</small>
+      </td>
+      <td className="docsync-wp-log-event-cell">
+        <div className="docsync-wp-log-event-meta">
+          <StatusPill status={entry.level} />
+          <span>{entry.status}</span>
+          {entry.step ? <span>{entry.step}</span> : null}
+        </div>
+        {showProgress ? (
+          <span className="docsync-wp-log-mini-progress" aria-label={sprintf(__('Progress: %d%%', 'brasth-document-sync-for-google-docs'), entry.progress)}>
+            <span style={{ width: `${entry.progress}%` }} />
+          </span>
+        ) : null}
+        <p>{entry.message}</p>
+        {entry.errorCode ? <span className="docsync-wp-log-error-code">{entry.errorCode}</span> : null}
+      </td>
+      <td className="docsync-wp-log-recovery-cell">
+        {hint ? (
+          <p className="docsync-wp-log-recovery-hint">{hint}</p>
+        ) : (
+          <span>{__('No action needed', 'brasth-document-sync-for-google-docs')}</span>
+        )}
+      </td>
+      <td className="docsync-wp-log-details-cell">
+        {hasContext ? (
+          <details className="docsync-wp-log-context-details">
+            <summary>{__('Details', 'brasth-document-sync-for-google-docs')}</summary>
             <dl className="docsync-wp-log-context-grid">
               {contextDetails.map((item) => (
                 <div className="docsync-wp-log-context-item" key={item.label}>
@@ -185,10 +178,12 @@ const LogRow = ({ entry, level }: { entry: SyncLogEntry; level: string }): JSX.E
                 </div>
               ))}
             </dl>
-          </td>
-        </tr>
-      ) : null}
-    </>
+          </details>
+        ) : (
+          <span aria-hidden="true" className="docsync-wp-log-details-empty">-</span>
+        )}
+      </td>
+    </tr>
   );
 };
 
@@ -201,10 +196,10 @@ export const SyncLogEventsTable = ({ busy, entries, hasActiveFilters, hasLoaded,
         <thead>
           <tr>
             <th>{__('Time', 'brasth-document-sync-for-google-docs')}</th>
-            <th>{__('Level', 'brasth-document-sync-for-google-docs')}</th>
-            <th>{__('Target / Doc', 'brasth-document-sync-for-google-docs')}</th>
-            <th>{__('Status / Step', 'brasth-document-sync-for-google-docs')}</th>
-            <th>{__('Message / Hint', 'brasth-document-sync-for-google-docs')}</th>
+            <th>{__('Source', 'brasth-document-sync-for-google-docs')}</th>
+            <th>{__('Event', 'brasth-document-sync-for-google-docs')}</th>
+            <th>{__('Recovery', 'brasth-document-sync-for-google-docs')}</th>
+            <th>{__('Details', 'brasth-document-sync-for-google-docs')}</th>
           </tr>
         </thead>
         <tbody>

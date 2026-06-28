@@ -64,17 +64,16 @@
     counter-reset: none;
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 10px;
     list-style: none;
     margin: 0 0 18px;
     padding: 0;
   }
 
-  .docsync-wp-setup-steps > li,
+  .docsync-wp-setup-disclosure,
   .docsync-wp-setup-test {
     border: 1px solid var(--docsync-card-border);
     border-radius: 8px;
-    padding: 14px;
   }
 
   .docsync-wp-setup-steps > li {
@@ -85,11 +84,49 @@
     content: "";
   }
 
+  .docsync-wp-setup-disclosure {
+    background: #fff;
+    overflow: hidden;
+  }
+
+  .docsync-wp-setup-disclosure[open] {
+    border-color: #b8c7c5;
+  }
+
+  .docsync-wp-setup-disclosure > summary {
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .docsync-wp-setup-disclosure > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .docsync-wp-setup-disclosure > summary::after {
+    align-items: center;
+    border: 1px solid var(--docsync-card-border);
+    border-radius: 999px;
+    color: var(--docsync-text-muted);
+    content: "+";
+    display: inline-flex;
+    flex: 0 0 22px;
+    font-weight: 700;
+    height: 22px;
+    justify-content: center;
+    margin-left: auto;
+    width: 22px;
+  }
+
+  .docsync-wp-setup-disclosure[open] > summary::after {
+    content: "-";
+  }
+
   .docsync-wp-step-heading {
     align-items: flex-start;
     display: flex;
     gap: 12px;
-    margin-bottom: 12px;
+    margin-bottom: 0;
+    padding: 13px 14px;
   }
 
   .docsync-wp-step-heading > div {
@@ -110,6 +147,10 @@
     line-height: 26px;
     min-width: 26px;
     width: 26px;
+  }
+
+  .docsync-wp-step-heading > .docsync-wp-step-icon {
+    font-size: 16px;
   }
 
   .docsync-wp-step-heading h3,
@@ -174,12 +215,17 @@
     color: var(--docsync-text-secondary);
     display: grid;
     gap: 6px;
-    margin: 0 0 12px 38px;
+    margin: 0 0 12px;
     padding: 0;
   }
 
   .docsync-wp-step-actions {
-    margin-left: 38px;
+    margin-top: 10px;
+  }
+
+  .docsync-wp-step-body {
+    border-top: 1px solid var(--docsync-card-border);
+    padding: 14px 14px 16px 52px;
   }
 
   .docsync-wp-copy-row input {
@@ -189,7 +235,6 @@
 
   .docsync-wp-copy-field {
     display: block;
-    margin-top: 12px;
   }
 
   .docsync-wp-copy-field > span {
@@ -206,6 +251,10 @@
 
     .docsync-wp-next-action .button {
       text-align: center;
+    }
+
+    .docsync-wp-step-body {
+      padding-left: 14px;
     }
   }
 

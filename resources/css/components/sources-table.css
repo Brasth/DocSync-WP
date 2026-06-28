@@ -44,8 +44,9 @@
   .docsync-wp-source-actions {
     align-items: center;
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    flex-wrap: nowrap;
+    gap: 6px;
+    min-width: 126px;
   }
 
   .docsync-wp-source-actions .button-primary {
@@ -58,10 +59,38 @@
     border-color: #1d4ed8;
   }
 
+  .docsync-wp-source-actions .button,
   .docsync-wp-source-actions .docsync-wp-view-logs-link {
     align-items: center;
+    border-radius: 4px;
+    box-shadow: none;
     display: inline-flex;
+    font-size: 12px;
+    font-weight: 600;
     gap: 4px;
+    justify-content: center;
+    line-height: 1.2;
+    min-height: 28px;
+    padding: 0 9px;
+    white-space: nowrap;
+  }
+
+  .docsync-wp-source-actions .docsync-wp-source-sync-button {
+    min-width: 52px;
+  }
+
+  .docsync-wp-source-actions .docsync-wp-view-logs-link {
+    background: #fff;
+    border-color: #b8c7c5;
+    color: var(--docsync-text-muted);
+    display: inline-flex;
+    text-decoration: none;
+  }
+
+  .docsync-wp-source-actions .docsync-wp-view-logs-link:hover,
+  .docsync-wp-source-actions .docsync-wp-view-logs-link:focus {
+    border-color: var(--docsync-teal);
+    color: var(--docsync-teal-text);
   }
 
   .docsync-wp-source-actions .docsync-wp-view-logs-link .dashicons {
@@ -76,6 +105,11 @@
 
   .docsync-wp-sources-table {
     min-width: 760px;
+  }
+
+  .docsync-wp-sources-table th:last-child,
+  .docsync-wp-sources-table td:last-child {
+    width: 138px;
   }
 
   .docsync-wp-source-status-cell {
@@ -143,12 +177,12 @@
   align-items: center;
   box-sizing: border-box;
   display: inline-flex;
-  font-size: 13px;
+  font-size: 12px;
   gap: 5px;
   justify-content: center;
   line-height: 1.2;
-  min-height: 30px;
-  padding: 0 10px;
+  min-height: 28px;
+  padding: 0 9px;
   text-decoration: none;
 }
 

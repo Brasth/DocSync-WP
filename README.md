@@ -52,7 +52,7 @@ https://example.com/wp-json/brasth-document-sync-for-google-docs/v1/oauth/google
 
 Replace `https://example.com` with the WordPress site URL. The OAuth callback URL belongs in **Authorized redirect URIs** and must include `/wp-json/brasth-document-sync-for-google-docs/v1/oauth/google/callback`.
 
-In WordPress admin, open **Brasth Document Sync** and follow the Google setup wizard. It shows setup progress, provides the exact redirect URI to copy, links to the required Google Cloud screens, and tests whether the saved plugin settings are complete.
+In WordPress admin, open **Brasth Document Sync** and follow the Google setup wizard. It shows the next required action, keeps detailed Google Cloud guidance in compact disclosure sections, provides the exact redirect URI to copy, links to the required Google Cloud screens, and tests whether the saved plugin settings are complete.
 
 Save:
 
