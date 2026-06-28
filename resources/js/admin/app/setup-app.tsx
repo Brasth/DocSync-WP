@@ -48,6 +48,7 @@ export const SetupApp = (): JSX.Element => {
               account={app.account}
               busy={app.busy}
               createSyncedDraftUrl={app.config.createSyncedDraftUrl}
+              onConnect={app.connectGoogle}
               onSave={app.persistSettings}
               redirectUri={app.redirectUri}
               settings={app.settings}
@@ -62,14 +63,6 @@ export const SetupApp = (): JSX.Element => {
               onConnect={app.connectGoogle}
               onDisconnect={app.disconnectGoogle}
             />
-            <section className="docsync-wp-card">
-              <h2>{__('Connection mode', 'brasth-document-sync-for-google-docs')}</h2>
-              <ul>
-                <li>{__('Current mode: self-managed Google Cloud app.', 'brasth-document-sync-for-google-docs')}</li>
-                <li>{__('Each WordPress user connects their own Google account.', 'brasth-document-sync-for-google-docs')}</li>
-                <li>{__('Managed connector support can be added later without proxying document content.', 'brasth-document-sync-for-google-docs')}</li>
-              </ul>
-            </section>
           </aside>
         </div>
       )}

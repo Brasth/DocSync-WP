@@ -1,6 +1,16 @@
 # Project Changelog
 
-Last updated: 2026-06-27
+Last updated: 2026-06-28
+
+## 2026-06-28 - Setup wizard and logs UX
+
+- added Setup next-action panel for save credentials, connect, reconnect, or create first synced draft
+- added setup step state badges: Manual, Complete, Needs action, Ready
+- removed managed connector promotion from setup flow; kept self-managed OAuth only
+- expanded `GET /sync-log` filters to `search`, `status`, and `step`
+- added `DELETE /sync-log` with optional `post_id`, returning `{ cleared: number }`
+- kept log clearing scoped to `_docsync_wp_sync_events`; source links, status, progress, credentials, and synced content stay intact
+- reworked Logs with search-first filters, quick chips, summary metrics, recovery hints, and confirmed clear actions
 
 ## 2026-06-27 - 1.0.9 security hardening
 

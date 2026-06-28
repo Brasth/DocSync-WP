@@ -43,12 +43,12 @@ export const AccountPanel = ({
           <strong>{account.googleAccountEmail || __('Google account connected', 'brasth-document-sync-for-google-docs')}</strong>
           <span>{account.scope || __('Drive read-only scope', 'brasth-document-sync-for-google-docs')}</span>
           {needsReconnect ? (
-            <AdminButton disabled={busy || !canConnect} onClick={onConnect} variant="primary">
+            <AdminButton disabled={busy || !canConnect} onClick={onConnect}>
               {__('Reconnect Google', 'brasth-document-sync-for-google-docs')}
             </AdminButton>
           ) : null}
           {canCreateDraft ? (
-            <a className="button button-primary" href={createSyncedDraftUrl}>
+            <a className="button button-secondary" href={createSyncedDraftUrl}>
               {__('Create synced draft', 'brasth-document-sync-for-google-docs')}
             </a>
           ) : null}
@@ -65,7 +65,7 @@ export const AccountPanel = ({
               ? __('Connect Google before inspecting or syncing Docs. Brasth Document Sync will send OAuth requests to Google, request Drive read-only access, and use Google Drive and Docs APIs to list, inspect, export, and sync Docs this account can read.', 'brasth-document-sync-for-google-docs')
               : __('Save OAuth client ID and client secret before connecting. The Google Cloud project must have Drive API and Docs API enabled.', 'brasth-document-sync-for-google-docs')}
           </span>
-          <AdminButton disabled={busy || !canConnect} onClick={onConnect} variant="primary">
+          <AdminButton disabled={busy || !canConnect} onClick={onConnect}>
             {__('Connect Google', 'brasth-document-sync-for-google-docs')}
           </AdminButton>
         </div>

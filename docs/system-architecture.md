@@ -147,11 +147,14 @@ Implemented routes:
 - `DELETE /sources/{postId}`
 - `POST /sources/{postId}/sync`
 - `POST /sources/sync-all`
-- `GET /sync-log` with `post_id`, `level`, `page`, and `per_page` filters
+- `GET /sync-log` with `search`, `post_id`, `level`, `status`, `step`, `page`, and `per_page` filters
+- `DELETE /sync-log` with optional `post_id`, returning `{ cleared: number }`
 
 Source records include additive live progress fields: `syncProgress` from 0 to 100, `syncStep`, and `syncMessage`. Existing status values and route shapes stay unchanged.
 
 Sync log entries are diagnostic events, not audit records. They store only `eventId`, timestamp, level, target/source titles, status, step, progress, message, error code, sync timestamps, and safe context flags such as lock or cron-event state.
+
+Clearing sync logs deletes only `_docsync_wp_sync_events` for source posts the current user can edit. It does not delete source links, sync status, progress, credentials, or synced content.
 
 Progress UI is shown only while a source is actively `syncing`; terminal states rely on status labels, last sync timestamps, and error messages.
 

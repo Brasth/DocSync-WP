@@ -3,6 +3,7 @@ import { __ } from '@wordpress/i18n';
 
 import { OAuthClientJsonImport } from './oauth-client-json-import';
 import type { OAuthClientJsonCredentials } from './oauth-client-json';
+import { SetupStepStateBadge, type SetupStepState } from './setup-step-state';
 
 type Props = {
   busy: boolean;
@@ -11,6 +12,7 @@ type Props = {
   hasClientSecret: boolean;
   redirectUri: string;
   stepNumber: number;
+  stepState: SetupStepState;
   onClientIdChange: (clientId: string) => void;
   onClientSecretChange: (clientSecret: string) => void;
   onImported: (credentials: OAuthClientJsonCredentials) => void;
@@ -23,6 +25,7 @@ export const GoogleSetupCredentialsStep = ({
   hasClientSecret,
   redirectUri,
   stepNumber,
+  stepState,
   onClientIdChange,
   onClientSecretChange,
   onImported
@@ -32,7 +35,10 @@ export const GoogleSetupCredentialsStep = ({
       <div className="docsync-wp-step-heading">
         <span>{stepNumber}</span>
         <div>
-          <h3>{__('Import or enter OAuth credentials', 'brasth-document-sync-for-google-docs')}</h3>
+          <div className="docsync-wp-step-title-row">
+            <h3>{__('Save OAuth credentials', 'brasth-document-sync-for-google-docs')}</h3>
+            <SetupStepStateBadge state={stepState} />
+          </div>
           <p>{__("Use the Web application client from the same Google Cloud project. The custom Drive browser uses these server-side credentials and the connected user's Drive read-only grant.", 'brasth-document-sync-for-google-docs')}</p>
         </div>
       </div>

@@ -2,6 +2,7 @@ import { createElement } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 import type { AvailablePostType } from '../../config';
+import { SetupStepStateBadge, type SetupStepState } from './setup-step-state';
 
 type Props = {
   availablePostTypes: AvailablePostType[];
@@ -9,6 +10,7 @@ type Props = {
   enabledPostTypes: string[];
   syncInterval: string;
   stepNumber: number;
+  stepState: SetupStepState;
   onElementorSyncChange: (enabled: boolean) => void;
   onTogglePostType: (postType: string) => void;
   onSyncIntervalChange: (syncInterval: string) => void;
@@ -20,6 +22,7 @@ export const GoogleSetupTargetsStep = ({
   enabledPostTypes,
   syncInterval,
   stepNumber,
+  stepState,
   onElementorSyncChange,
   onTogglePostType,
   onSyncIntervalChange
@@ -29,7 +32,10 @@ export const GoogleSetupTargetsStep = ({
       <div className="docsync-wp-step-heading">
         <span>{stepNumber}</span>
         <div>
-          <h3>{__('Choose WordPress targets and sync options', 'brasth-document-sync-for-google-docs')}</h3>
+          <div className="docsync-wp-step-title-row">
+            <h3>{__('Choose targets', 'brasth-document-sync-for-google-docs')}</h3>
+            <SetupStepStateBadge state={stepState} />
+          </div>
           <p>{__('Post is required. Page and public custom post types can also accept synced drafts.', 'brasth-document-sync-for-google-docs')}</p>
         </div>
       </div>

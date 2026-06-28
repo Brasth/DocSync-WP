@@ -254,10 +254,26 @@ final class SourceRepository {
 	 * @param string            $level      Optional event level.
 	 * @param int               $limit      Maximum rows to return.
 	 * @param int               $page       Page number.
+	 * @param string            $search     Search term.
+	 * @param string            $status     Sync status.
+	 * @param string            $step       Sync step.
 	 * @return array{entries:array<int,array<string,mixed>>,has_more:bool,page:int,per_page:int}|WP_Error
 	 */
-	public function listSyncEvents( array $post_types, int $user_id, int $post_id = 0, string $level = '', int $limit = 50, int $page = 1 ): array|WP_Error {
-		$level = sanitize_key( $level );
+	public function listSyncEvents(
+		array $post_types,
+		int $user_id,
+		int $post_id = 0,
+		string $level = '',
+		int $limit = 50,
+		int $page = 1,
+		string $search = '',
+		string $status = '',
+		string $step = ''
+	): array|WP_Error {
+		$level  = sanitize_key( $level );
+		$search = trim( sanitize_text_field( $search ) );
+		$status = sanitize_key( $status );
+		$step   = sanitize_key( $step );
 
 		if ( '' !== $level && ! in_array( $level, self::SYNC_EVENT_LEVELS, true ) ) {
 			return new WP_Error(
@@ -279,7 +295,7 @@ final class SourceRepository {
 
 		foreach ( $post_ids as $event_post_id ) {
 			foreach ( $this->getSyncEvents( $event_post_id ) as $event ) {
-				if ( '' !== $level && $level !== (string) $event['level'] ) {
+				if ( ! $this->syncEventMatchesFilters( $event, $level, $search, $status, $step ) ) {
 					continue;
 				}
 
@@ -318,6 +334,31 @@ final class SourceRepository {
 	 */
 	public function getSyncEventLevels(): array {
 		return self::SYNC_EVENT_LEVELS;
+	}
+
+	/**
+	 * Clear diagnostic sync events visible to the current user.
+	 *
+	 * @param array<int,string> $post_types Post types.
+	 * @param int               $user_id    User ID.
+	 * @param int               $post_id    Optional source post ID.
+	 * @return int|WP_Error
+	 */
+	public function clearSyncEvents( array $post_types, int $user_id, int $post_id = 0 ): int|WP_Error {
+		$post_ids = $post_id > 0 ? $this->validateSyncEventPostId( $post_id, $user_id ) : $this->querySyncEventPostIds( $post_types, $user_id );
+
+		if ( is_wp_error( $post_ids ) ) {
+			return $post_ids;
+		}
+
+		$cleared = 0;
+
+		foreach ( $post_ids as $event_post_id ) {
+			$cleared += count( $this->getSyncEvents( $event_post_id ) );
+			delete_post_meta( $event_post_id, self::META_SYNC_EVENTS );
+		}
+
+		return $cleared;
 	}
 
 	/**
@@ -773,6 +814,63 @@ final class SourceRepository {
 		return null !== $post
 			&& $this->isPostTypeEnabled( $post->post_type )
 			&& user_can( $user_id, 'edit_post', $post_id );
+	}
+
+	/**
+	 * Whether one sync event matches the active filters.
+	 *
+	 * @param array<string,mixed> $event  Sync event.
+	 * @param string              $level  Event level.
+	 * @param string              $search Search term.
+	 * @param string              $status Sync status.
+	 * @param string              $step   Sync step.
+	 */
+	private function syncEventMatchesFilters( array $event, string $level, string $search, string $status, string $step ): bool {
+		if ( '' !== $level && $level !== (string) $event['level'] ) {
+			return false;
+		}
+
+		if ( '' !== $status && $status !== (string) $event['status'] ) {
+			return false;
+		}
+
+		if ( '' !== $step && $step !== (string) $event['step'] ) {
+			return false;
+		}
+
+		return '' === $search || $this->syncEventMatchesSearch( $event, $search );
+	}
+
+	/**
+	 * Whether one sync event contains the search term in visible diagnostic fields.
+	 *
+	 * @param array<string,mixed> $event  Sync event.
+	 * @param string              $search Search term.
+	 */
+	private function syncEventMatchesSearch( array $event, string $search ): bool {
+		$post_id  = absint( $event['postId'] ?? 0 );
+		$haystack = array(
+			(string) $post_id,
+			(string) ( $event['postTitle'] ?? '' ),
+			$post_id > 0 ? (string) get_the_title( $post_id ) : '',
+			(string) ( $event['googleTitle'] ?? '' ),
+			(string) ( $event['message'] ?? '' ),
+			(string) ( $event['errorCode'] ?? '' ),
+			(string) ( $event['step'] ?? '' ),
+			(string) ( $event['status'] ?? '' ),
+		);
+
+		$needle = function_exists( 'mb_strtolower' ) ? mb_strtolower( $search ) : strtolower( $search );
+
+		foreach ( $haystack as $value ) {
+			$value = function_exists( 'mb_strtolower' ) ? mb_strtolower( $value ) : strtolower( $value );
+
+			if ( str_contains( $value, $needle ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
