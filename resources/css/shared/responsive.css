@@ -23,10 +23,15 @@
       width: 100%;
     }
 
-    .docsync-wp-hero {
+    .docsync-wp-masthead {
       align-items: flex-start;
       flex-direction: column;
       gap: 16px;
+    }
+
+    .docsync-wp-masthead__status {
+      align-self: stretch;
+      justify-content: center;
     }
   }
 
@@ -60,27 +65,18 @@
       padding: 16px;
     }
 
-    .docsync-wp-hero {
-      padding: 20px;
+    .docsync-wp-masthead {
+      padding: 12px;
     }
 
-    .docsync-wp-hero h1 {
-      font-size: 26px;
+    .docsync-wp-masthead__copy h1 {
+      font-size: 22px;
     }
   }
 
   @media (max-width: 480px) {
     .docsync-wp-admin-shell {
       padding: 12px;
-    }
-
-    .docsync-wp-hero {
-      padding: 16px;
-    }
-
-    .docsync-wp-hero__status {
-      align-self: stretch;
-      width: 100%;
     }
 
     .docsync-wp-card {

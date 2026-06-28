@@ -136,10 +136,6 @@ const LogRow = ({ entry, level }: { entry: SyncLogEntry; level: string }): JSX.E
 
   return (
     <tr className={rowClass}>
-      <td className="docsync-wp-log-time-cell">
-        <span title={relativeTime}>{entry.timestamp}</span>
-        {relativeTime ? <small>{relativeTime}</small> : null}
-      </td>
       <td className="docsync-wp-log-source-cell">
         <strong>{entry.postTitle || sprintf(__('Post %d', 'brasth-document-sync-for-google-docs'), entry.postId)}</strong>
         <small>{entry.googleTitle || __('Untitled Google Doc', 'brasth-document-sync-for-google-docs')}</small>
@@ -183,6 +179,10 @@ const LogRow = ({ entry, level }: { entry: SyncLogEntry; level: string }): JSX.E
           <span aria-hidden="true" className="docsync-wp-log-details-empty">-</span>
         )}
       </td>
+      <td className="docsync-wp-log-time-cell">
+        <span title={relativeTime}>{entry.timestamp}</span>
+        {relativeTime ? <small>{relativeTime}</small> : null}
+      </td>
     </tr>
   );
 };
@@ -190,37 +190,37 @@ const LogRow = ({ entry, level }: { entry: SyncLogEntry; level: string }): JSX.E
 export const SyncLogEventsTable = ({ busy, entries, hasActiveFilters, hasLoaded, level, postId, search, status, step }: Props): JSX.Element => {
   const emptyCopy = getEmptyCopy(postId, level, search, status, step, hasActiveFilters);
 
+  if (hasLoaded && !busy && entries.length === 0) {
+    return (
+      <EmptyState
+        action={(
+          <a className="button button-secondary docsync-wp-button docsync-wp-button--default" href="admin.php?page=brasth-document-sync-for-google-docs-sources">
+            {__('View Sources', 'brasth-document-sync-for-google-docs')}
+          </a>
+        )}
+        className="docsync-wp-log-empty-panel"
+        description={emptyCopy.description}
+        title={emptyCopy.title}
+        variant="logs"
+      />
+    );
+  }
+
   return (
     <div className="docsync-wp-table-scroll">
       <table aria-busy={!hasLoaded || (busy && entries.length === 0)} className="docsync-wp-data-table docsync-wp-logs-table">
         <thead>
           <tr>
-            <th>{__('Time', 'brasth-document-sync-for-google-docs')}</th>
             <th>{__('Source', 'brasth-document-sync-for-google-docs')}</th>
             <th>{__('Event', 'brasth-document-sync-for-google-docs')}</th>
             <th>{__('Recovery', 'brasth-document-sync-for-google-docs')}</th>
             <th>{__('Details', 'brasth-document-sync-for-google-docs')}</th>
+            <th>{__('Time', 'brasth-document-sync-for-google-docs')}</th>
           </tr>
         </thead>
         <tbody>
           {!hasLoaded || (busy && entries.length === 0) ? (
             <SkeletonTableRows columns={['58%', '46%', '66%', '52%', '78%']} rows={5} />
-          ) : entries.length === 0 ? (
-            <tr>
-              <td colSpan={5}>
-                <EmptyState
-                  action={(
-                    <a className="button button-secondary" href="admin.php?page=brasth-document-sync-for-google-docs-sources">
-                      {__('View Sources', 'brasth-document-sync-for-google-docs')}
-                    </a>
-                  )}
-                  className="docsync-wp-table-empty-state"
-                  description={emptyCopy.description}
-                  title={emptyCopy.title}
-                  variant="logs"
-                />
-              </td>
-            </tr>
           ) : entries.map((entry) => (
             <LogRow entry={entry} key={entry.eventId} level={entry.level} />
           ))}

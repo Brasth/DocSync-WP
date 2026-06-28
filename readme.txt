@@ -130,11 +130,13 @@ The build uses Vite and writes screen-specific manifests for Setup, Sources, Log
 * Tightened source, Drive browser, document inspection, sync log, and settings request validation before service calls.
 * Limited post/list-table DocSync assets, notices, and source metadata output to users with applicable target capabilities.
 * Confirmed public settings, OAuth account status, admin inline config, and sync diagnostics do not expose client secrets or Google tokens.
-* Added setup next-action guidance for saving credentials, connecting Google, reconnecting scope, and creating the first synced draft.
-* Shortened the setup wizard with compact disclosure sections for Google Cloud detail and sync defaults.
+* Added a branded Brasth admin shell with compact mastheads, contained notices, consistent button sizing, and runtime branding assets.
+* Reworked Setup into a task-first workspace with one primary next action for saving credentials, connecting Google, reconnecting scope, or creating the first synced draft.
+* Moved Google Cloud help into the credential task and kept sync defaults as secondary configuration.
 * Compact source row actions keep Sync and Logs controls easier to scan.
-* Added searchable Sync Activity logs with troubleshooting views, advanced filters, summary metrics, and recovery hints.
-* Added safe clear-log actions for one source or all visible sources without deleting source links, sync status, credentials, progress, or synced content.
+* Added searchable Sync Activity logs with troubleshooting views, advanced filters, useful summaries, recovery hints, and composed empty states.
+* Replaced destructive browser prompts with Radix confirmation dialogs for log clearing and account disconnect.
+* Added safe clear-log actions for one source or all stored source logs without deleting source links, sync status, credentials, progress, or synced content.
 
 = 1.0.8 =
 

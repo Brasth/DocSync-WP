@@ -20,11 +20,21 @@
   }
 
   .docsync-wp-setup-secondary {
-    margin-bottom: 18px;
+    margin-top: 16px;
   }
 
   .docsync-wp-setup-defaults {
     background: #fbfcfc;
+  }
+
+  .docsync-wp-setup-secondary-actions {
+    align-items: center;
+    background: #fff;
+    border: 1px solid var(--docsync-card-border);
+    border-top: 0;
+    display: flex;
+    justify-content: flex-end;
+    padding: 12px;
   }
 
   .docsync-wp-setup-defaults .docsync-wp-step-heading > span {

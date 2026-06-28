@@ -25,7 +25,7 @@ export const AdminNotice = ({ className = '', notice }: Props): JSX.Element | nu
       <p>{notice.message}</p>
       {notice.actionLabel && notice.onAction ? (
         <p>
-          <AdminButton className="button-small" onClick={notice.onAction} variant="secondary">
+          <AdminButton onClick={notice.onAction} size="small" variant="secondary">
             {notice.actionLabel}
           </AdminButton>
         </p>
