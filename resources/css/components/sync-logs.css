@@ -1,6 +1,6 @@
 @layer components {
   .docsync-wp-log-console {
-    background: #fbfcfc;
+    background: #fff;
     border: 1px solid var(--docsync-card-border);
     border-radius: 8px;
     display: grid;
@@ -24,7 +24,7 @@
   }
 
   .docsync-wp-log-search input {
-    min-height: 34px;
+    min-height: 36px;
     width: 100%;
   }
 
@@ -78,6 +78,7 @@
 
   .docsync-wp-log-viewbar .button {
     border-radius: 999px;
+    min-height: 32px;
   }
 
   .docsync-wp-log-viewbar .button[aria-pressed="true"] {
@@ -106,10 +107,11 @@
   .docsync-wp-log-summary {
     background: #fff;
     border: 1px solid var(--docsync-card-border);
-    border-top: 0;
+    border-radius: 8px;
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    margin: 0 0 16px;
+    margin: 14px 0 16px;
+    overflow: hidden;
   }
 
   .docsync-wp-log-summary > div {
@@ -135,38 +137,21 @@
     overflow-wrap: anywhere;
   }
 
-  .docsync-wp-log-clear-actions {
-    align-items: flex-start;
-    background: #fff8f7;
-    border: 1px solid #f0c6c2;
+  .docsync-wp-log-empty-panel {
+    background: #fbfcfc;
+    border: 1px solid var(--docsync-card-border);
     border-radius: 8px;
-    display: flex;
-    gap: 12px;
-    justify-content: space-between;
-    margin: 16px 0 0;
-    padding: 12px;
-  }
-
-  .docsync-wp-log-clear-actions strong,
-  .docsync-wp-log-clear-actions span {
-    display: block;
-  }
-
-  .docsync-wp-log-clear-actions strong {
-    color: var(--docsync-text-primary);
-    margin-bottom: 3px;
-  }
-
-  .docsync-wp-log-clear-actions span {
-    color: var(--docsync-text-muted);
-  }
-
-  .docsync-wp-log-clear-actions > div {
     align-items: center;
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
     gap: 8px;
-    justify-content: flex-end;
+    justify-items: center;
+    margin-top: 16px;
+    padding: 28px 20px;
+    text-align: center;
+  }
+
+  .docsync-wp-log-empty-panel .docsync-wp-empty-state__illustration {
+    margin-bottom: 2px;
   }
 
   .docsync-wp-logs-pagination {
@@ -205,15 +190,15 @@
   }
 
   .docsync-wp-log-time-cell {
-    width: 178px;
+    width: 170px;
   }
 
   .docsync-wp-log-source-cell {
-    width: 23%;
+    width: 22%;
   }
 
   .docsync-wp-log-event-cell {
-    width: 31%;
+    width: 30%;
   }
 
   .docsync-wp-log-recovery-cell {
@@ -331,6 +316,30 @@
     gap: 8px;
   }
 
+  .docsync-wp-log-manage-option {
+    align-items: center;
+    border: 1px solid var(--docsync-card-border);
+    border-radius: 8px;
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    padding: 12px;
+  }
+
+  .docsync-wp-log-manage-option strong,
+  .docsync-wp-log-manage-option span {
+    display: block;
+  }
+
+  .docsync-wp-log-manage-option strong {
+    margin-bottom: 3px;
+  }
+
+  .docsync-wp-log-manage-option span {
+    color: var(--docsync-text-muted);
+    font-size: 12px;
+  }
+
   .docsync-wp-auto-refresh-toggle {
     align-items: center;
     background: #f0f0f1;
@@ -397,13 +406,9 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .docsync-wp-log-clear-actions {
+    .docsync-wp-log-manage-option {
       align-items: stretch;
       flex-direction: column;
-    }
-
-    .docsync-wp-log-clear-actions > div {
-      justify-content: flex-start;
     }
   }
 

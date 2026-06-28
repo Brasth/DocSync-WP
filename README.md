@@ -52,7 +52,7 @@ https://example.com/wp-json/brasth-document-sync-for-google-docs/v1/oauth/google
 
 Replace `https://example.com` with the WordPress site URL. The OAuth callback URL belongs in **Authorized redirect URIs** and must include `/wp-json/brasth-document-sync-for-google-docs/v1/oauth/google/callback`.
 
-In WordPress admin, open **Brasth Document Sync** and follow the Google setup wizard. It shows the next required action, keeps detailed Google Cloud guidance in compact disclosure sections, provides the exact redirect URI to copy, links to the required Google Cloud screens, and tests whether the saved plugin settings are complete.
+In WordPress admin, open **Brasth Document Sync** and follow the compact setup workspace. It shows one primary next action, keeps the setup checklist and account status visible, keeps detailed Google Cloud guidance in a disclosure inside the credential task, provides the exact redirect URI to copy, links to the required Google Cloud screens, and tests whether the saved plugin settings are complete.
 
 Save:
 
@@ -61,6 +61,12 @@ Save:
 - Optional WP-Cron sync interval
 
 Each WordPress user must connect their own Google account before inspecting or syncing documents.
+
+## Admin Experience
+
+Setup, Sources, and Sync Activity share a branded Brasth admin shell with a compact product masthead, contained notices, consistent button sizing, and the runtime Brasth mark from `resources/images/`. Destructive admin actions use Radix confirmation dialogs instead of native browser prompts.
+
+The Sources screen keeps the table-based workflow for linked Docs, with compact row actions and background sync polling. The Sync Activity screen keeps URL-backed filters and auto-refresh, shows useful summaries only when events exist, and manages source or all-log clearing through the shared confirmation dialog.
 
 ## Sync Behavior
 

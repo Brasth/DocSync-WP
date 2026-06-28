@@ -4,15 +4,13 @@
     border: 1px solid var(--docsync-card-border);
     border-radius: var(--docsync-card-radius);
     box-shadow: var(--docsync-card-shadow);
-    padding: 22px;
+    padding: 18px;
   }
 
   .docsync-wp-card__header {
     border-bottom: 1px solid var(--docsync-card-border);
-    border-left: 3px solid var(--docsync-teal);
-    margin-bottom: 18px;
-    padding-bottom: 14px;
-    padding-left: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
   }
 
   .docsync-wp-card__header--row,
@@ -29,6 +27,10 @@
     justify-content: space-between;
   }
 
+  .docsync-wp-card__header--row > div {
+    min-width: 0;
+  }
+
   .docsync-wp-card h2,
   .docsync-wp-card p {
     margin-top: 0;
@@ -38,9 +40,8 @@
     color: var(--docsync-teal);
     font-size: 12px;
     font-weight: 700;
-    letter-spacing: 0.06em;
+    letter-spacing: 0;
     margin-bottom: 6px;
-    text-transform: uppercase;
   }
 
   .docsync-wp-inline-warning {
@@ -222,7 +223,7 @@
   }
 
   .docsync-wp-skeleton-button {
-    height: 30px;
+    height: 32px;
   }
 
   .docsync-wp-skeleton-stack,
@@ -289,14 +290,14 @@
     border-bottom: 1px solid var(--docsync-card-border);
     color: var(--docsync-text-primary);
     font-weight: 600;
-    padding: 10px 14px;
+    padding: 9px 12px;
     text-align: left;
     white-space: nowrap;
   }
 
   .docsync-wp-data-table tbody td {
     border-bottom: 1px solid #f0f0f1;
-    padding: 12px 14px;
+    padding: 11px 12px;
     vertical-align: top;
   }
 
@@ -362,4 +363,144 @@
     border-color: var(--docsync-blue);
     color: var(--docsync-blue);
   }
+
+  #docsync-wp-admin-root .docsync-wp-button,
+  .docsync-wp-confirm-dialog .docsync-wp-button {
+    align-items: center;
+    display: inline-flex;
+    font-weight: 600;
+    gap: 6px;
+    justify-content: center;
+    letter-spacing: 0;
+    line-height: 1.2;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  #docsync-wp-admin-root .docsync-wp-button--default,
+  .docsync-wp-confirm-dialog .docsync-wp-button--default {
+    min-height: 36px;
+    padding: 0 14px;
+  }
+
+  #docsync-wp-admin-root .docsync-wp-button--small,
+  .docsync-wp-confirm-dialog .docsync-wp-button--small {
+    font-size: 12px;
+    min-height: 32px;
+    padding: 0 10px;
+  }
+
+  #docsync-wp-admin-root .docsync-wp-button--icon,
+  .docsync-wp-confirm-dialog .docsync-wp-button--icon {
+    min-height: 32px;
+    min-width: 32px;
+    padding: 0;
+  }
+}
+
+.docsync-wp-confirm-dialog {
+  --docsync-blue: #2563eb;
+  --docsync-card-border: #d9e2e1;
+  --docsync-card-radius: 8px;
+  --docsync-error: #b42318;
+  --docsync-error-bg: #f8d7da;
+  --docsync-text-muted: #50575e;
+  --docsync-text-primary: #17202a;
+  --docsync-text-secondary: #646970;
+
+  background: #fff;
+  border-radius: var(--docsync-card-radius);
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.22);
+  color: var(--docsync-text-primary);
+  left: 50%;
+  max-width: min(440px, calc(100vw - 32px));
+  overflow: hidden;
+  position: fixed;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  z-index: 100001;
+}
+
+.docsync-wp-confirm-dialog__overlay {
+  background: rgba(10, 18, 25, 0.52);
+  bottom: 0;
+  left: 0;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 100000;
+}
+
+.docsync-wp-confirm-dialog__body {
+  padding: 20px 20px 16px;
+}
+
+.docsync-wp-confirm-dialog__body h2 {
+  font-size: 19px;
+  line-height: 1.25;
+  margin: 0 0 8px;
+}
+
+.docsync-wp-confirm-dialog__body p {
+  color: var(--docsync-text-secondary);
+  margin: 0;
+}
+
+.docsync-wp-confirm-dialog__extra {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.docsync-wp-confirm-dialog__footer {
+  align-items: center;
+  background: #f6f7f7;
+  border-top: 1px solid var(--docsync-card-border);
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding: 14px 20px;
+}
+
+.docsync-wp-confirm-dialog .button-primary,
+.docsync-wp-confirm-dialog .button-primary:focus,
+.docsync-wp-confirm-dialog .button-primary:active {
+  background: var(--docsync-blue);
+  border-color: var(--docsync-blue);
+  color: #fff;
+}
+
+.docsync-wp-confirm-dialog .button-primary:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  color: #fff;
+}
+
+.docsync-wp-confirm-dialog .button-secondary,
+.docsync-wp-confirm-dialog .button-secondary:focus,
+.docsync-wp-confirm-dialog .button-secondary:active {
+  background: #fff;
+  border-color: var(--docsync-blue);
+  color: var(--docsync-blue);
+}
+
+.docsync-wp-confirm-dialog .button-secondary:hover {
+  background: #eff6ff;
+  border-color: var(--docsync-blue);
+  color: var(--docsync-blue);
+}
+
+.docsync-wp-confirm-dialog .docsync-wp-confirm-dialog__confirm--danger,
+.docsync-wp-confirm-dialog .docsync-wp-confirm-dialog__confirm--danger:focus,
+.docsync-wp-confirm-dialog .docsync-wp-confirm-dialog__confirm--danger:active {
+  background: var(--docsync-error);
+  border-color: var(--docsync-error);
+  color: #fff;
+}
+
+.docsync-wp-confirm-dialog .docsync-wp-confirm-dialog__confirm--danger:hover {
+  background: #8f1d14;
+  border-color: #8f1d14;
+  color: #fff;
 }

@@ -20,10 +20,10 @@ Each release must pass the existing validation pipeline (`pnpm lint`, `pnpm type
 
 ## Current State
 
-- Version 1.0.8 is prepared in the codebase. Version 1.0.9 is the active security hardening and admin UX patch line pending staging QA.
+- Version 1.0.8 is prepared in the codebase. Version 1.0.9 is the active security hardening and productized admin UI patch line pending staging QA.
 - Core sync engine is stable: Google export, media import, Gutenberg block conversion, Elementor JSON conversion, background sync, and sync logging.
 - The plugin supports one-way sync from Google Docs to WordPress posts, pages, and enabled public custom post types.
-- Setup now guides users through one primary next action with compact disclosure details, Sources uses compact row actions, and Logs now presents a searchable Sync Activity console with recovery hints and safe clear actions.
+- Setup now uses a task-first Brasth workspace with one primary next action, Sources keeps a tighter table workflow with compact row actions, and Logs presents a searchable Sync Activity workspace with Radix confirmation dialogs, recovery hints, and safe clear actions.
 - The editor decision layer (`Elementor\SyncDecider`) is in place, but the conversion is purely structural: every document becomes the same flat layout.
 - Self-managed Google OAuth is the only connection mode. There is no Pro tier, no managed connector, and no layout template system.
 
@@ -44,8 +44,8 @@ Each release must pass the existing validation pipeline (`pnpm lint`, `pnpm type
 | **1.0.5** | Released | Elementor sync support, per-post Elementor toggle, native Elementor layout conversion, cache invalidation | Elementor users can sync Docs into native layouts |
 | **1.0.6** | Released | Bug fixes from 1.0.4/1.0.5 feedback, WP 6.5 compatibility, accessibility audit fixes, lazy-load Drive browser, smaller admin bundles, faster first paint | Snappier and more compatible admin experience |
 | **1.0.7** | Released | PHP 8.2/8.3 deprecation cleanup, dependency updates, security audit | Future-proof, broader hosting compatibility |
-| **1.0.8** | Now | First-sync setup checklist, translation infrastructure, action-oriented empty states, screenshot refresh follow-up | Smoother onboarding |
-| **1.0.9** | +6 weeks | Security audit fixes, nonce hardening, role-capability review, setup next-action guidance, compact source actions, searchable Sync Activity logs, safe log clearing | Hardened plugin with clearer onboarding and troubleshooting |
+| **1.0.8** | Released | First-sync setup checklist, translation infrastructure, action-oriented empty states, screenshot refresh follow-up | Smoother onboarding |
+| **1.0.9** | Now | Security audit fixes, nonce hardening, role-capability review, productized Brasth admin shell, task-first setup, compact source actions, searchable Sync Activity logs, Radix-confirmed safe log clearing | Hardened plugin with clearer onboarding and troubleshooting |
 
 ### 1.1.x line — Layout foundation: backend
 
@@ -133,7 +133,7 @@ Each release must pass the existing validation pipeline (`pnpm lint`, `pnpm type
 |---|---|---|
 | 1.0.6 | Admin first-paint improvement | 20% faster |
 | 1.0.8 | First synced draft path | Visible from Setup without reading README |
-| 1.0.9 | Security audit + support UX | 0 critical, 0 high; setup next action, compact source actions, and searchable Sync Activity shipped |
+| 1.0.9 | Security audit + productized admin UI | 0 critical, 0 high; branded shell, task-first setup, compact source actions, and searchable Sync Activity shipped |
 | 1.1.0 | 2 Gutenberg presets pass golden tests | 100% on 5 fixtures |
 | 1.1.2 | 4 total presets pass golden tests | 100% on 5 fixtures |
 | 1.1.3 | Manual QA publishable output | 0 developer edits for fixture set |

@@ -2,6 +2,16 @@
 
 Last updated: 2026-06-28
 
+## 2026-06-28 - Branded admin UI cleanup
+
+- added shared Brasth admin shell with compact masthead, runtime mark asset, contained notices, and status chip
+- added shared AdminButton sizing for default, small, and icon controls
+- added shared Radix confirmation dialog and replaced native confirmations for log clearing and account disconnect
+- reworked Logs into an activity workspace with Manage logs dialog, composed empty panel, source-first event table, and neutral zero-cleared copy
+- tightened Sources filters, row rhythm, small Sync button, and Logs link alignment
+- reworked Setup into a task-first workspace with progress rail, active task panel, account side panel, and secondary sync defaults
+- kept REST behavior, URL-backed log filters, auto-refresh, background sync polling, OAuth JSON import, setup test behavior, and sync defaults intact
+
 ## 2026-06-28 - Setup wizard and logs UX
 
 - added Setup next-action panel for save credentials, connect, reconnect, or create first synced draft

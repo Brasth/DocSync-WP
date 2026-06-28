@@ -1,19 +1,20 @@
-import { createElement, useEffect, useMemo, useState } from '@wordpress/element';
+import { createElement, Fragment, useEffect, useMemo, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 
 import type { GoogleAccount, SettingsResponse } from '../../api';
 import { AdminButton } from '../../shared/ui/admin-button';
-import { GoogleSetupCloudSteps } from './google-setup-cloud-steps';
-import { GoogleSetupCredentialsStep } from './google-setup-credentials-step';
-import { GoogleSetupFirstSyncStep } from './google-setup-first-sync-step';
-import { GoogleSetupNextAction, type GoogleSetupNextActionConfig } from './google-setup-next-action';
+import { GoogleSetupActiveTaskPanel } from './google-setup-active-task-panel';
+import { GoogleSetupProgressRail } from './google-setup-progress-rail';
 import { GoogleSetupTargetsStep } from './google-setup-targets-step';
-import { GoogleSetupTestResult } from './google-setup-test-result';
+import type { OAuthClientJsonCredentials } from './oauth-client-json';
+import { buildSetupChecks, samePostTypes, type SetupCheck } from './google-setup-utils';
 import {
-  buildSetupChecks,
-  samePostTypes,
-  type SetupCheck
-} from './google-setup-utils';
+  activeGoogleSetupTask,
+  buildGoogleSetupChecklistItems,
+  buildGoogleSetupNextAction,
+  setupCredentialStepState,
+  setupFirstSyncStepState
+} from './google-setup-task-state';
 
 type Props = {
   account: GoogleAccount;
@@ -54,9 +55,9 @@ export const SettingsPanel = ({
   const hasUnsavedChanges =
     hasCredentialChanges ||
     hasSyncDefaultChanges;
-  const credentialStepState = settings.hasRequiredSettings && !hasCredentialChanges ? 'complete' : 'needs-action';
+  const credentialStepState = setupCredentialStepState(settings, hasCredentialChanges);
   const syncDefaultsStepState = hasSyncDefaultChanges ? 'needs-action' : 'ready';
-  const firstSyncStepState = canCreateDraft ? 'ready' : 'needs-action';
+  const firstSyncStepState = setupFirstSyncStepState(canCreateDraft);
 
   useEffect(() => {
     setClientId(settings.clientId);
@@ -116,115 +117,61 @@ export const SettingsPanel = ({
     setTestChecks(buildSetupChecks(settings, account));
   };
 
-  const nextAction: GoogleSetupNextActionConfig = (() => {
-    if (!settings.hasRequiredSettings || hasCredentialChanges) {
-      return {
-        title: __('Save OAuth credentials', 'brasth-document-sync-for-google-docs'),
-        description: __('Save the Google OAuth web client ID and secret before connecting Google.', 'brasth-document-sync-for-google-docs'),
-        label: __('Save OAuth credentials', 'brasth-document-sync-for-google-docs'),
-        disabled: busy || !canSaveCredentials,
-        onClick: submit
-      };
-    }
+  const nextAction = buildGoogleSetupNextAction({
+    account,
+    busy,
+    canSaveCredentials,
+    createSyncedDraftUrl,
+    hasCredentialChanges,
+    settings,
+    onConnect,
+    onSaveCredentials: submit
+  });
+  const activeTask = activeGoogleSetupTask(settings, account, hasCredentialChanges);
+  const checklistItems = buildGoogleSetupChecklistItems({
+    account,
+    canCreateDraft,
+    credentialStepState,
+    firstSyncStepState,
+    settings
+  });
 
-    if (!account.connected) {
-      return {
-        title: __('Connect Google', 'brasth-document-sync-for-google-docs'),
-        description: __('Authorize this WordPress user to browse and sync readable Google Docs.', 'brasth-document-sync-for-google-docs'),
-        label: __('Connect Google', 'brasth-document-sync-for-google-docs'),
-        disabled: busy,
-        onClick: onConnect
-      };
-    }
-
-    if (!account.hasRequiredScope) {
-      return {
-        title: __('Reconnect Google', 'brasth-document-sync-for-google-docs'),
-        description: __('Reconnect to grant Drive read-only access required by the current browser and sync flow.', 'brasth-document-sync-for-google-docs'),
-        label: __('Reconnect Google', 'brasth-document-sync-for-google-docs'),
-        disabled: busy,
-        onClick: onConnect
-      };
-    }
-
-    return {
-      title: __('Create first synced draft', 'brasth-document-sync-for-google-docs'),
-      description: __('Open the Posts list, choose Add Sync Doc, select a Google Doc, and create the first synced draft.', 'brasth-document-sync-for-google-docs'),
-      label: __('Create synced draft', 'brasth-document-sync-for-google-docs'),
-      href: createSyncedDraftUrl
-    };
-  })();
+  const importCredentials = (credentials: OAuthClientJsonCredentials) => {
+    setClientId(credentials.clientId);
+    setClientSecret(credentials.clientSecret);
+    setTestChecks(null);
+  };
 
   return (
-    <section className="docsync-wp-card">
-      <div className="docsync-wp-card__header">
-        <p className="docsync-wp-kicker">{__('Self-managed Google Cloud app', 'brasth-document-sync-for-google-docs')}</p>
-        <h2>{__('Google setup wizard', 'brasth-document-sync-for-google-docs')}</h2>
-        <p>{__('Complete these saved settings before each WordPress user connects Google.', 'brasth-document-sync-for-google-docs')}</p>
-      </div>
-
-      <GoogleSetupNextAction action={nextAction} />
-
-      <div className="docsync-wp-setup-summary">
-        <div>
-          <strong>
-            {sprintf(
-              /* translators: 1: completed setup check count, 2: total setup check count. */
-              __('%1$d of %2$d setup checks complete', 'brasth-document-sync-for-google-docs'),
-              completedChecks,
-              setupChecks.length
-            )}
-          </strong>
-          <span>
-            {canCreateDraft
-              ? __('Ready to create the first synced draft.', 'brasth-document-sync-for-google-docs')
-              : settings.hasRequiredSettings
-                ? __('OAuth settings saved. Connect Google next.', 'brasth-document-sync-for-google-docs')
-                : __('OAuth client setup incomplete.', 'brasth-document-sync-for-google-docs')}
-          </span>
-        </div>
-        <div className="docsync-wp-setup-progress" aria-hidden="true">
-          <span style={{ width: `${setupProgress}%` }} />
-        </div>
-      </div>
-
-      <ol className="docsync-wp-setup-steps">
-        <GoogleSetupCloudSteps
-          cloudStepState="manual"
-          copyMessage={copyMessage}
-          initialOpen={!settings.hasRequiredSettings}
-          onCopyValue={copyValue}
-          redirectUri={redirectUri}
-          redirectStepState="manual"
+    <>
+      <section className="docsync-wp-setup-workspace">
+        <GoogleSetupProgressRail
+          activeTask={activeTask}
+          checklistItems={checklistItems}
+          completedChecks={completedChecks}
+          setupChecks={setupChecks}
+          setupProgress={setupProgress}
         />
 
-        <GoogleSetupCredentialsStep
+        <GoogleSetupActiveTaskPanel
+          account={account}
+          activeTask={activeTask}
           busy={busy}
           clientId={clientId}
           clientSecret={clientSecret}
+          copyMessage={copyMessage}
           hasClientSecret={settings.hasClientSecret}
+          hasUnsavedChanges={hasUnsavedChanges}
+          nextAction={nextAction}
           onClientIdChange={setClientId}
           onClientSecretChange={setClientSecret}
-          onImported={(credentials) => {
-            setClientId(credentials.clientId);
-            setClientSecret(credentials.clientSecret);
-            setTestChecks(null);
-          }}
-          initialOpen={!settings.hasRequiredSettings || hasCredentialChanges}
+          onCopyValue={copyValue}
+          onImported={importCredentials}
+          onTestSetup={testSetup}
           redirectUri={redirectUri}
-          stepNumber={3}
-          stepState={credentialStepState}
+          testChecks={testChecks}
         />
-
-        <GoogleSetupFirstSyncStep
-          account={account}
-          canCreateDraft={canCreateDraft}
-          createSyncedDraftUrl={createSyncedDraftUrl}
-          initialOpen={canCreateDraft || (account.connected && !account.hasRequiredScope)}
-          stepNumber={4}
-          stepState={firstSyncStepState}
-        />
-      </ol>
+      </section>
 
       <div className="docsync-wp-setup-secondary">
         <GoogleSetupTargetsStep
@@ -238,19 +185,14 @@ export const SettingsPanel = ({
           stepState={syncDefaultsStepState}
           syncInterval={syncInterval}
         />
+        {hasSyncDefaultChanges ? (
+          <div className="docsync-wp-setup-secondary-actions">
+            <AdminButton disabled={busy} onClick={submit}>
+              {__('Save sync defaults', 'brasth-document-sync-for-google-docs')}
+            </AdminButton>
+          </div>
+        ) : null}
       </div>
-
-      <div className="docsync-wp-settings-actions">
-        <AdminButton disabled={busy} onClick={submit}>
-          {__('Save settings', 'brasth-document-sync-for-google-docs')}
-        </AdminButton>
-        <AdminButton disabled={busy} onClick={testSetup}>
-          {__('Test setup', 'brasth-document-sync-for-google-docs')}
-        </AdminButton>
-        {hasUnsavedChanges ? <span>{__('Unsaved changes are not tested until saved.', 'brasth-document-sync-for-google-docs')}</span> : null}
-      </div>
-
-      {testChecks ? <GoogleSetupTestResult checks={testChecks} /> : null}
-    </section>
+    </>
   );
 };

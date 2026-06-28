@@ -3,7 +3,7 @@ import { __ } from '@wordpress/i18n';
 
 import { AccountPanel } from '../features/google-setup/account-panel';
 import { SettingsPanel } from '../features/google-setup/settings-panel';
-import { AdminNotice } from '../shared/ui/admin-notice';
+import { AdminShell } from '../shared/ui/admin-shell';
 import { useSetupApp } from './use-setup-app';
 
 export const SetupApp = (): JSX.Element => {
@@ -17,22 +17,19 @@ export const SetupApp = (): JSX.Element => {
     });
   }, []);
 
+  const setupReady = Boolean(app.settings?.hasRequiredSettings && app.account.connected && app.account.hasRequiredScope);
+
   return (
-    <main className="docsync-wp-admin-shell">
-      <header className="docsync-wp-hero">
-        <div>
-          <p>{__('Brasth Document Sync', 'brasth-document-sync-for-google-docs')}</p>
-          <h1>{__('Google Setup', 'brasth-document-sync-for-google-docs')}</h1>
-          <span>{__('Version', 'brasth-document-sync-for-google-docs')} {app.config.version}</span>
-        </div>
-        <div className="docsync-wp-hero__status">
-          <strong>{app.settings?.hasRequiredSettings ? __('Ready', 'brasth-document-sync-for-google-docs') : __('Setup', 'brasth-document-sync-for-google-docs')}</strong>
-          <span>{__('Google connection', 'brasth-document-sync-for-google-docs')}</span>
-        </div>
-      </header>
-
-      <AdminNotice notice={app.notice} />
-
+    <AdminShell
+      notice={app.notice}
+      status={{
+        label: __('Google connection', 'brasth-document-sync-for-google-docs'),
+        value: setupReady ? __('Ready', 'brasth-document-sync-for-google-docs') : __('Setup', 'brasth-document-sync-for-google-docs'),
+        variant: setupReady ? 'ready' : 'attention'
+      }}
+      title={__('Google Setup', 'brasth-document-sync-for-google-docs')}
+      version={app.config.version}
+    >
       {!app.settings ? (
         <div className="docsync-wp-admin-grid docsync-wp-admin-grid--single">
           <div className="docsync-wp-admin-grid__main">
@@ -66,6 +63,6 @@ export const SetupApp = (): JSX.Element => {
           </aside>
         </div>
       )}
-    </main>
+    </AdminShell>
   );
 };

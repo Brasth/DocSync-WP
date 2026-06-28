@@ -3,7 +3,7 @@ import { __ } from '@wordpress/i18n';
 
 import { BackgroundSyncPoller } from '../features/post-sync/background-sync-poller';
 import { SourcesTable, SourcesTableSkeleton } from '../features/sources/sources-table';
-import { AdminNotice } from '../shared/ui/admin-notice';
+import { AdminShell } from '../shared/ui/admin-shell';
 import { useSourcesApp } from './use-sources-app';
 
 export const SourcesApp = (): JSX.Element => {
@@ -18,21 +18,15 @@ export const SourcesApp = (): JSX.Element => {
   }, []);
 
   return (
-    <main className="docsync-wp-admin-shell">
-      <header className="docsync-wp-hero">
-        <div>
-          <p>{__('Brasth Document Sync', 'brasth-document-sync-for-google-docs')}</p>
-          <h1>{__('Sources', 'brasth-document-sync-for-google-docs')}</h1>
-          <span>{__('Version', 'brasth-document-sync-for-google-docs')} {app.config.version}</span>
-        </div>
-        <div className="docsync-wp-hero__status">
-          <strong>{app.sources.length}</strong>
-          <span>{app.sources.length === 1 ? __('shown source', 'brasth-document-sync-for-google-docs') : __('shown sources', 'brasth-document-sync-for-google-docs')}</span>
-        </div>
-      </header>
-
-      <AdminNotice notice={app.notice} />
-
+    <AdminShell
+      notice={app.notice}
+      status={{
+        label: app.sources.length === 1 ? __('shown source', 'brasth-document-sync-for-google-docs') : __('shown sources', 'brasth-document-sync-for-google-docs'),
+        value: app.sources.length
+      }}
+      title={__('Sources', 'brasth-document-sync-for-google-docs')}
+      version={app.config.version}
+    >
       {!app.settings ? (
         <div className="docsync-wp-admin-grid docsync-wp-admin-grid--single">
           <div className="docsync-wp-admin-grid__main">
@@ -67,6 +61,6 @@ export const SourcesApp = (): JSX.Element => {
           </div>
         </div>
       )}
-    </main>
+    </AdminShell>
   );
 };

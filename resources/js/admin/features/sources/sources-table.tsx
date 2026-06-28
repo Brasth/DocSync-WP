@@ -289,6 +289,7 @@ export const SourcesTable = ({
                       className="docsync-wp-source-sync-button"
                       disabled={busy}
                       onClick={() => onSync(source.postId)}
+                      size="small"
                       variant="primary"
                     >
                       {__('Sync', 'brasth-document-sync-for-google-docs')}
@@ -298,7 +299,7 @@ export const SourcesTable = ({
                         __('View logs for %s', 'brasth-document-sync-for-google-docs'),
                         source.postTitle || sprintf(__('Post %d', 'brasth-document-sync-for-google-docs'), source.postId)
                       )}
-                      className="button button-secondary docsync-wp-view-logs-link"
+                      className="button button-secondary docsync-wp-button docsync-wp-button--small docsync-wp-view-logs-link"
                       href={logsUrl(source.postId)}
                     >
                       <span aria-hidden="true" className="dashicons dashicons-list-view" />

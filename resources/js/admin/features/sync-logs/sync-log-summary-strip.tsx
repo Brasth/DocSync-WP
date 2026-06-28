@@ -15,7 +15,7 @@ const latestEventLabel = (entries: SyncLogEntry[]): string => {
   return entries[0]?.timestamp || __('Unknown', 'brasth-document-sync-for-google-docs');
 };
 
-export const SyncLogSummaryStrip = ({ entries }: Props): JSX.Element => {
+export const SyncLogSummaryStrip = ({ entries }: Props): JSX.Element | null => {
   const metrics = useMemo(() => {
     const errors = entries.filter((entry) => entry.level === 'error').length;
     const warnings = entries.filter((entry) => entry.level === 'warning').length;
@@ -39,6 +39,10 @@ export const SyncLogSummaryStrip = ({ entries }: Props): JSX.Element => {
       }
     ];
   }, [entries]);
+
+  if (entries.length === 0) {
+    return null;
+  }
 
   return (
     <dl className="docsync-wp-log-summary" aria-label={__('Visible log summary', 'brasth-document-sync-for-google-docs')}>

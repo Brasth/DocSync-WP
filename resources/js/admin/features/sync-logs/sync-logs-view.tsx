@@ -5,9 +5,11 @@ import { __, sprintf } from '@wordpress/i18n';
 import { clearSyncLogEntries, listSyncLogEntries, type SyncLogEntry } from '../../api';
 import { getAdminConfig } from '../../config';
 import { AdminButton } from '../../shared/ui/admin-button';
-import { AdminNotice, type AdminNoticeState } from '../../shared/ui/admin-notice';
+import { AdminShell } from '../../shared/ui/admin-shell';
+import { type AdminNoticeState } from '../../shared/ui/admin-notice';
 import { SyncLogEventsTable } from './sync-log-events-table';
 import { levelOptions, statusOptions, stepOptions } from './sync-log-filter-options';
+import { SyncLogManageDialog } from './sync-log-manage-dialog';
 import { SyncLogSummaryStrip } from './sync-log-summary-strip';
 
 const pageSize = 25;
@@ -131,8 +133,13 @@ export const SyncLogsView = (): JSX.Element => {
   const [notice, setNotice] = useState<AdminNoticeState | null>(null);
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(Boolean(initialFilters.postId));
+  const [manageLogsOpen, setManageLogsOpen] = useState(false);
   const autoRefreshRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const hasActiveFilters = Boolean(postId.trim() || search.trim() || level || status || step);
+  const parsedPostId = parsePostIdFilter(postId);
+  const canClearSourceLogs = typeof parsedPostId === 'number';
+  const canManageLogs = hasLoaded && (entries.length > 0 || hasActiveFilters);
+  const showPagination = !hasLoaded || entries.length > 0 || page > 1 || hasMore;
   const currentFilters = (): LogFilters => ({
     level,
     postId,
@@ -260,8 +267,6 @@ export const SyncLogsView = (): JSX.Element => {
   };
 
   const clearLogs = async (scope: 'source' | 'all') => {
-    const parsedPostId = parsePostIdFilter(postId);
-
     if (scope === 'source' && parsedPostId === null) {
       const message = __('Enter a valid source post ID before clearing source logs.', 'brasth-document-sync-for-google-docs');
       setNotice({ type: 'error', message });
@@ -270,15 +275,6 @@ export const SyncLogsView = (): JSX.Element => {
     }
 
     const isSourceClear = scope === 'source' && typeof parsedPostId === 'number';
-    const confirmed = window.confirm(
-      isSourceClear
-        ? __('Clear stored log events for this source? Linked Docs, sync status, credentials, and content will not be deleted.', 'brasth-document-sync-for-google-docs')
-        : __('Clear all stored log events for sources you can edit? Linked Docs, sync status, credentials, and content will not be deleted.', 'brasth-document-sync-for-google-docs')
-    );
-
-    if (!confirmed) {
-      return;
-    }
 
     setBusy(true);
     setNotice(null);
@@ -286,11 +282,14 @@ export const SyncLogsView = (): JSX.Element => {
     try {
       const response = await clearSyncLogEntries(isSourceClear ? parsedPostId : undefined);
       await loadEntries(1, currentFilters(), true);
-      const message = sprintf(
-        __('Cleared %d stored log events.', 'brasth-document-sync-for-google-docs'),
-        response.cleared
-      );
-      setNotice({ type: 'success', message });
+      const message = response.cleared === 0
+        ? __('No stored log events found to clear.', 'brasth-document-sync-for-google-docs')
+        : sprintf(
+          __('Cleared %d stored log events.', 'brasth-document-sync-for-google-docs'),
+          response.cleared
+        );
+      setNotice({ type: response.cleared === 0 ? 'info' : 'success', message });
+      setManageLogsOpen(false);
       speak(message);
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : __('Could not clear sync logs.', 'brasth-document-sync-for-google-docs');
@@ -303,21 +302,15 @@ export const SyncLogsView = (): JSX.Element => {
   };
 
   return (
-    <main className="docsync-wp-admin-shell">
-      <header className="docsync-wp-hero">
-        <div>
-          <p>{__('Brasth Document Sync', 'brasth-document-sync-for-google-docs')}</p>
-          <h1>{__('Sync Activity', 'brasth-document-sync-for-google-docs')}</h1>
-          <span>{__('Version', 'brasth-document-sync-for-google-docs')} {config.version}</span>
-        </div>
-        <div className="docsync-wp-hero__status">
-          <strong>{entries.length}</strong>
-          <span>{entries.length === 1 ? __('event on this page', 'brasth-document-sync-for-google-docs') : __('events on this page', 'brasth-document-sync-for-google-docs')}</span>
-        </div>
-      </header>
-
-      <AdminNotice notice={notice} />
-
+    <AdminShell
+      notice={notice}
+      status={{
+        label: autoRefresh ? __('auto-refresh on', 'brasth-document-sync-for-google-docs') : __('visible events', 'brasth-document-sync-for-google-docs'),
+        value: autoRefresh ? __('Live', 'brasth-document-sync-for-google-docs') : entries.length
+      }}
+      title={__('Sync Activity', 'brasth-document-sync-for-google-docs')}
+      version={config.version}
+    >
       <div className="docsync-wp-admin-grid docsync-wp-admin-grid--single">
         <section className="docsync-wp-card docsync-wp-card--wide">
           <div className="docsync-wp-card__header docsync-wp-card__header--row">
@@ -325,6 +318,11 @@ export const SyncLogsView = (): JSX.Element => {
               <h2>{__('Activity console', 'brasth-document-sync-for-google-docs')}</h2>
               <p>{__('Search source events, switch troubleshooting views, and inspect recovery hints.', 'brasth-document-sync-for-google-docs')}</p>
             </div>
+            {canManageLogs ? (
+              <AdminButton disabled={busy} onClick={() => setManageLogsOpen(true)} size="small">
+                {__('Manage logs', 'brasth-document-sync-for-google-docs')}
+              </AdminButton>
+            ) : null}
           </div>
 
           <form className="docsync-wp-log-console" onSubmit={(event) => {
@@ -433,30 +431,25 @@ export const SyncLogsView = (): JSX.Element => {
             step={step}
           />
 
-          <div className="docsync-wp-log-clear-actions">
-            <div>
-              <strong>{__('Danger zone', 'brasth-document-sync-for-google-docs')}</strong>
-              <span>{__('Clears stored events only. Source links, sync status, credentials, progress, and synced content stay intact.', 'brasth-document-sync-for-google-docs')}</span>
+          {showPagination ? (
+            <div className="docsync-wp-table-footer docsync-wp-logs-pagination">
+              <AdminButton disabled={busy || page <= 1} onClick={() => loadEntries(page - 1)}>{__('Previous', 'brasth-document-sync-for-google-docs')}</AdminButton>
+              <span>{sprintf(__('Page %d', 'brasth-document-sync-for-google-docs'), page)}</span>
+              <AdminButton disabled={busy || !hasMore} onClick={() => loadEntries(page + 1)} variant="primary">{__('Next', 'brasth-document-sync-for-google-docs')}</AdminButton>
             </div>
-            <div>
-              {postId.trim() ? (
-                <AdminButton disabled={busy} onClick={() => clearLogs('source')} variant="delete">
-                  {__('Clear source logs', 'brasth-document-sync-for-google-docs')}
-                </AdminButton>
-              ) : null}
-              <AdminButton disabled={busy} onClick={() => clearLogs('all')} variant="delete">
-                {__('Clear all logs', 'brasth-document-sync-for-google-docs')}
-              </AdminButton>
-            </div>
-          </div>
-
-          <div className="docsync-wp-table-footer docsync-wp-logs-pagination">
-            <AdminButton disabled={busy || page <= 1} onClick={() => loadEntries(page - 1)}>{__('Previous', 'brasth-document-sync-for-google-docs')}</AdminButton>
-            <span>{sprintf(__('Page %d', 'brasth-document-sync-for-google-docs'), page)}</span>
-            <AdminButton disabled={busy || !hasMore} onClick={() => loadEntries(page + 1)} variant="primary">{__('Next', 'brasth-document-sync-for-google-docs')}</AdminButton>
-          </div>
+          ) : null}
         </section>
       </div>
-    </main>
+
+      <SyncLogManageDialog
+        busy={busy}
+        canClearSourceLogs={canClearSourceLogs}
+        open={manageLogsOpen}
+        parsedPostId={parsedPostId}
+        postId={postId}
+        onClear={clearLogs}
+        onOpenChange={setManageLogsOpen}
+      />
+    </AdminShell>
   );
 };

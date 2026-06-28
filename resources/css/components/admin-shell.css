@@ -1,76 +1,153 @@
 @layer components {
   .docsync-wp-admin-shell {
-    min-height: calc(100vh - 96px);
-    background: #eef6f4;
-    margin: 0;
-    padding: 28px;
+    background: #f4f7f6;
     color: var(--docsync-text-primary);
+    margin: 0;
+    min-height: calc(100vh - 96px);
+    padding: 24px;
   }
 
-  .docsync-wp-hero {
+  .docsync-wp-admin-shell__container {
+    margin: 0;
+    max-width: 1180px;
+    width: 100%;
+  }
+
+  .docsync-wp-admin-shell__container {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .docsync-wp-admin-shell__notice {
+    margin: 0 0 16px;
+  }
+
+  .docsync-wp-admin-shell__notice.components-notice {
+    border-radius: var(--docsync-card-radius);
+    box-shadow: none;
+  }
+
+  .docsync-wp-admin-shell__content {
+    display: grid;
+    gap: 16px;
+  }
+
+  .docsync-wp-masthead {
     align-items: center;
-    background: var(--docsync-card-bg);
+    background: #fff;
     border: 1px solid var(--docsync-card-border);
     border-radius: var(--docsync-card-radius);
-    box-shadow: var(--docsync-card-shadow);
     display: flex;
+    gap: 16px;
     justify-content: space-between;
-    margin: 0 auto 20px;
-    max-width: 1180px;
-    padding: 28px;
-    position: relative;
+    margin: 0 0 16px;
+    padding: 14px 16px;
   }
 
-  .docsync-wp-hero::before {
-    background: var(--docsync-teal);
-    border-radius: var(--docsync-card-radius) var(--docsync-card-radius) 0 0;
-    content: "";
-    height: 3px;
-    left: 0;
-    position: absolute;
-    right: 0;
-    top: 0;
+  .docsync-wp-masthead__identity {
+    align-items: center;
+    display: flex;
+    gap: 12px;
+    min-width: 0;
   }
 
-  .docsync-wp-hero p,
-  .docsync-wp-hero h1 {
+  .docsync-wp-masthead__mark,
+  .docsync-wp-masthead__fallback-mark {
+    background: #fff;
+    border: 1px solid #e5edec;
+    border-radius: 8px;
+    display: inline-flex;
+    flex: 0 0 44px;
+    height: 44px;
+    justify-content: center;
+    object-fit: contain;
+    width: 44px;
+  }
+
+  .docsync-wp-masthead__fallback-mark {
+    align-items: center;
+    color: var(--docsync-blue);
+    font-size: 24px;
+    font-weight: 800;
+  }
+
+  .docsync-wp-masthead__copy {
+    min-width: 0;
+  }
+
+  .docsync-wp-masthead__copy p,
+  .docsync-wp-masthead__copy h1,
+  .docsync-wp-masthead__copy span {
     margin: 0;
   }
 
-  .docsync-wp-hero p {
-    color: var(--docsync-teal);
+  .docsync-wp-masthead__copy p {
+    color: var(--docsync-teal-text);
+    font-size: 12px;
     font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
   }
 
-  .docsync-wp-hero h1 {
-    font-size: 32px;
-    line-height: 1.15;
-    margin-top: 8px;
+  .docsync-wp-masthead__copy h1 {
+    color: var(--docsync-text-primary);
+    font-size: 24px;
+    letter-spacing: 0;
+    line-height: 1.2;
+    margin-top: 2px;
+    text-wrap: balance;
   }
 
-  .docsync-wp-hero__status {
-    background: var(--docsync-navy);
-    border-radius: 12px;
-    color: #f7f2df;
-    min-width: 140px;
-    padding: 18px;
-    text-align: center;
-  }
-
-  .docsync-wp-hero__status strong {
+  .docsync-wp-masthead__copy span {
+    color: var(--docsync-text-secondary);
     display: block;
-    font-size: 34px;
+    font-size: 12px;
+    margin-top: 3px;
+  }
+
+  .docsync-wp-masthead__status {
+    align-items: center;
+    background: var(--docsync-teal-bg);
+    border: 1px solid #bfd9d4;
+    border-radius: 999px;
+    color: var(--docsync-teal-text);
+    display: inline-flex;
+    flex: 0 0 auto;
+    gap: 6px;
+    min-height: 32px;
+    padding: 5px 11px;
+  }
+
+  .docsync-wp-masthead__status strong {
+    color: var(--docsync-text-primary);
+    font-size: 13px;
     line-height: 1;
+    max-width: 18ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .docsync-wp-masthead__status span {
+    color: var(--docsync-text-secondary);
+    font-size: 12px;
+    line-height: 1.2;
+  }
+
+  .docsync-wp-masthead__status--ready {
+    background: var(--docsync-success-bg);
+    border-color: #b8ddc8;
+  }
+
+  .docsync-wp-masthead__status--attention {
+    background: var(--docsync-warning-bg);
+    border-color: #efd28c;
   }
 
   .docsync-wp-admin-grid {
     display: grid;
-    gap: 20px;
+    gap: 16px;
     grid-template-columns: minmax(0, 1fr) 340px;
-    margin: 0 auto;
-    max-width: 1180px;
+    margin: 0;
+    max-width: none;
   }
 
   .docsync-wp-admin-grid--single {

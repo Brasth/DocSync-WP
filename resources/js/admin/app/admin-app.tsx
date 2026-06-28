@@ -1,4 +1,4 @@
-import { createElement, Fragment, useEffect } from '@wordpress/element';
+import { createElement, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 import { AccountPanel } from '../features/google-setup/account-panel';
@@ -6,7 +6,7 @@ import { SettingsPanel } from '../features/google-setup/settings-panel';
 import { BackgroundSyncPoller } from '../features/post-sync/background-sync-poller';
 import { SourcesTable, SourcesTableSkeleton } from '../features/sources/sources-table';
 import { SyncLogsView } from '../features/sync-logs/sync-logs-view';
-import { AdminNotice } from '../shared/ui/admin-notice';
+import { AdminShell } from '../shared/ui/admin-shell';
 import { useAdminApp, type AdminView as SetupAdminView } from './use-admin-app';
 
 type AdminView = SetupAdminView | 'logs';
@@ -22,31 +22,25 @@ const SetupSourcesApp = ({ view }: { view: SetupAdminView }): JSX.Element => {
     });
   }, [view]);
 
+  const setupReady = Boolean(app.settings?.hasRequiredSettings && app.account.connected && app.account.hasRequiredScope);
+  const shellStatus = view === 'sources'
+    ? {
+      label: app.sources.length === 1 ? __('shown source', 'brasth-document-sync-for-google-docs') : __('shown sources', 'brasth-document-sync-for-google-docs'),
+      value: app.sources.length
+    }
+    : {
+      label: __('Google connection', 'brasth-document-sync-for-google-docs'),
+      value: setupReady ? __('Ready', 'brasth-document-sync-for-google-docs') : __('Setup', 'brasth-document-sync-for-google-docs'),
+      variant: setupReady ? 'ready' as const : 'attention' as const
+    };
+
   return (
-    <main className="docsync-wp-admin-shell">
-      <header className="docsync-wp-hero">
-        <div>
-          <p>{__('Brasth Document Sync', 'brasth-document-sync-for-google-docs')}</p>
-          <h1>{view === 'sources' ? __('Sources', 'brasth-document-sync-for-google-docs') : __('Google Setup', 'brasth-document-sync-for-google-docs')}</h1>
-          <span>{__('Version', 'brasth-document-sync-for-google-docs')} {app.config.version}</span>
-        </div>
-        <div className="docsync-wp-hero__status">
-          {view === 'sources' ? (
-            <>
-              <strong>{app.sources.length}</strong>
-              <span>{app.sources.length === 1 ? __('shown source', 'brasth-document-sync-for-google-docs') : __('shown sources', 'brasth-document-sync-for-google-docs')}</span>
-            </>
-          ) : (
-            <>
-              <strong>{app.settings?.hasRequiredSettings ? __('Ready', 'brasth-document-sync-for-google-docs') : __('Setup', 'brasth-document-sync-for-google-docs')}</strong>
-              <span>{__('Google connection', 'brasth-document-sync-for-google-docs')}</span>
-            </>
-          )}
-        </div>
-      </header>
-
-      <AdminNotice notice={app.notice} />
-
+    <AdminShell
+      notice={app.notice}
+      status={shellStatus}
+      title={view === 'sources' ? __('Sources', 'brasth-document-sync-for-google-docs') : __('Google Setup', 'brasth-document-sync-for-google-docs')}
+      version={app.config.version}
+    >
       {!app.settings && view === 'sources' ? (
         <div className="docsync-wp-admin-grid docsync-wp-admin-grid--single">
           <div className="docsync-wp-admin-grid__main">
@@ -113,7 +107,7 @@ const SetupSourcesApp = ({ view }: { view: SetupAdminView }): JSX.Element => {
           </aside>
         </div>
       )}
-    </main>
+    </AdminShell>
   );
 };
 
