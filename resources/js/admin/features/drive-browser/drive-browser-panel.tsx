@@ -22,7 +22,10 @@ export const DriveBrowserPanel = ({ busy, selectedDocument, onSelect }: DriveBro
   return (
     <div className="docsync-wp-drive-browser">
       <div className="docsync-wp-drive-browser__heading">
-        <strong>{__('Choose from Google Drive', 'brasth-document-sync-for-google-docs')}</strong>
+        <div className="docsync-wp-drive-browser__heading-title">
+          <span aria-hidden="true" className="dashicons dashicons-cloud" />
+          <strong>{__('Choose from Google Drive', 'brasth-document-sync-for-google-docs')}</strong>
+        </div>
         <DriveBrowserBreadcrumbNav
           breadcrumbs={browser.breadcrumbs}
           busy={busy}

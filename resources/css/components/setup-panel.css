@@ -2,7 +2,8 @@
   .docsync-wp-setup-workspace {
     display: grid;
     gap: 16px;
-    grid-template-columns: minmax(190px, 240px) minmax(0, 1fr);
+    grid-template-columns: minmax(180px, 220px) minmax(0, 1fr);
+    min-width: 0;
   }
 
   .docsync-wp-setup-rail {
@@ -11,6 +12,7 @@
     border: 1px solid var(--docsync-card-border);
     border-radius: var(--docsync-card-radius);
     box-shadow: var(--docsync-card-shadow);
+    min-width: 0;
     padding: 16px;
   }
 
@@ -32,9 +34,10 @@
     align-items: flex-start;
     border: 1px solid transparent;
     border-radius: 8px;
-    display: grid;
+    display: flex;
+    flex-wrap: wrap;
     gap: 8px;
-    grid-template-columns: minmax(0, 1fr) auto;
+    justify-content: space-between;
     padding: 10px;
   }
 
@@ -46,6 +49,7 @@
   .docsync-wp-setup-rail li span,
   .docsync-wp-setup-rail li small {
     display: block;
+    overflow-wrap: anywhere;
   }
 
   .docsync-wp-setup-rail li span {
@@ -59,7 +63,13 @@
 
   .docsync-wp-setup-rail .docsync-wp-step-state {
     align-self: start;
+    flex: 0 0 auto;
     white-space: nowrap;
+  }
+
+  .docsync-wp-setup-rail li > div {
+    flex: 1 1 116px;
+    min-width: 0;
   }
 
   .docsync-wp-setup-rail .docsync-wp-setup-progress {
@@ -68,11 +78,13 @@
 
   .docsync-wp-setup-task-panel {
     min-width: 0;
+    overflow: hidden;
   }
 
   .docsync-wp-setup-task-stack {
     display: grid;
     gap: 14px;
+    min-width: 0;
   }
 
   .docsync-wp-setup-task-message {
@@ -370,12 +382,15 @@
   }
 
   .docsync-wp-copy-row input {
-    flex: 1 1 360px;
+    flex: 1 1 260px;
     max-width: 100%;
+    min-width: 0;
+    width: 100%;
   }
 
   .docsync-wp-copy-field {
     display: block;
+    min-width: 0;
   }
 
   .docsync-wp-copy-field > span {
@@ -384,11 +399,13 @@
     margin-bottom: 6px;
   }
 
-  @media (max-width: 720px) {
+  @media (max-width: 1100px) {
     .docsync-wp-setup-workspace {
       grid-template-columns: 1fr;
     }
+  }
 
+  @media (max-width: 720px) {
     .docsync-wp-next-action {
       align-items: stretch;
       flex-direction: column;

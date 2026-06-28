@@ -20,12 +20,16 @@ type Props = {
   onCompleted: (result: SyncResult) => void;
 };
 
+const trimTrailingSlash = (value: string): string => value.replace(/\/$/, '');
+
 export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props): JSX.Element | null => {
   const modal = useDocSourceModal({ isOpen, target, onClose, onCompleted });
   const uiMode = modal.uiMode;
   const compatibility = modal.metadata?.syncCompatibility;
   const driveBrowser = useLazyDriveBrowserPanel(isOpen && uiMode === 'browse');
   const DriveBrowserPanel = driveBrowser.Component;
+  const config = getAdminConfig();
+  const markUrl = config.pluginUrl ? `${trimTrailingSlash(config.pluginUrl)}/resources/images/brasth-mark.png` : '';
 
   useEffect(() => {
     if (!isOpen) {
@@ -54,13 +58,26 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
           onPointerDownOutside={(event) => event.preventDefault()}
         >
           <div className="docsync-wp-modal__header">
-            <div className="docsync-wp-modal__title">
-              <Dialog.Title asChild>
-                <h2>{__('Link Google Doc', 'brasth-document-sync-for-google-docs')}</h2>
-              </Dialog.Title>
-              <Dialog.Description asChild>
-                <p>{__('Google Docs is source of truth. Sync overwrites WordPress content.', 'brasth-document-sync-for-google-docs')}</p>
-              </Dialog.Description>
+            <div className="docsync-wp-modal__heading">
+              {markUrl ? (
+                <img
+                  alt=""
+                  aria-hidden="true"
+                  className="docsync-wp-modal__mark"
+                  height="40"
+                  src={markUrl}
+                  width="40"
+                />
+              ) : null}
+              <div className="docsync-wp-modal__title">
+                <span>{__('Brasth Document Sync', 'brasth-document-sync-for-google-docs')}</span>
+                <Dialog.Title asChild>
+                  <h2>{__('Link Google Doc', 'brasth-document-sync-for-google-docs')}</h2>
+                </Dialog.Title>
+                <Dialog.Description asChild>
+                  <p>{__('Google Docs is source of truth. Sync overwrites WordPress content.', 'brasth-document-sync-for-google-docs')}</p>
+                </Dialog.Description>
+              </div>
             </div>
             <div className="docsync-wp-modal__mode-switch">
               <SourceModeTabs

@@ -1,8 +1,9 @@
 @layer components {
   .docsync-wp-settings-grid {
     display: grid;
-    gap: 16px;
+    gap: 12px;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-width: 0;
   }
 
   .docsync-wp-settings-grid label,
@@ -11,6 +12,16 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
+    min-width: 0;
+  }
+
+  .docsync-wp-settings-grid input,
+  .docsync-wp-settings-grid select,
+  .docsync-wp-settings-grid textarea {
+    max-width: 100%;
+    min-height: 36px;
+    min-width: 0;
+    width: 100%;
   }
 
   .docsync-wp-settings-actions {
@@ -51,7 +62,12 @@
     gap: 12px;
     grid-template-columns: minmax(0, 1fr) auto;
     margin-bottom: 14px;
+    min-width: 0;
     padding: 12px;
+  }
+
+  .docsync-wp-oauth-import > div {
+    min-width: 0;
   }
 
   .docsync-wp-oauth-import p {
@@ -73,7 +89,7 @@
 
   .docsync-wp-oauth-import__filename {
     color: var(--docsync-text-muted);
-    max-width: 220px;
+    max-width: min(220px, 100%);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
