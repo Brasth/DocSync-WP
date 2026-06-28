@@ -4,3 +4,10 @@
 @import "./components/setup-panel.css";
 @import "./components/setup-settings.css";
 @import "./shared/responsive.css";
+
+#docsync-wp-admin-root .docsync-wp-setup-rail ol,
+#docsync-wp-admin-root .docsync-wp-step-notes,
+#docsync-wp-admin-root .docsync-wp-setup-test ul {
+  margin-left: 0;
+  padding-left: 0;
+}

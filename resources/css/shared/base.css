@@ -3,27 +3,29 @@
     margin-left: -20px;
 
     /* Brand colors */
-    --docsync-navy: #0f172a;
-    --docsync-navy-light: #1e293b;
-    --docsync-cyan: #22d3ee;
-    --docsync-blue: #2563eb;
-    --docsync-teal: #0f766e;
-    --docsync-teal-bg: #e8f3ee;
-    --docsync-teal-text: #175a44;
+    --docsync-navy: #12213a;
+    --docsync-navy-light: #1d3557;
+    --docsync-cyan: #00b8c8;
+    --docsync-blue: #165dcc;
+    --docsync-blue-hover: #0f4dad;
+    --docsync-blue-soft: #e8f1ff;
+    --docsync-teal: #007c72;
+    --docsync-teal-bg: #e3f5f2;
+    --docsync-teal-text: #0c5a51;
 
     /* Semantic colors */
     --docsync-error: #b42318;
     --docsync-error-bg: #f8d7da;
     --docsync-warning: #8a4b00;
     --docsync-warning-bg: #fff8e5;
-    --docsync-info: #2563eb;
-    --docsync-info-bg: #dbeafe;
-    --docsync-success: #175a44;
-    --docsync-success-bg: #d7f0e3;
+    --docsync-info: #165dcc;
+    --docsync-info-bg: #e8f1ff;
+    --docsync-success: #0c5a51;
+    --docsync-success-bg: #d7f2ec;
 
     /* Surface */
     --docsync-card-bg: #fff;
-    --docsync-card-border: #d9e2e1;
+    --docsync-card-border: #cfded9;
     --docsync-card-radius: 8px;
     --docsync-card-shadow: 0 1px 2px rgba(23, 32, 42, 0.05);
 
@@ -36,11 +38,11 @@
     --docsync-status-linked-bg: #e8f3ee;
     --docsync-status-linked-text: #175a44;
     --docsync-status-linked-dot: #0f766e;
-    --docsync-status-syncing-bg: #dbeafe;
-    --docsync-status-syncing-text: #1e40af;
-    --docsync-status-syncing-dot: #2563eb;
-    --docsync-status-synced-bg: #d7f0e3;
-    --docsync-status-synced-text: #175a44;
+    --docsync-status-syncing-bg: #e8f1ff;
+    --docsync-status-syncing-text: #164b9d;
+    --docsync-status-syncing-dot: #165dcc;
+    --docsync-status-synced-bg: #d7f2ec;
+    --docsync-status-synced-text: #0c5a51;
     --docsync-status-synced-dot: #15803d;
     --docsync-status-skipped-bg: #f0f0f1;
     --docsync-status-skipped-text: #646970;
@@ -48,9 +50,9 @@
     --docsync-status-error-bg: #f8d7da;
     --docsync-status-error-text: #b42318;
     --docsync-status-error-dot: #dc2626;
-    --docsync-status-info-bg: #dbeafe;
-    --docsync-status-info-text: #1e40af;
-    --docsync-status-info-dot: #2563eb;
+    --docsync-status-info-bg: #e8f1ff;
+    --docsync-status-info-text: #164b9d;
+    --docsync-status-info-dot: #165dcc;
     --docsync-status-warning-bg: #fff8e5;
     --docsync-status-warning-text: #8a4b00;
     --docsync-status-warning-dot: #d97706;

@@ -1,13 +1,11 @@
-import { createElement, Fragment, useEffect, useMemo, useState } from '@wordpress/element';
+import { createElement, useEffect, useMemo, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 
 import type { GoogleAccount, SettingsResponse } from '../../api';
-import { AdminButton } from '../../shared/ui/admin-button';
 import { GoogleSetupActiveTaskPanel } from './google-setup-active-task-panel';
 import { GoogleSetupProgressRail } from './google-setup-progress-rail';
-import { GoogleSetupTargetsStep } from './google-setup-targets-step';
 import type { OAuthClientJsonCredentials } from './oauth-client-json';
-import { buildSetupChecks, samePostTypes, type SetupCheck } from './google-setup-utils';
+import { buildSetupChecks, type SetupCheck } from './google-setup-utils';
 import {
   activeGoogleSetupTask,
   buildGoogleSetupChecklistItems,
@@ -37,9 +35,6 @@ export const SettingsPanel = ({
 }: Props): JSX.Element => {
   const [clientId, setClientId] = useState(settings.clientId);
   const [clientSecret, setClientSecret] = useState('');
-  const [enabledPostTypes, setEnabledPostTypes] = useState(settings.enabledPostTypes);
-  const [syncInterval, setSyncInterval] = useState(settings.syncInterval);
-  const [elementorSyncEnabled, setElementorSyncEnabled] = useState(settings.elementorSyncEnabled);
   const [copyMessage, setCopyMessage] = useState('');
   const [testChecks, setTestChecks] = useState<SetupCheck[] | null>(null);
   const setupChecks = useMemo(() => buildSetupChecks(settings, account), [settings, account]);
@@ -48,39 +43,14 @@ export const SettingsPanel = ({
   const canCreateDraft = settings.hasRequiredSettings && account.connected && account.hasRequiredScope;
   const hasCredentialChanges = clientId !== settings.clientId || clientSecret.trim() !== '';
   const canSaveCredentials = clientId.trim() !== '' && (clientSecret.trim() !== '' || settings.hasClientSecret);
-  const hasSyncDefaultChanges =
-    syncInterval !== settings.syncInterval ||
-    elementorSyncEnabled !== settings.elementorSyncEnabled ||
-    !samePostTypes(enabledPostTypes, settings.enabledPostTypes);
-  const hasUnsavedChanges =
-    hasCredentialChanges ||
-    hasSyncDefaultChanges;
   const credentialStepState = setupCredentialStepState(settings, hasCredentialChanges);
-  const syncDefaultsStepState = hasSyncDefaultChanges ? 'needs-action' : 'ready';
   const firstSyncStepState = setupFirstSyncStepState(canCreateDraft);
 
   useEffect(() => {
     setClientId(settings.clientId);
     setClientSecret('');
-    setEnabledPostTypes(settings.enabledPostTypes);
-    setSyncInterval(settings.syncInterval);
-    setElementorSyncEnabled(settings.elementorSyncEnabled);
     setTestChecks(null);
   }, [settings]);
-
-  const togglePostType = (postType: string) => {
-    setEnabledPostTypes((current) => {
-      if (postType === 'post') {
-        return current.includes('post') ? current : ['post', ...current];
-      }
-
-      if (current.includes(postType)) {
-        return current.filter((item) => item !== postType);
-      }
-
-      return [...current, postType];
-    });
-  };
 
   const copyValue = async (value: string, label: string) => {
     setCopyMessage('');
@@ -102,9 +72,6 @@ export const SettingsPanel = ({
     await onSave({
       clientId,
       ...(clientSecret ? { clientSecret } : {}),
-      enabledPostTypes,
-      syncInterval,
-      elementorSyncEnabled,
       connectionMode: settings.connectionMode || 'self_managed',
       defaultExportFormat: settings.defaultExportFormat,
       defaultPostStatus: settings.defaultPostStatus,
@@ -143,56 +110,33 @@ export const SettingsPanel = ({
   };
 
   return (
-    <>
-      <section className="docsync-wp-setup-workspace">
-        <GoogleSetupProgressRail
-          activeTask={activeTask}
-          checklistItems={checklistItems}
-          completedChecks={completedChecks}
-          setupChecks={setupChecks}
-          setupProgress={setupProgress}
-        />
+    <section className="docsync-wp-setup-workspace">
+      <GoogleSetupProgressRail
+        activeTask={activeTask}
+        checklistItems={checklistItems}
+        completedChecks={completedChecks}
+        setupChecks={setupChecks}
+        setupProgress={setupProgress}
+      />
 
-        <GoogleSetupActiveTaskPanel
-          account={account}
-          activeTask={activeTask}
-          busy={busy}
-          clientId={clientId}
-          clientSecret={clientSecret}
-          copyMessage={copyMessage}
-          hasClientSecret={settings.hasClientSecret}
-          hasUnsavedChanges={hasUnsavedChanges}
-          nextAction={nextAction}
-          onClientIdChange={setClientId}
-          onClientSecretChange={setClientSecret}
-          onCopyValue={copyValue}
-          onImported={importCredentials}
-          onTestSetup={testSetup}
-          redirectUri={redirectUri}
-          testChecks={testChecks}
-        />
-      </section>
-
-      <div className="docsync-wp-setup-secondary">
-        <GoogleSetupTargetsStep
-          availablePostTypes={settings.availablePostTypes}
-          elementorSyncEnabled={elementorSyncEnabled}
-          enabledPostTypes={enabledPostTypes}
-          onElementorSyncChange={setElementorSyncEnabled}
-          onSyncIntervalChange={setSyncInterval}
-          onTogglePostType={togglePostType}
-          initialOpen={hasSyncDefaultChanges}
-          stepState={syncDefaultsStepState}
-          syncInterval={syncInterval}
-        />
-        {hasSyncDefaultChanges ? (
-          <div className="docsync-wp-setup-secondary-actions">
-            <AdminButton disabled={busy} onClick={submit}>
-              {__('Save sync defaults', 'brasth-document-sync-for-google-docs')}
-            </AdminButton>
-          </div>
-        ) : null}
-      </div>
-    </>
+      <GoogleSetupActiveTaskPanel
+        account={account}
+        activeTask={activeTask}
+        busy={busy}
+        clientId={clientId}
+        clientSecret={clientSecret}
+        copyMessage={copyMessage}
+        hasClientSecret={settings.hasClientSecret}
+        hasUnsavedChanges={hasCredentialChanges}
+        nextAction={nextAction}
+        onClientIdChange={setClientId}
+        onClientSecretChange={setClientSecret}
+        onCopyValue={copyValue}
+        onImported={importCredentials}
+        onTestSetup={testSetup}
+        redirectUri={redirectUri}
+        testChecks={testChecks}
+      />
+    </section>
   );
 };

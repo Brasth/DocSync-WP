@@ -337,8 +337,8 @@
   }
 
   #docsync-wp-admin-root .button-primary:hover {
-    background: #1d4ed8;
-    border-color: #1d4ed8;
+    background: var(--docsync-blue-hover);
+    border-color: var(--docsync-blue-hover);
     color: #fff;
   }
 
@@ -359,7 +359,7 @@
   }
 
   #docsync-wp-admin-root .button-secondary:hover {
-    background: #eff6ff;
+    background: var(--docsync-blue-soft);
     border-color: var(--docsync-blue);
     color: var(--docsync-blue);
   }
@@ -399,8 +399,10 @@
 }
 
 .docsync-wp-confirm-dialog {
-  --docsync-blue: #2563eb;
-  --docsync-card-border: #d9e2e1;
+  --docsync-blue: #165dcc;
+  --docsync-blue-hover: #0f4dad;
+  --docsync-blue-soft: #e8f1ff;
+  --docsync-card-border: #cfded9;
   --docsync-card-radius: 8px;
   --docsync-error: #b42318;
   --docsync-error-bg: #f8d7da;
@@ -472,8 +474,8 @@
 }
 
 .docsync-wp-confirm-dialog .button-primary:hover {
-  background: #1d4ed8;
-  border-color: #1d4ed8;
+  background: var(--docsync-blue-hover);
+  border-color: var(--docsync-blue-hover);
   color: #fff;
 }
 
@@ -486,7 +488,7 @@
 }
 
 .docsync-wp-confirm-dialog .button-secondary:hover {
-  background: #eff6ff;
+  background: var(--docsync-blue-soft);
   border-color: var(--docsync-blue);
   color: var(--docsync-blue);
 }

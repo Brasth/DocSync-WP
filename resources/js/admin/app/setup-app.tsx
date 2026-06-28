@@ -2,6 +2,7 @@ import { createElement, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 import { AccountPanel } from '../features/google-setup/account-panel';
+import { GoogleSetupSyncDefaultsPanel } from '../features/google-setup/google-setup-sync-defaults-panel';
 import { SettingsPanel } from '../features/google-setup/settings-panel';
 import { AdminShell } from '../shared/ui/admin-shell';
 import { useSetupApp } from './use-setup-app';
@@ -59,6 +60,11 @@ export const SetupApp = (): JSX.Element => {
               createSyncedDraftUrl={app.config.createSyncedDraftUrl}
               onConnect={app.connectGoogle}
               onDisconnect={app.disconnectGoogle}
+            />
+            <GoogleSetupSyncDefaultsPanel
+              busy={app.busy}
+              onSave={app.persistSettings}
+              settings={app.settings}
             />
           </aside>
         </div>

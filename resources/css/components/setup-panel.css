@@ -42,7 +42,7 @@
   }
 
   .docsync-wp-setup-rail li.is-active {
-    background: #f0f6f4;
+    background: #edf8f5;
     border-color: #bfd9d4;
   }
 
@@ -154,7 +154,7 @@
 
   .docsync-wp-next-action {
     align-items: center;
-    background: #f0f6f4;
+    background: #edf8f5;
     border: 1px solid var(--docsync-teal);
     border-radius: 8px;
     display: flex;
@@ -208,7 +208,7 @@
   }
 
   .docsync-wp-setup-progress span {
-    background: var(--docsync-teal);
+    background: var(--docsync-cyan);
     display: block;
     height: 100%;
   }
@@ -299,11 +299,13 @@
     justify-content: center;
     line-height: 26px;
     min-width: 26px;
+    margin-top: 1px;
     width: 26px;
   }
 
   .docsync-wp-step-heading > .docsync-wp-step-icon {
     font-size: 16px;
+    line-height: 26px;
   }
 
   .docsync-wp-step-heading h3,
@@ -313,7 +315,7 @@
   }
 
   .docsync-wp-step-title-row {
-    align-items: center;
+    align-items: flex-start;
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
@@ -362,6 +364,13 @@
     font-weight: 700;
     padding: 6px 10px;
     text-decoration: none;
+  }
+
+  .docsync-wp-step-notes,
+  .docsync-wp-setup-test ul {
+    list-style: none;
+    margin-left: 0;
+    padding-left: 0;
   }
 
   .docsync-wp-step-notes {
