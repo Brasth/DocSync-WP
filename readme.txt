@@ -18,10 +18,12 @@ The plugin exports Google Docs as HTML ZIP packages, imports embedded images int
 
 Features include:
 
-* Self-managed Google OAuth setup wizard.
+* Self-managed Google OAuth setup wizard with next-action guidance.
 * Server-side Google Drive document browser for My Drive and shared drives.
 * Advanced Google Docs URL and raw file ID linking.
 * Background sync through WP-Cron with source status and diagnostic logs.
+* Searchable sync logs with level, status, step, and source filters.
+* Safe log clearing for one source or all visible sources without deleting synced content or source links.
 * One-way Google Docs to WordPress sync for posts, pages, and enabled public custom post types.
 * Media import for images exported from Google Docs.
 * Gutenberg block markup for common headings, paragraphs, lists, tables, and images.
@@ -83,6 +85,10 @@ No. Sync updates the linked post content, and uninstall never deletes synced pos
 
 Manual and scheduled background syncs use WP-Cron. Low-traffic sites or sites with `DISABLE_WP_CRON` should configure a real server cron job that calls `wp-cron.php`.
 
+= Can I clear sync logs? =
+
+Yes. The Logs screen can clear stored diagnostic events for one source or all sources you can edit. Clearing logs removes only `_docsync_wp_sync_events`; it does not delete linked Docs, sync status, credentials, progress, synced posts, or imported media.
+
 = Are Google OAuth secrets and user tokens stored safely? =
 
 Brasth Document Sync encrypts the site OAuth client secret and per-user Google tokens with WordPress salts before storage. Rotating WordPress salts invalidates those credentials and users must reconnect.
@@ -109,7 +115,7 @@ The build uses Vite and writes screen-specific manifests for Setup, Sources, Log
 
 == Screenshots ==
 
-1. Setup wizard with self-managed OAuth progress, redirect URI copy, and account connection state.
+1. Setup wizard with self-managed OAuth next action, redirect URI copy, and account connection state.
 2. Posts list Add Sync Doc flow with linked source status and background sync progress.
 3. Drive browser modal with breadcrumbs, search, and folder navigation.
 4. Drive browser empty folder state with search and access-check guidance.
@@ -124,6 +130,9 @@ The build uses Vite and writes screen-specific manifests for Setup, Sources, Log
 * Tightened source, Drive browser, document inspection, sync log, and settings request validation before service calls.
 * Limited post/list-table DocSync assets, notices, and source metadata output to users with applicable target capabilities.
 * Confirmed public settings, OAuth account status, admin inline config, and sync diagnostics do not expose client secrets or Google tokens.
+* Added setup next-action guidance for saving credentials, connecting Google, reconnecting scope, and creating the first synced draft.
+* Added searchable sync logs with level, status, step, source filters, summary metrics, and recovery hints.
+* Added safe clear-log actions for one source or all visible sources without deleting source links, sync status, credentials, progress, or synced content.
 
 = 1.0.8 =
 

@@ -5,6 +5,7 @@ import type { SyncLogEntry } from '../../api';
 import { EmptyState } from '../../shared/ui/empty-state';
 import { SkeletonTableRows } from '../../shared/ui/skeleton';
 import { StatusPill } from '../../shared/ui/status-pill';
+import { syncLogRecoveryHint } from './sync-log-recovery-hints';
 
 type Props = {
   busy: boolean;
@@ -13,6 +14,9 @@ type Props = {
   hasLoaded: boolean;
   level: string;
   postId: string;
+  search: string;
+  status: string;
+  step: string;
 };
 
 type EmptyCopy = {
@@ -85,13 +89,13 @@ const formatRelativeTime = (timestamp: string): string => {
   return '';
 };
 
-const getEmptyCopy = (postId: string, level: string, hasActiveFilters: boolean): EmptyCopy => {
+const getEmptyCopy = (postId: string, level: string, search: string, status: string, step: string, hasActiveFilters: boolean): EmptyCopy => {
   const filteredPostId = postId.trim();
 
-  if (filteredPostId && level) {
+  if (filteredPostId && (level || search || status || step)) {
     return {
-      title: __('No sync events for this source and level.', 'brasth-document-sync-for-google-docs'),
-      description: __('Choose another level or clear filters to inspect all stored events for this source.', 'brasth-document-sync-for-google-docs')
+      title: __('No sync events for this source and filters.', 'brasth-document-sync-for-google-docs'),
+      description: __('Adjust filters or clear them to inspect all stored events for this source.', 'brasth-document-sync-for-google-docs')
     };
   }
 
@@ -126,6 +130,7 @@ const LogRow = ({ entry, level }: { entry: SyncLogEntry; level: string }): JSX.E
   const [expanded, setExpanded] = useState(false);
   const contextDetails = eventContext(entry);
   const hasContext = contextDetails.length > 0;
+  const hint = syncLogRecoveryHint(entry);
   const relativeTime = formatRelativeTime(entry.timestamp);
   const rowClass = level === 'error' ? 'docsync-wp-log-row--error' : level === 'warning' ? 'docsync-wp-log-row--warning' : '';
   const showProgress = typeof entry.progress === 'number' && entry.progress > 0 && entry.progress < 100;
@@ -139,10 +144,10 @@ const LogRow = ({ entry, level }: { entry: SyncLogEntry; level: string }): JSX.E
         </td>
         <td><StatusPill status={entry.level} /></td>
         <td>
-          {entry.postTitle || sprintf(__('Post %d', 'brasth-document-sync-for-google-docs'), entry.postId)}
+          <strong>{entry.postTitle || sprintf(__('Post %d', 'brasth-document-sync-for-google-docs'), entry.postId)}</strong>
           <small>{sprintf(__('ID %d', 'brasth-document-sync-for-google-docs'), entry.postId)}</small>
+          <small>{entry.googleTitle || __('Untitled Google Doc', 'brasth-document-sync-for-google-docs')}</small>
         </td>
-        <td>{entry.googleTitle || __('Untitled Google Doc', 'brasth-document-sync-for-google-docs')}</td>
         <td>
           {entry.status}
           {showProgress ? (
@@ -166,11 +171,12 @@ const LogRow = ({ entry, level }: { entry: SyncLogEntry; level: string }): JSX.E
           ) : null}
           {entry.message}
           {entry.errorCode ? <span className="docsync-wp-log-error-code">{entry.errorCode}</span> : null}
+          {hint ? <p className="docsync-wp-log-recovery-hint">{hint}</p> : null}
         </td>
       </tr>
       {expanded && hasContext ? (
         <tr className="docsync-wp-log-context-row">
-          <td colSpan={6}>
+          <td colSpan={5}>
             <dl className="docsync-wp-log-context-grid">
               {contextDetails.map((item) => (
                 <div className="docsync-wp-log-context-item" key={item.label}>
@@ -186,8 +192,8 @@ const LogRow = ({ entry, level }: { entry: SyncLogEntry; level: string }): JSX.E
   );
 };
 
-export const SyncLogEventsTable = ({ busy, entries, hasActiveFilters, hasLoaded, level, postId }: Props): JSX.Element => {
-  const emptyCopy = getEmptyCopy(postId, level, hasActiveFilters);
+export const SyncLogEventsTable = ({ busy, entries, hasActiveFilters, hasLoaded, level, postId, search, status, step }: Props): JSX.Element => {
+  const emptyCopy = getEmptyCopy(postId, level, search, status, step, hasActiveFilters);
 
   return (
     <div className="docsync-wp-table-scroll">
@@ -196,18 +202,17 @@ export const SyncLogEventsTable = ({ busy, entries, hasActiveFilters, hasLoaded,
           <tr>
             <th>{__('Time', 'brasth-document-sync-for-google-docs')}</th>
             <th>{__('Level', 'brasth-document-sync-for-google-docs')}</th>
-            <th>{__('WordPress target', 'brasth-document-sync-for-google-docs')}</th>
-            <th>{__('Google Doc', 'brasth-document-sync-for-google-docs')}</th>
-            <th>{__('Status', 'brasth-document-sync-for-google-docs')}</th>
-            <th>{__('Message', 'brasth-document-sync-for-google-docs')}</th>
+            <th>{__('Target / Doc', 'brasth-document-sync-for-google-docs')}</th>
+            <th>{__('Status / Step', 'brasth-document-sync-for-google-docs')}</th>
+            <th>{__('Message / Hint', 'brasth-document-sync-for-google-docs')}</th>
           </tr>
         </thead>
         <tbody>
           {!hasLoaded || (busy && entries.length === 0) ? (
-            <SkeletonTableRows columns={['58%', '46%', '62%', '54%', '48%', '72%']} rows={5} />
+            <SkeletonTableRows columns={['58%', '46%', '66%', '52%', '78%']} rows={5} />
           ) : entries.length === 0 ? (
             <tr>
-              <td colSpan={6}>
+              <td colSpan={5}>
                 <EmptyState
                   action={(
                     <a className="button button-secondary" href="admin.php?page=brasth-document-sync-for-google-docs-sources">

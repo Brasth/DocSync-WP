@@ -1,4 +1,29 @@
 @layer components {
+  .docsync-wp-next-action {
+    align-items: center;
+    background: #f0f6f4;
+    border: 1px solid var(--docsync-teal);
+    border-radius: 8px;
+    display: flex;
+    gap: 18px;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    padding: 16px;
+  }
+
+  .docsync-wp-next-action h3,
+  .docsync-wp-next-action p {
+    margin: 0;
+  }
+
+  .docsync-wp-next-action .docsync-wp-kicker {
+    margin-bottom: 4px;
+  }
+
+  .docsync-wp-next-action .button {
+    flex: 0 0 auto;
+  }
+
   .docsync-wp-setup-summary {
     align-items: center;
     background: #f6f7f7;
@@ -67,6 +92,11 @@
     margin-bottom: 12px;
   }
 
+  .docsync-wp-step-heading > div {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
   .docsync-wp-step-heading > span {
     align-items: center;
     background: var(--docsync-navy);
@@ -86,6 +116,39 @@
   .docsync-wp-step-heading p,
   .docsync-wp-setup-test p {
     margin: 0;
+  }
+
+  .docsync-wp-step-title-row {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+
+  .docsync-wp-step-state {
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    text-transform: uppercase;
+  }
+
+  .docsync-wp-step-state.is-manual {
+    background: #f0f0f1;
+    color: var(--docsync-text-secondary);
+  }
+
+  .docsync-wp-step-state.is-complete,
+  .docsync-wp-step-state.is-ready {
+    background: var(--docsync-success-bg);
+    color: var(--docsync-success);
+  }
+
+  .docsync-wp-step-state.is-needs-action {
+    background: #fff8e5;
+    color: #8a5a00;
   }
 
   .docsync-wp-cloud-links,
@@ -133,6 +196,17 @@
     display: block;
     font-weight: 600;
     margin-bottom: 6px;
+  }
+
+  @media (max-width: 720px) {
+    .docsync-wp-next-action {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .docsync-wp-next-action .button {
+      text-align: center;
+    }
   }
 
 }

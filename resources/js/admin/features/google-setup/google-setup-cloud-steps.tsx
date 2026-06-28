@@ -3,21 +3,33 @@ import { __ } from '@wordpress/i18n';
 
 import { googleCloudLinks } from './google-setup-utils';
 import { AdminButton } from '../../shared/ui/admin-button';
+import { SetupStepStateBadge, type SetupStepState } from './setup-step-state';
 
 type Props = {
   redirectUri: string;
   copyMessage: string;
+  cloudStepState: SetupStepState;
+  redirectStepState: SetupStepState;
   onCopyValue: (value: string, label: string) => void;
 };
 
-export const GoogleSetupCloudSteps = ({ redirectUri, copyMessage, onCopyValue }: Props): JSX.Element => {
+export const GoogleSetupCloudSteps = ({
+  redirectUri,
+  copyMessage,
+  cloudStepState,
+  redirectStepState,
+  onCopyValue
+}: Props): JSX.Element => {
   return (
     <>
       <li>
         <div className="docsync-wp-step-heading">
           <span>1</span>
           <div>
-            <h3>{__('Create the Google Cloud pieces', 'brasth-document-sync-for-google-docs')}</h3>
+            <div className="docsync-wp-step-title-row">
+              <h3>{__('Create Google Cloud app', 'brasth-document-sync-for-google-docs')}</h3>
+              <SetupStepStateBadge state={cloudStepState} />
+            </div>
             <p>{__('Use one Google Cloud project for the Drive API, Docs API, OAuth consent screen, and OAuth web credentials.', 'brasth-document-sync-for-google-docs')}</p>
           </div>
         </div>
@@ -39,7 +51,10 @@ export const GoogleSetupCloudSteps = ({ redirectUri, copyMessage, onCopyValue }:
         <div className="docsync-wp-step-heading">
           <span>2</span>
           <div>
-            <h3>{__('Add the exact redirect URI', 'brasth-document-sync-for-google-docs')}</h3>
+            <div className="docsync-wp-step-title-row">
+              <h3>{__('Add redirect URI', 'brasth-document-sync-for-google-docs')}</h3>
+              <SetupStepStateBadge state={redirectStepState} />
+            </div>
             <p>{__('Paste this callback into Authorized redirect URIs for the Google OAuth web client. It must match exactly, including protocol, domain, path, and trailing slash state.', 'brasth-document-sync-for-google-docs')}</p>
           </div>
         </div>

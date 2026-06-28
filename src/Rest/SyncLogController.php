@@ -63,12 +63,44 @@ final class SyncLogController {
 						'required'          => false,
 						'sanitize_callback' => 'sanitize_key',
 					),
+					'search'   => array(
+						'type'              => 'string',
+						'required'          => false,
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'status'   => array(
+						'type'              => 'string',
+						'required'          => false,
+						'sanitize_callback' => 'sanitize_key',
+					),
+					'step'     => array(
+						'type'              => 'string',
+						'required'          => false,
+						'sanitize_callback' => 'sanitize_key',
+					),
 					'page'     => array(
 						'type'              => 'integer',
 						'required'          => false,
 						'sanitize_callback' => 'absint',
 					),
 					'per_page' => array(
+						'type'              => 'integer',
+						'required'          => false,
+						'sanitize_callback' => 'absint',
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			$rest_namespace,
+			'/sync-log',
+			array(
+				'methods'             => WP_REST_Server::DELETABLE,
+				'callback'            => array( $this, 'clearEntries' ),
+				'permission_callback' => array( RestPermissions::class, 'canUseAuthenticatedRest' ),
+				'args'                => array(
+					'post_id' => array(
 						'type'              => 'integer',
 						'required'          => false,
 						'sanitize_callback' => 'absint',
@@ -88,6 +120,9 @@ final class SyncLogController {
 		$user_id  = get_current_user_id();
 		$post_id  = absint( $request->get_param( 'post_id' ) );
 		$level    = sanitize_key( (string) $request->get_param( 'level' ) );
+		$search   = sanitize_text_field( (string) $request->get_param( 'search' ) );
+		$status   = sanitize_key( (string) $request->get_param( 'status' ) );
+		$step     = sanitize_key( (string) $request->get_param( 'step' ) );
 		$per_page = $this->clampPositiveInt( $request->get_param( 'per_page' ), 50, self::MAX_PAGE_SIZE );
 		$page     = $this->clampPositiveInt( $request->get_param( 'page' ), 1, PHP_INT_MAX );
 
@@ -106,7 +141,37 @@ final class SyncLogController {
 				$post_id,
 				$level,
 				$per_page,
-				$page
+				$page,
+				$search,
+				$status,
+				$step
+			)
+		);
+	}
+
+	/**
+	 * Clear stored diagnostic entries.
+	 *
+	 * @param WP_REST_Request $request REST request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function clearEntries( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$user_id = get_current_user_id();
+		$post_id = absint( $request->get_param( 'post_id' ) );
+
+		$cleared = $this->source_repository->clearSyncEvents(
+			$this->source_repository->getEnabledPostTypes(),
+			$user_id,
+			$post_id
+		);
+
+		if ( is_wp_error( $cleared ) ) {
+			return $cleared;
+		}
+
+		return rest_ensure_response(
+			array(
+				'cleared' => $cleared,
 			)
 		);
 	}

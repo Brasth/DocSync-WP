@@ -190,6 +190,9 @@ export type SyncLogEntry = {
 export type SyncLogFilters = {
   postId?: number;
   level?: string;
+  search?: string;
+  status?: string;
+  step?: string;
   page?: number;
   perPage?: number;
 };
@@ -201,4 +204,8 @@ export type SyncLogResponse = {
   page?: number;
   per_page?: number;
   perPage?: number;
+};
+
+export type ClearSyncLogResponse = {
+  cleared: number;
 };

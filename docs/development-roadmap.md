@@ -34,9 +34,9 @@ The Google Docs Sync Admin Actions implementation is complete in code. The self-
 - document inspection and source linking
 - source table and bulk sync
 - dedicated `Brasth Document Sync > Sources` submenu with search, post type, status, and pagination filters
-- dedicated `Brasth Document Sync > Logs` submenu with source, level, and pagination filters
+- dedicated `Brasth Document Sync > Logs` submenu with search, source, level, status, step, quick chips, safe clear actions, and pagination filters
 - skeleton first-load states for Sources, Logs, and the Drive browser, plus clearer log empty states for filtered and source-specific edge cases
-- self-managed Google setup wizard with redirect URI copy, setup checks, and Google Cloud links
+- self-managed Google setup wizard with redirect URI copy, setup checks, next-action guidance, step states, and Google Cloud links
 - post/page edit and list-table entry points
 - optional `page` target support while keeping `post` always enabled
 - Radix-backed source modal with Drive-like My Drive/shared drive folder navigation, current-folder search, pagination, explicit selection controls, selection preview, and advanced URL/file ID entry
