@@ -65,7 +65,8 @@ final class LayoutPresetRegistry {
 				__( 'Structured documentation blocks for headings, tables, lists, callouts, and code.', 'brasth-document-sync-for-google-docs' ),
 				false,
 				true,
-				true
+				true,
+				'2'
 			),
 			self::PRESET_PLAIN_BLOCKS  => new LayoutBlueprint(
 				self::PRESET_PLAIN_BLOCKS,

@@ -2,6 +2,15 @@
 
 Last updated: 2026-06-28
 
+## 2026-06-28 - Documentation preset code heuristics
+
+- added `DocumentationCodeBlockDetector` for Google Docs styled code-like paragraphs in the Documentation preset
+- grouped fenced snippets and consecutive shell, XML/JSON, Java/PHP/JavaScript-like, Gherkin, path, and file-tree paragraphs into `core/code`
+- kept explicit `Note:`, `Tip:`, `Warning:`, `Important:`, and `Caution:` paragraphs as quote callouts
+- kept Clean Article and Plain Blocks behavior stable for the same code-looking Google Docs export
+- bumped only the Documentation preset behavior fingerprint version
+- added golden fixtures for Documentation paragraph code, Documentation fenced code, and Clean Article comparison output
+
 ## 2026-06-28 - 1.1.0 layout preset foundation
 
 - added Gutenberg layout preset backend with `LayoutBlueprint`, `LayoutPresetRegistry`, `ContentRoleClassifier`, and `LayoutConversionService`

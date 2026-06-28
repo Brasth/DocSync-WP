@@ -68,14 +68,22 @@ final class LayoutConversionService {
 	private ContentRoleClassifier $classifier;
 
 	/**
+	 * Documentation code block detector.
+	 *
+	 * @var DocumentationCodeBlockDetector
+	 */
+	private DocumentationCodeBlockDetector $documentation_code;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param SettingsRepository            $settings        Settings repository.
-	 * @param HtmlToBlockContentConverter   $plain_converter Legacy plain block converter.
-	 * @param LayoutPresetRegistry|null     $presets         Preset registry.
-	 * @param HtmlBlockFactory|null         $blocks          Block factory.
-	 * @param HtmlBlockMarkupSanitizer|null $markup          Markup sanitizer.
-	 * @param ContentRoleClassifier|null    $classifier      Content role classifier.
+	 * @param SettingsRepository                  $settings           Settings repository.
+	 * @param HtmlToBlockContentConverter         $plain_converter    Legacy plain block converter.
+	 * @param LayoutPresetRegistry|null           $presets            Preset registry.
+	 * @param HtmlBlockFactory|null               $blocks             Block factory.
+	 * @param HtmlBlockMarkupSanitizer|null       $markup             Markup sanitizer.
+	 * @param ContentRoleClassifier|null          $classifier         Content role classifier.
+	 * @param DocumentationCodeBlockDetector|null $documentation_code Documentation code detector.
 	 */
 	public function __construct(
 		SettingsRepository $settings,
@@ -83,14 +91,16 @@ final class LayoutConversionService {
 		?LayoutPresetRegistry $presets = null,
 		?HtmlBlockFactory $blocks = null,
 		?HtmlBlockMarkupSanitizer $markup = null,
-		?ContentRoleClassifier $classifier = null
+		?ContentRoleClassifier $classifier = null,
+		?DocumentationCodeBlockDetector $documentation_code = null
 	) {
-		$this->settings        = $settings;
-		$this->plain_converter = $plain_converter;
-		$this->presets         = $presets ?? new LayoutPresetRegistry();
-		$this->blocks          = $blocks ?? new HtmlBlockFactory();
-		$this->markup          = $markup ?? new HtmlBlockMarkupSanitizer();
-		$this->classifier      = $classifier ?? new ContentRoleClassifier();
+		$this->settings           = $settings;
+		$this->plain_converter    = $plain_converter;
+		$this->presets            = $presets ?? new LayoutPresetRegistry();
+		$this->blocks             = $blocks ?? new HtmlBlockFactory();
+		$this->markup             = $markup ?? new HtmlBlockMarkupSanitizer();
+		$this->classifier         = $classifier ?? new ContentRoleClassifier();
+		$this->documentation_code = $documentation_code ?? new DocumentationCodeBlockDetector();
 	}
 
 	/**
@@ -180,11 +190,7 @@ final class LayoutConversionService {
 			return '';
 		}
 
-		$blocks = array();
-
-		foreach ( $body->childNodes as $node ) {
-			$blocks = array_merge( $blocks, $this->nodeToBlocks( $node, $preset ) );
-		}
+		$blocks = $this->childrenToBlocks( $body, $preset );
 
 		return serialize_blocks( $blocks );
 	}
@@ -271,6 +277,10 @@ final class LayoutConversionService {
 	 * @return array<int,array<string,mixed>>
 	 */
 	private function childrenToBlocks( DOMElement $element, LayoutBlueprint $preset ): array {
+		if ( LayoutPresetRegistry::PRESET_DOCUMENTATION === $preset->getId() && $preset->shouldRenderCodeBlocks() ) {
+			return $this->documentationChildrenToBlocks( $element, $preset );
+		}
+
 		$blocks = array();
 
 		foreach ( $element->childNodes as $child ) {
@@ -278,6 +288,70 @@ final class LayoutConversionService {
 		}
 
 		return $blocks;
+	}
+
+	/**
+	 * Convert Documentation preset children with paragraph code grouping.
+	 *
+	 * @param DOMElement      $element Container element.
+	 * @param LayoutBlueprint $preset  Layout preset.
+	 * @return array<int,array<string,mixed>>
+	 */
+	private function documentationChildrenToBlocks( DOMElement $element, LayoutBlueprint $preset ): array {
+		$blocks   = array();
+		$children = $this->significantChildren( $element );
+		$count    = count( $children );
+
+		for ( $index = 0; $index < $count; ++$index ) {
+			$child = $children[ $index ];
+
+			if ( $child instanceof DOMElement && $this->isDocumentationCodeCandidate( $child ) ) {
+				$code_run = $this->documentation_code->detectCodeRun(
+					$children,
+					$index,
+					fn ( DOMElement $candidate ): bool => $this->isDocumentationCodeCandidate( $candidate )
+				);
+
+				if ( null !== $code_run ) {
+					$blocks[] = $this->codeTextBlock( $code_run['code'] );
+					$index    = $code_run['end'];
+					continue;
+				}
+			}
+
+			$blocks = array_merge( $blocks, $this->nodeToBlocks( $child, $preset ) );
+		}
+
+		return $blocks;
+	}
+
+	/**
+	 * Whether an element can be considered for Documentation paragraph code grouping.
+	 *
+	 * @param DOMElement $element Element.
+	 */
+	private function isDocumentationCodeCandidate( DOMElement $element ): bool {
+		return ContentRoleClassifier::ROLE_DEFAULT === $this->classifier->classifyElement( $element );
+	}
+
+	/**
+	 * Return children without formatting-only whitespace nodes.
+	 *
+	 * @param DOMElement $element Container element.
+	 * @return array<int,DOMNode>
+	 */
+	private function significantChildren( DOMElement $element ): array {
+		$children = array();
+
+		foreach ( $element->childNodes as $child ) {
+			if ( $child instanceof DOMText && '' === trim( $child->textContent ) ) {
+				continue;
+			}
+
+			$children[] = $child;
+		}
+
+		return $children;
 	}
 
 	/**
@@ -308,7 +382,18 @@ final class LayoutConversionService {
 	 * @return array<string,mixed>
 	 */
 	private function codeBlock( DOMElement $element ): array {
-		$code = rtrim( str_replace( "\r\n", "\n", $element->textContent ) );
+		return $this->codeTextBlock( $element->textContent );
+	}
+
+	/**
+	 * Create a code block from plain code text.
+	 *
+	 * @param string $code Code text.
+	 * @return array<string,mixed>
+	 */
+	private function codeTextBlock( string $code ): array {
+		$code = rtrim( str_replace( "\r\n", "\n", $code ) );
+		$code = str_replace( "\r", "\n", $code );
 
 		return $this->block(
 			'core/code',
