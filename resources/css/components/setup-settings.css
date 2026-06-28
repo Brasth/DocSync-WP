@@ -72,7 +72,7 @@
     border-radius: 8px;
     display: grid;
     gap: 12px;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
     margin-bottom: 14px;
     min-width: 0;
     padding: 12px;
@@ -92,7 +92,8 @@
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    justify-content: flex-end;
+    justify-content: flex-start;
+    min-width: 0;
   }
 
   .docsync-wp-oauth-import__input {
@@ -101,25 +102,35 @@
 
   .docsync-wp-oauth-import__filename {
     color: var(--docsync-text-muted);
-    max-width: min(220px, 100%);
+    flex: 1 1 180px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    min-width: 0;
+    max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  .docsync-wp-oauth-import__notice {
+  .docsync-wp-oauth-import .docsync-wp-oauth-import__notice {
+    border-radius: 6px;
+    display: block;
     grid-column: 1 / -1;
+    margin: 0;
+    padding: 8px 10px;
   }
 
   .docsync-wp-oauth-import__notice.is-success {
+    background: var(--docsync-success-bg);
     color: var(--docsync-success);
   }
 
   .docsync-wp-oauth-import__notice.is-warning {
-    color: #8a5a00;
+    background: var(--docsync-warning-bg);
+    color: var(--docsync-warning);
   }
 
   .docsync-wp-oauth-import__notice.is-error {
+    background: var(--docsync-error-bg);
     color: var(--docsync-error);
   }
 
