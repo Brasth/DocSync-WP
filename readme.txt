@@ -28,6 +28,7 @@ Features include:
 * Media import for images exported from Google Docs.
 * Default synced layout presets for Gutenberg imports: Clean Article, Documentation, and legacy Plain Blocks.
 * Gutenberg block markup for common headings, paragraphs, lists, tables, code, callouts, and images.
+* Documentation preset heuristics for semantic code, fenced code, Google Docs styled code-like paragraphs, and explicit Note/Tip/Warning/Important/Caution callouts.
 * Uninstall cleanup for settings, encrypted user tokens, and scheduled events.
 
 = External Services =
@@ -128,6 +129,7 @@ The build uses Vite and writes screen-specific manifests for Setup, Sources, Log
 
 * Added a Default synced layout setting in Setup sync defaults for block editor imports.
 * Added Clean Article, Documentation, and Plain Blocks Gutenberg layout presets.
+* Expanded Documentation output for semantic code, fenced code, Google Docs styled code-like paragraphs, and explicit callout labels.
 * Kept existing installs on Plain Blocks by default while new installs start with Clean Article.
 * Added layout fingerprints so preset changes re-convert content even when Google metadata is unchanged.
 * Kept Elementor sync on the existing Elementor conversion path.
