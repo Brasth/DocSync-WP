@@ -1,6 +1,6 @@
 @layer components {
   .docsync-wp-admin-shell {
-    background: #f4f7f6;
+    background: #f5f8f7;
     color: var(--docsync-text-primary);
     margin: 0;
     min-height: calc(100vh - 96px);
@@ -82,7 +82,7 @@
   }
 
   .docsync-wp-masthead__copy p {
-    color: var(--docsync-teal-text);
+    color: var(--docsync-teal);
     font-size: 11px;
     font-weight: 700;
   }
