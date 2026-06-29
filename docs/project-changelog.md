@@ -2,12 +2,33 @@
 
 Last updated: 2026-06-29
 
+## 2026-06-29 - Admin design system polish
+
+- added `docs/design-guidelines.md` as the admin UI design source of truth
+- expanded shared admin CSS tokens for surfaces, borders, radius, spacing, motion, focus, shadows, and status roles
+- aligned Setup, Sources, Sync Activity, Doc Source modal, Drive browser, post sync metabox, list actions, and toasts around compact utilitarian states
+- improved Drive browser selected/blocked rows, selected Doc confirmation, setup dirty state, active sync hints, and reduced-motion coverage
+- kept REST contracts, settings schema, post meta, Vite entries, and runtime dependencies unchanged
+
 ## 2026-06-29 - Per-source layout preset override
 
 - added `layoutPreset` to source create/update REST payloads with invalid non-empty values rejected as REST 400
 - added compact `Layout preset` selectors to the Google Doc link modal and post sync metabox
 - preserved existing source metadata when updating only Elementor sync or the layout preset
 - kept Elementor sync on the existing Elementor path while storing the Gutenberg preset preference for block sync
+
+## 2026-06-29 - 1.1.1 layout reliability update
+
+- bumped plugin header version, `DOCSYNC_WP_VERSION`, `readme.txt` stable tag, package metadata, and admin fallback config to `1.1.1`
+- clarified layout preset descriptions and setup/source selector help text in user-facing language
+- added tracked layout fixtures for Clean Article mixed content, Documentation fenced code, Documentation styled code paragraphs, Documentation callouts, Plain Blocks upgrade compatibility, and per-source preset override
+- extended `scripts/verify-layout-fixtures.php` to cover source metadata preset resolution
+- added Composer and CI wiring for layout fixture verification
+
+Unresolved:
+
+- manual staging sync still needs a configured WordPress site and connected Google test account
+- official Plugin Check and readme validator still need release-site execution
 
 ## 2026-06-28 - Documentation preset code heuristics
 

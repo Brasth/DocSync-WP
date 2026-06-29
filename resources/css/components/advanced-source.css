@@ -1,8 +1,8 @@
 @layer components {
   .docsync-wp-advanced-source {
-    background: #fff;
+    background: var(--docsync-surface);
     border: 1px solid var(--docsync-card-border);
-    border-radius: 8px;
+    border-radius: var(--docsync-radius-md);
     max-width: 560px;
     padding: 16px;
   }
@@ -37,4 +37,10 @@
   min-height: 38px;
   padding: 7px 10px;
   width: 100%;
+}
+
+.docsync-wp-modal .docsync-wp-advanced-source input[type="text"]:focus {
+  border-color: var(--docsync-focus-ring);
+  box-shadow: 0 0 0 1px var(--docsync-focus-ring);
+  outline: none;
 }

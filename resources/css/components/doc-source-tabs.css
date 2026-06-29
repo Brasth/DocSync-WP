@@ -5,9 +5,9 @@
   }
 
   .docsync-wp-source-tabs__list {
-    background: #f0f0f1;
+    background: var(--docsync-surface-subtle);
     border: 1px solid var(--docsync-card-border);
-    border-radius: 8px;
+    border-radius: var(--docsync-radius-md);
     display: inline-flex;
     flex-wrap: wrap;
     gap: 4px;
@@ -18,7 +18,7 @@
     align-items: center;
     background: transparent;
     border: 0;
-    border-radius: 6px;
+    border-radius: var(--docsync-radius-sm);
     color: var(--docsync-text-muted);
     cursor: pointer;
     display: inline-flex;
@@ -27,6 +27,10 @@
     gap: 6px;
     min-height: 36px;
     padding: 8px 14px;
+    transition:
+      background-color var(--docsync-motion-fast) var(--docsync-motion-ease),
+      box-shadow var(--docsync-motion-fast) var(--docsync-motion-ease),
+      color var(--docsync-motion-fast) var(--docsync-motion-ease);
   }
 
   .docsync-wp-source-tabs__trigger .dashicons {
@@ -36,17 +40,17 @@
   }
 
   .docsync-wp-source-tabs__trigger:hover {
-    background: #fff;
+    background: var(--docsync-surface);
     color: var(--docsync-text-primary);
   }
 
   .docsync-wp-source-tabs__trigger:focus-visible {
-    box-shadow: 0 0 0 2px var(--docsync-cyan);
+    box-shadow: 0 0 0 2px var(--docsync-focus-ring);
     outline: none;
   }
 
   .docsync-wp-source-tabs__trigger[data-state="active"] {
-    background: #fff;
+    background: var(--docsync-surface);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
     color: var(--docsync-teal);
     font-weight: 700;
@@ -54,5 +58,11 @@
 
   .docsync-wp-source-tabs__trigger[data-state="active"] .dashicons {
     color: var(--docsync-teal);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .docsync-wp-source-tabs__trigger {
+      transition: none;
+    }
   }
 }

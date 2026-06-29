@@ -2,8 +2,8 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Brasth Document Sync for Google Docs 1.1.0\n"
-"POT-Creation-Date: 2026-06-28T16:04:10+0000\n"
+"Project-Id-Version: Brasth Document Sync for Google Docs 1.1.1\n"
+"POT-Creation-Date: 2026-06-29T14:44:06+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -107,10 +107,6 @@ msgstr ""
 msgid "All steps"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:85
-msgid "Applies to block editor sync. Elementor layouts use existing Elementor sync."
-msgstr ""
-
 #: resources/js/admin/features/sync-logs/sync-logs-view.tsx:416
 msgid "Apply advanced filters"
 msgstr ""
@@ -119,16 +115,12 @@ msgstr ""
 msgid "Apply filters"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:80
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:83
 msgid "Apply synced content"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:41
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:44
 msgid "Applying synced Google Doc content."
-msgstr ""
-
-#: src/Sync/Layout/LayoutPresetRegistry.php:57
-msgid "Article-friendly blocks with top-level document headings demoted for WordPress post bodies."
 msgstr ""
 
 #: resources/js/admin/features/google-setup/google-setup-task-state.ts:81
@@ -159,11 +151,19 @@ msgstr ""
 msgid "Available after Google is connected."
 msgstr ""
 
+#: src/Sync/Layout/LayoutPresetRegistry.php:65
+msgid "Best for guides and technical docs. Keeps code examples and callout notes easier to read."
+msgstr ""
+
+#: src/Sync/Layout/LayoutPresetRegistry.php:57
+msgid "Best for posts and pages. Keeps headings, media, tables, and lists clean for the block editor."
+msgstr ""
+
 #: resources/js/admin/features/drive-browser/drive-browser-table.tsx:116
 msgid "Blocked"
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:73 resources/js/admin/features/post-sync/list-entry-app.tsx:60 resources/js/admin/features/post-sync/post-list-row-action-sync.ts:42 resources/js/admin/shared/ui/admin-shell.tsx:59 src/Admin/AdminPage.php:53 src/Admin/AdminPage.php:54 src/Admin/PostSyncMetaBox.php:83
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:74 resources/js/admin/features/post-sync/list-entry-app.tsx:60 resources/js/admin/features/post-sync/post-list-row-action-sync.ts:42 resources/js/admin/shared/ui/admin-shell.tsx:59 src/Admin/AdminPage.php:53 src/Admin/AdminPage.php:54 src/Admin/PostSyncMetaBox.php:83
 msgid "Brasth Document Sync"
 msgstr ""
 
@@ -203,7 +203,7 @@ msgstr ""
 msgid "Brasth Document Sync cannot update Elementor data for an invalid post."
 msgstr ""
 
-#: src/Sync/SyncService.php:264
+#: src/Sync/SyncService.php:282
 msgid "Brasth Document Sync could not create a draft post for this Google Doc."
 msgstr ""
 
@@ -256,11 +256,11 @@ msgstr ""
 msgid "Brasth Document Sync could not find HTML content in the Google Docs export."
 msgstr ""
 
-#: src/Rest/SourceController.php:1057 src/Sync/SourceRepository.php:907
+#: src/Rest/SourceController.php:1141 src/Sync/SourceRepository.php:907
 msgid "Brasth Document Sync could not find that post."
 msgstr ""
 
-#: src/Rest/SourceController.php:539
+#: src/Rest/SourceController.php:580
 msgid "Brasth Document Sync could not find this post."
 msgstr ""
 
@@ -296,7 +296,7 @@ msgstr ""
 msgid "Brasth Document Sync could not prepare Google Docs content for the block editor."
 msgstr ""
 
-#: src/Sync/Layout/LayoutConversionService.php:211
+#: src/Sync/Layout/LayoutConversionService.php:217
 msgid "Brasth Document Sync could not prepare Google Docs content for the selected layout."
 msgstr ""
 
@@ -324,7 +324,7 @@ msgstr ""
 msgid "Brasth Document Sync could not run this background sync because permission changed."
 msgstr ""
 
-#: src/Sync/SyncService.php:1077
+#: src/Sync/SyncService.php:1096
 msgid "Brasth Document Sync could not save imported large-doc content yet."
 msgstr ""
 
@@ -332,7 +332,7 @@ msgstr ""
 msgid "Brasth Document Sync could not store a Google Docs image before importing it."
 msgstr ""
 
-#: src/Sync/SyncService.php:651
+#: src/Sync/SyncService.php:670
 msgid "Brasth Document Sync could not update this post with Google Docs content."
 msgstr ""
 
@@ -352,7 +352,7 @@ msgstr ""
 msgid "Brasth Document Sync found an exported Google Docs asset that is not a supported image."
 msgstr ""
 
-#: src/Rest/SourceController.php:1065 src/Rest/SourceController.php:1092 src/Rest/SourceController.php:1119 src/Sync/SourceRepository.php:915
+#: src/Rest/SourceController.php:1149 src/Rest/SourceController.php:1176 src/Rest/SourceController.php:1203 src/Sync/SourceRepository.php:915
 msgid "Brasth Document Sync is not enabled for this post type."
 msgstr ""
 
@@ -364,11 +364,11 @@ msgstr ""
 msgid "Brasth Document Sync Logs"
 msgstr ""
 
-#: src/Sync/SyncService.php:1202
+#: src/Sync/SyncService.php:1221
 msgid "Brasth Document Sync only supports HTML ZIP exports."
 msgstr ""
 
-#: src/Rest/SourceController.php:894
+#: src/Rest/SourceController.php:935
 msgid "Brasth Document Sync received an invalid boolean field."
 msgstr ""
 
@@ -384,7 +384,7 @@ msgstr ""
 msgid "Brasth Document Sync received an unsupported default synced layout."
 msgstr ""
 
-#: src/Rest/SourceController.php:853 src/Settings/SettingsRepository.php:167
+#: src/Rest/SourceController.php:894 src/Settings/SettingsRepository.php:167
 msgid "Brasth Document Sync received an unsupported export format."
 msgstr ""
 
@@ -396,15 +396,15 @@ msgstr ""
 msgid "Brasth Document Sync received an unsupported Google scope mode."
 msgstr ""
 
-#: src/Sync/Layout/LayoutConversionService.php:162
+#: src/Rest/SourceController.php:960 src/Rest/SourceController.php:978 src/Sync/Layout/LayoutConversionService.php:172
 msgid "Brasth Document Sync received an unsupported layout preset."
 msgstr ""
 
-#: src/Rest/SourceController.php:166
+#: src/Rest/SourceController.php:177
 msgid "Brasth Document Sync received an unsupported source status filter."
 msgstr ""
 
-#: src/Rest/SourceController.php:325
+#: src/Rest/SourceController.php:349
 msgid "Brasth Document Sync received an unsupported source target mode."
 msgstr ""
 
@@ -412,7 +412,7 @@ msgstr ""
 msgid "Brasth Document Sync received an unsupported sync log level filter."
 msgstr ""
 
-#: src/Rest/SourceController.php:925
+#: src/Rest/SourceController.php:1009
 msgid "Brasth Document Sync received an unsupported sync mode."
 msgstr ""
 
@@ -420,7 +420,7 @@ msgstr ""
 msgid "Brasth Document Sync received an unsupported sync schedule."
 msgstr ""
 
-#: src/Rest/SourceController.php:480
+#: src/Rest/SourceController.php:517
 msgid "Brasth Document Sync received no source fields to update."
 msgstr ""
 
@@ -432,11 +432,11 @@ msgstr ""
 msgid "Brasth Document Sync received unknown settings."
 msgstr ""
 
-#: src/Rest/SourceController.php:728 src/Rest/SourceController.php:763
+#: src/Rest/SourceController.php:769 src/Rest/SourceController.php:804
 msgid "Brasth Document Sync received unknown source request fields."
 msgstr ""
 
-#: src/Rest/SourceController.php:233
+#: src/Rest/SourceController.php:244
 msgid "Brasth Document Sync received unknown source target fields."
 msgstr ""
 
@@ -460,11 +460,11 @@ msgstr ""
 msgid "Brasth Document Sync requires a Google file ID before saving source metadata."
 msgstr ""
 
-#: src/Rest/SourceController.php:224
+#: src/Rest/SourceController.php:235
 msgid "Brasth Document Sync requires a source target."
 msgstr ""
 
-#: src/Rest/SourceController.php:905
+#: src/Rest/SourceController.php:989
 msgid "Brasth Document Sync requires a valid post ID."
 msgstr ""
 
@@ -501,7 +501,7 @@ msgstr ""
 msgid "Brasth Document Sync source metadata cannot be saved for this post type."
 msgstr ""
 
-#: src/Rest/SourceController.php:718
+#: src/Rest/SourceController.php:759
 msgid "Brasth Document Sync source requests require a JSON object."
 msgstr ""
 
@@ -517,11 +517,11 @@ msgstr ""
 msgid "Browse Google Docs"
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:139 resources/js/admin/shared/ui/confirm-dialog.tsx:25
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:150 resources/js/admin/shared/ui/confirm-dialog.tsx:25
 msgid "Cancel"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:128
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:131
 msgid "Change Doc"
 msgstr ""
 
@@ -533,7 +533,7 @@ msgstr ""
 msgid "Checking Google"
 msgstr ""
 
-#: src/Sync/SyncService.php:448
+#: src/Sync/SyncService.php:467
 msgid "Checking Google Doc metadata."
 msgstr ""
 
@@ -543,6 +543,10 @@ msgstr ""
 
 #: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:27
 msgid "Choose from Google Drive"
+msgstr ""
+
+#: resources/js/admin/shared/ui/layout-preset-selector.tsx:48
+msgid "Choose how this Google Doc becomes block editor content. Elementor sync keeps using Elementor layout."
 msgstr ""
 
 #: resources/js/admin/features/google-setup/oauth-client-json-import.tsx:82
@@ -585,8 +589,12 @@ msgstr ""
 msgid "Client ID and secret saved."
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:90
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:91
 msgid "Close"
+msgstr ""
+
+#: src/Sync/Layout/LayoutPresetRegistry.php:74
+msgid "Compatibility mode for existing synced posts. Keeps output closest to earlier versions."
 msgstr ""
 
 #: resources/js/admin/features/google-setup/google-setup-test-result.tsx:23 resources/js/admin/features/google-setup/setup-step-state.tsx:9 resources/js/admin/features/sync-logs/sync-log-filter-options.ts:29
@@ -633,11 +641,11 @@ msgstr ""
 msgid "Converting"
 msgstr ""
 
-#: src/Sync/SyncService.php:538
+#: src/Sync/SyncService.php:557
 msgid "Converting content to Elementor layout."
 msgstr ""
 
-#: src/Sync/SyncService.php:539
+#: src/Sync/SyncService.php:558
 msgid "Converting content to WordPress blocks."
 msgstr ""
 
@@ -661,11 +669,11 @@ msgstr ""
 msgid "Could not import this OAuth JSON file."
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/use-doc-source-modal.ts:56
+#: resources/js/admin/features/doc-source-modal/use-doc-source-modal.ts:58
 msgid "Could not inspect this Google Doc."
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/use-doc-source-modal.ts:110
+#: resources/js/admin/features/doc-source-modal/use-doc-source-modal.ts:113
 msgid "Could not link this Google Doc."
 msgstr ""
 
@@ -697,7 +705,7 @@ msgstr ""
 msgid "Could not load sync logs."
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:60
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:63
 msgid "Could not load synced Google Doc content."
 msgstr ""
 
@@ -707,6 +715,10 @@ msgstr ""
 
 #: resources/js/admin/features/post-sync/use-post-sync-actions.ts:64
 msgid "Could not update Elementor sync preference."
+msgstr ""
+
+#: resources/js/admin/features/post-sync/use-post-sync-actions.ts:85
+msgid "Could not update layout preset."
 msgstr ""
 
 #: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:89
@@ -721,7 +733,7 @@ msgstr ""
 msgid "Create Google Cloud app"
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:155 resources/js/admin/features/google-setup/account-panel.tsx:52 resources/js/admin/features/google-setup/google-setup-first-sync-step.tsx:56 resources/js/admin/features/google-setup/google-setup-task-state.ts:101 resources/js/admin/features/sources/sources-table.tsx:228
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:166 resources/js/admin/features/google-setup/account-panel.tsx:52 resources/js/admin/features/google-setup/google-setup-first-sync-step.tsx:56 resources/js/admin/features/google-setup/google-setup-task-state.ts:101 resources/js/admin/features/sources/sources-table.tsx:228
 msgid "Create synced draft"
 msgstr ""
 
@@ -745,7 +757,7 @@ msgstr ""
 msgid "Default synced layout"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:131
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:134
 msgid "Detach"
 msgstr ""
 
@@ -781,7 +793,7 @@ msgstr ""
 msgid "Draft created. Syncing Google Doc in the background."
 msgstr ""
 
-#: src/Sync/SyncService.php:946
+#: src/Sync/SyncService.php:965
 msgid "Drive export was too large. Switching to the large-doc fallback."
 msgstr ""
 
@@ -857,7 +869,7 @@ msgstr ""
 msgid "Exporting"
 msgstr ""
 
-#: src/Sync/SyncService.php:514
+#: src/Sync/SyncService.php:533
 msgid "Exporting Google Doc."
 msgstr ""
 
@@ -905,7 +917,7 @@ msgstr ""
 msgid "Google Doc"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:36
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:39
 msgid "Google Doc changed."
 msgstr ""
 
@@ -913,11 +925,11 @@ msgstr ""
 msgid "Google Doc detached."
 msgstr ""
 
-#: src/Sync/SyncService.php:497
+#: src/Sync/SyncService.php:516
 msgid "Google Doc has not changed."
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:36
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:39
 msgid "Google Doc linked."
 msgstr ""
 
@@ -925,23 +937,23 @@ msgstr ""
 msgid "Google Doc sync %s."
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:50
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:53
 msgid "Google Doc sync complete, but this editor cannot be updated without reopening the screen."
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:69
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:72
 msgid "Google Doc sync complete."
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:87
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:90
 msgid "Google Doc sync complete. Apply the synced content to the editor."
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:86
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:89
 msgid "Google Doc sync complete. Applying it will replace the current editor content."
 msgstr ""
 
-#: resources/js/admin/app/use-source-sync-progress.ts:43 resources/js/admin/features/post-sync/list-entry-app.tsx:111 resources/js/admin/features/post-sync/post-meta-box-app.tsx:69
+#: resources/js/admin/app/use-source-sync-progress.ts:43 resources/js/admin/features/post-sync/list-entry-app.tsx:111 resources/js/admin/features/post-sync/post-meta-box-app.tsx:72
 msgid "Google Doc sync failed."
 msgstr ""
 
@@ -949,7 +961,7 @@ msgstr ""
 msgid "Google Doc sync is running."
 msgstr ""
 
-#: resources/js/admin/features/post-sync/list-entry-app.tsx:88 resources/js/admin/features/post-sync/post-meta-box-app.tsx:35 resources/js/admin/features/post-sync/use-post-sync-actions.ts:19
+#: resources/js/admin/features/post-sync/list-entry-app.tsx:88 resources/js/admin/features/post-sync/post-meta-box-app.tsx:38 resources/js/admin/features/post-sync/use-post-sync-actions.ts:19
 msgid "Google Doc sync queued."
 msgstr ""
 
@@ -957,7 +969,7 @@ msgstr ""
 msgid "Google Docs API is temporarily unavailable. Try again shortly."
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:78
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:79
 msgid "Google Docs is source of truth. Sync overwrites WordPress content."
 msgstr ""
 
@@ -1001,7 +1013,7 @@ msgstr ""
 msgid "Google returned an unexpected OAuth response."
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/use-doc-source-modal.ts:88
+#: resources/js/admin/features/doc-source-modal/use-doc-source-modal.ts:90
 msgid "Google says this Doc cannot be downloaded by the connected account."
 msgstr ""
 
@@ -1009,7 +1021,7 @@ msgstr ""
 msgid "Google says this Doc cannot be downloaded by the connected account. Adjust sharing or choose another Doc before linking."
 msgstr ""
 
-#: src/Sync/SyncService.php:1121
+#: src/Sync/SyncService.php:1140
 msgid "Google says this Doc cannot be downloaded by the connected account. Adjust sharing or choose another Doc before syncing."
 msgstr ""
 
@@ -1037,11 +1049,11 @@ msgstr ""
 msgid "Import OAuth JSON"
 msgstr ""
 
-#: src/Sync/SyncService.php:586
+#: src/Sync/SyncService.php:605
 msgid "Imported content matches the current WordPress post."
 msgstr ""
 
-#: src/Sync/SyncService.php:1092
+#: src/Sync/SyncService.php:1111
 msgid "Imported part of the large Doc."
 msgstr ""
 
@@ -1049,11 +1061,11 @@ msgstr ""
 msgid "Importing"
 msgstr ""
 
-#: src/Sync/SyncService.php:915
+#: src/Sync/SyncService.php:934
 msgid "Importing Google Doc HTML and assets."
 msgstr ""
 
-#: src/Sync/SyncService.php:963
+#: src/Sync/SyncService.php:982
 msgid "Importing through the large-doc fallback."
 msgstr ""
 
@@ -1061,7 +1073,7 @@ msgstr ""
 msgid "Info"
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:147
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:158
 msgid "Inspect"
 msgstr ""
 
@@ -1089,7 +1101,7 @@ msgstr ""
 msgid "Last sync"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:123
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:126
 msgid "Last sync:"
 msgstr ""
 
@@ -1097,19 +1109,23 @@ msgstr ""
 msgid "Latest event"
 msgstr ""
 
-#: src/Sync/Layout/LayoutPresetRegistry.php:73
-msgid "Legacy conversion that preserves the current synced block output."
+#: resources/js/admin/shared/ui/layout-preset-selector.tsx:34
+msgid "Layout preset"
+msgstr ""
+
+#: resources/js/admin/features/post-sync/use-post-sync-actions.ts:80
+msgid "Layout preset updated."
 msgstr ""
 
 #: resources/js/admin/features/sync-logs/sync-logs-view.tsx:389
 msgid "Level"
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:75 resources/js/admin/features/post-sync/post-meta-box-app.tsx:128 src/Admin/PostListActions.php:81
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:76 resources/js/admin/features/post-sync/post-meta-box-app.tsx:131 src/Admin/PostListActions.php:81
 msgid "Link Google Doc"
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:155
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:166
 msgid "Link source"
 msgstr ""
 
@@ -1117,7 +1133,7 @@ msgstr ""
 msgid "Linked"
 msgstr ""
 
-#: src/Sync/SourceRepository.php:1230 src/Sync/SourceRepository.php:184 src/Sync/SyncService.php:201 src/Sync/SyncService.php:284
+#: src/Sync/SourceRepository.php:1230 src/Sync/SourceRepository.php:184 src/Sync/SyncService.php:210 src/Sync/SyncService.php:303
 msgid "Linked and ready to sync."
 msgstr ""
 
@@ -1137,7 +1153,7 @@ msgstr ""
 msgid "Loading Drive items..."
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:106
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:107
 msgid "Loading Google Drive browser..."
 msgstr ""
 
@@ -1215,6 +1231,10 @@ msgstr ""
 
 #: resources/js/admin/shared/ui/status-pill.tsx:18
 msgid "New"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:85
+msgid "New synced block editor posts use this layout unless a source chooses a different one. Elementor sync uses Elementor layout."
 msgstr ""
 
 #: resources/js/admin/features/sync-logs/sync-logs-view.tsx:438
@@ -1402,7 +1422,7 @@ msgstr ""
 msgid "Permission denied"
 msgstr ""
 
-#: src/Sync/Layout/LayoutPresetRegistry.php:72
+#: src/Sync/Layout/LayoutPresetRegistry.php:73
 msgid "Plain Blocks"
 msgstr ""
 
@@ -1586,11 +1606,11 @@ msgstr ""
 msgid "Select Google Doc %s"
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/use-doc-source-modal.ts:83
+#: resources/js/admin/features/doc-source-modal/use-doc-source-modal.ts:85
 msgid "Select or inspect a Google Doc before linking it."
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:130
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:131
 msgid "Selected Google Doc"
 msgstr ""
 
@@ -1682,7 +1702,7 @@ msgstr ""
 msgid "Still syncing"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:106
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:109
 msgid "Still syncing. Leave this editor open to keep checking progress."
 msgstr ""
 
@@ -1696,10 +1716,6 @@ msgstr ""
 
 #: resources/js/admin/features/google-setup/google-setup-utils.ts:33
 msgid "Stored encrypted in WordPress options."
-msgstr ""
-
-#: src/Sync/Layout/LayoutPresetRegistry.php:65
-msgid "Structured documentation blocks for headings, tables, lists, callouts, and code."
 msgstr ""
 
 #: resources/js/admin/features/sources/sources-table.tsx:295 src/Admin/PostListActions.php:105
@@ -1722,7 +1738,7 @@ msgstr ""
 msgid "Sync all changed"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:141
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:144
 msgid "Sync as Elementor layout"
 msgstr ""
 
@@ -1730,7 +1746,7 @@ msgstr ""
 msgid "Sync complete"
 msgstr ""
 
-#: src/Sync/SyncService.php:675
+#: src/Sync/SyncService.php:694
 msgid "Sync complete."
 msgstr ""
 
@@ -1750,7 +1766,7 @@ msgstr ""
 msgid "Sync failed."
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:130
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:133
 msgid "Sync now"
 msgstr ""
 
@@ -1763,7 +1779,7 @@ msgstr ""
 msgid "Sync queued"
 msgstr ""
 
-#: src/Sync/SyncService.php:355
+#: src/Sync/SyncService.php:374
 msgid "Sync queued."
 msgstr ""
 
@@ -1775,7 +1791,7 @@ msgstr ""
 msgid "Sync status unavailable"
 msgstr ""
 
-#: src/Rest/SourceController.php:996
+#: src/Rest/SourceController.php:1080
 msgid "Sync stopped before completion. Retry sync, and check WP-Cron or PHP error logs if it keeps happening."
 msgstr ""
 
@@ -1783,7 +1799,7 @@ msgstr ""
 msgid "Synced"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:56
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:59
 msgid "Synced Google Doc content applied to the editor."
 msgstr ""
 
@@ -1816,7 +1832,7 @@ msgstr ""
 msgid "The Google OAuth state is invalid or expired. Start the connection again."
 msgstr ""
 
-#: src/Sync/SyncService.php:855
+#: src/Sync/SyncService.php:874
 msgid "The linked Google Doc changed while this sync was running. Start a new sync if needed."
 msgstr ""
 
@@ -1828,7 +1844,7 @@ msgstr ""
 msgid "This Google Doc is too large to export for Brasth Document Sync."
 msgstr ""
 
-#: src/Sync/SyncService.php:436
+#: src/Sync/SyncService.php:455
 msgid "This Google Doc sync is already running."
 msgstr ""
 
@@ -1836,7 +1852,7 @@ msgstr ""
 msgid "This is expected for Docs that Google will not export as HTML ZIP. Let the fallback finish before retrying."
 msgstr ""
 
-#: src/Rest/SourceController.php:415 src/Rest/SourceController.php:450 src/Rest/SourceController.php:496 src/Rest/SourceController.php:529 src/Rest/SourceController.php:677 src/Sync/SourceRepository.php:224 src/Sync/SourceRepository.php:931 src/Sync/SyncService.php:337 src/Sync/SyncService.php:384 src/Sync/SyncService.php:428
+#: src/Rest/SourceController.php:439 src/Rest/SourceController.php:474 src/Rest/SourceController.php:537 src/Rest/SourceController.php:570 src/Rest/SourceController.php:718 src/Sync/SourceRepository.php:224 src/Sync/SourceRepository.php:931 src/Sync/SyncService.php:356 src/Sync/SyncService.php:403 src/Sync/SyncService.php:447
 msgid "This post is not linked to a Google Doc."
 msgstr ""
 
@@ -1850,6 +1866,10 @@ msgstr ""
 
 #: resources/js/admin/features/post-sync/use-post-sync-actions.ts:60
 msgid "This post will sync as WordPress blocks."
+msgstr ""
+
+#: resources/js/admin/features/post-sync/use-post-sync-actions.ts:81
+msgid "This post will use the site default layout preset."
 msgstr ""
 
 #: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:218
@@ -1896,12 +1916,16 @@ msgstr ""
 msgid "Updating post"
 msgstr ""
 
-#: src/Sync/SyncService.php:603
+#: src/Sync/SyncService.php:622
 msgid "Updating the WordPress post."
 msgstr ""
 
 #: resources/js/admin/features/doc-source-modal/doc-source-modal-options.ts:13
 msgid "Use a full docs.google.com/document URL that your connected Google account can open."
+msgstr ""
+
+#: resources/js/admin/shared/ui/layout-preset-selector.tsx:41
+msgid "Use site default (%s)"
 msgstr ""
 
 #: resources/js/admin/features/google-setup/oauth-client-json.ts:29
@@ -1944,11 +1968,11 @@ msgstr ""
 msgid "Visible log summary"
 msgstr ""
 
-#: src/Sync/SyncService.php:165
+#: src/Sync/SyncService.php:173
 msgid "Wait for the current Google Doc sync to finish before changing this source."
 msgstr ""
 
-#: src/Rest/SourceController.php:685
+#: src/Rest/SourceController.php:726
 msgid "Wait for the current Google Doc sync to finish before detaching this source."
 msgstr ""
 
@@ -1976,15 +2000,15 @@ msgstr ""
 msgid "You do not have permission to access Brasth Document Sync."
 msgstr ""
 
-#: src/Rest/SourceController.php:1127
+#: src/Rest/SourceController.php:1211
 msgid "You do not have permission to create this post type."
 msgstr ""
 
-#: src/Rest/SourceController.php:1100
+#: src/Rest/SourceController.php:1184
 msgid "You do not have permission to edit this post type."
 msgstr ""
 
-#: src/Rest/SourceController.php:1073 src/Sync/SourceRepository.php:923
+#: src/Rest/SourceController.php:1157 src/Sync/SourceRepository.php:923
 msgid "You do not have permission to edit this post."
 msgstr ""
 

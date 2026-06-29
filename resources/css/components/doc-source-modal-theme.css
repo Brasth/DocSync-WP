@@ -1,19 +1,53 @@
 .docsync-wp-modal {
-  --docsync-navy: #0f172a;
-  --docsync-cyan: #22d3ee;
-  --docsync-blue: #2563eb;
-  --docsync-teal: #0f766e;
-  --docsync-teal-bg: #e8f3ee;
-  --docsync-teal-text: #175a44;
+  --docsync-navy: #12213a;
+  --docsync-navy-light: #1d3557;
+  --docsync-cyan: #00b8c8;
+  --docsync-blue: #165dcc;
+  --docsync-blue-hover: #0f4dad;
+  --docsync-blue-soft: #e8f1ff;
+  --docsync-teal: #007c72;
+  --docsync-teal-bg: #e3f5f2;
+  --docsync-teal-text: #0c5a51;
   --docsync-error: #b42318;
   --docsync-error-bg: #f8d7da;
+  --docsync-error-hover: #8f1d14;
   --docsync-warning: #8a4b00;
   --docsync-warning-bg: #fff8e5;
-  --docsync-card-bg: #fff;
-  --docsync-card-border: #d9e2e1;
+  --docsync-info: #165dcc;
+  --docsync-info-bg: #e8f1ff;
+  --docsync-success: #0c5a51;
+  --docsync-success-bg: #d7f2ec;
+  --docsync-surface: #fff;
+  --docsync-surface-raised: #fff;
+  --docsync-surface-subtle: #f6f7f7;
+  --docsync-surface-muted: #fbfcfc;
+  --docsync-surface-selected: #edf8f5;
+  --docsync-border: #cfded9;
+  --docsync-border-subtle: #e5edec;
+  --docsync-border-muted: #dcdcde;
+  --docsync-focus-ring: #00b8c8;
+  --docsync-selected-rail: #007c72;
+  --docsync-radius-sm: 6px;
+  --docsync-radius-md: 8px;
+  --docsync-radius-pill: 999px;
+  --docsync-shadow-card: 0 1px 2px rgba(23, 32, 42, 0.05);
+  --docsync-shadow-dialog: 0 24px 64px rgba(15, 23, 42, 0.22);
+  --docsync-overlay: rgba(10, 18, 25, 0.56);
+  --docsync-card-bg: var(--docsync-surface);
+  --docsync-card-border: var(--docsync-border);
+  --docsync-card-radius: var(--docsync-radius-md);
+  --docsync-card-shadow: var(--docsync-shadow-card);
+  --docsync-control-height-compact: 32px;
+  --docsync-control-height: 36px;
+  --docsync-control-height-roomy: 40px;
+  --docsync-card-padding: 18px;
+  --docsync-motion-fast: 150ms;
+  --docsync-motion-normal: 220ms;
+  --docsync-motion-ease: cubic-bezier(0.2, 0, 0, 1);
   --docsync-text-primary: #17202a;
   --docsync-text-secondary: #646970;
   --docsync-text-muted: #50575e;
+  --docsync-text-inverse: #fff;
 
   color: var(--docsync-text-primary);
   font-size: 13px;
@@ -30,25 +64,25 @@
 .docsync-wp-modal .button-primary:active {
   background: var(--docsync-blue);
   border-color: var(--docsync-blue);
-  color: #fff;
+  color: var(--docsync-text-inverse);
 }
 
 .docsync-wp-modal .button-primary:hover {
-  background: #1d4ed8;
-  border-color: #1d4ed8;
-  color: #fff;
+  background: var(--docsync-blue-hover);
+  border-color: var(--docsync-blue-hover);
+  color: var(--docsync-text-inverse);
 }
 
 .docsync-wp-modal .button-secondary,
 .docsync-wp-modal .button-secondary:focus,
 .docsync-wp-modal .button-secondary:active {
-  background: #fff;
+  background: var(--docsync-surface);
   border-color: var(--docsync-blue);
   color: var(--docsync-blue);
 }
 
 .docsync-wp-modal .button-secondary:hover {
-  background: #eff6ff;
+  background: var(--docsync-blue-soft);
   border-color: var(--docsync-blue);
   color: var(--docsync-blue);
 }

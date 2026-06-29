@@ -1,10 +1,10 @@
 # Development Roadmap
 
-Last updated: 2026-06-20
+Last updated: 2026-06-29
 
 ## Status
 
-The Google Docs Sync Admin Actions implementation is complete in code. The self-managed Google onboarding, Drive-like My Drive/shared drive document browser, dedicated Sources submenu, Logs submenu, page target support, source filters, HTML ZIP media import, Gutenberg block conversion, default Gutenberg layout presets, admin frontend structure refactor, Drive modal polish, OAuth JSON import, fullscreen picker, dense picker layout, infinite Drive loading, non-blocking background draft sync, oversized Google Doc fallback, inline editor sync-completion apply, progressive empty-draft large-doc writes, large-doc stuck-state recovery, bounded sync diagnostic logging, first-pass WordPress.org release packaging, GitHub Release ZIP asset packaging, WordPress.org pre-review rename/package scoping, listing artwork refresh, and release hardening with admin loading/empty-state polish are also complete in code.
+The Google Docs Sync Admin Actions implementation is complete in code. The self-managed Google onboarding, Drive-like My Drive/shared drive document browser, dedicated Sources submenu, Logs submenu, page target support, source filters, HTML ZIP media import, Gutenberg block conversion, default Gutenberg layout presets, layout reliability fixtures, admin frontend structure refactor, Drive modal polish, OAuth JSON import, fullscreen picker, dense picker layout, infinite Drive loading, non-blocking background draft sync, oversized Google Doc fallback, inline editor sync-completion apply, progressive empty-draft large-doc writes, large-doc stuck-state recovery, bounded sync diagnostic logging, first-pass WordPress.org release packaging, GitHub Release ZIP asset packaging, WordPress.org pre-review rename/package scoping, listing artwork refresh, and release hardening with admin loading/empty-state polish are also complete in code.
 
 ## Phase Summary
 
@@ -57,7 +57,7 @@ The Google Docs Sync Admin Actions implementation is complete in code. The self-
 - layout fingerprints force Gutenberg re-conversion when the effective preset changes even if Google metadata is unchanged
 - post editor background sync completion applies synced content directly when no unsaved edits are present and otherwise offers an explicit apply action
 - terminal sync states no longer show stale 100 percent progress bars after reload
-- WordPress.org `readme.txt`, `LICENSE`, listing assets, source-inclusive distribution rules, and current `1.1.0` release metadata
+- WordPress.org `readme.txt`, `LICENSE`, listing assets, source-inclusive distribution rules, and current `1.1.1` release metadata
 - GitHub Release workflow that builds `brasth-document-sync-for-google-docs-v<version>.zip`, uploads it as an Actions artifact, and attaches it to the release asset list
 - privacy policy suggested content for Google OAuth, Drive API, Docs API, stored credentials/tokens, linked metadata, imported media, retention, and uninstall behavior
 - legacy Google Picker settings and unused Markdown/CommonMark runtime path removed before public release
@@ -82,7 +82,7 @@ The implementation is usable, but a few follow-ups remain open for future iterat
 - consider a custom sync-log table if support needs search-heavy or long-retention diagnostics
 - improve block-perfect conversion for complex Google Docs layouts if needed
 - add preview/gallery and per-post preset selector UI in the 1.2.x line
-- add fixtures around Docs API fallback conversion when a test harness is introduced
+- add fixtures around Docs API fallback conversion when that fallback path is added to the fixture harness
 - decide whether to add a separate audit log table
 - decide whether to add a managed Google connector service for true nontechnical one-click onboarding
 

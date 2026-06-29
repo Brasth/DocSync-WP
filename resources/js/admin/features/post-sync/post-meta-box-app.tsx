@@ -123,6 +123,7 @@ export const PostMetaBoxApp = ({ postId, postType, initialSource, elementorAvail
             updatedAt={actions.source.syncUpdatedAt}
           />
         ) : null}
+        {isSyncing ? <p className="docsync-wp-post-box__busy-note">{__('Source changes are locked while this sync is running.', 'brasth-document-sync-for-google-docs')}</p> : null}
         {actions.source?.lastSyncedAt ? <p><strong>{__('Last sync:', 'brasth-document-sync-for-google-docs')}</strong> {actions.source.lastSyncedAt}</p> : null}
         {actions.source?.syncError ? <p className="docsync-wp-list-error">{actions.source.syncError}</p> : null}
         <AdminNotice className="inline" notice={actions.notice} />

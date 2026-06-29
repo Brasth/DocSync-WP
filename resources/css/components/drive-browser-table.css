@@ -1,7 +1,7 @@
 @layer components {
   .docsync-wp-drive-browser__table-wrap {
     border: 1px solid var(--docsync-card-border);
-    border-radius: 8px;
+    border-radius: var(--docsync-radius-md);
     flex: 1 1 auto;
     height: clamp(420px, 60vh, 720px);
     margin-top: 10px;
@@ -19,7 +19,7 @@
   }
 
   .docsync-wp-drive-browser__table thead th {
-    background: #f6f7f7;
+    background: var(--docsync-surface-subtle);
     box-shadow: 0 1px 0 var(--docsync-card-border);
     line-height: 1.4;
     padding: 7px 10px;
@@ -29,21 +29,25 @@
   }
 
   .docsync-wp-drive-browser__table tbody tr:hover td {
-    background: rgba(15, 118, 110, 0.04);
+    background: color-mix(in srgb, var(--docsync-teal-bg) 50%, transparent);
   }
 
   .docsync-wp-drive-browser__table tr.is-selected td {
-    background: var(--docsync-teal-bg);
-    box-shadow: inset 4px 0 0 var(--docsync-teal);
+    background: var(--docsync-surface-selected);
+    box-shadow: inset 4px 0 0 var(--docsync-selected-rail);
   }
 
   /* Folder rows get subtle cyan tint */
   .docsync-wp-drive-browser__table tr.docsync-wp-drive-row--folder td {
-    background: rgba(34, 211, 238, 0.04);
+    background: color-mix(in srgb, var(--docsync-info-bg) 42%, transparent);
   }
 
   .docsync-wp-drive-browser__table tr.docsync-wp-drive-row--folder:hover td {
-    background: rgba(34, 211, 238, 0.08);
+    background: color-mix(in srgb, var(--docsync-info-bg) 68%, transparent);
+  }
+
+  .docsync-wp-drive-browser__table tr.is-disabled td {
+    background: color-mix(in srgb, var(--docsync-error-bg) 30%, var(--docsync-surface));
   }
 
   .docsync-wp-drive-browser__table td {
@@ -64,7 +68,15 @@
   .docsync-wp-drive-browser__table td:nth-child(2),
   .docsync-wp-drive-browser__table td:nth-child(3) {
     color: var(--docsync-text-secondary);
+    font-variant-numeric: tabular-nums;
     white-space: nowrap;
+  }
+
+  .docsync-wp-drive-browser__row-main {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+    min-width: 0;
   }
 
   .docsync-wp-drive-browser__row-button {
@@ -76,6 +88,8 @@
     display: inline-flex;
     gap: 8px;
     max-width: 100%;
+    min-height: 32px;
+    min-width: 0;
     padding: 0;
     text-align: left;
   }
@@ -88,10 +102,11 @@
   .docsync-wp-drive-browser__row-button:disabled {
     color: var(--docsync-text-secondary);
     cursor: not-allowed;
+    opacity: 0.78;
   }
 
   .docsync-wp-drive-browser__row-button:focus-visible {
-    box-shadow: 0 0 0 2px var(--docsync-cyan);
+    box-shadow: 0 0 0 2px var(--docsync-focus-ring);
     outline: none;
   }
 
@@ -145,7 +160,7 @@
     display: flex;
     gap: 4px;
     line-height: 1.35;
-    margin: 6px 0 0 28px;
+    margin: 6px 0 0 30px;
     white-space: normal;
   }
 
@@ -159,7 +174,7 @@
 
   .docsync-wp-drive-browser__compat-warning.is-large_doc_possible {
     background: var(--docsync-warning-bg);
-    border-radius: 4px;
+    border-radius: var(--docsync-radius-sm);
     color: var(--docsync-warning);
     padding: 4px 8px;
   }
@@ -170,7 +185,7 @@
 
   .docsync-wp-drive-browser__compat-warning.is-download_blocked {
     background: var(--docsync-error-bg);
-    border-radius: 4px;
+    border-radius: var(--docsync-radius-sm);
     color: var(--docsync-error);
     padding: 4px 8px;
   }

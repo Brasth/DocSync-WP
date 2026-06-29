@@ -12,7 +12,7 @@ namespace DocSyncWP\Sync\Layout;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Provides the built-in Gutenberg layout presets for 1.1.0.
+ * Provides the built-in Gutenberg layout presets.
  */
 final class LayoutPresetRegistry {
 	public const PRESET_PLAIN_BLOCKS  = 'plain_blocks';
@@ -54,7 +54,7 @@ final class LayoutPresetRegistry {
 			self::PRESET_CLEAN_ARTICLE => new LayoutBlueprint(
 				self::PRESET_CLEAN_ARTICLE,
 				__( 'Clean Article', 'brasth-document-sync-for-google-docs' ),
-				__( 'Article-friendly blocks with top-level document headings demoted for WordPress post bodies.', 'brasth-document-sync-for-google-docs' ),
+				__( 'Best for posts and pages. Keeps headings, media, tables, and lists clean for the block editor.', 'brasth-document-sync-for-google-docs' ),
 				true,
 				false,
 				false
@@ -62,7 +62,7 @@ final class LayoutPresetRegistry {
 			self::PRESET_DOCUMENTATION => new LayoutBlueprint(
 				self::PRESET_DOCUMENTATION,
 				__( 'Documentation', 'brasth-document-sync-for-google-docs' ),
-				__( 'Structured documentation blocks for headings, tables, lists, callouts, and code.', 'brasth-document-sync-for-google-docs' ),
+				__( 'Best for guides and technical docs. Keeps code examples and callout notes easier to read.', 'brasth-document-sync-for-google-docs' ),
 				false,
 				true,
 				true,
@@ -71,7 +71,7 @@ final class LayoutPresetRegistry {
 			self::PRESET_PLAIN_BLOCKS  => new LayoutBlueprint(
 				self::PRESET_PLAIN_BLOCKS,
 				__( 'Plain Blocks', 'brasth-document-sync-for-google-docs' ),
-				__( 'Legacy conversion that preserves the current synced block output.', 'brasth-document-sync-for-google-docs' ),
+				__( 'Compatibility mode for existing synced posts. Keeps output closest to earlier versions.', 'brasth-document-sync-for-google-docs' ),
 				false,
 				false,
 				false

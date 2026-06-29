@@ -11,3 +11,5 @@
 *.log
 *.zip
 tests/*
+!tests/fixtures/
+!tests/fixtures/**

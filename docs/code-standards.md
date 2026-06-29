@@ -46,6 +46,7 @@ Rules:
 ## Frontend Standards
 
 - Admin UI is React mounted from Vite entry points.
+- Follow `docs/design-guidelines.md` for admin visual direction, tokens, density, motion, and accessibility states.
 - Keep the central dashboard and post-level controls as separate bundles.
 - Use WordPress element imports, not direct React runtime imports.
 - Use Radix UI primitives for complex interaction behavior such as Dialog and Tabs. Do not replace those with WordPress Modal/TabPanel unless a future design decision changes this.

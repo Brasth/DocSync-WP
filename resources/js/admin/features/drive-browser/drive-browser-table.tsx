@@ -81,41 +81,44 @@ export const DriveBrowserTable = ({ busy, items, loading, selectedDocument, hasM
             const disabled = busy || loading || (item.itemType === 'document' && !item.selectable);
             const rowClass = [
               selected ? 'is-selected' : '',
-              item.itemType === 'folder' ? 'docsync-wp-drive-row--folder' : ''
+              item.itemType === 'folder' ? 'docsync-wp-drive-row--folder' : '',
+              item.itemType === 'document' && !item.selectable ? 'is-disabled' : ''
             ].filter(Boolean).join(' ');
 
             return (
               <tr className={rowClass} key={item.fileId}>
                 <td className="docsync-wp-drive-browser__name-cell">
-                  <button
-                    aria-label={item.itemType === 'folder'
-                      ? sprintf(__('Open folder %s', 'brasth-document-sync-for-google-docs'), item.name)
-                      : sprintf(__('Select Google Doc %s', 'brasth-document-sync-for-google-docs'), item.name)}
-                    aria-pressed={item.itemType === 'document' ? selected : undefined}
-                    className="docsync-wp-drive-browser__row-button"
-                    disabled={disabled}
-                    onClick={() => onActivate(item).catch(() => undefined)}
-                    type="button"
-                  >
-                    <span
-                      aria-hidden="true"
-                      className={`dashicons ${item.itemType === 'folder' ? 'dashicons-category' : 'dashicons-media-document'}`}
-                    />
-                    <span>{item.name}</span>
-                  </button>
+                  <div className="docsync-wp-drive-browser__row-main">
+                    <button
+                      aria-label={item.itemType === 'folder'
+                        ? sprintf(__('Open folder %s', 'brasth-document-sync-for-google-docs'), item.name)
+                        : sprintf(__('Select Google Doc %s', 'brasth-document-sync-for-google-docs'), item.name)}
+                      aria-pressed={item.itemType === 'document' ? selected : undefined}
+                      className="docsync-wp-drive-browser__row-button"
+                      disabled={disabled}
+                      onClick={() => onActivate(item).catch(() => undefined)}
+                      type="button"
+                    >
+                      <span
+                        aria-hidden="true"
+                        className={`dashicons ${item.itemType === 'folder' ? 'dashicons-category' : 'dashicons-media-document'}`}
+                      />
+                      <span>{item.name}</span>
+                    </button>
+                    <span className="docsync-wp-drive-browser__row-indicator">
+                      {selected ? (
+                        <span aria-hidden="true" className="dashicons dashicons-yes" />
+                      ) : item.itemType === 'document' && !item.selectable ? (
+                        <span aria-hidden="true" className="dashicons dashicons-lock" title={__('Blocked', 'brasth-document-sync-for-google-docs')} />
+                      ) : null}
+                    </span>
+                  </div>
                   {compatibility?.warningMessage ? (
                     <small className={`docsync-wp-drive-browser__compat-warning is-${compatibility.warningCode ?? 'info'}`}>
                       <span aria-hidden="true" className="dashicons dashicons-warning" />
                       <span>{compatibility.warningMessage}</span>
                     </small>
                   ) : null}
-                  <span className="docsync-wp-drive-browser__row-indicator">
-                    {selected ? (
-                      <span aria-hidden="true" className="dashicons dashicons-yes" />
-                    ) : item.itemType === 'document' && !item.selectable ? (
-                      <span aria-hidden="true" className="dashicons dashicons-lock" title={__('Blocked', 'brasth-document-sync-for-google-docs')} />
-                    ) : null}
-                  </span>
                 </td>
                 <td>{formatDriveModifiedTime(item.modifiedTime)}</td>
                 <td>{driveItemTypeLabel(item)}</td>
