@@ -45,7 +45,7 @@ export const LayoutPresetSelector = ({
         ))}
       </select>
       <small className="docsync-wp-field-help">
-        {__('Applies to block editor sync. Elementor sync uses Elementor layout.', 'brasth-document-sync-for-google-docs')}
+        {__('Choose how this Google Doc becomes block editor content. Elementor sync keeps using Elementor layout.', 'brasth-document-sync-for-google-docs')}
       </small>
     </label>
   );

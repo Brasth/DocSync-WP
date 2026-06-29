@@ -245,11 +245,12 @@ foreach ( $manifest_paths as $manifest_path ) {
 
 	$name          = basename( $fixture_dir );
 	$preset        = (string) ( $manifest['preset'] ?? '' );
+	$source        = $manifest['source'] ?? null;
 	$input_path    = $fixture_dir . '/' . (string) ( $manifest['input'] ?? 'input.html' );
 	$expected_path = $fixture_dir . '/' . (string) ( $manifest['expected'] ?? 'expected.html' );
 	$input         = (string) file_get_contents( $input_path );
 	$expected      = rtrim( (string) file_get_contents( $expected_path ) );
-	$actual        = $converter->convert( $input, $preset );
+	$actual        = is_array( $source ) ? $converter->convertForSource( $input, $source ) : $converter->convert( $input, $preset );
 
 	if ( is_wp_error( $actual ) ) {
 		fwrite( STDERR, "{$name}: {$actual->get_error_code()} {$actual->get_error_message()}\n" );

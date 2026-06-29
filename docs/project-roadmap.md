@@ -1,6 +1,6 @@
 # DocSync-WP Development Roadmap
 
-Last updated: 2026-06-28
+Last updated: 2026-06-29
 
 ## Strategic Direction
 
@@ -20,7 +20,8 @@ Each release must pass the existing validation pipeline (`pnpm lint`, `pnpm type
 
 ## Current State
 
-- Version 1.1.0 is prepared in the codebase as the layout preset foundation release.
+- Version 1.1.0 is published as the layout preset foundation release.
+- Version 1.1.1 is the current reliability patch for layout preset copy, tracked fixtures, and CI verification.
 - Core sync engine is stable: Google export, media import, Gutenberg block conversion, Elementor JSON conversion, background sync, and sync logging.
 - The plugin supports one-way sync from Google Docs to WordPress posts, pages, and enabled public custom post types.
 - Setup now uses a task-first Brasth workspace with one primary next action, Sources keeps a tighter table workflow with compact row actions, and Logs presents a searchable Sync Activity workspace with Radix confirmation dialogs, recovery hints, and safe clear actions.
@@ -51,8 +52,8 @@ Each release must pass the existing validation pipeline (`pnpm lint`, `pnpm type
 
 | Version | Target Date | Scope | User-visible value |
 |---|---|---|---|
-| **1.1.0** | Now | Layout preset registry (`LayoutBlueprint`, `LayoutPresetRegistry`, `ContentRoleClassifier`, `LayoutConversionService`), 2 enhanced Gutenberg presets (`Clean Article`, `Documentation`), legacy `Plain Blocks`, site default setting, tiny Setup dropdown, layout fingerprints, and 5 golden fixtures | Site admin sets a default layout; all synced posts look better |
-| **1.1.1** | +12 weeks | Regression fixes for default sync path and edge-case fixture expansion | Stable preset output |
+| **1.1.0** | Released | Layout preset registry (`LayoutBlueprint`, `LayoutPresetRegistry`, `ContentRoleClassifier`, `LayoutConversionService`), 2 enhanced Gutenberg presets (`Clean Article`, `Documentation`), legacy `Plain Blocks`, site default setting, Setup dropdown, per-source/post selectors, layout fingerprints | Site admin sets a default layout; all synced posts look better |
+| **1.1.1** | Now | Layout preset reliability patch, clearer preset copy, tracked edge-case fixtures, CI fixture verification | Recommended update with more predictable preset output |
 | **1.1.2** | +14 weeks | 2 Elementor presets (`Elementor Hero Page`, `Elementor Feature Block`) | Elementor users get layouts too |
 | **1.1.3** | +16 weeks | Golden test suite for all 4 presets, sync logging for preset usage | QA confidence and usage analytics |
 
@@ -63,7 +64,7 @@ Each release must pass the existing validation pipeline (`pnpm lint`, `pnpm type
 | **1.2.0** | +18 weeks | Wizard step 3 in `DocSourceModal` with preset gallery | End users pick a layout when linking a Doc |
 | **1.2.1** | +20 weeks | Accessibility pass and bug fixes on the wizard | Stable, accessible wizard |
 | **1.2.2** | +22 weeks | Read-only preview endpoint and preview UI inside the wizard | Users see output before syncing |
-| **1.2.3** | +24 weeks | Preset selector in the post sync meta box | Per-post override without opening the wizard |
+| **1.2.3** | +24 weeks | Preset selector polish and usage hints based on 1.1.x feedback | Layout choice is clearer during repeat sync work |
 
 ### 1.3.x line — Agency scale: bulk import
 
@@ -122,8 +123,8 @@ Each release must pass the existing validation pipeline (`pnpm lint`, `pnpm type
 
 | Horizon | Versions | Focus | Key Deliverables |
 |---|---|---|---|
-| **Now** | 1.1.0 | Layout preset foundation | Setup default layout dropdown, Gutenberg presets, layout fingerprints, golden fixtures |
-| **Next** | 1.1.1 - 1.2.3 | Layout UI expansion | Regression fixes, Elementor presets, wizard gallery, preview, per-post override |
+| **Now** | 1.1.1 | Layout reliability | Preset copy, tracked fixtures, CI layout verification |
+| **Next** | 1.1.2 - 1.2.3 | Layout UI expansion | Elementor presets, wizard gallery, preview, preset selector polish |
 | **Later** | 1.3.0 - 1.4.3 | Agency scale and monetization | Bulk import, Pro tier, custom preset builder |
 | **Future** | 1.5.0 - 2.2.0 | Writer discovery, smart sync, expansion | Add-on, AI, managed OAuth, Notion, team workflows |
 
@@ -135,6 +136,7 @@ Each release must pass the existing validation pipeline (`pnpm lint`, `pnpm type
 | 1.0.8 | First synced draft path | Visible from Setup without reading README |
 | 1.0.9 | Security audit + productized admin UI | 0 critical, 0 high; branded shell, task-first setup, compact source actions, and searchable Sync Activity shipped |
 | 1.1.0 | 2 Gutenberg presets pass golden tests | 100% on 5 fixtures |
+| 1.1.1 | Layout reliability fixture suite | 100% on tracked Clean Article, Documentation, Plain Blocks, and source override fixtures |
 | 1.1.2 | 4 total presets pass golden tests | 100% on 5 fixtures |
 | 1.1.3 | Manual QA publishable output | 0 developer edits for fixture set |
 | 1.2.0 | Wizard step completion rate | 80% of new drafts |

@@ -9,6 +9,19 @@ Last updated: 2026-06-29
 - preserved existing source metadata when updating only Elementor sync or the layout preset
 - kept Elementor sync on the existing Elementor path while storing the Gutenberg preset preference for block sync
 
+## 2026-06-29 - 1.1.1 layout reliability update
+
+- bumped plugin header version, `DOCSYNC_WP_VERSION`, `readme.txt` stable tag, package metadata, and admin fallback config to `1.1.1`
+- clarified layout preset descriptions and setup/source selector help text in user-facing language
+- added tracked layout fixtures for Clean Article mixed content, Documentation fenced code, Documentation styled code paragraphs, Documentation callouts, Plain Blocks upgrade compatibility, and per-source preset override
+- extended `scripts/verify-layout-fixtures.php` to cover source metadata preset resolution
+- added Composer and CI wiring for layout fixture verification
+
+Unresolved:
+
+- manual staging sync still needs a configured WordPress site and connected Google test account
+- official Plugin Check and readme validator still need release-site execution
+
 ## 2026-06-28 - Documentation preset code heuristics
 
 - added `DocumentationCodeBlockDetector` for Google Docs styled code-like paragraphs in the Documentation preset

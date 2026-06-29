@@ -73,7 +73,7 @@ The Sources screen keeps the table-based workflow for linked Docs, with compact 
 
 - Google Docs is the source of truth. Manual sync overwrites WordPress post content while preserving normal WordPress revisions.
 - Sync exports Google Docs as an HTML ZIP package, imports local images into the WordPress Media Library, rewrites image URLs, sanitizes HTML, converts common elements to Gutenberg blocks, then updates the target post.
-- Site admins can choose the default Gutenberg sync layout from `Clean Article`, `Documentation`, and `Plain Blocks`. Individual linked sources can override that preset before sync; `Use site default` stores no per-source override. Elementor sync keeps the existing Elementor conversion path in 1.1.0 and ignores the Gutenberg preset while Elementor sync is active.
+- Site admins can choose the default Gutenberg sync layout from `Clean Article`, `Documentation`, and `Plain Blocks`. Individual linked sources can override that preset before sync; `Use site default` stores no per-source override. Elementor sync keeps the existing Elementor conversion path and ignores the Gutenberg preset while Elementor sync is active.
 - The `Documentation` layout renders semantic `pre`/`code` HTML, fenced snippets, and Google Docs styled code-like paragraphs as `core/code` blocks. It uses balanced heuristics for shell commands, XML/JSON snippets, Java/PHP/JavaScript-like statements, Gherkin steps, paths, and file trees; it is not a full programming-language parser.
 - Explicit `Note:`, `Tip:`, `Warning:`, `Important:`, and `Caution:` paragraphs render as quote-style callouts in the `Documentation` layout.
 - If Google blocks an HTML ZIP export because the exported Workspace document exceeds its 10 MB export limit, Brasth Document Sync automatically retries through the Google Docs API large-doc fallback before changing WordPress content.
@@ -106,6 +106,7 @@ composer install
 vendor/bin/phpcs -i
 composer validate --no-check-publish
 composer lint
+composer test:layout-fixtures
 pnpm install --frozen-lockfile
 pnpm lint
 pnpm typecheck

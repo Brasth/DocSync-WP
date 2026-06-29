@@ -4,7 +4,7 @@ Tags: google-docs, google-drive, content-sync, editorial-workflow, blocks
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -124,6 +124,13 @@ The build uses Vite and writes screen-specific manifests for Setup, Sources, Log
 5. Synced draft editor with the Brasth Document Sync meta box.
 
 == Changelog ==
+
+= 1.1.1 =
+
+* Recommended for all users after the 1.1.0 layout preset release.
+* Improved layout preset descriptions and setup guidance so site defaults and per-source layout choices are easier to understand.
+* Added tracked layout fixture coverage for Clean Article, Documentation code blocks, Documentation callouts, Plain Blocks upgrade compatibility, and per-source preset overrides.
+* Added layout fixture verification to CI so future preset changes are checked before release.
 
 = 1.1.0 =
 

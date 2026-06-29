@@ -82,7 +82,7 @@ export const GoogleSetupTargetsStep = ({
             ))}
           </select>
           <small className="docsync-wp-field-help">
-            {__('Applies to block editor sync. Elementor layouts use existing Elementor sync.', 'brasth-document-sync-for-google-docs')}
+            {__('New synced block editor posts use this layout unless a source chooses a different one. Elementor sync uses Elementor layout.', 'brasth-document-sync-for-google-docs')}
           </small>
         </label>
 

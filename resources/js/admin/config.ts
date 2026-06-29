@@ -42,7 +42,7 @@ const fallbackConfig: DocSyncWPAdminConfig = {
   restUrl: '',
   nonce: '',
   pluginUrl: '',
-  version: '1.1.0',
+  version: '1.1.1',
   currentUserId: 0,
   clientId: '',
   connectionMode: 'self_managed',
@@ -54,7 +54,7 @@ const fallbackConfig: DocSyncWPAdminConfig = {
     {
       id: 'plain_blocks',
       label: 'Plain Blocks',
-      description: 'Legacy conversion that preserves the current synced block output.'
+      description: 'Compatibility mode for existing synced posts. Keeps output closest to earlier versions.'
     }
   ],
   syncInterval: 'off',
