@@ -94,7 +94,12 @@ final class DocumentationCodeBlockDetector {
 			return false;
 		}
 
-		if ( $this->isStrongCodeLine( $text ) || $this->looksLikeGherkinStep( $trimmed ) ) {
+		if (
+			$this->isStrongCodeLine( $text )
+			|| $this->looksLikeGherkinStep( $trimmed )
+			|| $this->looksLikeKarateStep( $trimmed )
+			|| $this->isTripleQuoteLine( $trimmed )
+		) {
 			return true;
 		}
 
@@ -152,24 +157,48 @@ final class DocumentationCodeBlockDetector {
 	 * @return array{code:string,end:int}|null
 	 */
 	private function collectCodeLikeRun( array $children, int $start, callable $is_code_candidate ): ?array {
-		$lines      = array();
-		$has_strong = false;
-		$count      = count( $children );
-		$end        = $start - 1;
+		$lines           = array();
+		$has_strong      = false;
+		$count           = count( $children );
+		$end             = $start - 1;
+		$in_shell_run    = false;
+		$in_quoted_block = false;
 
 		for ( $index = $start; $index < $count; ++$index ) {
-			$text = $this->paragraphTextAt( $children, $index, $is_code_candidate );
+			$text = $this->paragraphTextAt( $children, $index, $is_code_candidate, $in_quoted_block );
 
-			if ( null === $text || ! $this->isCodeLikeLine( $text ) ) {
+			if ( null === $text ) {
 				break;
 			}
 
-			$lines[]    = $text;
-			$has_strong = $has_strong || $this->isStrongCodeLine( $text );
-			$end        = $index;
+			$trimmed = trim( $text );
+
+			if ( $in_quoted_block ) {
+				$lines[]         = $text;
+				$in_quoted_block = ! $this->isTripleQuoteLine( $trimmed );
+				$end             = $index;
+				continue;
+			}
+
+			$is_code_like         = $this->isCodeLikeLine( $text );
+			$is_shell_continuing  = $in_shell_run && $this->looksLikeShellContinuationLine( $trimmed );
+			$is_triple_quote_line = $this->isTripleQuoteLine( $trimmed );
+
+			if ( ! $is_code_like && ! $is_shell_continuing ) {
+				break;
+			}
+
+			$lines[]         = $text;
+			$has_strong      = $has_strong || $this->isStrongCodeLine( $text );
+			$end             = $index;
+			$in_quoted_block = $is_triple_quote_line;
+			$in_shell_run    = (
+				$this->looksLikeShellCommand( $trimmed )
+				|| $is_shell_continuing
+			) && $this->endsWithShellLineContinuation( $trimmed );
 		}
 
-		if ( array() === $lines || ( 1 === count( $lines ) && ! $has_strong ) ) {
+		if ( $in_quoted_block || array() === $lines || ( 1 === count( $lines ) && ! $has_strong ) ) {
 			return null;
 		}
 
@@ -282,13 +311,14 @@ final class DocumentationCodeBlockDetector {
 			'/^<\?php\b/',
 			'/^(?:package|import)\s+[A-Za-z_][A-Za-z0-9_.]*(?:\.\*)?;?$/',
 			'/^(?:public|private|protected|final|abstract|static)\s+.+(?:[;{]|\))$/',
+			'/^[A-Za-z_$][A-Za-z0-9_$.]*(?:<[^>]+>)?(?:\[\])?\s+[A-Za-z_$][A-Za-z0-9_$]*\s*\([^)]*\)\s*(?:throws\s+[A-Za-z_$][A-Za-z0-9_$.,\s]*)?\{$/',
 			'/^(?:class|interface|enum|trait)\s+[A-Za-z_][A-Za-z0-9_]*/',
 			'/^(?:const|let|var)\s+[$A-Za-z_][A-Za-z0-9_$]*\s*=/',
 			'/^function\s+[A-Za-z_][A-Za-z0-9_]*\s*\(/',
 			'/^(?:if|for|foreach|while|switch|catch)\s*\(/',
 			'/^return\b.+;$/',
 			'/^\$[A-Za-z_][A-Za-z0-9_]*\s*=/',
-			'/^@[A-Za-z_][A-Za-z0-9_]*(?:\(.+\))?$/',
+			'/^@[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*(?:\(.*\))?$/',
 		);
 
 		foreach ( $patterns as $pattern ) {
@@ -306,7 +336,7 @@ final class DocumentationCodeBlockDetector {
 	 * @param string $text Trimmed text.
 	 */
 	private function looksLikeGherkinHeader( string $text ): bool {
-		return (bool) preg_match( '/^(?:Feature|Scenario|Scenario Outline|Background|Examples):\s+\S/i', $text );
+		return (bool) preg_match( '/^(?:Feature|Rule|Background|Scenario Outline|Scenario|Examples):(?:\s+\S.*)?$/i', $text );
 	}
 
 	/**
@@ -319,6 +349,24 @@ final class DocumentationCodeBlockDetector {
 	}
 
 	/**
+	 * Detect Karate star-step lines.
+	 *
+	 * @param string $text Trimmed text.
+	 */
+	private function looksLikeKarateStep( string $text ): bool {
+		return (bool) preg_match( '/^\*\s+\S/', $text );
+	}
+
+	/**
+	 * Detect Karate/Gherkin triple-quote delimiter lines.
+	 *
+	 * @param string $text Trimmed text.
+	 */
+	private function isTripleQuoteLine( string $text ): bool {
+		return (bool) preg_match( '/^(?:"{3}|\'{3})$/', $text );
+	}
+
+	/**
 	 * Detect file paths and simple tree output.
 	 *
 	 * @param string $text Trimmed text.
@@ -328,7 +376,29 @@ final class DocumentationCodeBlockDetector {
 			return true;
 		}
 
-		return (bool) preg_match( '/^(?:(?:[|`+\\\\-]|├|└|│|─)+\s*)+[A-Za-z0-9_.-]+\/?$/u', $text );
+		return (bool) preg_match( '/^(?:(?:[|`+\\\\-]|├|└|│|─)+\s*)+[A-Za-z0-9_@.\/-]+\/?$/u', $text );
+	}
+
+	/**
+	 * Detect shell option, payload, and URL continuation lines.
+	 *
+	 * @param string $text Trimmed text.
+	 */
+	private function looksLikeShellContinuationLine( string $text ): bool {
+		if ( preg_match( '/^https?:\/\/\S+(?:\s*\\\\)?$/', $text ) ) {
+			return true;
+		}
+
+		return (bool) preg_match( '/^--?[A-Za-z0-9][A-Za-z0-9_-]*(?:=|\s+)\S.*(?:\\\\)?$/', $text );
+	}
+
+	/**
+	 * Whether a shell line explicitly continues onto the next line.
+	 *
+	 * @param string $text Trimmed text.
+	 */
+	private function endsWithShellLineContinuation( string $text ): bool {
+		return str_ends_with( rtrim( $text ), '\\' );
 	}
 
 	/**
@@ -340,7 +410,11 @@ final class DocumentationCodeBlockDetector {
 		return $this->looksLikeMarkup( $text )
 			|| $this->looksLikeJson( $text )
 			|| $this->looksLikeProgrammingStatement( $text )
+			|| $this->looksLikeGherkinStep( $text )
+			|| $this->looksLikeKarateStep( $text )
 			|| $this->looksLikePathOrTreeLine( $text )
+			|| $this->isTripleQuoteLine( $text )
+			|| $this->looksLikeShellContinuationLine( $text )
 			|| (bool) preg_match( '/(?:[{}();=<>$]|\[[^\]]*\]|\/\/|::|=>|->)/', $text );
 	}
 }
