@@ -1,7 +1,0 @@
-{
-  "source": {
-    "layout_preset": "documentation"
-  },
-  "input": "input.html",
-  "expected": "expected.html"
-}
