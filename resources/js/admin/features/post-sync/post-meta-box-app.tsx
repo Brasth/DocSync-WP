@@ -3,9 +3,11 @@ import { createElement, Fragment, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 import { getSourceContent, type SourceRecord, type SyncResult } from '../../api';
+import { getAdminConfig } from '../../config';
 import { DocSourceModal, type DocSourceTarget } from '../doc-source-modal/doc-source-modal';
 import { AdminButton } from '../../shared/ui/admin-button';
 import { AdminNotice } from '../../shared/ui/admin-notice';
+import { LayoutPresetSelector } from '../../shared/ui/layout-preset-selector';
 import { shouldShowSyncProgress, SyncProgress } from '../../shared/ui/sync-progress';
 import { BackgroundSyncPoller } from './background-sync-poller';
 import { applyPostContentToEditor, getEditorDirtyState } from './post-editor-content';
@@ -23,6 +25,7 @@ export const PostMetaBoxApp = ({ postId, postType, initialSource, elementorAvail
   const [modalTarget, setModalTarget] = useState<DocSourceTarget | null>(null);
   const actions = usePostSyncActions(postId, initialSource);
   const isSyncing = actions.source?.syncStatus === 'syncing';
+  const config = getAdminConfig();
 
   const onCompleted = (result: SyncResult) => {
     const nextSource = result.source ?? actions.source;
@@ -140,6 +143,15 @@ export const PostMetaBoxApp = ({ postId, postType, initialSource, elementorAvail
             />
             <span>{__('Sync as Elementor layout', 'brasth-document-sync-for-google-docs')}</span>
           </label>
+        ) : null}
+        {actions.source ? (
+          <LayoutPresetSelector
+            availableLayoutPresets={config.availableLayoutPresets}
+            defaultLayoutPreset={config.defaultLayoutPreset}
+            disabled={actions.busy || isSyncing || actions.source.elementorSync === true}
+            onChange={actions.updateLayoutPreset}
+            value={actions.source.layoutPreset ?? ''}
+          />
         ) : null}
       </div>
       {actions.source?.syncStatus === 'syncing' ? (

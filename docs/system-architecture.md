@@ -143,8 +143,9 @@ Implemented routes:
 - `GET /documents` with `search`, `page_token`, and `page_size` filters
 - `POST /documents/inspect`
 - `GET /sources` with `search`, `post_type`, `status`, `page`, and `per_page` filters
-- `POST /sources`
+- `POST /sources`, including optional `layoutPreset`
 - `GET /sources/{postId}`
+- `POST /sources/{postId}`, including optional `layoutPreset` and `elementorSync`
 - `DELETE /sources/{postId}`
 - `POST /sources/{postId}/sync`
 - `POST /sources/sync-all`
@@ -289,11 +290,12 @@ Current components:
 - `src/Sync/Layout/LayoutPresetRegistry.php` — built-in presets: `clean_article`, `documentation`, and `plain_blocks`.
 - `src/Sync/Layout/ContentRoleClassifier.php` — role detection for headings, images, lists, tables, code blocks, callouts, and containers.
 - `src/Sync/Layout/LayoutConversionService.php` — effective preset resolution, fingerprinting, and Gutenberg conversion.
-- `_docsync_wp_layout_preset` post meta — optional per-post override reserved for future UI; missing or empty means use the site default.
+- `_docsync_wp_layout_preset` post meta — optional per-post override set from the link modal or post sync metabox; missing or empty means use the site default.
 - `_docsync_wp_last_layout_fingerprint` post meta — prevents preset changes from being hidden by unchanged Google metadata.
 - Setup sync defaults expose a compact `Default synced layout` dropdown through `GET/POST /settings`.
+- Source linking and the post sync metabox expose a compact `Layout preset` dropdown. The selector stores a per-source Gutenberg override, or an empty value for `Use site default`; Elementor sync leaves the value stored but uses the Elementor conversion path.
 
-Later phases add an in-linking preset gallery, preview endpoint, per-post selector UI, Elementor presets, bulk Drive folder import, a custom preset builder, a Pro tier, a Google Docs Workspace Add-on, and optional managed OAuth. See `docs/project-roadmap.md` for the full phased plan.
+Later phases add an in-linking preset gallery, preview endpoint, Elementor presets, bulk Drive folder import, a custom preset builder, a Pro tier, a Google Docs Workspace Add-on, and optional managed OAuth. See `docs/project-roadmap.md` for the full phased plan.
 
 ## Operational Notes
 

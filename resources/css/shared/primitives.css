@@ -60,8 +60,22 @@
   }
 
   .docsync-wp-field-help {
-    color: var(--docsync-text-muted);
+    color: var(--docsync-text-muted, #50575e);
     line-height: 1.4;
+  }
+
+  .docsync-wp-layout-preset-selector {
+    margin-top: 12px;
+    max-width: 360px;
+  }
+
+  .docsync-wp-layout-preset-selector select {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .docsync-wp-layout-preset-selector .docsync-wp-field-help {
+    margin: 0;
   }
 
   .docsync-wp-table-scroll {

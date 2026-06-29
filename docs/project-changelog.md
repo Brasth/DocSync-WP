@@ -1,6 +1,13 @@
 # Project Changelog
 
-Last updated: 2026-06-28
+Last updated: 2026-06-29
+
+## 2026-06-29 - Per-source layout preset override
+
+- added `layoutPreset` to source create/update REST payloads with invalid non-empty values rejected as REST 400
+- added compact `Layout preset` selectors to the Google Doc link modal and post sync metabox
+- preserved existing source metadata when updating only Elementor sync or the layout preset
+- kept Elementor sync on the existing Elementor path while storing the Gutenberg preset preference for block sync
 
 ## 2026-06-28 - Documentation preset code heuristics
 

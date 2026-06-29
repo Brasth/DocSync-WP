@@ -4,6 +4,7 @@ import { __ } from '@wordpress/i18n';
 
 import { AdminButton } from '../../shared/ui/admin-button';
 import { AdminNotice } from '../../shared/ui/admin-notice';
+import { LayoutPresetSelector } from '../../shared/ui/layout-preset-selector';
 import type { SyncResult } from '../../api';
 import { getAdminConfig } from '../../config';
 import { ensureLazyStyle, useLazyDriveBrowserPanel } from './lazy-drive-browser-panel';
@@ -131,6 +132,16 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
                 <strong>{modal.metadata.name}</strong>
                 <span>{modal.metadata.webViewLink || modal.metadata.fileId}</span>
               </div>
+            ) : null}
+
+            {modal.metadata ? (
+              <LayoutPresetSelector
+                availableLayoutPresets={config.availableLayoutPresets}
+                defaultLayoutPreset={config.defaultLayoutPreset}
+                disabled={modal.busy}
+                onChange={modal.setLayoutPreset}
+                value={modal.layoutPreset}
+              />
             ) : null}
           </div>
 

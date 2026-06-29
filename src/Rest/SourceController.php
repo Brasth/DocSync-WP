@@ -11,6 +11,7 @@ namespace DocSyncWP\Rest;
 
 use DocSyncWP\Cron\SyncCron;
 use DocSyncWP\Google\DocumentIdParser;
+use DocSyncWP\Sync\Layout\LayoutPresetRegistry;
 use DocSyncWP\Sync\SourceRepository;
 use DocSyncWP\Sync\SyncService;
 use WP_Error;
@@ -56,20 +57,30 @@ final class SourceController {
 	private DocumentIdParser $document_id_parser;
 
 	/**
+	 * Layout preset registry.
+	 *
+	 * @var LayoutPresetRegistry
+	 */
+	private LayoutPresetRegistry $layout_presets;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param SourceRepository $source_repository Source repository.
-	 * @param SyncService      $sync_service      Sync service.
-	 * @param DocumentIdParser $document_id_parser Document ID parser.
+	 * @param SourceRepository          $source_repository  Source repository.
+	 * @param SyncService               $sync_service       Sync service.
+	 * @param DocumentIdParser          $document_id_parser Document ID parser.
+	 * @param LayoutPresetRegistry|null $layout_presets     Layout preset registry.
 	 */
 	public function __construct(
 		SourceRepository $source_repository,
 		SyncService $sync_service,
-		DocumentIdParser $document_id_parser
+		DocumentIdParser $document_id_parser,
+		?LayoutPresetRegistry $layout_presets = null
 	) {
 		$this->source_repository  = $source_repository;
 		$this->sync_service       = $sync_service;
 		$this->document_id_parser = $document_id_parser;
+		$this->layout_presets     = $layout_presets ?? new LayoutPresetRegistry();
 	}
 
 	/**
@@ -202,7 +213,7 @@ final class SourceController {
 	public function createSource( WP_REST_Request $request ): WP_REST_Response|WP_Error {
 		$params = $this->getRequestParams(
 			$request,
-			array( 'fileId', 'target', 'exportFormat', 'syncMode', 'elementorSync' ),
+			array( 'fileId', 'target', 'exportFormat', 'syncMode', 'elementorSync', 'layoutPreset' ),
 			'docsync_wp_unknown_source_fields'
 		);
 
@@ -241,6 +252,7 @@ final class SourceController {
 		$export_format  = $this->getExportFormat( $params );
 		$sync_mode      = $this->getSyncMode( $params );
 		$elementor_sync = $this->getOptionalBoolean( $params, 'elementorSync' );
+		$layout_preset  = $this->getOptionalLayoutPreset( $params );
 		$user_id        = get_current_user_id();
 
 		if ( is_wp_error( $export_format ) ) {
@@ -253,6 +265,10 @@ final class SourceController {
 
 		if ( is_wp_error( $elementor_sync ) ) {
 			return $elementor_sync;
+		}
+
+		if ( is_wp_error( $layout_preset ) ) {
+			return $layout_preset;
 		}
 
 		if ( 'existing' === $mode ) {
@@ -268,7 +284,14 @@ final class SourceController {
 				return $allowed;
 			}
 
-			$result = $this->sync_service->attachSource( $post_id, $user_id, $file_id, $export_format, $elementor_sync );
+			$result = $this->sync_service->attachSource(
+				$post_id,
+				$user_id,
+				$file_id,
+				$export_format,
+				$elementor_sync,
+				$layout_preset
+			);
 
 			if ( is_wp_error( $result ) ) {
 				return $result;
@@ -299,7 +322,8 @@ final class SourceController {
 				$post_type,
 				$export_format,
 				self::SYNC_MODE_INLINE === $sync_mode,
-				$elementor_sync
+				$elementor_sync,
+				$layout_preset
 			);
 
 			if ( is_wp_error( $result ) ) {
@@ -423,7 +447,7 @@ final class SourceController {
 	/**
 	 * Update editable source metadata for a post.
 	 *
-	 * Currently supports changing the per-post Elementor sync preference.
+	 * Currently supports changing per-post sync preferences.
 	 *
 	 * @param WP_REST_Request $request REST request.
 	 * @return WP_REST_Response|WP_Error
@@ -454,7 +478,7 @@ final class SourceController {
 
 		$params = $this->getOptionalRequestParams(
 			$request,
-			array( 'elementorSync' ),
+			array( 'elementorSync', 'layoutPreset' ),
 			'docsync_wp_unknown_source_update_fields'
 		);
 
@@ -462,7 +486,8 @@ final class SourceController {
 			return $params;
 		}
 
-		$update = array( 'google_file_id' => $source['google_file_id'] );
+		$update     = $source;
+		$has_update = false;
 
 		if ( array_key_exists( 'elementorSync', $params ) ) {
 			$elementor_sync = $this->getOptionalBoolean( $params, 'elementorSync' );
@@ -472,14 +497,30 @@ final class SourceController {
 			}
 
 			$update['elementor_sync'] = $elementor_sync;
+			$has_update               = true;
 		}
 
-		if ( 1 === count( $update ) ) {
+		if ( array_key_exists( 'layoutPreset', $params ) ) {
+			$layout_preset = $this->getOptionalLayoutPreset( $params );
+
+			if ( is_wp_error( $layout_preset ) ) {
+				return $layout_preset;
+			}
+
+			$update['layout_preset'] = $layout_preset;
+			$has_update              = true;
+		}
+
+		if ( ! $has_update ) {
 			return new WP_Error(
 				'docsync_wp_no_source_update',
 				__( 'Brasth Document Sync received no source fields to update.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 400 )
 			);
+		}
+
+		if ( ! array_key_exists( 'elementorSync', $params ) && null === ( $source['elementor_sync'] ?? null ) ) {
+			unset( $update['elementor_sync'] );
 		}
 
 		$saved = $this->source_repository->saveSource( $post_id, $update );
@@ -892,6 +933,49 @@ final class SourceController {
 		return new WP_Error(
 			'docsync_wp_invalid_boolean_field',
 			__( 'Brasth Document Sync received an invalid boolean field.', 'brasth-document-sync-for-google-docs' ),
+			array( 'status' => 400 )
+		);
+	}
+
+	/**
+	 * Get and validate an optional per-source layout preset override.
+	 *
+	 * @param array<string,mixed> $params Request params.
+	 * @return string|WP_Error Empty string means use the site default.
+	 */
+	private function getOptionalLayoutPreset( array $params ): string|WP_Error {
+		if ( ! array_key_exists( 'layoutPreset', $params ) ) {
+			return '';
+		}
+
+		$value = $params['layoutPreset'];
+
+		if ( null === $value ) {
+			return '';
+		}
+
+		if ( ! is_scalar( $value ) ) {
+			return new WP_Error(
+				'docsync_wp_invalid_layout_preset',
+				__( 'Brasth Document Sync received an unsupported layout preset.', 'brasth-document-sync-for-google-docs' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		$raw_preset_id = trim( (string) $value );
+		$preset_id     = sanitize_key( $raw_preset_id );
+
+		if ( '' === $preset_id ) {
+			return '';
+		}
+
+		if ( $preset_id === $raw_preset_id && $this->layout_presets->isValidPresetId( $preset_id ) ) {
+			return $preset_id;
+		}
+
+		return new WP_Error(
+			'docsync_wp_invalid_layout_preset',
+			__( 'Brasth Document Sync received an unsupported layout preset.', 'brasth-document-sync-for-google-docs' ),
 			array( 'status' => 400 )
 		);
 	}
