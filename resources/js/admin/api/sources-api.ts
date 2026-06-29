@@ -5,6 +5,20 @@ import type { SourceContentResponse, SourceFilters, SourceRecord, SourcesRespons
 
 export type SyncMode = 'inline' | 'background';
 
+type CreateSourcePayload = {
+  fileId: string;
+  target: { mode: 'existing'; postId: number } | { mode: 'new'; postType: string };
+  exportFormat?: string;
+  syncMode?: SyncMode;
+  elementorSync?: boolean;
+  layoutPreset?: string | null;
+};
+
+type UpdateSourcePayload = {
+  elementorSync?: boolean;
+  layoutPreset?: string | null;
+};
+
 export const listSources = (filters: SourceFilters = {}): Promise<SourcesResponse> => {
   return request<SourcesResponse>(addQueryArgs('sources', {
     page: filters.page ?? 1,
@@ -15,20 +29,14 @@ export const listSources = (filters: SourceFilters = {}): Promise<SourcesRespons
   }));
 };
 
-export const createSource = (payload: {
-  fileId: string;
-  target: { mode: 'existing'; postId: number } | { mode: 'new'; postType: string };
-  exportFormat?: string;
-  syncMode?: SyncMode;
-  elementorSync?: boolean;
-}): Promise<SyncResult> => {
+export const createSource = (payload: CreateSourcePayload): Promise<SyncResult> => {
   return request<SyncResult>('sources', {
     method: 'POST',
     data: payload
   });
 };
 
-export const updateSource = (postId: number, payload: { elementorSync?: boolean }): Promise<SourceRecord> => {
+export const updateSource = (postId: number, payload: UpdateSourcePayload): Promise<SourceRecord> => {
   return request<SourceRecord>(`sources/${postId}`, {
     method: 'POST',
     data: payload

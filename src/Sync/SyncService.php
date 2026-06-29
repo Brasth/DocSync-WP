@@ -148,9 +148,17 @@ final class SyncService {
 	 * @param string    $file_id       Google Drive file ID.
 	 * @param string    $export_format Export format.
 	 * @param bool|null $elementor_sync Whether to sync this post as an Elementor layout. Null falls back to detection.
+	 * @param string    $layout_preset  Optional Gutenberg layout preset override.
 	 * @return array<string,mixed>|WP_Error
 	 */
-	public function attachSource( int $post_id, int $user_id, string $file_id, string $export_format = self::EXPORT_FORMAT_HTML_ZIP, ?bool $elementor_sync = null ): array|WP_Error {
+	public function attachSource(
+		int $post_id,
+		int $user_id,
+		string $file_id,
+		string $export_format = self::EXPORT_FORMAT_HTML_ZIP,
+		?bool $elementor_sync = null,
+		string $layout_preset = ''
+	): array|WP_Error {
 		$export_format = $this->sanitizeExportFormat( $export_format );
 
 		if ( is_wp_error( $export_format ) ) {
@@ -191,6 +199,7 @@ final class SyncService {
 					'last_hash'          => '',
 					'last_synced_at'     => '',
 					'last_sync_method'   => '',
+					'layout_preset'      => $layout_preset,
 					'sync_owner_user_id' => $user_id,
 					'export_format'      => $export_format,
 					'elementor_sync'     => $elementor_sync,
@@ -222,9 +231,18 @@ final class SyncService {
 	 * @param string    $export_format    Export format.
 	 * @param bool      $sync_immediately Whether to sync before returning.
 	 * @param bool|null $elementor_sync   Whether to sync this post as an Elementor layout. Null defaults to false for new drafts.
+	 * @param string    $layout_preset    Optional Gutenberg layout preset override.
 	 * @return array<string,mixed>|WP_Error
 	 */
-	public function createDraftFromSource( int $user_id, string $file_id, string $post_type, string $export_format = self::EXPORT_FORMAT_HTML_ZIP, bool $sync_immediately = true, ?bool $elementor_sync = null ): array|WP_Error {
+	public function createDraftFromSource(
+		int $user_id,
+		string $file_id,
+		string $post_type,
+		string $export_format = self::EXPORT_FORMAT_HTML_ZIP,
+		bool $sync_immediately = true,
+		?bool $elementor_sync = null,
+		string $layout_preset = ''
+	): array|WP_Error {
 		$export_format = $this->sanitizeExportFormat( $export_format );
 
 		if ( is_wp_error( $export_format ) ) {
@@ -274,6 +292,7 @@ final class SyncService {
 					'last_hash'          => '',
 					'last_synced_at'     => '',
 					'last_sync_method'   => '',
+					'layout_preset'      => $layout_preset,
 					'sync_owner_user_id' => $user_id,
 					'export_format'      => $export_format,
 					'elementor_sync'     => $elementor_sync,

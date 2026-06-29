@@ -27,6 +27,7 @@ export const useDocSourceModal = ({ isOpen, target, onClose, onCompleted }: Args
   const [uiMode, setUiMode] = useState<DocSourceUiMode>('browse');
   const [documentInput, setDocumentInput] = useState('');
   const [metadata, setMetadata] = useState<DocumentMetadata | null>(null);
+  const [layoutPreset, setLayoutPreset] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const config = useMemo(() => getAdminConfig(), []);
@@ -36,6 +37,7 @@ export const useDocSourceModal = ({ isOpen, target, onClose, onCompleted }: Args
       setUiMode('browse');
       setDocumentInput('');
       setMetadata(null);
+      setLayoutPreset('');
       setError('');
       setBusy(false);
     }
@@ -101,7 +103,8 @@ export const useDocSourceModal = ({ isOpen, target, onClose, onCompleted }: Args
           ? { mode: 'existing', postId: target.postId }
           : { mode: 'new', postType: target.postType },
         exportFormat: config.defaultExportFormat || 'html_zip',
-        syncMode: 'background'
+        syncMode: 'background',
+        layoutPreset
       });
 
       onCompleted(result);
@@ -123,9 +126,11 @@ export const useDocSourceModal = ({ isOpen, target, onClose, onCompleted }: Args
     documentInput,
     error,
     inspect,
+    layoutPreset,
     metadata,
     selectDocument,
     setDocumentInput,
+    setLayoutPreset,
     uiMode
   };
 };

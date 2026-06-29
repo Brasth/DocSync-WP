@@ -69,6 +69,27 @@ export const usePostSyncActions = (postId: number, initialSource: SourceRecord |
     }
   };
 
+  const updateLayoutPreset = async (layoutPreset: string) => {
+    setBusy(true);
+    setNotice(null);
+
+    try {
+      const updated = await updateSource(postId, { layoutPreset });
+      setSource(updated);
+      const message = layoutPreset
+        ? __('Layout preset updated.', 'brasth-document-sync-for-google-docs')
+        : __('This post will use the site default layout preset.', 'brasth-document-sync-for-google-docs');
+      setNotice({ type: 'success', message });
+      speak(message);
+    } catch (caught) {
+      const message = caught instanceof Error ? caught.message : __('Could not update layout preset.', 'brasth-document-sync-for-google-docs');
+      setNotice({ type: 'error', message });
+      speak(message, 'assertive');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return {
     busy,
     detach,
@@ -77,6 +98,7 @@ export const usePostSyncActions = (postId: number, initialSource: SourceRecord |
     setSource,
     source,
     syncNow,
-    updateElementorSync
+    updateElementorSync,
+    updateLayoutPreset
   };
 };

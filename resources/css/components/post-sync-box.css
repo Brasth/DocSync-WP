@@ -170,6 +170,10 @@
     line-height: 1.4;
   }
 
+  .docsync-wp-post-box .docsync-wp-layout-preset-selector {
+    max-width: none;
+  }
+
   @media (max-width: 782px) {
     .docsync-wp-toast-stack {
       bottom: 16px;

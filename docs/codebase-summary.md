@@ -89,11 +89,11 @@ The 1.1.0 release introduces a **Layout Preset** layer to make synced Google Doc
 
 - `src/Sync/Layout/` — preset registry, blueprint, conversion service, and content-role classifier.
 - Setup sync defaults dropdown backed by `GET/POST /settings`.
-- Site-level `default_layout_preset`, optional per-post `_docsync_wp_layout_preset`, and `_docsync_wp_last_layout_fingerprint`.
+- Site-level `default_layout_preset`, per-source `Layout preset` selectors backed by optional `_docsync_wp_layout_preset`, and `_docsync_wp_last_layout_fingerprint`.
 - Built-in Gutenberg presets covering Clean Article, Documentation, and legacy Plain Blocks.
 - Golden fixtures plus `scripts/verify-layout-fixtures.php`.
 
-Preview/gallery UI, per-post selector UI, and Elementor presets remain future work.
+Preview/gallery UI and Elementor presets remain future work.
 
 Later releases add bulk Drive folder import, a Pro tier with a custom preset builder, a Google Docs Workspace Add-on, and optional managed OAuth. See `docs/project-roadmap.md` for the full phased plan and success metrics.
 
