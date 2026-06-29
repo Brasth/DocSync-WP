@@ -4,11 +4,11 @@
     border: 1px solid var(--docsync-card-border);
     border-radius: var(--docsync-card-radius);
     box-shadow: var(--docsync-card-shadow);
-    padding: 18px;
+    padding: var(--docsync-card-padding);
   }
 
   .docsync-wp-card__header {
-    border-bottom: 1px solid var(--docsync-card-border);
+    border-bottom: 1px solid var(--docsync-border-subtle);
     margin-bottom: 16px;
     padding-bottom: 12px;
   }
@@ -60,7 +60,7 @@
   }
 
   .docsync-wp-field-help {
-    color: var(--docsync-text-muted, #50575e);
+    color: var(--docsync-text-muted);
     line-height: 1.4;
   }
 
@@ -90,19 +90,22 @@
   /* Status pills */
   .docsync-wp-pill {
     align-items: center;
-    border-radius: 999px;
+    border-radius: var(--docsync-radius-pill);
     display: inline-flex;
     font-size: 12px;
     font-weight: 600;
     gap: 5px;
+    line-height: 1.35;
     padding: 3px 10px;
+    white-space: nowrap;
   }
 
   .docsync-wp-pill__dot {
-    border-radius: 50%;
+    border-radius: var(--docsync-radius-pill);
     display: inline-block;
     flex-shrink: 0;
     height: 7px;
+    margin-top: 1px;
     width: 7px;
   }
 
@@ -172,12 +175,12 @@
   }
 
   .docsync-wp-pill--unknown {
-    background: #f0f0f1;
-    color: var(--docsync-text-secondary);
+    background: var(--docsync-status-unknown-bg);
+    color: var(--docsync-status-unknown-text);
   }
 
   .docsync-wp-pill--unknown .docsync-wp-pill__dot {
-    background: #8c8f94;
+    background: var(--docsync-status-unknown-dot);
   }
 
   @keyframes docsync-wp-pill-pulse {
@@ -210,8 +213,8 @@
   }
 
   .docsync-wp-sync-progress {
-    background: #dcdcde;
-    border-radius: 999px;
+    background: var(--docsync-border-muted);
+    border-radius: var(--docsync-radius-pill);
     display: block;
     height: 6px;
     overflow: hidden;
@@ -223,14 +226,14 @@
     display: block;
     height: 100%;
     min-width: 2px;
-    transition: width 0.2s ease;
+    transition: width var(--docsync-motion-normal) var(--docsync-motion-ease);
   }
 
   .docsync-wp-skeleton {
     animation: docsync-wp-skeleton-pulse 1.35s ease-in-out infinite;
-    background: linear-gradient(90deg, #e7eceb 25%, #f6f7f7 37%, #e7eceb 63%);
+    background: linear-gradient(90deg, var(--docsync-border-subtle) 25%, var(--docsync-surface-subtle) 37%, var(--docsync-border-subtle) 63%);
     background-size: 400% 100%;
-    border-radius: 999px;
+    border-radius: var(--docsync-radius-pill);
     display: block;
     height: 12px;
     max-width: 100%;
@@ -294,6 +297,10 @@
     .docsync-wp-skeleton {
       animation: none;
     }
+
+    .docsync-wp-sync-progress span {
+      transition: none;
+    }
   }
 
   /* Shared data table styling (replaces widefat striped) */
@@ -305,7 +312,7 @@
   }
 
   .docsync-wp-data-table thead th {
-    background: #f6f7f7;
+    background: var(--docsync-surface-subtle);
     border-bottom: 1px solid var(--docsync-card-border);
     color: var(--docsync-text-primary);
     font-weight: 600;
@@ -315,17 +322,17 @@
   }
 
   .docsync-wp-data-table tbody td {
-    border-bottom: 1px solid #f0f0f1;
+    border-bottom: 1px solid var(--docsync-border-subtle);
     padding: 11px 12px;
     vertical-align: top;
   }
 
   .docsync-wp-data-table tbody tr:nth-child(even) td {
-    background: #fbfcfc;
+    background: var(--docsync-surface-muted);
   }
 
   .docsync-wp-data-table tbody tr:hover td {
-    background: rgba(15, 118, 110, 0.04);
+    background: color-mix(in srgb, var(--docsync-teal-bg) 50%, transparent);
   }
 
   .docsync-wp-data-table small {
@@ -336,7 +343,7 @@
 
   .docsync-wp-data-table .docsync-wp-row-tag {
     background: var(--docsync-teal-bg);
-    border-radius: 4px;
+    border-radius: var(--docsync-radius-sm);
     color: var(--docsync-teal-text);
     display: inline-block;
     font-size: 11px;
@@ -349,43 +356,66 @@
   /* Ensure primary/secondary buttons keep readable text on hover/focus. */
   #docsync-wp-admin-root .button-primary,
   #docsync-wp-admin-root .button-primary:focus,
-  #docsync-wp-admin-root .button-primary:active {
+  #docsync-wp-admin-root .button-primary:active,
+  #docsync-wp-post-sync-root .button-primary,
+  #docsync-wp-post-sync-root .button-primary:focus,
+  #docsync-wp-post-sync-root .button-primary:active,
+  #docsync-wp-list-sync-root .button-primary,
+  #docsync-wp-list-sync-root .button-primary:focus,
+  #docsync-wp-list-sync-root .button-primary:active {
     background: var(--docsync-blue);
     border-color: var(--docsync-blue);
-    color: #fff;
+    color: var(--docsync-text-inverse);
   }
 
-  #docsync-wp-admin-root .button-primary:hover {
+  #docsync-wp-admin-root .button-primary:hover,
+  #docsync-wp-post-sync-root .button-primary:hover,
+  #docsync-wp-list-sync-root .button-primary:hover {
     background: var(--docsync-blue-hover);
     border-color: var(--docsync-blue-hover);
-    color: #fff;
+    color: var(--docsync-text-inverse);
   }
 
   #docsync-wp-admin-root .button-primary:disabled,
-  #docsync-wp-admin-root .button-primary[disabled] {
+  #docsync-wp-admin-root .button-primary[disabled],
+  #docsync-wp-post-sync-root .button-primary:disabled,
+  #docsync-wp-post-sync-root .button-primary[disabled],
+  #docsync-wp-list-sync-root .button-primary:disabled,
+  #docsync-wp-list-sync-root .button-primary[disabled] {
     background: var(--docsync-blue);
     border-color: var(--docsync-blue);
-    color: #fff;
+    color: var(--docsync-text-inverse);
     opacity: 0.6;
   }
 
   #docsync-wp-admin-root .button-secondary,
   #docsync-wp-admin-root .button-secondary:focus,
-  #docsync-wp-admin-root .button-secondary:active {
-    background: #fff;
+  #docsync-wp-admin-root .button-secondary:active,
+  #docsync-wp-post-sync-root .button-secondary,
+  #docsync-wp-post-sync-root .button-secondary:focus,
+  #docsync-wp-post-sync-root .button-secondary:active,
+  #docsync-wp-list-sync-root .button-secondary,
+  #docsync-wp-list-sync-root .button-secondary:focus,
+  #docsync-wp-list-sync-root .button-secondary:active {
+    background: var(--docsync-surface);
     border-color: var(--docsync-blue);
     color: var(--docsync-blue);
   }
 
-  #docsync-wp-admin-root .button-secondary:hover {
+  #docsync-wp-admin-root .button-secondary:hover,
+  #docsync-wp-post-sync-root .button-secondary:hover,
+  #docsync-wp-list-sync-root .button-secondary:hover {
     background: var(--docsync-blue-soft);
     border-color: var(--docsync-blue);
     color: var(--docsync-blue);
   }
 
   #docsync-wp-admin-root .docsync-wp-button,
+  #docsync-wp-post-sync-root .docsync-wp-button,
+  #docsync-wp-list-sync-root .docsync-wp-button,
   .docsync-wp-confirm-dialog .docsync-wp-button {
     align-items: center;
+    border-radius: var(--docsync-radius-sm);
     display: inline-flex;
     font-weight: 600;
     gap: 6px;
@@ -393,16 +423,48 @@
     letter-spacing: 0;
     line-height: 1.2;
     text-align: center;
+    transition:
+      background-color var(--docsync-motion-fast) var(--docsync-motion-ease),
+      border-color var(--docsync-motion-fast) var(--docsync-motion-ease),
+      box-shadow var(--docsync-motion-fast) var(--docsync-motion-ease),
+      color var(--docsync-motion-fast) var(--docsync-motion-ease),
+      transform var(--docsync-motion-fast) var(--docsync-motion-ease);
     white-space: nowrap;
   }
 
+  #docsync-wp-admin-root .docsync-wp-button:focus-visible,
+  #docsync-wp-post-sync-root .docsync-wp-button:focus-visible,
+  #docsync-wp-list-sync-root .docsync-wp-button:focus-visible,
+  .docsync-wp-confirm-dialog .docsync-wp-button:focus-visible {
+    box-shadow: 0 0 0 2px var(--docsync-focus-ring);
+    outline: none;
+  }
+
+  #docsync-wp-admin-root .docsync-wp-button:active:not(:disabled),
+  #docsync-wp-post-sync-root .docsync-wp-button:active:not(:disabled),
+  #docsync-wp-list-sync-root .docsync-wp-button:active:not(:disabled),
+  .docsync-wp-confirm-dialog .docsync-wp-button:active:not(:disabled) {
+    transform: scale(0.96);
+  }
+
+  #docsync-wp-admin-root .docsync-wp-button:disabled,
+  #docsync-wp-post-sync-root .docsync-wp-button:disabled,
+  #docsync-wp-list-sync-root .docsync-wp-button:disabled,
+  .docsync-wp-confirm-dialog .docsync-wp-button:disabled {
+    cursor: not-allowed;
+  }
+
   #docsync-wp-admin-root .docsync-wp-button--default,
+  #docsync-wp-post-sync-root .docsync-wp-button--default,
+  #docsync-wp-list-sync-root .docsync-wp-button--default,
   .docsync-wp-confirm-dialog .docsync-wp-button--default {
     min-height: 36px;
     padding: 0 14px;
   }
 
   #docsync-wp-admin-root .docsync-wp-button--small,
+  #docsync-wp-post-sync-root .docsync-wp-button--small,
+  #docsync-wp-list-sync-root .docsync-wp-button--small,
   .docsync-wp-confirm-dialog .docsync-wp-button--small {
     font-size: 12px;
     min-height: 32px;
@@ -410,10 +472,28 @@
   }
 
   #docsync-wp-admin-root .docsync-wp-button--icon,
+  #docsync-wp-post-sync-root .docsync-wp-button--icon,
+  #docsync-wp-list-sync-root .docsync-wp-button--icon,
   .docsync-wp-confirm-dialog .docsync-wp-button--icon {
     min-height: 32px;
     min-width: 32px;
     padding: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #docsync-wp-admin-root .docsync-wp-button,
+    #docsync-wp-post-sync-root .docsync-wp-button,
+    #docsync-wp-list-sync-root .docsync-wp-button,
+    .docsync-wp-confirm-dialog .docsync-wp-button {
+      transition: none;
+    }
+
+    #docsync-wp-admin-root .docsync-wp-button:active:not(:disabled),
+    #docsync-wp-post-sync-root .docsync-wp-button:active:not(:disabled),
+    #docsync-wp-list-sync-root .docsync-wp-button:active:not(:disabled),
+    .docsync-wp-confirm-dialog .docsync-wp-button:active:not(:disabled) {
+      transform: none;
+    }
   }
 }
 
@@ -425,13 +505,23 @@
   --docsync-card-radius: 8px;
   --docsync-error: #b42318;
   --docsync-error-bg: #f8d7da;
+  --docsync-error-hover: #8f1d14;
+  --docsync-focus-ring: #00b8c8;
+  --docsync-radius-sm: 6px;
+  --docsync-radius-md: 8px;
+  --docsync-shadow-dialog: 0 24px 64px rgba(15, 23, 42, 0.22);
+  --docsync-surface: #fff;
+  --docsync-surface-subtle: #f6f7f7;
+  --docsync-text-inverse: #fff;
   --docsync-text-muted: #50575e;
   --docsync-text-primary: #17202a;
   --docsync-text-secondary: #646970;
+  --docsync-motion-fast: 150ms;
+  --docsync-motion-ease: cubic-bezier(0.2, 0, 0, 1);
 
-  background: #fff;
+  background: var(--docsync-surface);
   border-radius: var(--docsync-card-radius);
-  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.22);
+  box-shadow: var(--docsync-shadow-dialog);
   color: var(--docsync-text-primary);
   left: 50%;
   max-width: min(440px, calc(100vw - 32px));
@@ -476,7 +566,7 @@
 
 .docsync-wp-confirm-dialog__footer {
   align-items: center;
-  background: #f6f7f7;
+  background: var(--docsync-surface-subtle);
   border-top: 1px solid var(--docsync-card-border);
   display: flex;
   gap: 8px;
@@ -489,19 +579,19 @@
 .docsync-wp-confirm-dialog .button-primary:active {
   background: var(--docsync-blue);
   border-color: var(--docsync-blue);
-  color: #fff;
+  color: var(--docsync-text-inverse);
 }
 
 .docsync-wp-confirm-dialog .button-primary:hover {
   background: var(--docsync-blue-hover);
   border-color: var(--docsync-blue-hover);
-  color: #fff;
+  color: var(--docsync-text-inverse);
 }
 
 .docsync-wp-confirm-dialog .button-secondary,
 .docsync-wp-confirm-dialog .button-secondary:focus,
 .docsync-wp-confirm-dialog .button-secondary:active {
-  background: #fff;
+  background: var(--docsync-surface);
   border-color: var(--docsync-blue);
   color: var(--docsync-blue);
 }
@@ -517,11 +607,11 @@
 .docsync-wp-confirm-dialog .docsync-wp-confirm-dialog__confirm--danger:active {
   background: var(--docsync-error);
   border-color: var(--docsync-error);
-  color: #fff;
+  color: var(--docsync-text-inverse);
 }
 
 .docsync-wp-confirm-dialog .docsync-wp-confirm-dialog__confirm--danger:hover {
-  background: #8f1d14;
-  border-color: #8f1d14;
-  color: #fff;
+  background: var(--docsync-error-hover);
+  border-color: var(--docsync-error-hover);
+  color: var(--docsync-text-inverse);
 }

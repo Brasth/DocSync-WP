@@ -5,6 +5,7 @@ import { __ } from '@wordpress/i18n';
 import { AdminButton } from '../../shared/ui/admin-button';
 import { AdminNotice } from '../../shared/ui/admin-notice';
 import { LayoutPresetSelector } from '../../shared/ui/layout-preset-selector';
+import { LoadingState } from '../../shared/ui/loading-state';
 import type { SyncResult } from '../../api';
 import { getAdminConfig } from '../../config';
 import { ensureLazyStyle, useLazyDriveBrowserPanel } from './lazy-drive-browser-panel';
@@ -103,9 +104,9 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
                   selectedDocument={modal.metadata}
                 />
               ) : (
-                <section aria-busy={driveBrowser.loading} className="docsync-wp-drive-browser-loading" role="status">
-                  <p>{driveBrowser.error || __('Loading Google Drive browser...', 'brasth-document-sync-for-google-docs')}</p>
-                </section>
+                <LoadingState className="docsync-wp-drive-browser__state" variant="skeleton">
+                  {driveBrowser.error || __('Loading Google Drive browser...', 'brasth-document-sync-for-google-docs')}
+                </LoadingState>
               )
             ) : null}
 
@@ -127,25 +128,31 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
             />
 
             {modal.metadata ? (
-              <div className="docsync-wp-doc-preview">
-                <span>{__('Selected Google Doc', 'brasth-document-sync-for-google-docs')}</span>
-                <strong>{modal.metadata.name}</strong>
-                <span>{modal.metadata.webViewLink || modal.metadata.fileId}</span>
+              <div className="docsync-wp-doc-preview" aria-label={__('Selected Google Doc', 'brasth-document-sync-for-google-docs')}>
+                <div className="docsync-wp-doc-preview__summary">
+                  <span className="docsync-wp-doc-preview__label">{__('Selected Google Doc', 'brasth-document-sync-for-google-docs')}</span>
+                  <strong>{modal.metadata.name}</strong>
+                  <span>{modal.metadata.webViewLink || modal.metadata.fileId}</span>
+                </div>
+                <LayoutPresetSelector
+                  availableLayoutPresets={config.availableLayoutPresets}
+                  defaultLayoutPreset={config.defaultLayoutPreset}
+                  disabled={modal.busy}
+                  onChange={modal.setLayoutPreset}
+                  value={modal.layoutPreset}
+                />
               </div>
-            ) : null}
-
-            {modal.metadata ? (
-              <LayoutPresetSelector
-                availableLayoutPresets={config.availableLayoutPresets}
-                defaultLayoutPreset={config.defaultLayoutPreset}
-                disabled={modal.busy}
-                onChange={modal.setLayoutPreset}
-                value={modal.layoutPreset}
-              />
             ) : null}
           </div>
 
           <div className="docsync-wp-modal__footer">
+            {!modal.canAttach ? (
+              <span className="docsync-wp-modal__footer-hint">
+                {uiMode === 'browse'
+                  ? __('Choose an accessible Google Doc to continue.', 'brasth-document-sync-for-google-docs')
+                  : __('Inspect a Google Doc before linking it.', 'brasth-document-sync-for-google-docs')}
+              </span>
+            ) : null}
             <Dialog.Close asChild>
               <AdminButton disabled={modal.busy}>{__('Cancel', 'brasth-document-sync-for-google-docs')}</AdminButton>
             </Dialog.Close>

@@ -14,7 +14,7 @@ export const LoadingState = ({ children, className = 'docsync-wp-drive-browser__
   const stateClassName = variant === 'skeleton' ? `${className} docsync-wp-loading-state--skeleton` : className;
 
   return (
-    <div className={stateClassName}>
+    <div aria-busy="true" className={stateClassName} role="status">
       {variant === 'spinner' ? <Spinner /> : null}
       <span className="docsync-wp-loading-state__label">{children}</span>
       {variant === 'skeleton' ? (

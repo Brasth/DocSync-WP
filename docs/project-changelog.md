@@ -2,6 +2,14 @@
 
 Last updated: 2026-06-29
 
+## 2026-06-29 - Admin design system polish
+
+- added `docs/design-guidelines.md` as the admin UI design source of truth
+- expanded shared admin CSS tokens for surfaces, borders, radius, spacing, motion, focus, shadows, and status roles
+- aligned Setup, Sources, Sync Activity, Doc Source modal, Drive browser, post sync metabox, list actions, and toasts around compact utilitarian states
+- improved Drive browser selected/blocked rows, selected Doc confirmation, setup dirty state, active sync hints, and reduced-motion coverage
+- kept REST contracts, settings schema, post meta, Vite entries, and runtime dependencies unchanged
+
 ## 2026-06-29 - Per-source layout preset override
 
 - added `layoutPreset` to source create/update REST payloads with invalid non-empty values rejected as REST 400

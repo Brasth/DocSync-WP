@@ -77,6 +77,7 @@ export const GoogleSetupSyncDefaultsPanel = ({
       />
       {hasChanges ? (
         <div className="docsync-wp-setup-secondary-actions">
+          <span className="docsync-wp-setup-secondary-status">{__('Unsaved sync defaults', 'brasth-document-sync-for-google-docs')}</span>
           <AdminButton disabled={busy} onClick={submit}>
             {__('Save sync defaults', 'brasth-document-sync-for-google-docs')}
           </AdminButton>

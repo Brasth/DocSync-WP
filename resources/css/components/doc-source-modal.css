@@ -1,6 +1,6 @@
 @layer components {
   .docsync-wp-modal-backdrop {
-    background: rgba(10, 18, 25, 0.58);
+    background: var(--docsync-overlay);
     bottom: 0;
     left: 0;
     position: fixed;
@@ -10,9 +10,9 @@
   }
 
   .docsync-wp-modal {
-    background: #fff;
+    background: var(--docsync-surface);
     bottom: 0;
-    box-shadow: 0 -1px 32px rgba(0, 0, 0, 0.24);
+    box-shadow: var(--docsync-shadow-dialog);
     display: flex;
     flex-direction: column;
     left: 0;
@@ -32,8 +32,8 @@
 
   .docsync-wp-modal__header {
     align-items: center;
-    background: #fff;
-    border-bottom: 1px solid #dcdcde;
+    background: var(--docsync-surface);
+    border-bottom: 1px solid var(--docsync-border-muted);
     display: flex;
     gap: 16px;
     justify-content: space-between;
@@ -110,7 +110,7 @@
     align-items: center;
     background: transparent;
     border: 1px solid transparent;
-    border-radius: 6px;
+    border-radius: var(--docsync-radius-sm);
     color: var(--docsync-text-secondary);
     cursor: pointer;
     display: inline-flex;
@@ -122,6 +122,11 @@
     right: 16px;
     top: 16px;
     width: 44px;
+    transition:
+      background-color var(--docsync-motion-fast) var(--docsync-motion-ease),
+      border-color var(--docsync-motion-fast) var(--docsync-motion-ease),
+      color var(--docsync-motion-fast) var(--docsync-motion-ease),
+      transform var(--docsync-motion-fast) var(--docsync-motion-ease);
   }
 
   .docsync-wp-modal__close span {
@@ -138,7 +143,11 @@
   }
 
   .docsync-wp-modal__close:focus-visible {
-    box-shadow: 0 0 0 2px var(--docsync-cyan);
+    box-shadow: 0 0 0 2px var(--docsync-focus-ring);
+  }
+
+  .docsync-wp-modal__close:active {
+    transform: scale(0.96);
   }
 
   .docsync-wp-modal__mode-switch {
@@ -148,27 +157,78 @@
   }
 
   .docsync-wp-doc-preview {
-    background: #f0f6f4;
-    border-left: 4px solid var(--docsync-teal);
+    align-items: start;
+    background: var(--docsync-surface-selected);
+    border: 1px solid color-mix(in srgb, var(--docsync-teal) 42%, var(--docsync-border));
+    border-left: 4px solid var(--docsync-selected-rail);
+    border-radius: var(--docsync-radius-md);
+    display: grid;
+    gap: 12px;
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 320px);
     margin-top: 14px;
     padding: 12px;
   }
 
+  .docsync-wp-doc-preview__summary {
+    min-width: 0;
+  }
+
+  .docsync-wp-doc-preview__label {
+    color: var(--docsync-teal-text);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .docsync-wp-doc-preview strong,
   .docsync-wp-doc-preview span {
     display: block;
+  }
+
+  .docsync-wp-doc-preview strong {
+    color: var(--docsync-text-primary);
     margin-top: 4px;
+    overflow-wrap: anywhere;
+  }
+
+  .docsync-wp-doc-preview__summary > span:not(.docsync-wp-doc-preview__label) {
+    color: var(--docsync-text-muted);
+    font-size: 12px;
     word-break: break-all;
   }
 
+  .docsync-wp-doc-preview .docsync-wp-layout-preset-selector {
+    margin-top: 0;
+    max-width: none;
+  }
+
   .docsync-wp-modal__footer {
-    background: #f6f7f7;
-    border-top: 1px solid #dcdcde;
+    background: var(--docsync-surface-subtle);
+    border-top: 1px solid var(--docsync-border-muted);
     bottom: 0;
     display: flex;
     gap: 8px;
     justify-content: flex-end;
     position: sticky;
     z-index: 3;
+  }
+
+  .docsync-wp-modal__footer-hint {
+    color: var(--docsync-text-muted);
+    flex: 1 1 auto;
+    line-height: 1.4;
+    margin-right: auto;
+    min-width: 180px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .docsync-wp-modal__close {
+      transition: none;
+    }
+
+    .docsync-wp-modal__close:active {
+      transform: none;
+    }
   }
 
   @media (max-width: 782px) {
@@ -182,6 +242,19 @@
       align-items: stretch;
       flex-direction: column;
       padding-right: 62px;
+    }
+
+    .docsync-wp-doc-preview {
+      grid-template-columns: 1fr;
+    }
+
+    .docsync-wp-modal__footer {
+      align-items: stretch;
+      flex-wrap: wrap;
+    }
+
+    .docsync-wp-modal__footer-hint {
+      flex-basis: 100%;
     }
   }
 }
