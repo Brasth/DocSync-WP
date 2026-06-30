@@ -5,6 +5,7 @@ Last updated: 2026-06-30
 ## 2026-06-30 - Optional anonymous active-install telemetry
 
 - added default-off `telemetryEnabled` setup setting, private `telemetry_site_id` generation on opt-in, and deletion on opt-out
+- added a one-time inline Setup consent panel backed by `telemetryPromptDismissed`, so admins can opt in or dismiss without enabling telemetry
 - added weekly `docsync_wp_telemetry_checkin` WP-Cron hook, `docsync_wp_telemetry_endpoint` filter, and silent anonymous check-ins with plugin/WP/PHP versions only
 - added isolated Cloudflare Worker and D1 migration for check-ins, protected active-install summary, and 90-day cleanup
 - excluded `cloudflare/` from installable plugin ZIPs through `.distignore`, local packaging validation, and CI artifact validation

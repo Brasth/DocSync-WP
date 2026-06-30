@@ -21,13 +21,14 @@ defined( 'ABSPATH' ) || exit;
 final class SettingsRepository {
 	public const OPTION_NAME = 'docsync_wp_settings';
 
-	private const DEFAULT_SCOPE_MODE      = 'drive_file';
-	private const DEFAULT_POST_STATUS     = 'draft';
-	private const DEFAULT_EXPORT_FORMAT   = 'html_zip';
-	private const DEFAULT_SYNC_INTERVAL   = 'off';
-	private const DEFAULT_CONNECTION_MODE = 'self_managed';
-	private const DEFAULT_ELEMENTOR_SYNC  = false;
-	private const DEFAULT_TELEMETRY       = false;
+	private const DEFAULT_SCOPE_MODE                 = 'drive_file';
+	private const DEFAULT_POST_STATUS                = 'draft';
+	private const DEFAULT_EXPORT_FORMAT              = 'html_zip';
+	private const DEFAULT_SYNC_INTERVAL              = 'off';
+	private const DEFAULT_CONNECTION_MODE            = 'self_managed';
+	private const DEFAULT_ELEMENTOR_SYNC             = false;
+	private const DEFAULT_TELEMETRY                  = false;
+	private const DEFAULT_TELEMETRY_PROMPT_DISMISSED = false;
 
 	/**
 	 * Layout preset registry.
@@ -235,19 +236,20 @@ final class SettingsRepository {
 		$settings = $this->get();
 
 		return array(
-			'client_id'              => $settings['client_id'],
-			'scope_mode'             => $settings['scope_mode'],
-			'enabled_post_types'     => $settings['enabled_post_types'],
-			'default_post_status'    => $settings['default_post_status'],
-			'default_export_format'  => $settings['default_export_format'],
-			'default_layout_preset'  => $settings['default_layout_preset'],
-			'sync_interval'          => $settings['sync_interval'],
-			'connection_mode'        => $settings['connection_mode'],
-			'elementor_sync_enabled' => $settings['elementor_sync_enabled'],
-			'telemetry_enabled'      => $settings['telemetry_enabled'],
-			'has_client_id'          => '' !== $settings['client_id'],
-			'has_client_secret'      => '' !== $settings['encrypted_client_secret'],
-			'has_required_settings'  => '' !== $settings['client_id'] && '' !== $settings['encrypted_client_secret'],
+			'client_id'                  => $settings['client_id'],
+			'scope_mode'                 => $settings['scope_mode'],
+			'enabled_post_types'         => $settings['enabled_post_types'],
+			'default_post_status'        => $settings['default_post_status'],
+			'default_export_format'      => $settings['default_export_format'],
+			'default_layout_preset'      => $settings['default_layout_preset'],
+			'sync_interval'              => $settings['sync_interval'],
+			'connection_mode'            => $settings['connection_mode'],
+			'elementor_sync_enabled'     => $settings['elementor_sync_enabled'],
+			'telemetry_enabled'          => $settings['telemetry_enabled'],
+			'telemetry_prompt_dismissed' => $settings['telemetry_prompt_dismissed'],
+			'has_client_id'              => '' !== $settings['client_id'],
+			'has_client_secret'          => '' !== $settings['encrypted_client_secret'],
+			'has_required_settings'      => '' !== $settings['client_id'] && '' !== $settings['encrypted_client_secret'],
 		);
 	}
 
@@ -393,18 +395,19 @@ final class SettingsRepository {
 	 */
 	private function defaults(): array {
 		return array(
-			'client_id'               => '',
-			'encrypted_client_secret' => '',
-			'scope_mode'              => self::DEFAULT_SCOPE_MODE,
-			'enabled_post_types'      => array( 'post' ),
-			'default_post_status'     => self::DEFAULT_POST_STATUS,
-			'default_export_format'   => self::DEFAULT_EXPORT_FORMAT,
-			'default_layout_preset'   => LayoutPresetRegistry::DEFAULT_EXISTING_INSTALL,
-			'sync_interval'           => self::DEFAULT_SYNC_INTERVAL,
-			'connection_mode'         => self::DEFAULT_CONNECTION_MODE,
-			'elementor_sync_enabled'  => self::DEFAULT_ELEMENTOR_SYNC,
-			'telemetry_enabled'       => self::DEFAULT_TELEMETRY,
-			'telemetry_site_id'       => '',
+			'client_id'                  => '',
+			'encrypted_client_secret'    => '',
+			'scope_mode'                 => self::DEFAULT_SCOPE_MODE,
+			'enabled_post_types'         => array( 'post' ),
+			'default_post_status'        => self::DEFAULT_POST_STATUS,
+			'default_export_format'      => self::DEFAULT_EXPORT_FORMAT,
+			'default_layout_preset'      => LayoutPresetRegistry::DEFAULT_EXISTING_INSTALL,
+			'sync_interval'              => self::DEFAULT_SYNC_INTERVAL,
+			'connection_mode'            => self::DEFAULT_CONNECTION_MODE,
+			'elementor_sync_enabled'     => self::DEFAULT_ELEMENTOR_SYNC,
+			'telemetry_enabled'          => self::DEFAULT_TELEMETRY,
+			'telemetry_prompt_dismissed' => self::DEFAULT_TELEMETRY_PROMPT_DISMISSED,
+			'telemetry_site_id'          => '',
 		);
 	}
 
@@ -433,6 +436,7 @@ final class SettingsRepository {
 			'connection_mode',
 			'elementor_sync_enabled',
 			'telemetry_enabled',
+			'telemetry_prompt_dismissed',
 		);
 	}
 
@@ -443,17 +447,18 @@ final class SettingsRepository {
 	 * @return array<string,mixed>
 	 */
 	private function sanitizeScalarSettings( array $settings ): array {
-		$settings['client_id']               = sanitize_text_field( (string) $settings['client_id'] );
-		$settings['encrypted_client_secret'] = is_string( $settings['encrypted_client_secret'] ) ? $settings['encrypted_client_secret'] : '';
-		$settings['scope_mode']              = sanitize_key( (string) $settings['scope_mode'] );
-		$settings['default_post_status']     = sanitize_key( (string) $settings['default_post_status'] );
-		$settings['default_export_format']   = sanitize_key( (string) $settings['default_export_format'] );
-		$settings['default_layout_preset']   = sanitize_key( (string) $settings['default_layout_preset'] );
-		$settings['sync_interval']           = sanitize_key( (string) $settings['sync_interval'] );
-		$settings['connection_mode']         = sanitize_key( (string) $settings['connection_mode'] );
-		$settings['elementor_sync_enabled']  = $this->sanitizeBooleanSetting( $settings['elementor_sync_enabled'] ?? self::DEFAULT_ELEMENTOR_SYNC );
-		$settings['telemetry_enabled']       = $this->sanitizeBooleanSetting( $settings['telemetry_enabled'] ?? self::DEFAULT_TELEMETRY );
-		$settings['telemetry_site_id']       = sanitize_text_field( (string) ( $settings['telemetry_site_id'] ?? '' ) );
+		$settings['client_id']                  = sanitize_text_field( (string) $settings['client_id'] );
+		$settings['encrypted_client_secret']    = is_string( $settings['encrypted_client_secret'] ) ? $settings['encrypted_client_secret'] : '';
+		$settings['scope_mode']                 = sanitize_key( (string) $settings['scope_mode'] );
+		$settings['default_post_status']        = sanitize_key( (string) $settings['default_post_status'] );
+		$settings['default_export_format']      = sanitize_key( (string) $settings['default_export_format'] );
+		$settings['default_layout_preset']      = sanitize_key( (string) $settings['default_layout_preset'] );
+		$settings['sync_interval']              = sanitize_key( (string) $settings['sync_interval'] );
+		$settings['connection_mode']            = sanitize_key( (string) $settings['connection_mode'] );
+		$settings['elementor_sync_enabled']     = $this->sanitizeBooleanSetting( $settings['elementor_sync_enabled'] ?? self::DEFAULT_ELEMENTOR_SYNC );
+		$settings['telemetry_enabled']          = $this->sanitizeBooleanSetting( $settings['telemetry_enabled'] ?? self::DEFAULT_TELEMETRY );
+		$settings['telemetry_prompt_dismissed'] = $this->sanitizeBooleanSetting( $settings['telemetry_prompt_dismissed'] ?? self::DEFAULT_TELEMETRY_PROMPT_DISMISSED );
+		$settings['telemetry_site_id']          = sanitize_text_field( (string) ( $settings['telemetry_site_id'] ?? '' ) );
 
 		return $settings;
 	}

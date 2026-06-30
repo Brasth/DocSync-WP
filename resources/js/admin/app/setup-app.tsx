@@ -4,6 +4,7 @@ import { __ } from '@wordpress/i18n';
 import { AccountPanel } from '../features/google-setup/account-panel';
 import { GoogleSetupSyncDefaultsPanel } from '../features/google-setup/google-setup-sync-defaults-panel';
 import { SettingsPanel } from '../features/google-setup/settings-panel';
+import { TelemetryConsentPanel } from '../features/google-setup/telemetry-consent-panel';
 import { AdminShell } from '../shared/ui/admin-shell';
 import { useSetupApp } from './use-setup-app';
 
@@ -19,6 +20,7 @@ export const SetupApp = (): JSX.Element => {
   }, []);
 
   const setupReady = Boolean(app.settings?.hasRequiredSettings && app.account.connected && app.account.hasRequiredScope);
+  const showTelemetryConsent = Boolean(app.settings && !app.settings.telemetryEnabled && !app.settings.telemetryPromptDismissed);
 
   return (
     <AdminShell
@@ -61,6 +63,16 @@ export const SetupApp = (): JSX.Element => {
               onConnect={app.connectGoogle}
               onDisconnect={app.disconnectGoogle}
             />
+            {showTelemetryConsent ? (
+              <TelemetryConsentPanel
+                busy={app.busy}
+                onAccept={() => app.persistSettings({
+                  telemetryEnabled: true,
+                  telemetryPromptDismissed: true
+                })}
+                onDismiss={() => app.persistSettings({ telemetryPromptDismissed: true })}
+              />
+            ) : null}
             <GoogleSetupSyncDefaultsPanel
               busy={app.busy}
               onSave={app.persistSettings}

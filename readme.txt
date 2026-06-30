@@ -51,7 +51,7 @@ Google's terms and privacy documents apply to these services:
 * Google API Services User Data Policy: https://developers.google.com/terms/api-services-user-data-policy
 * Google APIs Terms of Service: https://developers.google.com/terms
 
-Brasth Document Sync also includes optional anonymous active-install telemetry. This setting is off by default and runs only when a site administrator enables "Share anonymous usage diagnostics with Brasth" in Setup > Sync defaults.
+Brasth Document Sync also includes optional anonymous active-install telemetry. This setting is off by default and runs only when a site administrator enables usage diagnostics from the Setup consent prompt or the "Share anonymous usage diagnostics with Brasth" checkbox in Setup > Sync defaults.
 
 When enabled, the plugin sends one weekly POST request to `https://telemetry.brasth.com/v1/check-in`. This Brasth telemetry service is used to count active opted-in installs and understand version compatibility. The request contains only an anonymous site hash generated from a random install ID, the plugin slug, plugin version, WordPress version, PHP version, and telemetry consent version. It does not contain Google data, site URL, user email, post data, document IDs, document metadata, document content, or imported media.
 
