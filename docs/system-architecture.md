@@ -1,6 +1,6 @@
 # System Architecture
 
-Last updated: 2026-06-12
+Last updated: 2026-06-30
 
 ## Overview
 
@@ -45,6 +45,8 @@ flowchart LR
   Settings --> Opts["Encrypted site option"]
   Cron --> Sources
   Cron --> Sync
+  Settings --> Telemetry["TelemetryService + TelemetryCron"]
+  Telemetry --> Worker["Brasth telemetry Worker + D1"]
 ```
 
 ## Core Surfaces
@@ -132,8 +134,8 @@ REST namespace: `brasth-document-sync-for-google-docs/v1`
 
 Implemented routes:
 
-- `GET /settings`, including `defaultLayoutPreset` and `availableLayoutPresets`
-- `POST /settings`, including `defaultLayoutPreset`
+- `GET /settings`, including `defaultLayoutPreset`, `availableLayoutPresets`, and `telemetryEnabled`
+- `POST /settings`, including `defaultLayoutPreset` and optional `telemetryEnabled`
 - `GET /oauth/google/url`
 - `GET /oauth/google/account`
 - `DELETE /oauth/google/account`
@@ -172,7 +174,7 @@ Common permission model:
 ### Site Options
 
 - `docsync_wp_settings`
-- stores Google connection mode, client id, encrypted client secret, enabled post types, default post status, default export format, default layout preset, and sync interval
+- stores Google connection mode, client id, encrypted client secret, enabled post types, default post status, default export format, default layout preset, sync interval, telemetry opt-in state, and the private telemetry install identifier
 
 ### User Meta
 
@@ -254,6 +256,16 @@ Skip behavior:
 - supported intervals: `off`, `hourly`, `twicedaily`, `daily`
 - cron job runs in small batches and syncs linked posts for the current source owner
 - the single-source handler calls `SyncService::syncPost()` so locking, imports, conversion, and error states stay centralized
+- `src/Telemetry/TelemetryCron.php` registers `docsync_wp_telemetry_checkin` only when `telemetry_enabled` is true
+- telemetry uses a weekly WP-Cron interval and unschedules itself when the site owner disables telemetry, deactivates, or uninstalls the plugin
+
+## Optional Telemetry
+
+Telemetry is opt-in and default off. The Setup sync defaults panel exposes `telemetryEnabled` through the same settings route as other site defaults. `SettingsRepository` generates `telemetry_site_id` only after opt-in and clears it on opt-out; REST and admin config never expose the raw ID.
+
+`TelemetryService` sends a weekly POST to `https://telemetry.brasth.com/v1/check-in`, filterable through `docsync_wp_telemetry_endpoint` for staging and tests. The payload contains `siteHash` as `sha256(telemetry_site_id)`, plugin slug, plugin version, WordPress version, PHP version, and consent version. It does not include Google data, site URL, user email, post data, Google document IDs, document metadata, document content, or imported media.
+
+The isolated Cloudflare Worker lives under `cloudflare/telemetry-worker/`. It stores check-ins in D1 by `site_hash`, exposes `/health`, accepts `/v1/check-in`, protects `/v1/summary?window=30d` behind `Authorization: Bearer <ADMIN_TOKEN>`, and deletes rows older than 90 days from a daily scheduled Worker cron. The Worker intentionally does not store IP addresses, user agents, request URLs, or request headers.
 
 ## Security Model
 
@@ -266,6 +278,7 @@ Skip behavior:
 - Docs API fallback image content URIs are downloaded to temporary files and validated before Media Library import
 - image import failure marks sync `error` before target content is overwritten
 - plugin never deletes synced posts on uninstall by default
+- telemetry deactivation and uninstall clear `docsync_wp_telemetry_checkin`; full plugin uninstall also deletes the site option containing telemetry consent and private install ID
 
 ## Layout Preset Architecture
 
@@ -310,3 +323,4 @@ Later phases add an in-linking preset gallery, preview endpoint, Elementor prese
 - Vite externalizes Radix React peer imports and WordPress package imports to WordPress globals, and aliases Radix JSX runtime imports to the local WordPress JSX runtime shim; avoid direct app imports from `react` or `react-dom`
 - Inline PHPCS suppression comments are blocked by the frontend lint guard; unavoidable standards exceptions must live in `phpcs.xml.dist`
 - local verification uses Composer, PHPCS, PHP syntax checks, pnpm lint/typecheck, and Vite builds
+- the Cloudflare telemetry Worker is excluded from WordPress plugin ZIPs and has separate Node-based checks under `cloudflare/telemetry-worker/`

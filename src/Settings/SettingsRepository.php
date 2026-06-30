@@ -27,6 +27,7 @@ final class SettingsRepository {
 	private const DEFAULT_SYNC_INTERVAL   = 'off';
 	private const DEFAULT_CONNECTION_MODE = 'self_managed';
 	private const DEFAULT_ELEMENTOR_SYNC  = false;
+	private const DEFAULT_TELEMETRY       = false;
 
 	/**
 	 * Layout preset registry.
@@ -194,6 +195,15 @@ final class SettingsRepository {
 		}
 
 		$settings['elementor_sync_enabled'] = $this->sanitizeBooleanSetting( $settings['elementor_sync_enabled'] );
+		$settings['telemetry_enabled']      = $this->sanitizeBooleanSetting( $settings['telemetry_enabled'] );
+
+		if ( $settings['telemetry_enabled'] ) {
+			$settings['telemetry_site_id'] = '' !== $current['telemetry_site_id']
+				? $current['telemetry_site_id']
+				: $this->generateTelemetrySiteId();
+		} else {
+			$settings['telemetry_site_id'] = '';
+		}
 
 		if ( array_key_exists( 'client_secret', $values ) ) {
 			$client_secret = sanitize_text_field( (string) $values['client_secret'] );
@@ -234,6 +244,7 @@ final class SettingsRepository {
 			'sync_interval'          => $settings['sync_interval'],
 			'connection_mode'        => $settings['connection_mode'],
 			'elementor_sync_enabled' => $settings['elementor_sync_enabled'],
+			'telemetry_enabled'      => $settings['telemetry_enabled'],
 			'has_client_id'          => '' !== $settings['client_id'],
 			'has_client_secret'      => '' !== $settings['encrypted_client_secret'],
 			'has_required_settings'  => '' !== $settings['client_id'] && '' !== $settings['encrypted_client_secret'],
@@ -269,6 +280,24 @@ final class SettingsRepository {
 		$settings = $this->get();
 
 		return (bool) ( $settings['elementor_sync_enabled'] ?? false );
+	}
+
+	/**
+	 * Whether anonymous telemetry is enabled.
+	 */
+	public function isTelemetryEnabled(): bool {
+		$settings = $this->get();
+
+		return (bool) ( $settings['telemetry_enabled'] ?? false );
+	}
+
+	/**
+	 * Get the private telemetry install identifier.
+	 */
+	public function getTelemetrySiteId(): string {
+		$settings = $this->get();
+
+		return is_string( $settings['telemetry_site_id'] ) ? $settings['telemetry_site_id'] : '';
 	}
 
 	/**
@@ -374,6 +403,8 @@ final class SettingsRepository {
 			'sync_interval'           => self::DEFAULT_SYNC_INTERVAL,
 			'connection_mode'         => self::DEFAULT_CONNECTION_MODE,
 			'elementor_sync_enabled'  => self::DEFAULT_ELEMENTOR_SYNC,
+			'telemetry_enabled'       => self::DEFAULT_TELEMETRY,
+			'telemetry_site_id'       => '',
 		);
 	}
 
@@ -401,6 +432,7 @@ final class SettingsRepository {
 			'sync_interval',
 			'connection_mode',
 			'elementor_sync_enabled',
+			'telemetry_enabled',
 		);
 	}
 
@@ -420,8 +452,17 @@ final class SettingsRepository {
 		$settings['sync_interval']           = sanitize_key( (string) $settings['sync_interval'] );
 		$settings['connection_mode']         = sanitize_key( (string) $settings['connection_mode'] );
 		$settings['elementor_sync_enabled']  = $this->sanitizeBooleanSetting( $settings['elementor_sync_enabled'] ?? self::DEFAULT_ELEMENTOR_SYNC );
+		$settings['telemetry_enabled']       = $this->sanitizeBooleanSetting( $settings['telemetry_enabled'] ?? self::DEFAULT_TELEMETRY );
+		$settings['telemetry_site_id']       = sanitize_text_field( (string) ( $settings['telemetry_site_id'] ?? '' ) );
 
 		return $settings;
+	}
+
+	/**
+	 * Generate a private install identifier for telemetry hashing.
+	 */
+	private function generateTelemetrySiteId(): string {
+		return wp_generate_uuid4();
 	}
 
 	/**

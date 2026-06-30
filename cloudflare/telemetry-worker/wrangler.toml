@@ -1,0 +1,11 @@
+name = "brasth-document-sync-telemetry"
+main = "src/index.js"
+compatibility_date = "2026-06-30"
+
+[triggers]
+crons = ["17 3 * * *"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "brasth-document-sync-telemetry"
+database_id = "replace-with-production-d1-database-id"

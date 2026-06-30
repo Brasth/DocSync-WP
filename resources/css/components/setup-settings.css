@@ -220,6 +220,20 @@
     margin-top: 14px;
   }
 
+  .docsync-wp-checkbox-stack {
+    display: grid;
+    gap: 4px;
+    margin-top: 14px;
+  }
+
+  .docsync-wp-checkbox-stack .docsync-wp-checkbox-row {
+    margin-top: 0;
+  }
+
+  .docsync-wp-checkbox-stack .docsync-wp-field-help {
+    max-width: 460px;
+  }
+
   @media (max-width: 720px) {
     .docsync-wp-settings-grid {
       grid-template-columns: 1fr;

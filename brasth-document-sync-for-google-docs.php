@@ -133,6 +133,8 @@ When a user connects Google, Brasth Document Sync sends OAuth authorization and 
 
 Imported Google Docs images are stored in the WordPress Media Library. Synced posts, pages, imported media, and linked post metadata remain on the site until a user with sufficient permission changes or deletes them. Uninstall removes plugin settings, encrypted user Google tokens, and scheduled cron events. Linked post metadata is retained by default unless full Brasth Document Sync uninstall cleanup is enabled. Synced posts and imported media are not deleted automatically.
 
+Optional anonymous Brasth telemetry is off by default. When a site administrator enables usage diagnostics, Brasth Document Sync sends one weekly check-in to https://telemetry.brasth.com/v1/check-in with an anonymous site hash generated from a random install ID, plugin slug, plugin version, WordPress version, PHP version, and telemetry consent version. It does not send Google data, site URL, user email, post data, document IDs, document metadata, document content, or imported media. Brasth telemetry stores only those check-in fields, does not store IP addresses, user agents, request URLs, or request headers, and deletes rows that have not checked in for more than 90 days. Privacy Policy: https://docsyncwp.com/privacy-policy.
+
 Google provides the OAuth, Drive, and Docs services used by this plugin. Google Privacy Policy: https://policies.google.com/privacy. Google API Services User Data Policy: https://developers.google.com/terms/api-services-user-data-policy. Google APIs Terms of Service: https://developers.google.com/terms.',
 				'brasth-document-sync-for-google-docs'
 			)
@@ -191,6 +193,12 @@ function docsync_wp_deactivate(): void {
 	} else {
 		wp_clear_scheduled_hook( 'docsync_wp_sync_sources' );
 		wp_clear_scheduled_hook( 'docsync_wp_sync_source' );
+	}
+
+	if ( class_exists( DocSyncWP\Telemetry\TelemetryCron::class ) ) {
+		DocSyncWP\Telemetry\TelemetryCron::unschedule();
+	} else {
+		wp_clear_scheduled_hook( 'docsync_wp_telemetry_checkin' );
 	}
 }
 register_deactivation_hook( __FILE__, 'docsync_wp_deactivate' );

@@ -21,6 +21,7 @@
     "lint": "phpcs",
     "lint:fix": "phpcbf",
     "test:layout-fixtures": "php scripts/verify-layout-fixtures.php",
+    "test:telemetry-settings": "php scripts/verify-telemetry-settings.php",
     "autoload": "composer dump-autoload -o"
   },
   "config": {

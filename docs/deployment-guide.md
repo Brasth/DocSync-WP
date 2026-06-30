@@ -1,6 +1,6 @@
 # DocSync-WP Deployment and Release Guide
 
-Last updated: 2026-06-23
+Last updated: 2026-06-30
 
 This guide describes how to release DocSync-WP on WordPress.org and GitHub. It supports the release cadence defined in `docs/project-roadmap.md`:
 
@@ -39,6 +39,7 @@ Before tagging a release, verify all of the following:
 - [ ] readme.txt validator passes.
 - [ ] PHP compatibility check passes for declared minimum version (8.1) and current supported versions.
 - [ ] No secrets, credentials, or API keys in the diff.
+- [ ] If optional telemetry ships, `https://docsyncwp.com/privacy-policy` exists and matches `readme.txt` disclosure.
 - [ ] Uninstall behavior is unchanged unless explicitly intended.
 - [ ] No untracked files will be included in the ZIP unless intended.
 
@@ -119,6 +120,23 @@ The following automation should be in place to sustain the cadence:
 - **GitHub Actions workflow** that builds the release ZIP and attaches it to the GitHub Release.
 - **CI checks** for JS lint, TypeScript, PHP lint, PHPCS, Plugin Check, and readme.txt validation.
 - **SVN tagging script** to reduce manual upload errors.
+
+## Optional Telemetry Worker
+
+The optional anonymous active-install telemetry service is a separate Cloudflare Worker package under `cloudflare/telemetry-worker/`. It is not part of the installable WordPress plugin ZIP.
+
+Deployment checklist:
+
+- Create a Cloudflare D1 database for telemetry.
+- Update `cloudflare/telemetry-worker/wrangler.toml` with the production D1 database ID.
+- Apply D1 migrations from `cloudflare/telemetry-worker/migrations/`.
+- Set `ADMIN_TOKEN` as a Worker secret; do not commit it.
+- Deploy the Worker at `https://telemetry.brasth.com`.
+- Confirm `GET /health` returns `{ "ok": true }`.
+- Confirm `GET /v1/summary?window=30d` requires `Authorization: Bearer <ADMIN_TOKEN>`.
+- Confirm the daily scheduled Worker cleanup deletes rows older than 90 days.
+
+Before publishing a WordPress.org release that includes telemetry, verify the privacy policy at `https://docsyncwp.com/privacy-policy` describes the telemetry endpoint, opt-in/default-off behavior, payload, non-storage of IP/user-agent/request headers, and 90-day retention.
 
 ## Related Documents
 

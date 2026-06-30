@@ -10,6 +10,7 @@ export type SettingsResponse = {
   syncInterval: string;
   connectionMode: string;
   elementorSyncEnabled: boolean;
+  telemetryEnabled: boolean;
   hasClientId: boolean;
   hasClientSecret: boolean;
   hasRequiredSettings: boolean;

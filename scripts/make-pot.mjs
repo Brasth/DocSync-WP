@@ -128,6 +128,12 @@ const body = [...entries.entries()]
 	]);
 
 mkdirSync(dirname(outputFile), { recursive: true });
-writeFileSync(outputFile, `${header.concat(body).join('\n')}\n`);
+
+const outputLines = header.concat(body);
+while (outputLines.at(-1) === '') {
+	outputLines.pop();
+}
+
+writeFileSync(outputFile, `${outputLines.join('\n')}\n`);
 
 console.log(`Extracted ${entries.size} strings to ${outputFile}.`);

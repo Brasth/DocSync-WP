@@ -21,11 +21,13 @@ export const GoogleSetupSyncDefaultsPanel = ({
   const [syncInterval, setSyncInterval] = useState(settings.syncInterval);
   const [defaultLayoutPreset, setDefaultLayoutPreset] = useState(settings.defaultLayoutPreset);
   const [elementorSyncEnabled, setElementorSyncEnabled] = useState(settings.elementorSyncEnabled);
+  const [telemetryEnabled, setTelemetryEnabled] = useState(settings.telemetryEnabled);
 
   const hasChanges =
     syncInterval !== settings.syncInterval ||
     defaultLayoutPreset !== settings.defaultLayoutPreset ||
     elementorSyncEnabled !== settings.elementorSyncEnabled ||
+    telemetryEnabled !== settings.telemetryEnabled ||
     !samePostTypes(enabledPostTypes, settings.enabledPostTypes);
   const stepState = hasChanges ? 'needs-action' : 'ready';
 
@@ -34,6 +36,7 @@ export const GoogleSetupSyncDefaultsPanel = ({
     setSyncInterval(settings.syncInterval);
     setDefaultLayoutPreset(settings.defaultLayoutPreset);
     setElementorSyncEnabled(settings.elementorSyncEnabled);
+    setTelemetryEnabled(settings.telemetryEnabled);
   }, [settings]);
 
   const togglePostType = (postType: string) => {
@@ -55,7 +58,8 @@ export const GoogleSetupSyncDefaultsPanel = ({
       enabledPostTypes,
       syncInterval,
       defaultLayoutPreset,
-      elementorSyncEnabled
+      elementorSyncEnabled,
+      telemetryEnabled
     });
   };
 
@@ -70,10 +74,12 @@ export const GoogleSetupSyncDefaultsPanel = ({
         initialOpen={hasChanges}
         onDefaultLayoutPresetChange={setDefaultLayoutPreset}
         onElementorSyncChange={setElementorSyncEnabled}
+        onTelemetryChange={setTelemetryEnabled}
         onSyncIntervalChange={setSyncInterval}
         onTogglePostType={togglePostType}
         stepState={stepState}
         syncInterval={syncInterval}
+        telemetryEnabled={telemetryEnabled}
       />
       {hasChanges ? (
         <div className="docsync-wp-setup-secondary-actions">

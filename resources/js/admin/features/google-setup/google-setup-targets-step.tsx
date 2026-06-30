@@ -12,9 +12,11 @@ type Props = {
   enabledPostTypes: string[];
   initialOpen: boolean;
   syncInterval: string;
+  telemetryEnabled: boolean;
   stepState: SetupStepState;
   onDefaultLayoutPresetChange: (presetId: string) => void;
   onElementorSyncChange: (enabled: boolean) => void;
+  onTelemetryChange: (enabled: boolean) => void;
   onTogglePostType: (postType: string) => void;
   onSyncIntervalChange: (syncInterval: string) => void;
 };
@@ -27,9 +29,11 @@ export const GoogleSetupTargetsStep = ({
   enabledPostTypes,
   initialOpen,
   syncInterval,
+  telemetryEnabled,
   stepState,
   onDefaultLayoutPresetChange,
   onElementorSyncChange,
+  onTelemetryChange,
   onTogglePostType,
   onSyncIntervalChange
 }: Props): JSX.Element => {
@@ -94,6 +98,20 @@ export const GoogleSetupTargetsStep = ({
           />
           <span>{__('Enable Elementor sync support when Elementor is active', 'brasth-document-sync-for-google-docs')}</span>
         </label>
+
+        <div className="docsync-wp-checkbox-stack">
+          <label className="docsync-wp-checkbox-row">
+            <input
+              checked={telemetryEnabled}
+              onChange={(event) => onTelemetryChange(event.currentTarget.checked)}
+              type="checkbox"
+            />
+            <span>{__('Share anonymous usage diagnostics with Brasth', 'brasth-document-sync-for-google-docs')}</span>
+          </label>
+          <small className="docsync-wp-field-help">
+            {__('Sends one weekly anonymous install check-in with plugin, WordPress, and PHP versions only. No Google data, content, user data, document IDs, or site URL.', 'brasth-document-sync-for-google-docs')}
+          </small>
+        </div>
       </div>
     </details>
   );
