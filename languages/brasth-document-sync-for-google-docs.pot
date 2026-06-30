@@ -3,7 +3,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Brasth Document Sync for Google Docs 1.1.0\n"
-"POT-Creation-Date: 2026-06-30T14:25:39+0000\n"
+"POT-Creation-Date: 2026-06-30T15:41:46+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -344,7 +344,7 @@ msgstr ""
 msgid "Brasth Document Sync document inspection requires a JSON object."
 msgstr ""
 
-#: src/Settings/SettingsRepository.php:499
+#: src/Settings/SettingsRepository.php:504
 msgid "Brasth Document Sync enabled post types must be an array."
 msgstr ""
 
@@ -372,27 +372,27 @@ msgstr ""
 msgid "Brasth Document Sync received an invalid boolean field."
 msgstr ""
 
-#: src/Settings/SettingsRepository.php:514
+#: src/Settings/SettingsRepository.php:519
 msgid "Brasth Document Sync received an invalid post type."
 msgstr ""
 
-#: src/Settings/SettingsRepository.php:160
+#: src/Settings/SettingsRepository.php:161
 msgid "Brasth Document Sync received an unsupported default post status."
 msgstr ""
 
-#: src/Settings/SettingsRepository.php:192
+#: src/Settings/SettingsRepository.php:193
 msgid "Brasth Document Sync received an unsupported default synced layout."
 msgstr ""
 
-#: src/Rest/SourceController.php:894 src/Settings/SettingsRepository.php:168
+#: src/Rest/SourceController.php:894 src/Settings/SettingsRepository.php:169
 msgid "Brasth Document Sync received an unsupported export format."
 msgstr ""
 
-#: src/Settings/SettingsRepository.php:184
+#: src/Settings/SettingsRepository.php:185
 msgid "Brasth Document Sync received an unsupported Google connection mode."
 msgstr ""
 
-#: src/Settings/SettingsRepository.php:152
+#: src/Settings/SettingsRepository.php:153
 msgid "Brasth Document Sync received an unsupported Google scope mode."
 msgstr ""
 
@@ -416,7 +416,7 @@ msgstr ""
 msgid "Brasth Document Sync received an unsupported sync mode."
 msgstr ""
 
-#: src/Settings/SettingsRepository.php:176
+#: src/Settings/SettingsRepository.php:177
 msgid "Brasth Document Sync received an unsupported sync schedule."
 msgstr ""
 
@@ -428,7 +428,7 @@ msgstr ""
 msgid "Brasth Document Sync received unknown document inspection fields."
 msgstr ""
 
-#: src/Rest/SettingsController.php:133 src/Settings/SettingsRepository.php:123
+#: src/Rest/SettingsController.php:134 src/Settings/SettingsRepository.php:124
 msgid "Brasth Document Sync received unknown settings."
 msgstr ""
 
@@ -689,7 +689,7 @@ msgstr ""
 msgid "Could not load Brasth Document Sync sources."
 msgstr ""
 
-#: resources/js/admin/app/admin-app.tsx:20 resources/js/admin/app/setup-app.tsx:16
+#: resources/js/admin/app/admin-app.tsx:20 resources/js/admin/app/setup-app.tsx:17
 msgid "Could not load Brasth Document Sync."
 msgstr ""
 
@@ -901,7 +901,7 @@ msgstr ""
 msgid "Google account disconnected."
 msgstr ""
 
-#: resources/js/admin/app/admin-app.tsx:32 resources/js/admin/app/setup-app.tsx:27
+#: resources/js/admin/app/admin-app.tsx:32 resources/js/admin/app/setup-app.tsx:29
 msgid "Google connection"
 msgstr ""
 
@@ -1037,8 +1037,12 @@ msgstr ""
 msgid "Google says this Doc cannot be downloaded. Check the Doc owner, sharing, and download permissions."
 msgstr ""
 
-#: resources/js/admin/app/admin-app.tsx:41 resources/js/admin/app/setup-app.tsx:31
+#: resources/js/admin/app/admin-app.tsx:41 resources/js/admin/app/setup-app.tsx:33
 msgid "Google Setup"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/telemetry-consent-panel.tsx:22
+msgid "Help improve Brasth Document Sync"
 msgstr ""
 
 #: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:75
@@ -1177,7 +1181,7 @@ msgstr ""
 msgid "Loading more..."
 msgstr ""
 
-#: resources/js/admin/app/admin-app.tsx:54 resources/js/admin/app/setup-app.tsx:38
+#: resources/js/admin/app/admin-app.tsx:54 resources/js/admin/app/setup-app.tsx:40
 msgid "Loading settings..."
 msgstr ""
 
@@ -1326,6 +1330,10 @@ msgstr ""
 msgid "No sync events recorded yet."
 msgstr ""
 
+#: resources/js/admin/features/google-setup/telemetry-consent-panel.tsx:31
+msgid "No thanks"
+msgstr ""
+
 #: resources/js/admin/features/sync-logs/sync-log-summary-strip.tsx:12
 msgid "None"
 msgstr ""
@@ -1462,6 +1470,10 @@ msgstr ""
 msgid "Previous"
 msgstr ""
 
+#: resources/js/admin/features/google-setup/telemetry-consent-panel.tsx:34
+msgid "Privacy policy"
+msgstr ""
+
 #: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:151
 msgid "Progress: %d%%"
 msgstr ""
@@ -1478,7 +1490,7 @@ msgstr ""
 msgid "Queued sync for %d source(s). Run sync all again for more."
 msgstr ""
 
-#: resources/js/admin/app/admin-app.tsx:33 resources/js/admin/app/setup-app.tsx:28 resources/js/admin/features/google-setup/setup-step-state.tsx:13
+#: resources/js/admin/app/admin-app.tsx:33 resources/js/admin/app/setup-app.tsx:30 resources/js/admin/features/google-setup/setup-step-state.tsx:13
 msgid "Ready"
 msgstr ""
 
@@ -1638,7 +1650,7 @@ msgstr ""
 msgid "Settings saved."
 msgstr ""
 
-#: resources/js/admin/app/admin-app.tsx:33 resources/js/admin/app/setup-app.tsx:28 src/Admin/AdminPage.php:65
+#: resources/js/admin/app/admin-app.tsx:33 resources/js/admin/app/setup-app.tsx:30 src/Admin/AdminPage.php:65
 msgid "Setup"
 msgstr ""
 
@@ -1662,8 +1674,16 @@ msgstr ""
 msgid "Setup still needs attention."
 msgstr ""
 
+#: resources/js/admin/features/google-setup/telemetry-consent-panel.tsx:28
+msgid "Share anonymous diagnostics"
+msgstr ""
+
 #: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:109
 msgid "Share anonymous usage diagnostics with Brasth"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/telemetry-consent-panel.tsx:24
+msgid "Share one anonymous weekly check-in so we can understand active installs and version compatibility. No Google data, site URL, user email, document IDs, or content is sent."
 msgstr ""
 
 #: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:59
@@ -1848,7 +1868,7 @@ msgid "Test setup"
 msgstr ""
 
 #. translators: %s: post type name.
-#: src/Settings/SettingsRepository.php:542
+#: src/Settings/SettingsRepository.php:547
 msgid "The \"%s\" post type cannot be used for Brasth Document Sync."
 msgstr ""
 

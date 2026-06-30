@@ -123,6 +123,7 @@ final class SettingsController {
 			'connectionMode',
 			'elementorSyncEnabled',
 			'telemetryEnabled',
+			'telemetryPromptDismissed',
 		);
 
 		$unknown_keys = array_diff( array_keys( $params ), $allowed_keys );
@@ -181,6 +182,10 @@ final class SettingsController {
 			$mapped['telemetry_enabled'] = $params['telemetryEnabled'];
 		}
 
+		if ( array_key_exists( 'telemetryPromptDismissed', $params ) ) {
+			$mapped['telemetry_prompt_dismissed'] = $params['telemetryPromptDismissed'];
+		}
+
 		return $mapped;
 	}
 
@@ -193,21 +198,22 @@ final class SettingsController {
 		$settings = $this->settings->getPublicSettings();
 
 		return array(
-			'clientId'               => $settings['client_id'],
-			'scopeMode'              => $settings['scope_mode'],
-			'enabledPostTypes'       => $settings['enabled_post_types'],
-			'defaultPostStatus'      => $settings['default_post_status'],
-			'defaultExportFormat'    => $settings['default_export_format'],
-			'defaultLayoutPreset'    => $settings['default_layout_preset'],
-			'syncInterval'           => $settings['sync_interval'],
-			'connectionMode'         => $settings['connection_mode'],
-			'elementorSyncEnabled'   => $settings['elementor_sync_enabled'],
-			'telemetryEnabled'       => $settings['telemetry_enabled'],
-			'hasClientId'            => $settings['has_client_id'],
-			'hasClientSecret'        => $settings['has_client_secret'],
-			'hasRequiredSettings'    => $settings['has_required_settings'],
-			'availablePostTypes'     => $this->settings->getAvailablePostTypes(),
-			'availableLayoutPresets' => $this->settings->getAvailableLayoutPresets(),
+			'clientId'                 => $settings['client_id'],
+			'scopeMode'                => $settings['scope_mode'],
+			'enabledPostTypes'         => $settings['enabled_post_types'],
+			'defaultPostStatus'        => $settings['default_post_status'],
+			'defaultExportFormat'      => $settings['default_export_format'],
+			'defaultLayoutPreset'      => $settings['default_layout_preset'],
+			'syncInterval'             => $settings['sync_interval'],
+			'connectionMode'           => $settings['connection_mode'],
+			'elementorSyncEnabled'     => $settings['elementor_sync_enabled'],
+			'telemetryEnabled'         => $settings['telemetry_enabled'],
+			'telemetryPromptDismissed' => $settings['telemetry_prompt_dismissed'],
+			'hasClientId'              => $settings['has_client_id'],
+			'hasClientSecret'          => $settings['has_client_secret'],
+			'hasRequiredSettings'      => $settings['has_required_settings'],
+			'availablePostTypes'       => $this->settings->getAvailablePostTypes(),
+			'availableLayoutPresets'   => $this->settings->getAvailableLayoutPresets(),
 		);
 	}
 }

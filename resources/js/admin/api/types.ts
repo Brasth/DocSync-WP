@@ -11,6 +11,7 @@ export type SettingsResponse = {
   connectionMode: string;
   elementorSyncEnabled: boolean;
   telemetryEnabled: boolean;
+  telemetryPromptDismissed: boolean;
   hasClientId: boolean;
   hasClientSecret: boolean;
   hasRequiredSettings: boolean;

@@ -134,8 +134,8 @@ REST namespace: `brasth-document-sync-for-google-docs/v1`
 
 Implemented routes:
 
-- `GET /settings`, including `defaultLayoutPreset`, `availableLayoutPresets`, and `telemetryEnabled`
-- `POST /settings`, including `defaultLayoutPreset` and optional `telemetryEnabled`
+- `GET /settings`, including `defaultLayoutPreset`, `availableLayoutPresets`, `telemetryEnabled`, and `telemetryPromptDismissed`
+- `POST /settings`, including `defaultLayoutPreset`, optional `telemetryEnabled`, and optional `telemetryPromptDismissed`
 - `GET /oauth/google/url`
 - `GET /oauth/google/account`
 - `DELETE /oauth/google/account`
@@ -261,7 +261,7 @@ Skip behavior:
 
 ## Optional Telemetry
 
-Telemetry is opt-in and default off. The Setup sync defaults panel exposes `telemetryEnabled` through the same settings route as other site defaults. `SettingsRepository` generates `telemetry_site_id` only after opt-in and clears it on opt-out; REST and admin config never expose the raw ID.
+Telemetry is opt-in and default off. Setup shows a compact inline consent panel until the site administrator opts in or dismisses it; the Sync defaults panel keeps the permanent `telemetryEnabled` checkbox. Both use the same settings route, and `telemetryPromptDismissed` stores only the local prompt state. `SettingsRepository` generates `telemetry_site_id` only after opt-in and clears it on opt-out; REST and admin config never expose the raw ID.
 
 `TelemetryService` sends a weekly POST to `https://telemetry.brasth.com/v1/check-in`, filterable through `docsync_wp_telemetry_endpoint` for staging and tests. The payload contains `siteHash` as `sha256(telemetry_site_id)`, plugin slug, plugin version, WordPress version, PHP version, and consent version. It does not include Google data, site URL, user email, post data, Google document IDs, document metadata, document content, or imported media.
 

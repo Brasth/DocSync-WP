@@ -8,4 +8,4 @@ crons = ["17 3 * * *"]
 [[d1_databases]]
 binding = "DB"
 database_name = "brasth-document-sync-telemetry"
-database_id = "replace-with-production-d1-database-id"
+database_id = "2d557ccd-c294-4db6-87a3-36c7c1398f8d"

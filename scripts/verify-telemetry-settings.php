@@ -224,15 +224,32 @@ $GLOBALS['docsync_wp_test_cron']    = array();
 $settings = new SettingsRepository( new EncryptionService() );
 
 assert_same( false, $settings->getPublicSettings()['telemetry_enabled'], 'telemetry defaults off' );
+assert_same( false, $settings->getPublicSettings()['telemetry_prompt_dismissed'], 'telemetry prompt starts visible' );
 assert_same( '', $settings->getTelemetrySiteId(), 'site id is absent before opt-in' );
 
 $unknown = $settings->save( array( 'telemetryEnabled' => true ) );
 assert_true( is_wp_error( $unknown ), 'internal settings reject REST-style telemetry key' );
 assert_same( 'docsync_wp_unknown_settings', $unknown->get_error_code(), 'unknown key error is returned' );
 
-$enabled = $settings->save( array( 'telemetry_enabled' => true ) );
+$unknown_prompt = $settings->save( array( 'telemetryPromptDismissed' => true ) );
+assert_true( is_wp_error( $unknown_prompt ), 'internal settings reject REST-style prompt key' );
+assert_same( 'docsync_wp_unknown_settings', $unknown_prompt->get_error_code(), 'unknown prompt key error is returned' );
+
+$dismissed = $settings->save( array( 'telemetry_prompt_dismissed' => true ) );
+assert_false( is_wp_error( $dismissed ), 'telemetry prompt dismissal saves' );
+assert_same( true, $settings->getPublicSettings()['telemetry_prompt_dismissed'], 'public settings expose prompt dismissal boolean' );
+assert_same( false, $settings->getPublicSettings()['telemetry_enabled'], 'dismissing the prompt does not enable telemetry' );
+assert_same( '', $settings->getTelemetrySiteId(), 'dismissing the prompt does not generate a site id' );
+
+$enabled = $settings->save(
+	array(
+		'telemetry_enabled'          => true,
+		'telemetry_prompt_dismissed' => true,
+	)
+);
 assert_false( is_wp_error( $enabled ), 'telemetry opt-in saves' );
 assert_same( true, $settings->getPublicSettings()['telemetry_enabled'], 'public settings expose opt-in boolean' );
+assert_same( true, $settings->getPublicSettings()['telemetry_prompt_dismissed'], 'prompt remains dismissed after opt-in' );
 assert_false( array_key_exists( 'telemetry_site_id', $settings->getPublicSettings() ), 'public settings never expose site id' );
 assert_same( '00000000-0000-4000-8000-000000000001', $settings->getTelemetrySiteId(), 'site id is generated on opt-in' );
 
@@ -247,6 +264,7 @@ assert_same( 'weekly', wp_get_schedule( TelemetryCron::HOOK ), 'cron schedules w
 $disabled = $settings->save( array( 'telemetry_enabled' => false ) );
 assert_false( is_wp_error( $disabled ), 'telemetry opt-out saves' );
 assert_same( false, $settings->getPublicSettings()['telemetry_enabled'], 'public settings expose disabled state' );
+assert_same( true, $settings->getPublicSettings()['telemetry_prompt_dismissed'], 'prompt stays dismissed after opt-out' );
 assert_same( '', $settings->getTelemetrySiteId(), 'site id is removed on opt-out' );
 
 $cron->syncSchedule();
