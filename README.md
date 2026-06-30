@@ -96,6 +96,7 @@ Brasth Document Sync uses WP-Cron for scheduled sync and manual background sync.
 - Radix UI primitives remain the modal/tab interaction layer. React and React DOM are build-time peer dependencies only; Vite maps their runtime imports and JSX runtime helpers back to `wp.element`.
 - The REST namespace reserved for future features is `brasth-document-sync-for-google-docs/v1`.
 - Google OAuth client secrets and user tokens are encrypted with WordPress salts. Rotating those salts invalidates stored Brasth Document Sync credentials and tokens, so users must reconnect Google accounts afterward.
+- Optional anonymous active-install telemetry is default off. When enabled, it sends one weekly install-level check-in to `https://telemetry.brasth.com/v1/check-in` through `src/Telemetry/`; the Cloudflare Worker lives under `cloudflare/telemetry-worker/` and is excluded from installable plugin ZIPs.
 - Uninstall removes plugin settings, encrypted user Google tokens, and scheduled cron events. Linked post metadata is kept by default; define `DOCSYNC_WP_FULL_UNINSTALL` or return true from `docsync_wp_full_uninstall` to remove linked post meta. Synced posts are never deleted.
 - Inline PHPCS suppression comments are prohibited in plugin source. Use code changes first; if a WordPress standards exception is unavoidable, keep it narrow in `phpcs.xml.dist`.
 

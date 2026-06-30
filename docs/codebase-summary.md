@@ -1,12 +1,12 @@
 # Brasth Document Sync Codebase Summary
 
-Last updated: 2026-06-29
+Last updated: 2026-06-30
 
 ## Snapshot
 
-Brasth Document Sync for Google Docs is a WordPress plugin for one-way Google Docs -> WordPress sync. This checkout includes Google OAuth, document inspection, post/page linking and sync, list-table actions, setup/Sources/Logs admin pages, HTML ZIP media import, Gutenberg block conversion, diagnostic sync events, WP-Cron scheduling, and first-pass WordPress.org release packaging.
+Brasth Document Sync for Google Docs is a WordPress plugin for one-way Google Docs -> WordPress sync. This checkout includes Google OAuth, document inspection, post/page linking and sync, list-table actions, setup/Sources/Logs admin pages, HTML ZIP media import, Gutenberg block conversion, diagnostic sync events, WP-Cron scheduling, optional anonymous active-install telemetry, and first-pass WordPress.org release packaging.
 
-Summary reflects the current source tree after the Radix plus WordPress-native admin frontend refactor, Drive modal polish, OAuth JSON import, admin UI fixes, Gutenberg sync conversion, layout preset foundation, layout reliability fixture coverage, background sync progress, large-doc fallback, stale sync recovery, bounded sync logging, privacy disclosure, Elementor sync support, and the screen-specific admin asset split.
+Summary reflects the current source tree after the Radix plus WordPress-native admin frontend refactor, Drive modal polish, OAuth JSON import, admin UI fixes, Gutenberg sync conversion, layout preset foundation, layout reliability fixture coverage, background sync progress, large-doc fallback, stale sync recovery, bounded sync logging, privacy disclosure, Elementor sync support, optional telemetry, and the screen-specific admin asset split.
 
 - Total files tracked by `rg --files`: 237
 - Main languages: PHP, TypeScript, CSS
@@ -23,11 +23,12 @@ Summary reflects the current source tree after the Radix plus WordPress-native a
 - `plans/` - implementation plans and phase notes
 - `build/` - Vite output used by WordPress admin screens
 - `assets/` - WordPress.org listing banner and icon assets
+- `cloudflare/telemetry-worker/` - isolated Cloudflare Worker package for optional anonymous active-install telemetry; excluded from installable WordPress ZIPs
 
 ## Primary Runtime Flow
 
 1. WordPress loads `brasth-document-sync-for-google-docs.php`.
-2. `DocSyncWP\Plugin::boot()` wires settings, OAuth, Drive client, source repository, sync service, cron, REST, and admin UI.
+2. `DocSyncWP\Plugin::boot()` wires settings, OAuth, Drive client, source repository, sync service, cron, telemetry, REST, and admin UI.
 3. Setup, Sources, and Logs mount through separate React entries under `resources/js/admin/entries/`.
 4. Post/page edit and list-table screens mount through `resources/js/admin/entries/post-sync-entry.tsx`, with source modal and Drive browser assets loaded lazily.
 5. REST controllers handle settings, OAuth, My Drive/shared drive folder browsing, document inspection, source management, sync logs, and sync triggers.
@@ -53,6 +54,8 @@ Summary reflects the current source tree after the Radix plus WordPress-native a
 - `src/Sync/HtmlBlockMarkupSanitizer.php` - strips export-specific markup from block inner HTML.
 - `src/Sync/MediaAssetImporter.php` - uploads and dedupes Media Library images.
 - `src/Cron/SyncCron.php` - scheduled sync registration and batch execution.
+- `src/Telemetry/TelemetryService.php` - optional anonymous weekly check-in payload and endpoint filter.
+- `src/Telemetry/TelemetryCron.php` - opt-in weekly telemetry schedule and cleanup hook.
 - `src/Rest/*Controller.php` - admin REST surface.
 - `src/Rest/RestPermissions.php` - shared REST login, nonce, and settings permission checks.
 
@@ -81,7 +84,7 @@ Summary reflects the current source tree after the Radix plus WordPress-native a
 
 - `pnpm` and installed Node dependencies are available in this checkout environment.
 - Composer, PHPCS, PHP syntax linting, pnpm, and Node dependencies are available in this checkout environment.
-- Current local validation uses `composer validate --no-check-publish`, `composer lint`, `vendor/bin/phpcs -i`, `pnpm lint`, `pnpm typecheck`, and `pnpm build`.
+- Current local validation uses `composer validate --no-check-publish`, `composer lint`, `vendor/bin/phpcs -i`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, and the telemetry Worker package tests.
 
 ## Upcoming Work
 
@@ -102,7 +105,7 @@ Later releases add bulk Drive folder import, a Pro tier with a custom preset bui
 - The repo uses `brasth-document-sync-for-google-docs` as the plugin slug and text domain.
 - REST namespace: `brasth-document-sync-for-google-docs/v1`.
 - Google tokens and the OAuth client secret are encrypted with WordPress salts.
-- WordPress privacy policy suggested text discloses Google OAuth, Drive API, Docs API, stored credentials/tokens, linked metadata, imported media, and uninstall retention.
-- Release packaging includes `resources/`, `package.json`, `pnpm-lock.yaml`, `vite.config.ts`, `composer.json`, `build/`, and WordPress.org `readme.txt` so reviewers can inspect human-readable source for built assets. Installable ZIP files exclude `assets/`; listing assets stay in the repository for WordPress.org SVN root upload. The release metadata currently targets `1.1.1`.
+- WordPress privacy policy suggested text discloses Google OAuth, Drive API, Docs API, stored credentials/tokens, linked metadata, imported media, optional Brasth telemetry, and uninstall retention.
+- Release packaging includes `resources/`, `package.json`, `pnpm-lock.yaml`, `vite.config.ts`, `composer.json`, `build/`, and WordPress.org `readme.txt` so reviewers can inspect human-readable source for built assets. Installable ZIP files exclude `assets/` and `cloudflare/`; listing assets stay in the repository for WordPress.org SVN root upload. The release metadata currently targets `1.1.1`.
 - The admin app depends on WordPress packages for REST, i18n, a11y, URL helpers, components, and element runtime; Radix Dialog/Tabs remain the complex interaction primitives.
 - Frontend lint blocks inline PHPCS suppression comments in plugin source.

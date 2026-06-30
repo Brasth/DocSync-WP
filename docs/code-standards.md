@@ -1,6 +1,6 @@
 # Code Standards
 
-Last updated: 2026-06-12
+Last updated: 2026-06-30
 
 ## Purpose
 
@@ -41,6 +41,7 @@ Rules:
 - encrypt Google credentials and tokens
 - keep post meta as the source record for sync state
 - store source progress as milestone state in post meta, not as byte-level transfer telemetry
+- keep optional Brasth telemetry limited to anonymous install-level metadata; do not include Google data, site URLs, user data, post data, document IDs, or content
 - avoid adding custom tables unless audit history becomes necessary
 
 ## Frontend Standards

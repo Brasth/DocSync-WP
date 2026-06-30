@@ -5,7 +5,7 @@ import globals from 'globals';
 
 export default [
   {
-    ignores: ['build/**', 'node_modules/**', 'vendor/**']
+    ignores: ['build/**', 'cloudflare/**', 'node_modules/**', 'vendor/**']
   },
   js.configs.recommended,
   {

@@ -1,6 +1,18 @@
 # Project Changelog
 
-Last updated: 2026-06-29
+Last updated: 2026-06-30
+
+## 2026-06-30 - Optional anonymous active-install telemetry
+
+- added default-off `telemetryEnabled` setup setting, private `telemetry_site_id` generation on opt-in, and deletion on opt-out
+- added weekly `docsync_wp_telemetry_checkin` WP-Cron hook, `docsync_wp_telemetry_endpoint` filter, and silent anonymous check-ins with plugin/WP/PHP versions only
+- added isolated Cloudflare Worker and D1 migration for check-ins, protected active-install summary, and 90-day cleanup
+- excluded `cloudflare/` from installable plugin ZIPs through `.distignore`, local packaging validation, and CI artifact validation
+- updated WordPress.org external service disclosure, suggested privacy policy content, architecture docs, deployment notes, and translations
+
+Unresolved:
+
+- WordPress.org release must wait until `https://docsyncwp.com/privacy-policy` is live and matches the telemetry disclosure
 
 ## 2026-06-29 - Admin design system polish
 

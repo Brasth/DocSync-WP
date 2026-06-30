@@ -27,6 +27,12 @@ if ( class_exists( DocSyncWP\Cron\SyncCron::class ) ) {
 	wp_clear_scheduled_hook( 'docsync_wp_sync_source' );
 }
 
+if ( class_exists( DocSyncWP\Telemetry\TelemetryCron::class ) ) {
+	DocSyncWP\Telemetry\TelemetryCron::unschedule();
+} else {
+	wp_clear_scheduled_hook( 'docsync_wp_telemetry_checkin' );
+}
+
 $full_cleanup = defined( 'DOCSYNC_WP_FULL_UNINSTALL' ) && DOCSYNC_WP_FULL_UNINSTALL;
 $full_cleanup = (bool) apply_filters( 'docsync_wp_full_uninstall', $full_cleanup );
 

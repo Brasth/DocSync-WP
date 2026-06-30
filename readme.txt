@@ -51,7 +51,11 @@ Google's terms and privacy documents apply to these services:
 * Google API Services User Data Policy: https://developers.google.com/terms/api-services-user-data-policy
 * Google APIs Terms of Service: https://developers.google.com/terms
 
-Brasth Document Sync does not send Google data to a Brasth Document Sync vendor-hosted service in this release.
+Brasth Document Sync also includes optional anonymous active-install telemetry. This setting is off by default and runs only when a site administrator enables "Share anonymous usage diagnostics with Brasth" in Setup > Sync defaults.
+
+When enabled, the plugin sends one weekly POST request to `https://telemetry.brasth.com/v1/check-in`. This Brasth telemetry service is used to count active opted-in installs and understand version compatibility. The request contains only an anonymous site hash generated from a random install ID, the plugin slug, plugin version, WordPress version, PHP version, and telemetry consent version. It does not contain Google data, site URL, user email, post data, document IDs, document metadata, document content, or imported media.
+
+The telemetry service stores the fields listed above in Cloudflare D1, does not store IP addresses, user agents, request URLs, or request headers, and deletes rows that have not checked in for more than 90 days. Privacy Policy: https://docsyncwp.com/privacy-policy
 
 == Installation ==
 
@@ -100,6 +104,8 @@ Brasth Document Sync encrypts the site OAuth client secret and per-user Google t
 Brasth Document Sync stores site-level Google OAuth client settings, encrypted per-user Google tokens, connected Google account email addresses, linked Google document metadata, source sync status, diagnostic sync events, and imported attachment metadata in the WordPress database.
 
 During document browsing and sync, Brasth Document Sync communicates with Google OAuth, Google Drive API, and Google Docs API as described in the External Services section. Imported Google Docs images are stored in the WordPress Media Library. Synced WordPress posts and imported media remain on the site until a user with sufficient permission changes or deletes them.
+
+Optional anonymous Brasth telemetry is off by default. When enabled by a site administrator, the plugin sends one weekly active-install check-in containing only an anonymous site hash and plugin/WordPress/PHP versions. No Google data, site URL, user email, document IDs, content, or imported media are sent to Brasth telemetry.
 
 Uninstall removes plugin settings, encrypted user Google tokens, and scheduled cron events. Linked post metadata is retained by default; define `DOCSYNC_WP_FULL_UNINSTALL` or return true from the `docsync_wp_full_uninstall` filter to remove Brasth Document Sync post metadata. Synced posts and imported media are not deleted automatically.
 

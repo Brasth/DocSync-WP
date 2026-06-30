@@ -112,5 +112,8 @@ jobs:
       - name: Run TypeScript typecheck
         run: pnpm typecheck
 
+      - name: Run telemetry Worker tests
+        run: pnpm --dir cloudflare/telemetry-worker lint && pnpm --dir cloudflare/telemetry-worker test
+
       - name: Build frontend assets
         run: pnpm build

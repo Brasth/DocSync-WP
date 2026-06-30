@@ -182,6 +182,7 @@ jobs:
             "${PLUGIN_SLUG}/coverage"
             "${PLUGIN_SLUG}/phpcs.xml.dist"
             "${PLUGIN_SLUG}/assets"
+            "${PLUGIN_SLUG}/cloudflare"
           )
 
           for forbidden_path in "${FORBIDDEN_PATHS[@]}"; do

@@ -122,6 +122,7 @@ final class SettingsController {
 			'syncInterval',
 			'connectionMode',
 			'elementorSyncEnabled',
+			'telemetryEnabled',
 		);
 
 		$unknown_keys = array_diff( array_keys( $params ), $allowed_keys );
@@ -176,6 +177,10 @@ final class SettingsController {
 			$mapped['elementor_sync_enabled'] = $params['elementorSyncEnabled'];
 		}
 
+		if ( array_key_exists( 'telemetryEnabled', $params ) ) {
+			$mapped['telemetry_enabled'] = $params['telemetryEnabled'];
+		}
+
 		return $mapped;
 	}
 
@@ -197,6 +202,7 @@ final class SettingsController {
 			'syncInterval'           => $settings['sync_interval'],
 			'connectionMode'         => $settings['connection_mode'],
 			'elementorSyncEnabled'   => $settings['elementor_sync_enabled'],
+			'telemetryEnabled'       => $settings['telemetry_enabled'],
 			'hasClientId'            => $settings['has_client_id'],
 			'hasClientSecret'        => $settings['has_client_secret'],
 			'hasRequiredSettings'    => $settings['has_required_settings'],

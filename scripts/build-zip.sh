@@ -67,6 +67,21 @@ validate_build_manifests() {
   done
 }
 
+validate_forbidden_paths() {
+  local plugin_dir="$1"
+  local forbidden_path
+  local forbidden_paths=(
+    "cloudflare"
+  )
+
+  for forbidden_path in "${forbidden_paths[@]}"; do
+    if [ -e "${plugin_dir}/${forbidden_path}" ]; then
+      echo "Staging failed: installable plugin must not contain ${forbidden_path}." >&2
+      exit 1
+    fi
+  done
+}
+
 # Build assets if missing
 if ! has_build_manifests "${PROJECT_ROOT}/build"; then
   echo "Built assets not found. Running pnpm build..."
@@ -85,6 +100,7 @@ rsync -a "${PROJECT_ROOT}/" "${STAGING_DIR}/${PLUGIN_SLUG}/" --exclude-from="${R
 
 # Validate
 validate_build_manifests "${STAGING_DIR}/${PLUGIN_SLUG}/build" "Staging failed"
+validate_forbidden_paths "${STAGING_DIR}/${PLUGIN_SLUG}"
 
 # Create ZIP
 rm -f "${ZIP_PATH}"

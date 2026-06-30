@@ -2,8 +2,8 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Brasth Document Sync for Google Docs 1.1.1\n"
-"POT-Creation-Date: 2026-06-29T14:44:06+0000\n"
+"Project-Id-Version: Brasth Document Sync for Google Docs 1.1.0\n"
+"POT-Creation-Date: 2026-06-30T14:25:39+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -159,15 +159,15 @@ msgstr ""
 msgid "Best for posts and pages. Keeps headings, media, tables, and lists clean for the block editor."
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-table.tsx:116
+#: resources/js/admin/features/drive-browser/drive-browser-table.tsx:112
 msgid "Blocked"
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:74 resources/js/admin/features/post-sync/list-entry-app.tsx:60 resources/js/admin/features/post-sync/post-list-row-action-sync.ts:42 resources/js/admin/shared/ui/admin-shell.tsx:59 src/Admin/AdminPage.php:53 src/Admin/AdminPage.php:54 src/Admin/PostSyncMetaBox.php:83
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:75 resources/js/admin/features/post-sync/list-entry-app.tsx:60 resources/js/admin/features/post-sync/post-list-row-action-sync.ts:42 resources/js/admin/shared/ui/admin-shell.tsx:59 src/Admin/AdminPage.php:53 src/Admin/AdminPage.php:54 src/Admin/PostSyncMetaBox.php:83
 msgid "Brasth Document Sync"
 msgstr ""
 
-#: brasth-document-sync-for-google-docs.php:161
+#: brasth-document-sync-for-google-docs.php:163
 msgid "Brasth Document Sync activation error"
 msgstr ""
 
@@ -344,7 +344,7 @@ msgstr ""
 msgid "Brasth Document Sync document inspection requires a JSON object."
 msgstr ""
 
-#: src/Settings/SettingsRepository.php:458
+#: src/Settings/SettingsRepository.php:499
 msgid "Brasth Document Sync enabled post types must be an array."
 msgstr ""
 
@@ -357,7 +357,7 @@ msgid "Brasth Document Sync is not enabled for this post type."
 msgstr ""
 
 #: brasth-document-sync-for-google-docs.php:129
-msgid "Brasth Document Sync lets authorized WordPress users connect their own Google account to import Google Docs content into WordPress. The site owner supplies a Google OAuth client ID and client secret. Brasth Document Sync stores those site credentials, per-user Google access and refresh tokens, connected Google account email addresses, linked Google document metadata, source sync status, diagnostic sync events, and imported attachment metadata in the WordPress database.\n\nWhen a user connects Google, Brasth Document Sync sends OAuth authorization and token refresh requests to Google. During browsing and sync, Brasth Document Sync sends connected-user access tokens, Google Drive file IDs, folder IDs, shared-drive IDs, Drive search text, pagination tokens, and document export or read requests to the Google Drive API and Google Docs API. Google can return account email, OAuth tokens, document titles, document metadata, document export content, document structure, and image content URLs used to import media into WordPress.\n\nImported Google Docs images are stored in the WordPress Media Library. Synced posts, pages, imported media, and linked post metadata remain on the site until a user with sufficient permission changes or deletes them. Uninstall removes plugin settings, encrypted user Google tokens, and scheduled cron events. Linked post metadata is retained by default unless full Brasth Document Sync uninstall cleanup is enabled. Synced posts and imported media are not deleted automatically.\n\nGoogle provides the OAuth, Drive, and Docs services used by this plugin. Google Privacy Policy: https://policies.google.com/privacy. Google API Services User Data Policy: https://developers.google.com/terms/api-services-user-data-policy. Google APIs Terms of Service: https://developers.google.com/terms."
+msgid "Brasth Document Sync lets authorized WordPress users connect their own Google account to import Google Docs content into WordPress. The site owner supplies a Google OAuth client ID and client secret. Brasth Document Sync stores those site credentials, per-user Google access and refresh tokens, connected Google account email addresses, linked Google document metadata, source sync status, diagnostic sync events, and imported attachment metadata in the WordPress database.\n\nWhen a user connects Google, Brasth Document Sync sends OAuth authorization and token refresh requests to Google. During browsing and sync, Brasth Document Sync sends connected-user access tokens, Google Drive file IDs, folder IDs, shared-drive IDs, Drive search text, pagination tokens, and document export or read requests to the Google Drive API and Google Docs API. Google can return account email, OAuth tokens, document titles, document metadata, document export content, document structure, and image content URLs used to import media into WordPress.\n\nImported Google Docs images are stored in the WordPress Media Library. Synced posts, pages, imported media, and linked post metadata remain on the site until a user with sufficient permission changes or deletes them. Uninstall removes plugin settings, encrypted user Google tokens, and scheduled cron events. Linked post metadata is retained by default unless full Brasth Document Sync uninstall cleanup is enabled. Synced posts and imported media are not deleted automatically.\n\nOptional anonymous Brasth telemetry is off by default. When a site administrator enables usage diagnostics, Brasth Document Sync sends one weekly check-in to https://telemetry.brasth.com/v1/check-in with an anonymous site hash generated from a random install ID, plugin slug, plugin version, WordPress version, PHP version, and telemetry consent version. It does not send Google data, site URL, user email, post data, document IDs, document metadata, document content, or imported media. Brasth telemetry stores only those check-in fields, does not store IP addresses, user agents, request URLs, or request headers, and deletes rows that have not checked in for more than 90 days. Privacy Policy: https://docsyncwp.com/privacy-policy.\n\nGoogle provides the OAuth, Drive, and Docs services used by this plugin. Google Privacy Policy: https://policies.google.com/privacy. Google API Services User Data Policy: https://developers.google.com/terms/api-services-user-data-policy. Google APIs Terms of Service: https://developers.google.com/terms."
 msgstr ""
 
 #: src/Admin/AdminPage.php:82
@@ -372,27 +372,27 @@ msgstr ""
 msgid "Brasth Document Sync received an invalid boolean field."
 msgstr ""
 
-#: src/Settings/SettingsRepository.php:473
+#: src/Settings/SettingsRepository.php:514
 msgid "Brasth Document Sync received an invalid post type."
 msgstr ""
 
-#: src/Settings/SettingsRepository.php:159
+#: src/Settings/SettingsRepository.php:160
 msgid "Brasth Document Sync received an unsupported default post status."
 msgstr ""
 
-#: src/Settings/SettingsRepository.php:191
+#: src/Settings/SettingsRepository.php:192
 msgid "Brasth Document Sync received an unsupported default synced layout."
 msgstr ""
 
-#: src/Rest/SourceController.php:894 src/Settings/SettingsRepository.php:167
+#: src/Rest/SourceController.php:894 src/Settings/SettingsRepository.php:168
 msgid "Brasth Document Sync received an unsupported export format."
 msgstr ""
 
-#: src/Settings/SettingsRepository.php:183
+#: src/Settings/SettingsRepository.php:184
 msgid "Brasth Document Sync received an unsupported Google connection mode."
 msgstr ""
 
-#: src/Settings/SettingsRepository.php:151
+#: src/Settings/SettingsRepository.php:152
 msgid "Brasth Document Sync received an unsupported Google scope mode."
 msgstr ""
 
@@ -416,7 +416,7 @@ msgstr ""
 msgid "Brasth Document Sync received an unsupported sync mode."
 msgstr ""
 
-#: src/Settings/SettingsRepository.php:175
+#: src/Settings/SettingsRepository.php:176
 msgid "Brasth Document Sync received an unsupported sync schedule."
 msgstr ""
 
@@ -428,7 +428,7 @@ msgstr ""
 msgid "Brasth Document Sync received unknown document inspection fields."
 msgstr ""
 
-#: src/Rest/SettingsController.php:132 src/Settings/SettingsRepository.php:122
+#: src/Rest/SettingsController.php:133 src/Settings/SettingsRepository.php:123
 msgid "Brasth Document Sync received unknown settings."
 msgstr ""
 
@@ -481,7 +481,7 @@ msgstr ""
 msgid "Brasth Document Sync requires PHP %1$s or newer and WordPress %3$s or newer. Current versions are PHP %2$s and WordPress %4$s."
 msgstr ""
 
-#: brasth-document-sync-for-google-docs.php:157
+#: brasth-document-sync-for-google-docs.php:159
 msgid "Brasth Document Sync requires PHP 8.1 or newer and WordPress 6.4 or newer."
 msgstr ""
 
@@ -517,11 +517,15 @@ msgstr ""
 msgid "Browse Google Docs"
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:150 resources/js/admin/shared/ui/confirm-dialog.tsx:25
+#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:28
+msgid "Browse source"
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:157 resources/js/admin/shared/ui/confirm-dialog.tsx:25
 msgid "Cancel"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:131
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:132
 msgid "Change Doc"
 msgstr ""
 
@@ -537,11 +541,15 @@ msgstr ""
 msgid "Checking Google Doc metadata."
 msgstr ""
 
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:152
+msgid "Choose an accessible Google Doc to continue."
+msgstr ""
+
 #: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:112
 msgid "Choose another level or clear filters to view all stored events."
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:27
+#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:29
 msgid "Choose from Google Drive"
 msgstr ""
 
@@ -569,7 +577,7 @@ msgstr ""
 msgid "Clear all logs"
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:66
+#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:69
 msgid "Clear search"
 msgstr ""
 
@@ -589,7 +597,7 @@ msgstr ""
 msgid "Client ID and secret saved."
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:91
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:92
 msgid "Close"
 msgstr ""
 
@@ -733,7 +741,7 @@ msgstr ""
 msgid "Create Google Cloud app"
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:166 resources/js/admin/features/google-setup/account-panel.tsx:52 resources/js/admin/features/google-setup/google-setup-first-sync-step.tsx:56 resources/js/admin/features/google-setup/google-setup-task-state.ts:101 resources/js/admin/features/sources/sources-table.tsx:228
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:173 resources/js/admin/features/google-setup/account-panel.tsx:52 resources/js/admin/features/google-setup/google-setup-first-sync-step.tsx:56 resources/js/admin/features/google-setup/google-setup-task-state.ts:101 resources/js/admin/features/sources/sources-table.tsx:228
 msgid "Create synced draft"
 msgstr ""
 
@@ -749,15 +757,15 @@ msgstr ""
 msgid "Cron event"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:73
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:77
 msgid "Daily"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:78
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:82
 msgid "Default synced layout"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:134
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:135
 msgid "Detach"
 msgstr ""
 
@@ -825,7 +833,7 @@ msgstr ""
 msgid "Enable Drive API"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:95
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:99
 msgid "Enable Elementor sync support when Elementor is active"
 msgstr ""
 
@@ -833,7 +841,7 @@ msgstr ""
 msgid "Enable Google Docs API in the same Google Cloud project, then retry sync."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:52
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:56
 msgid "Enabled post types"
 msgstr ""
 
@@ -897,7 +905,7 @@ msgstr ""
 msgid "Google connection"
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:100
+#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:103
 msgid "Google could not search every Drive item. Narrow the search if the Doc is missing."
 msgstr ""
 
@@ -969,7 +977,7 @@ msgstr ""
 msgid "Google Docs API is temporarily unavailable. Try again shortly."
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:79
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:80
 msgid "Google Docs is source of truth. Sync overwrites WordPress content."
 msgstr ""
 
@@ -1033,7 +1041,7 @@ msgstr ""
 msgid "Google Setup"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:71
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:75
 msgid "Hourly"
 msgstr ""
 
@@ -1073,8 +1081,12 @@ msgstr ""
 msgid "Info"
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:158
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:165
 msgid "Inspect"
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:153
+msgid "Inspect a Google Doc before linking it."
 msgstr ""
 
 #: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:74
@@ -1101,7 +1113,7 @@ msgstr ""
 msgid "Last sync"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:126
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:127
 msgid "Last sync:"
 msgstr ""
 
@@ -1121,11 +1133,11 @@ msgstr ""
 msgid "Level"
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:76 resources/js/admin/features/post-sync/post-meta-box-app.tsx:131 src/Admin/PostListActions.php:81
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:77 resources/js/admin/features/post-sync/post-meta-box-app.tsx:132 src/Admin/PostListActions.php:81
 msgid "Link Google Doc"
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:166
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:173
 msgid "Link source"
 msgstr ""
 
@@ -1153,7 +1165,7 @@ msgstr ""
 msgid "Loading Drive items..."
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:107
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:108
 msgid "Loading Google Drive browser..."
 msgstr ""
 
@@ -1161,7 +1173,7 @@ msgstr ""
 msgid "Loading linked sources"
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-table.tsx:133
+#: resources/js/admin/features/drive-browser/drive-browser-table.tsx:136
 msgid "Loading more..."
 msgstr ""
 
@@ -1233,7 +1245,7 @@ msgstr ""
 msgid "New"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:85
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:89
 msgid "New synced block editor posts use this layout unless a source chooses a different one. Elementor sync uses Elementor layout."
 msgstr ""
 
@@ -1257,11 +1269,11 @@ msgstr ""
 msgid "No active lock or scheduled cron event was found. Retry sync and check WP-Cron if the source stays syncing."
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:82
+#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:85
 msgid "No Drive items in this folder."
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:81
+#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:84
 msgid "No Drive items match this search."
 msgstr ""
 
@@ -1270,11 +1282,11 @@ msgid "No file selected"
 msgstr ""
 
 #. translators: %s: Google Drive search query.
-#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:76
+#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:79
 msgid "No folders or Google Docs found for \"%s\". Try another search, switch shared drives, or confirm this Google account can open the Doc."
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:79
+#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:82
 msgid "No folders or Google Docs were found here. Try a search, switch shared drives, or confirm this Google account has access."
 msgstr ""
 
@@ -1366,8 +1378,12 @@ msgstr ""
 msgid "OAuth JSON is missing web.client_secret."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:70
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:74
 msgid "Off"
+msgstr ""
+
+#: src/Telemetry/TelemetryCron.php:68
+msgid "Once weekly"
 msgstr ""
 
 #: resources/js/admin/features/google-setup/google-setup-cloud-steps.tsx:39
@@ -1378,7 +1394,7 @@ msgstr ""
 msgid "Only stored events for source post ID %d will be cleared."
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-table.tsx:92
+#: resources/js/admin/features/drive-browser/drive-browser-table.tsx:94
 msgid "Open folder %s"
 msgstr ""
 
@@ -1438,7 +1454,7 @@ msgstr ""
 msgid "Post type"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:47
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:51
 msgid "Post types, schedule, and Elementor support. These can be adjusted after setup."
 msgstr ""
 
@@ -1522,7 +1538,7 @@ msgstr ""
 msgid "Refresh"
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:70
+#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:73
 msgid "Refresh Drive"
 msgstr ""
 
@@ -1534,7 +1550,7 @@ msgstr ""
 msgid "Reload to see the updated list."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:62
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:66
 msgid "Required"
 msgstr ""
 
@@ -1566,7 +1582,7 @@ msgstr ""
 msgid "Save OAuth credentials"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-sync-defaults-panel.tsx:81
+#: resources/js/admin/features/google-setup/google-setup-sync-defaults-panel.tsx:88
 msgid "Save sync defaults"
 msgstr ""
 
@@ -1582,7 +1598,7 @@ msgstr ""
 msgid "Saved. Enter a new secret to replace."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:68
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:72
 msgid "Scheduled sync"
 msgstr ""
 
@@ -1602,7 +1618,7 @@ msgstr ""
 msgid "Search this folder"
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-table.tsx:93
+#: resources/js/admin/features/drive-browser/drive-browser-table.tsx:95
 msgid "Select Google Doc %s"
 msgstr ""
 
@@ -1610,8 +1626,12 @@ msgstr ""
 msgid "Select or inspect a Google Doc before linking it."
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:131
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:131 resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:133
 msgid "Selected Google Doc"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:112
+msgid "Sends one weekly anonymous install check-in with plugin, WordPress, and PHP versions only. No Google data, content, user data, document IDs, or site URL."
 msgstr ""
 
 #: resources/js/admin/app/use-admin-app.ts:128 resources/js/admin/app/use-setup-app.ts:79
@@ -1642,7 +1662,11 @@ msgstr ""
 msgid "Setup still needs attention."
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:56
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:109
+msgid "Share anonymous usage diagnostics with Brasth"
+msgstr ""
+
+#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:59
 msgid "Shared drives are unavailable: %s"
 msgstr ""
 
@@ -1672,6 +1696,10 @@ msgstr ""
 
 #: resources/js/admin/app/use-admin-app.ts:139 resources/js/admin/app/use-sources-app.ts:80
 msgid "Source %d sync queued."
+msgstr ""
+
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:126
+msgid "Source changes are locked while this sync is running."
 msgstr ""
 
 #: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:142
@@ -1738,7 +1766,7 @@ msgstr ""
 msgid "Sync all changed"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:144
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:145
 msgid "Sync as Elementor layout"
 msgstr ""
 
@@ -1750,7 +1778,7 @@ msgstr ""
 msgid "Sync complete."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:44
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:48
 msgid "Sync defaults"
 msgstr ""
 
@@ -1766,7 +1794,7 @@ msgstr ""
 msgid "Sync failed."
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:133
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:134
 msgid "Sync now"
 msgstr ""
 
@@ -1820,7 +1848,7 @@ msgid "Test setup"
 msgstr ""
 
 #. translators: %s: post type name.
-#: src/Settings/SettingsRepository.php:501
+#: src/Settings/SettingsRepository.php:542
 msgid "The \"%s\" post type cannot be used for Brasth Document Sync."
 msgstr ""
 
@@ -1884,7 +1912,7 @@ msgstr ""
 msgid "Tokens are stored per WordPress user and encrypted with WordPress salts."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:72
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:76
 msgid "Twice daily"
 msgstr ""
 
@@ -1906,6 +1934,10 @@ msgstr ""
 
 #: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:165
 msgid "Unsaved changes are not tested until saved."
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-sync-defaults-panel.tsx:86
+msgid "Unsaved sync defaults"
 msgstr ""
 
 #: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:141

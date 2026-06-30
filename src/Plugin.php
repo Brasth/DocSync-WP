@@ -47,6 +47,8 @@ use DocSyncWP\Sync\MediaAssetImporter;
 use DocSyncWP\Sync\SourceRepository;
 use DocSyncWP\Sync\SyncLock;
 use DocSyncWP\Sync\SyncService;
+use DocSyncWP\Telemetry\TelemetryCron;
+use DocSyncWP\Telemetry\TelemetryService;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -97,6 +99,13 @@ final class Plugin {
 	private SyncCron $sync_cron;
 
 	/**
+	 * Telemetry cron service.
+	 *
+	 * @var TelemetryCron
+	 */
+	private TelemetryCron $telemetry_cron;
+
+	/**
 	 * Token store service.
 	 *
 	 * @var TokenStore
@@ -119,6 +128,7 @@ final class Plugin {
 	 * @param PostSyncMetaBox     $post_sync_meta_box Post sync meta box service.
 	 * @param PostListActions     $post_list_actions Post list table actions service.
 	 * @param SyncCron            $sync_cron         Sync cron service.
+	 * @param TelemetryCron       $telemetry_cron    Telemetry cron service.
 	 * @param TokenStore          $token_store       Token store service.
 	 * @param SourceRepository    $source_repository Source repository service.
 	 */
@@ -129,6 +139,7 @@ final class Plugin {
 		PostSyncMetaBox $post_sync_meta_box,
 		PostListActions $post_list_actions,
 		SyncCron $sync_cron,
+		TelemetryCron $telemetry_cron,
 		TokenStore $token_store,
 		SourceRepository $source_repository
 	) {
@@ -138,6 +149,7 @@ final class Plugin {
 		$this->post_sync_meta_box = $post_sync_meta_box;
 		$this->post_list_actions  = $post_list_actions;
 		$this->sync_cron          = $sync_cron;
+		$this->telemetry_cron     = $telemetry_cron;
 		$this->token_store        = $token_store;
 		$this->source_repository  = $source_repository;
 	}
@@ -151,6 +163,7 @@ final class Plugin {
 		$token_store        = new TokenStore( $encryption );
 		$source_repository  = new SourceRepository( $settings );
 		$google_oauth       = new GoogleOAuthService( $settings, $token_store );
+		$telemetry_service  = new TelemetryService( $settings );
 		$drive_client       = new DriveClient( $google_oauth );
 		$docs_client        = new DocsClient( $google_oauth );
 		$document_id_parser = new DocumentIdParser();
@@ -211,6 +224,7 @@ final class Plugin {
 			new PostSyncMetaBox( $source_repository, $settings, $sync_service->getElementorDecider() ),
 			new PostListActions( $source_repository ),
 			new SyncCron( $settings, $source_repository, $sync_service ),
+			new TelemetryCron( $settings, $telemetry_service ),
 			$token_store,
 			$source_repository
 		);
@@ -235,6 +249,7 @@ final class Plugin {
 		$this->post_sync_meta_box->register();
 		$this->post_list_actions->register();
 		$this->sync_cron->register();
+		$this->telemetry_cron->register();
 		$this->rest->register();
 	}
 }

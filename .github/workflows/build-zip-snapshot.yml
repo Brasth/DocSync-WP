@@ -71,7 +71,7 @@ jobs:
             test -f "${STAGING_DIR}/${PLUGIN_SLUG}/build/${manifest}"
           done
           grep -q "Plugin Name:" "${STAGING_DIR}/${PLUGIN_SLUG}/${PLUGIN_SLUG}.php"
-          FORBIDDEN_PATHS=(assets .claude .agents .codex)
+          FORBIDDEN_PATHS=(assets .claude .agents .codex cloudflare)
           for forbidden_path in "${FORBIDDEN_PATHS[@]}"; do
             if [ -e "${STAGING_DIR}/${PLUGIN_SLUG}/${forbidden_path}" ]; then
               echo "Installable artifact must not contain ${forbidden_path}."
