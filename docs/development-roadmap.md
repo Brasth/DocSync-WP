@@ -57,7 +57,7 @@ The Google Docs Sync Admin Actions implementation is complete in code. The self-
 - layout fingerprints force Gutenberg re-conversion when the effective preset changes even if Google metadata is unchanged
 - post editor background sync completion applies synced content directly when no unsaved edits are present and otherwise offers an explicit apply action
 - terminal sync states no longer show stale 100 percent progress bars after reload
-- WordPress.org `readme.txt`, `LICENSE`, listing assets, source-inclusive distribution rules, and current `1.1.1` release metadata
+- WordPress.org `readme.txt`, `LICENSE`, listing assets, source-inclusive distribution rules, and current `1.1.2` release metadata
 - GitHub Release workflow that builds `brasth-document-sync-for-google-docs-v<version>.zip`, uploads it as an Actions artifact, and attaches it to the release asset list
 - privacy policy suggested content for Google OAuth, Drive API, Docs API, stored credentials/tokens, linked metadata, imported media, retention, and uninstall behavior
 - legacy Google Picker settings and unused Markdown/CommonMark runtime path removed before public release
@@ -81,7 +81,7 @@ The implementation is usable, but a few follow-ups remain open for future iterat
 - add final WordPress.org screenshots before SVN submission if product screenshots are available
 - consider a custom sync-log table if support needs search-heavy or long-retention diagnostics
 - improve block-perfect conversion for complex Google Docs layouts if needed
-- add preview/gallery and per-post preset selector UI in the 1.2.x line
+- add preview/gallery UI in the 1.2.x line
 - add fixtures around Docs API fallback conversion when that fallback path is added to the fixture harness
 - decide whether to add a separate audit log table
 - decide whether to add a managed Google connector service for true nontechnical one-click onboarding

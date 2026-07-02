@@ -82,7 +82,7 @@ Local verification in this checkout is blocked because:
 - Decide whether to add automated PHP and JS tests.
 - Decide whether to add richer sync history beyond last status and last error.
 - Decide whether to add a managed Google connector service for simpler setup.
-- Validate layout preset edge cases from real user documents after the 1.1.1 reliability update.
+- Validate Elementor preset edge cases from real agency documents after the 1.1.2 preset release.
 - Choose the primary target niche (Elementor agencies vs. news publishers) before Phase 2 case studies.
 - Lock the Free/Pro tier boundary before writing Phase 2 feature-gating code.
 - Validate whether to register built-in presets as global block patterns in a later release.

@@ -20,12 +20,11 @@ Each release must pass the existing validation pipeline (`pnpm lint`, `pnpm type
 
 ## Current State
 
-- Version 1.1.0 is published as the layout preset foundation release.
-- Version 1.1.1 is the current reliability patch for layout preset copy, tracked fixtures, and CI verification.
+- Version 1.1.2 is the current Elementor preset release.
 - Core sync engine is stable: Google export, media import, Gutenberg block conversion, Elementor JSON conversion, background sync, and sync logging.
 - The plugin supports one-way sync from Google Docs to WordPress posts, pages, and enabled public custom post types.
 - Setup now uses a task-first Brasth workspace with one primary next action, Sources keeps a tighter table workflow with compact row actions, and Logs presents a searchable Sync Activity workspace with Radix confirmation dialogs, recovery hints, and safe clear actions.
-- The Gutenberg sync path now has a layout preset layer with Clean Article, Documentation, and legacy Plain Blocks; Elementor sync remains on its existing Elementor conversion path.
+- The Gutenberg sync path has Clean Article, Documentation, and legacy Plain Blocks; Elementor sync has separate Elementor Hero Page and Elementor Feature Block presets while legacy Elementor sources without a preset keep the existing converter.
 - Self-managed Google OAuth is the only connection mode. There is no Pro tier, no managed connector, and no custom preset builder.
 
 ## Strategic Themes
@@ -53,9 +52,9 @@ Each release must pass the existing validation pipeline (`pnpm lint`, `pnpm type
 | Version | Target Date | Scope | User-visible value |
 |---|---|---|---|
 | **1.1.0** | Released | Layout preset registry (`LayoutBlueprint`, `LayoutPresetRegistry`, `ContentRoleClassifier`, `LayoutConversionService`), 2 enhanced Gutenberg presets (`Clean Article`, `Documentation`), legacy `Plain Blocks`, site default setting, Setup dropdown, per-source/post selectors, layout fingerprints | Site admin sets a default layout; all synced posts look better |
-| **1.1.1** | Now | Layout preset reliability patch, clearer preset copy, tracked edge-case fixtures, CI fixture verification | Recommended update with more predictable preset output |
-| **1.1.2** | +14 weeks | 2 Elementor presets (`Elementor Hero Page`, `Elementor Feature Block`) | Elementor users get layouts too |
-| **1.1.3** | +16 weeks | Golden test suite for all 4 presets, sync logging for preset usage | QA confidence and usage analytics |
+| **1.1.1** | Released | Layout preset reliability patch, clearer preset copy, tracked edge-case fixtures, CI fixture verification | Recommended update with more predictable preset output |
+| **1.1.2** | Now | 2 Elementor presets (`Elementor Hero Page`, `Elementor Feature Block`) | Elementor users get layouts too |
+| **1.1.3** | +2 weeks | Sync logging for preset usage and follow-up fixture gaps | QA confidence and usage analytics |
 
 ### 1.2.x line — Layout foundation: UI
 
@@ -123,8 +122,8 @@ Each release must pass the existing validation pipeline (`pnpm lint`, `pnpm type
 
 | Horizon | Versions | Focus | Key Deliverables |
 |---|---|---|---|
-| **Now** | 1.1.1 | Layout reliability | Preset copy, tracked fixtures, CI layout verification |
-| **Next** | 1.1.2 - 1.2.3 | Layout UI expansion | Elementor presets, wizard gallery, preview, preset selector polish |
+| **Now** | 1.1.2 | Elementor presets | Hero Page, Feature Block, Elementor fixtures, separate selector |
+| **Next** | 1.1.3 - 1.2.3 | Layout UI expansion | Preset usage logging, wizard gallery, preview, preset selector polish |
 | **Later** | 1.3.0 - 1.4.3 | Agency scale and monetization | Bulk import, Pro tier, custom preset builder |
 | **Future** | 1.5.0 - 2.2.0 | Writer discovery, smart sync, expansion | Add-on, AI, managed OAuth, Notion, team workflows |
 
@@ -137,7 +136,7 @@ Each release must pass the existing validation pipeline (`pnpm lint`, `pnpm type
 | 1.0.9 | Security audit + productized admin UI | 0 critical, 0 high; branded shell, task-first setup, compact source actions, and searchable Sync Activity shipped |
 | 1.1.0 | 2 Gutenberg presets pass golden tests | 100% on 5 fixtures |
 | 1.1.1 | Layout reliability fixture suite | 100% on tracked Clean Article, Documentation, Plain Blocks, and source override fixtures |
-| 1.1.2 | 4 total presets pass golden tests | 100% on 5 fixtures |
+| 1.1.2 | 4 total publishable presets pass golden tests | 100% on Gutenberg and Elementor fixtures |
 | 1.1.3 | Manual QA publishable output | 0 developer edits for fixture set |
 | 1.2.0 | Wizard step completion rate | 80% of new drafts |
 | 1.3.0 | Bulk import 50 Docs | 0 failures, <5 min |

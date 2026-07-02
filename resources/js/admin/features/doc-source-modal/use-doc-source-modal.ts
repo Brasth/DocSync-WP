@@ -13,7 +13,7 @@ import { getAdminConfig } from '../../config';
 import { type DocSourceUiMode } from './doc-source-modal-options';
 
 export type DocSourceTarget =
-  | { mode: 'existing'; postId: number; postType?: string }
+  | { mode: 'existing'; postId: number; postType?: string; elementorSync?: boolean }
   | { mode: 'new'; postType: string };
 
 type Args = {
@@ -28,6 +28,7 @@ export const useDocSourceModal = ({ isOpen, target, onClose, onCompleted }: Args
   const [documentInput, setDocumentInput] = useState('');
   const [metadata, setMetadata] = useState<DocumentMetadata | null>(null);
   const [layoutPreset, setLayoutPreset] = useState('');
+  const [elementorPreset, setElementorPreset] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const config = useMemo(() => getAdminConfig(), []);
@@ -38,6 +39,7 @@ export const useDocSourceModal = ({ isOpen, target, onClose, onCompleted }: Args
       setDocumentInput('');
       setMetadata(null);
       setLayoutPreset('');
+      setElementorPreset('');
       setError('');
       setBusy(false);
     }
@@ -103,8 +105,10 @@ export const useDocSourceModal = ({ isOpen, target, onClose, onCompleted }: Args
           ? { mode: 'existing', postId: target.postId }
           : { mode: 'new', postType: target.postType },
         exportFormat: config.defaultExportFormat || 'html_zip',
+        elementorSync: target.mode === 'existing' && target.elementorSync ? true : undefined,
+        elementorPreset: target.mode === 'existing' && target.elementorSync ? elementorPreset : undefined,
         syncMode: 'background',
-        layoutPreset
+        layoutPreset: target.mode === 'existing' && target.elementorSync ? undefined : layoutPreset
       });
 
       onCompleted(result);
@@ -124,12 +128,14 @@ export const useDocSourceModal = ({ isOpen, target, onClose, onCompleted }: Args
     canAttach: Boolean(metadata && metadata.syncCompatibility?.canDownload !== false),
     changeSourceMode,
     documentInput,
+    elementorPreset,
     error,
     inspect,
     layoutPreset,
     metadata,
     selectDocument,
     setDocumentInput,
+    setElementorPreset,
     setLayoutPreset,
     uiMode
   };

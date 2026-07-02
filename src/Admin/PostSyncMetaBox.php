@@ -103,6 +103,7 @@ final class PostSyncMetaBox {
 
 		$elementor_enabled = $this->settings->isElementorSyncEnabled();
 		$elementor_active  = $this->elementor_decider->isElementorSyncAvailable();
+		$default_elementor = $this->elementor_decider->getDefaultElementorSync( $post->ID );
 		?>
 		<div
 			id="docsync-wp-post-sync-root"
@@ -111,6 +112,7 @@ final class PostSyncMetaBox {
 			data-source="<?php echo esc_attr( $json ); ?>"
 			data-elementor-available="<?php echo $elementor_active ? 'true' : 'false'; ?>"
 			data-elementor-enabled="<?php echo $elementor_enabled ? 'true' : 'false'; ?>"
+			data-default-elementor-sync="<?php echo $default_elementor ? 'true' : 'false'; ?>"
 		>
 			<p><?php esc_html_e( 'Loading sync controls...', 'brasth-document-sync-for-google-docs' ); ?></p>
 		</div>

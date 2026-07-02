@@ -34,6 +34,8 @@ use DocSyncWP\Sync\DocsApiInlineRenderer;
 use DocSyncWP\Sync\DocsApiParagraphRenderer;
 use DocSyncWP\Sync\Elementor\CompatibilityChecker;
 use DocSyncWP\Sync\Elementor\DataConverter as ElementorDataConverter;
+use DocSyncWP\Sync\Elementor\Preset\ElementorPresetConversionService;
+use DocSyncWP\Sync\Elementor\Preset\ElementorPresetRegistry;
 use DocSyncWP\Sync\Elementor\LayoutBuilder as ElementorLayoutBuilder;
 use DocSyncWP\Sync\Elementor\PostUpdater as ElementorPostUpdater;
 use DocSyncWP\Sync\Elementor\SyncDecider as ElementorSyncDecider;
@@ -43,6 +45,7 @@ use DocSyncWP\Sync\HtmlToBlockContentConverter;
 use DocSyncWP\Sync\HtmlZipImporter;
 use DocSyncWP\Sync\HtmlZipPackageExtractor;
 use DocSyncWP\Sync\Layout\LayoutConversionService;
+use DocSyncWP\Sync\Layout\LayoutPresetRegistry;
 use DocSyncWP\Sync\MediaAssetImporter;
 use DocSyncWP\Sync\SourceRepository;
 use DocSyncWP\Sync\SyncLock;
@@ -158,24 +161,31 @@ final class Plugin {
 	 * Boot the plugin.
 	 */
 	public static function boot(): void {
-		$encryption         = new EncryptionService();
-		$settings           = new SettingsRepository( $encryption );
-		$token_store        = new TokenStore( $encryption );
-		$source_repository  = new SourceRepository( $settings );
-		$google_oauth       = new GoogleOAuthService( $settings, $token_store );
-		$telemetry_service  = new TelemetryService( $settings );
-		$drive_client       = new DriveClient( $google_oauth );
-		$docs_client        = new DocsClient( $google_oauth );
-		$document_id_parser = new DocumentIdParser();
-		$media_assets       = new MediaAssetImporter();
-		$elementor_checker  = new CompatibilityChecker();
-		$elementor_decider  = new ElementorSyncDecider( $settings, $source_repository, $elementor_checker );
-		$elementor_data     = new ElementorDataConverter(
+		$encryption                  = new EncryptionService();
+		$layout_presets              = new LayoutPresetRegistry();
+		$elementor_presets           = new ElementorPresetRegistry();
+		$settings                    = new SettingsRepository( $encryption, $layout_presets, $elementor_presets );
+		$token_store                 = new TokenStore( $encryption );
+		$source_repository           = new SourceRepository( $settings, $layout_presets, $elementor_presets );
+		$google_oauth                = new GoogleOAuthService( $settings, $token_store );
+		$telemetry_service           = new TelemetryService( $settings );
+		$drive_client                = new DriveClient( $google_oauth );
+		$docs_client                 = new DocsClient( $google_oauth );
+		$document_id_parser          = new DocumentIdParser();
+		$media_assets                = new MediaAssetImporter();
+		$elementor_checker           = new CompatibilityChecker();
+		$elementor_decider           = new ElementorSyncDecider( $settings, $source_repository, $elementor_checker );
+		$elementor_data              = new ElementorDataConverter(
 			new ElementorWidgetFactory(),
 			new ElementorLayoutBuilder( $elementor_checker )
 		);
-		$elementor_updater  = new ElementorPostUpdater( $elementor_checker );
-		$sync_service       = new SyncService(
+		$elementor_presets_converter = new ElementorPresetConversionService(
+			new ElementorWidgetFactory(),
+			new ElementorLayoutBuilder( $elementor_checker ),
+			$elementor_presets
+		);
+		$elementor_updater           = new ElementorPostUpdater( $elementor_checker );
+		$sync_service                = new SyncService(
 			$source_repository,
 			$drive_client,
 			new HtmlZipImporter(
@@ -192,11 +202,12 @@ final class Plugin {
 					)
 				)
 			),
-			new LayoutConversionService( $settings, new HtmlToBlockContentConverter() ),
+			new LayoutConversionService( $settings, new HtmlToBlockContentConverter(), $layout_presets ),
 			new SyncLock(),
 			$elementor_decider,
 			$elementor_data,
-			$elementor_updater
+			$elementor_updater,
+			$elementor_presets_converter
 		);
 
 		$plugin = new self(
@@ -217,7 +228,9 @@ final class Plugin {
 				new SourceController(
 					$source_repository,
 					$sync_service,
-					$document_id_parser
+					$document_id_parser,
+					$layout_presets,
+					$elementor_presets
 				),
 				new SyncLogController( $source_repository )
 			),

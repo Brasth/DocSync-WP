@@ -134,7 +134,7 @@ REST namespace: `brasth-document-sync-for-google-docs/v1`
 
 Implemented routes:
 
-- `GET /settings`, including `defaultLayoutPreset`, `availableLayoutPresets`, `telemetryEnabled`, and `telemetryPromptDismissed`
+- `GET /settings`, including `defaultLayoutPreset`, `availableLayoutPresets`, `availableElementorLayoutPresets`, `telemetryEnabled`, and `telemetryPromptDismissed`
 - `POST /settings`, including `defaultLayoutPreset`, optional `telemetryEnabled`, and optional `telemetryPromptDismissed`
 - `GET /oauth/google/url`
 - `GET /oauth/google/account`
@@ -145,9 +145,9 @@ Implemented routes:
 - `GET /documents` with `search`, `page_token`, and `page_size` filters
 - `POST /documents/inspect`
 - `GET /sources` with `search`, `post_type`, `status`, `page`, and `per_page` filters
-- `POST /sources`, including optional `layoutPreset`
+- `POST /sources`, including optional `layoutPreset`, `elementorPreset`, and `elementorSync`
 - `GET /sources/{postId}`
-- `POST /sources/{postId}`, including optional `layoutPreset` and `elementorSync`
+- `POST /sources/{postId}`, including optional `layoutPreset`, `elementorPreset`, and `elementorSync`
 - `DELETE /sources/{postId}`
 - `POST /sources/{postId}/sync`
 - `POST /sources/sync-all`
@@ -192,6 +192,7 @@ Common permission model:
 - `_docsync_wp_last_synced_at`
 - `_docsync_wp_last_sync_method`
 - `_docsync_wp_layout_preset`
+- `_docsync_wp_elementor_preset`
 - `_docsync_wp_last_layout_fingerprint`
 - `_docsync_wp_sync_owner_user_id`
 - `_docsync_wp_export_format`
@@ -227,10 +228,12 @@ These identify images imported from a Google Docs HTML ZIP export so re-sync can
 10. `DriveClient` exports an HTML ZIP package by default; progress moves to `exporting`.
 11. If Google returns the 10 MB export-size failure, progress moves to `large_doc_fallback`, then `DocsApiHtmlImporter` reads the same document through `documents.get?includeTabsContent=true`, converts supported Docs structures to sanitized HTML, and imports inline image `contentUri` assets into Media Library.
 12. `HtmlZipImporter` extracts the normal ZIP package, imports local images into Media Library, rewrites image URLs, and sanitizes HTML; progress moves through `importing`.
-13. `LayoutConversionService` resolves the effective Gutenberg layout preset from `_docsync_wp_layout_preset` or the site default, then either delegates `plain_blocks` to `HtmlToBlockContentConverter` or renders the selected preset; progress moves to `converting`.
+13. Gutenberg sync uses `LayoutConversionService` to resolve the effective Gutenberg layout preset from `_docsync_wp_layout_preset` or the site default, then either delegates `plain_blocks` to `HtmlToBlockContentConverter` or renders the selected preset; Elementor sync uses `ElementorPresetConversionService` when `_docsync_wp_elementor_preset` is set and otherwise keeps the legacy Elementor converter; progress moves to `converting`.
     - `Clean Article` demotes top-level document headings for post bodies and keeps code-looking Google Docs paragraphs as normal paragraphs.
     - `Documentation` uses `ContentRoleClassifier` plus `DocumentationCodeBlockDetector` to render semantic `pre`/`code`, fenced snippets, and code-like paragraph groups as `core/code`, while explicit `Note:`, `Tip:`, `Warning:`, `Important:`, and `Caution:` labels remain quote callouts.
     - `DocumentationCodeBlockDetector` is heuristic. It recognizes common shell, XML/JSON, Java/PHP/JavaScript-like, Gherkin, path, and file-tree shapes, but it is not a programming-language parser.
+    - `Elementor Feature Block` groups headings, paragraphs, lists, images, tables, and dividers into clean Elementor sections with free widgets.
+    - `Elementor Hero Page` promotes the first H1/H2, intro paragraph, and first image into a hero section, then renders remaining content as feature sections.
 14. WordPress post content is updated only after export/import or fallback conversion and block conversion succeed; progress moves to `updating_post`.
 15. Source state is saved back to post meta with `lastSyncMethod` set to `html_zip` or `docs_api_fallback` after successful content import.
 16. Result state becomes `linked`, `syncing`, `synced`, `skipped`, or `error`; `synced` and `skipped` finish at `100`, while queued API responses use top-level `status: queued` and persisted state remains `syncing`.
@@ -239,8 +242,8 @@ Skip behavior:
 
 - if Google `modifiedTime`, `version`, last hash, and the current layout fingerprint show no change, sync is marked `skipped`
 - upgraded sources without a layout fingerprint are treated as current only when the effective preset is `plain_blocks`
-- changing the default Gutenberg layout preset forces re-conversion even when Google metadata is unchanged; if converted content still hashes the same, the sync safely updates `_docsync_wp_last_layout_fingerprint` and finishes as `skipped`
-- Elementor sync bypasses Gutenberg layout presets and keeps the existing Elementor conversion and skip behavior
+- changing the default Gutenberg layout preset or explicit Elementor preset forces re-conversion even when Google metadata is unchanged; if converted content still hashes the same, the sync safely updates `_docsync_wp_last_layout_fingerprint` and finishes as `skipped`
+- Elementor sources without `_docsync_wp_elementor_preset` keep the existing Elementor conversion and legacy skip behavior until the user selects an Elementor preset
 - lock prevents duplicate concurrent syncs for the same post
 - repeated manual sync requests keep active scheduled/running sync progress, refresh the sync lock during milestone saves, and can requeue a stale `syncing` source when no matching cron event or active lock remains
 - source changes and detaches are blocked while a sync is running; stale background work stops if the linked Google file changes before a progress save or post update
@@ -282,7 +285,7 @@ The isolated Cloudflare Worker lives under `cloudflare/telemetry-worker/`. It st
 
 ## Layout Preset Architecture
 
-Version 1.1.0 adds a **Layout Preset** layer between sanitized HTML import and Gutenberg conversion:
+Version 1.1.0 added the Gutenberg **Layout Preset** layer. Version 1.1.2 adds a parallel Elementor preset layer without extending the Gutenberg blueprint model:
 
 ```mermaid
 flowchart LR
@@ -291,9 +294,11 @@ flowchart LR
   Preset --> Registry["LayoutBlueprint / LayoutPresetRegistry"]
   Preset --> Roles["ContentRoleClassifier"]
   Preset --> Blocks["Gutenberg blocks"]
-  Sanitized --> Elementor["Elementor\DataConverter"]
+  Sanitized --> ElementorPreset["Elementor\Preset\ElementorPresetConversionService"]
+  Sanitized --> Elementor["Elementor\DataConverter legacy path"]
   Blocks --> WP["wp_update_post"]
-  Elementor --> PostUpdater["Elementor\PostUpdater"]
+  ElementorPreset --> PostUpdater["Elementor\PostUpdater"]
+  Elementor --> PostUpdater
   PostUpdater --> WP
 ```
 
@@ -303,12 +308,16 @@ Current components:
 - `src/Sync/Layout/LayoutPresetRegistry.php` — built-in presets: `clean_article`, `documentation`, and `plain_blocks`.
 - `src/Sync/Layout/ContentRoleClassifier.php` — role detection for headings, images, lists, tables, code blocks, callouts, and containers.
 - `src/Sync/Layout/LayoutConversionService.php` — effective preset resolution, fingerprinting, and Gutenberg conversion.
+- `src/Sync/Elementor/Preset/ElementorPresetBlueprint.php` — immutable Elementor preset metadata and behavior version.
+- `src/Sync/Elementor/Preset/ElementorPresetRegistry.php` — built-in Elementor presets: `elementor_hero_page` and `elementor_feature_block`.
+- `src/Sync/Elementor/Preset/ElementorPresetConversionService.php` — explicit Elementor preset fingerprinting and conversion to free Elementor widgets.
 - `_docsync_wp_layout_preset` post meta — optional per-post override set from the link modal or post sync metabox; missing or empty means use the site default.
+- `_docsync_wp_elementor_preset` post meta — optional per-post Elementor preset; missing or empty keeps the legacy Elementor converter for existing sources.
 - `_docsync_wp_last_layout_fingerprint` post meta — prevents preset changes from being hidden by unchanged Google metadata.
 - Setup sync defaults expose a compact `Default synced layout` dropdown through `GET/POST /settings`.
-- Source linking and the post sync metabox expose a compact `Layout preset` dropdown. The selector stores a per-source Gutenberg override, or an empty value for `Use site default`; Elementor sync leaves the value stored but uses the Elementor conversion path.
+- Source linking and the post sync metabox switch the compact preset dropdown between Gutenberg presets and Elementor presets based on the active sync mode.
 
-Later phases add an in-linking preset gallery, preview endpoint, Elementor presets, bulk Drive folder import, a custom preset builder, a Pro tier, a Google Docs Workspace Add-on, and optional managed OAuth. See `docs/project-roadmap.md` for the full phased plan.
+Later phases add an in-linking preset gallery, preview endpoint, bulk Drive folder import, a custom preset builder, a Pro tier, a Google Docs Workspace Add-on, and optional managed OAuth. See `docs/project-roadmap.md` for the full phased plan.
 
 ## Operational Notes
 

@@ -22,6 +22,9 @@ export type DocSyncWPAdminConfig = {
   defaultExportFormat: string;
   defaultLayoutPreset: string;
   availableLayoutPresets: AvailableLayoutPreset[];
+  availableElementorLayoutPresets: AvailableLayoutPreset[];
+  elementorSyncEnabled: boolean;
+  elementorAvailable: boolean;
   syncInterval: string;
   hasClientId: boolean;
   hasClientSecret: boolean;
@@ -42,7 +45,7 @@ const fallbackConfig: DocSyncWPAdminConfig = {
   restUrl: '',
   nonce: '',
   pluginUrl: '',
-  version: '1.1.1',
+  version: '1.1.2',
   currentUserId: 0,
   clientId: '',
   connectionMode: 'self_managed',
@@ -57,6 +60,15 @@ const fallbackConfig: DocSyncWPAdminConfig = {
       description: 'Compatibility mode for existing synced posts. Keeps output closest to earlier versions.'
     }
   ],
+  availableElementorLayoutPresets: [
+    {
+      id: 'elementor_feature_block',
+      label: 'Elementor Feature Block',
+      description: 'Builds clean Elementor sections from document headings, text, lists, media, tables, and dividers.'
+    }
+  ],
+  elementorSyncEnabled: false,
+  elementorAvailable: false,
   syncInterval: 'off',
   hasClientId: false,
   hasClientSecret: false,

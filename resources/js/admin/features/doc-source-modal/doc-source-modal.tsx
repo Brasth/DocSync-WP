@@ -1,6 +1,6 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import { createElement, useEffect } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 import { AdminButton } from '../../shared/ui/admin-button';
 import { AdminNotice } from '../../shared/ui/admin-notice';
@@ -32,6 +32,9 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
   const DriveBrowserPanel = driveBrowser.Component;
   const config = getAdminConfig();
   const markUrl = config.pluginUrl ? `${trimTrailingSlash(config.pluginUrl)}/resources/images/brasth-mark.png` : '';
+  const useElementorPreset = Boolean(target?.mode === 'existing' && target.elementorSync);
+  const elementorDefaultPreset = 'elementor_feature_block';
+  const elementorDefaultLabel = config.availableElementorLayoutPresets.find((preset) => preset.id === elementorDefaultPreset)?.label || elementorDefaultPreset;
 
   useEffect(() => {
     if (!isOpen) {
@@ -134,13 +137,26 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
                   <strong>{modal.metadata.name}</strong>
                   <span>{modal.metadata.webViewLink || modal.metadata.fileId}</span>
                 </div>
-                <LayoutPresetSelector
-                  availableLayoutPresets={config.availableLayoutPresets}
-                  defaultLayoutPreset={config.defaultLayoutPreset}
-                  disabled={modal.busy}
-                  onChange={modal.setLayoutPreset}
-                  value={modal.layoutPreset}
-                />
+                {useElementorPreset ? (
+                  <LayoutPresetSelector
+                    availableLayoutPresets={config.availableElementorLayoutPresets}
+                    defaultLayoutPreset={elementorDefaultPreset}
+                    defaultOptionLabel={sprintf(__('Use Elementor default (%s)', 'brasth-document-sync-for-google-docs'), elementorDefaultLabel)}
+                    disabled={modal.busy}
+                    helpText={__('Choose how this Google Doc becomes Elementor sections. Gutenberg presets stay separate.', 'brasth-document-sync-for-google-docs')}
+                    label={__('Elementor layout preset', 'brasth-document-sync-for-google-docs')}
+                    onChange={modal.setElementorPreset}
+                    value={modal.elementorPreset}
+                  />
+                ) : (
+                  <LayoutPresetSelector
+                    availableLayoutPresets={config.availableLayoutPresets}
+                    defaultLayoutPreset={config.defaultLayoutPreset}
+                    disabled={modal.busy}
+                    onChange={modal.setLayoutPreset}
+                    value={modal.layoutPreset}
+                  />
+                )}
               </div>
             ) : null}
           </div>

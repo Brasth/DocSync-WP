@@ -20,6 +20,7 @@
   "scripts": {
     "lint": "phpcs",
     "lint:fix": "phpcbf",
+    "test:elementor-fixtures": "php scripts/verify-elementor-fixtures.php",
     "test:layout-fixtures": "php scripts/verify-layout-fixtures.php",
     "test:telemetry-settings": "php scripts/verify-telemetry-settings.php",
     "autoload": "composer dump-autoload -o"

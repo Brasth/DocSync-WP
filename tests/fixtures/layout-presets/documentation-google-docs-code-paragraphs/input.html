@@ -1,0 +1,28 @@
+<h1>Developer Guide</h1>
+<p>Google Docs exports styled code as paragraphs.</p>
+<p>Run the sync command.</p>
+<p>wp docsync sync --post=42</p>
+<p>XML payload.</p>
+<p>&lt;sync&gt;</p>
+<p>  &lt;preset&gt;documentation&lt;/preset&gt;</p>
+<p>&lt;/sync&gt;</p>
+<p>Java class.</p>
+<p>package com.example.docs;</p>
+<p>import java.util.List;</p>
+<p>public final class SyncExample {</p>
+<p>  public void run() {</p>
+<p>    System.out.println("sync");</p>
+<p>  }</p>
+<p>}</p>
+<p>Gherkin scenario.</p>
+<p>Feature: Scheduled sync</p>
+<p>Scenario: changed document</p>
+<p>Given a linked Google Doc</p>
+<p>When the scheduler runs</p>
+<p>Then WordPress receives updated blocks</p>
+<p>File tree.</p>
+<p>src/</p>
+<p>|-- Sync/</p>
+<p>`-- Layout/</p>
+<p>Note: Keep callouts visible.</p>
+<p>Back to prose.</p>

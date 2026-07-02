@@ -1,0 +1,15 @@
+<!-- wp:heading {"level":1} --><h1>Developer Guide</h1><!-- /wp:heading --><!-- wp:paragraph --><p>Google Docs exports styled code as paragraphs.</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Run the sync command.</p><!-- /wp:paragraph --><!-- wp:code --><pre class="wp-block-code"><code>wp docsync sync --post=42</code></pre><!-- /wp:code --><!-- wp:paragraph --><p>XML payload.</p><!-- /wp:paragraph --><!-- wp:code --><pre class="wp-block-code"><code>&lt;sync&gt;
+  &lt;preset&gt;documentation&lt;/preset&gt;
+&lt;/sync&gt;</code></pre><!-- /wp:code --><!-- wp:paragraph --><p>Java class.</p><!-- /wp:paragraph --><!-- wp:code --><pre class="wp-block-code"><code>package com.example.docs;
+import java.util.List;
+public final class SyncExample {
+  public void run() {
+    System.out.println(&quot;sync&quot;);
+  }
+}</code></pre><!-- /wp:code --><!-- wp:paragraph --><p>Gherkin scenario.</p><!-- /wp:paragraph --><!-- wp:code --><pre class="wp-block-code"><code>Feature: Scheduled sync
+Scenario: changed document
+Given a linked Google Doc
+When the scheduler runs
+Then WordPress receives updated blocks</code></pre><!-- /wp:code --><!-- wp:paragraph --><p>File tree.</p><!-- /wp:paragraph --><!-- wp:code --><pre class="wp-block-code"><code>src/
+|-- Sync/
+`-- Layout/</code></pre><!-- /wp:code --><!-- wp:quote {"className":"docsync-wp-callout"} --><blockquote class="wp-block-quote docsync-wp-callout"><p>Note: Keep callouts visible.</p></blockquote><!-- /wp:quote --><!-- wp:paragraph --><p>Back to prose.</p><!-- /wp:paragraph -->

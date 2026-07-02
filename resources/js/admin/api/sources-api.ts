@@ -12,11 +12,13 @@ type CreateSourcePayload = {
   syncMode?: SyncMode;
   elementorSync?: boolean;
   layoutPreset?: string | null;
+  elementorPreset?: string | null;
 };
 
 type UpdateSourcePayload = {
   elementorSync?: boolean;
   layoutPreset?: string | null;
+  elementorPreset?: string | null;
 };
 
 export const listSources = (filters: SourceFilters = {}): Promise<SourcesResponse> => {

@@ -1,0 +1,109 @@
+[
+    {
+        "id": "56b2eb0d",
+        "elType": "container",
+        "isInner": false,
+        "settings": [],
+        "elements": [
+            {
+                "id": "ec5cdc4a",
+                "elType": "widget",
+                "widgetType": "heading",
+                "isInner": false,
+                "settings": {
+                    "title": "Feature Sync",
+                    "header_size": "h1"
+                },
+                "elements": []
+            },
+            {
+                "id": "a4145172",
+                "elType": "widget",
+                "widgetType": "text-editor",
+                "isInner": false,
+                "settings": {
+                    "editor": "<p><strong>Editors</strong> can keep launch copy in Google Docs.</p>"
+                },
+                "elements": []
+            },
+            {
+                "id": "231799f8",
+                "elType": "widget",
+                "widgetType": "icon-list",
+                "isInner": false,
+                "settings": {
+                    "icon_list": [
+                        {
+                            "text": "One-way sync",
+                            "selected_icon": {
+                                "value": "fas fa-circle",
+                                "library": "fa-solid"
+                            },
+                            "link": {
+                                "url": "",
+                                "is_external": "",
+                                "nofollow": ""
+                            }
+                        },
+                        {
+                            "text": "Elementor widgets",
+                            "selected_icon": {
+                                "value": "fas fa-circle",
+                                "library": "fa-solid"
+                            },
+                            "link": {
+                                "url": "",
+                                "is_external": "",
+                                "nofollow": ""
+                            }
+                        }
+                    ]
+                },
+                "elements": []
+            },
+            {
+                "id": "76f9a49f",
+                "elType": "widget",
+                "widgetType": "image",
+                "isInner": false,
+                "settings": {
+                    "image": {
+                        "url": "https://example.com/uploads/feature.png",
+                        "id": 0,
+                        "alt": "Feature blocks"
+                    }
+                },
+                "elements": []
+            }
+        ]
+    },
+    {
+        "id": "0a05bde3",
+        "elType": "container",
+        "isInner": false,
+        "settings": [],
+        "elements": [
+            {
+                "id": "a495b39c",
+                "elType": "widget",
+                "widgetType": "heading",
+                "isInner": false,
+                "settings": {
+                    "title": "Reusable sections",
+                    "header_size": "h2"
+                },
+                "elements": []
+            },
+            {
+                "id": "ff112a8e",
+                "elType": "widget",
+                "widgetType": "text-editor",
+                "isInner": false,
+                "settings": {
+                    "editor": "<p>Each heading starts a clean Elementor section.</p>"
+                },
+                "elements": []
+            }
+        ]
+    }
+]

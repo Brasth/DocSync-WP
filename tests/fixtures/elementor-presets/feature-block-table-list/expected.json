@@ -1,0 +1,51 @@
+[
+    {
+        "id": "c478c739",
+        "elType": "container",
+        "isInner": false,
+        "settings": [],
+        "elements": [
+            {
+                "id": "2a0f6ed4",
+                "elType": "widget",
+                "widgetType": "heading",
+                "isInner": false,
+                "settings": {
+                    "title": "Comparison",
+                    "header_size": "h2"
+                },
+                "elements": []
+            },
+            {
+                "id": "66cf5b70",
+                "elType": "widget",
+                "widgetType": "text-editor",
+                "isInner": false,
+                "settings": {
+                    "editor": "<p>Structured content keeps safe fallbacks.</p>"
+                },
+                "elements": []
+            },
+            {
+                "id": "49328b59",
+                "elType": "widget",
+                "widgetType": "text-editor",
+                "isInner": false,
+                "settings": {
+                    "editor": "<ol>\n  <li>Inspect source</li>\n  <li>Sync layout</li>\n</ol>"
+                },
+                "elements": []
+            },
+            {
+                "id": "7c881854",
+                "elType": "widget",
+                "widgetType": "html",
+                "isInner": false,
+                "settings": {
+                    "html": "<table>\n  <tbody>\n    <tr><th>Plan</th><th>Use</th></tr>\n    <tr><td>Hero</td><td>Landing pages</td></tr>\n  </tbody>\n</table>"
+                },
+                "elements": []
+            }
+        ]
+    }
+]

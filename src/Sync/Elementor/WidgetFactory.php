@@ -75,7 +75,7 @@ final class WidgetFactory {
 		}
 
 		if ( 'ol' === $tag ) {
-			return $this->textEditor( $this->markup->cleanListInnerHtml( $element ) );
+			return $this->textEditor( '<ol>' . $this->markup->cleanListInnerHtml( $element ) . '</ol>' );
 		}
 
 		if ( 'img' === $tag ) {
@@ -83,7 +83,7 @@ final class WidgetFactory {
 		}
 
 		if ( 'table' === $tag ) {
-			return $this->htmlWidget( $this->markup->cleanTableInnerHtml( $element ) );
+			return $this->htmlWidget( '<table>' . $this->markup->cleanTableInnerHtml( $element ) . '</table>' );
 		}
 
 		if ( 'blockquote' === $tag ) {

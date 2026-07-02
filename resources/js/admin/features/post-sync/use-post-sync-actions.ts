@@ -90,6 +90,25 @@ export const usePostSyncActions = (postId: number, initialSource: SourceRecord |
     }
   };
 
+  const updateElementorPreset = async (elementorPreset: string) => {
+    setBusy(true);
+    setNotice(null);
+
+    try {
+      const updated = await updateSource(postId, { elementorPreset });
+      setSource(updated);
+      const message = __('Elementor layout preset updated.', 'brasth-document-sync-for-google-docs');
+      setNotice({ type: 'success', message });
+      speak(message);
+    } catch (caught) {
+      const message = caught instanceof Error ? caught.message : __('Could not update Elementor layout preset.', 'brasth-document-sync-for-google-docs');
+      setNotice({ type: 'error', message });
+      speak(message, 'assertive');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return {
     busy,
     detach,
@@ -99,6 +118,7 @@ export const usePostSyncActions = (postId: number, initialSource: SourceRecord |
     source,
     syncNow,
     updateElementorSync,
+    updateElementorPreset,
     updateLayoutPreset
   };
 };

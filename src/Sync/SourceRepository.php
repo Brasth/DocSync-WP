@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace DocSyncWP\Sync;
 
 use DocSyncWP\Settings\SettingsRepository;
+use DocSyncWP\Sync\Elementor\Preset\ElementorPresetRegistry;
 use DocSyncWP\Sync\Layout\LayoutPresetRegistry;
 use WP_Error;
 use WP_Post;
@@ -22,28 +23,29 @@ defined( 'ABSPATH' ) || exit;
  * Stores one Google Doc source record per post.
  */
 final class SourceRepository {
-	public const META_FILE_ID        = '_docsync_wp_google_file_id';
-	public const META_DOC_URL        = '_docsync_wp_google_doc_url';
-	public const META_TITLE          = '_docsync_wp_google_title';
-	public const META_MODIFIED_TIME  = '_docsync_wp_google_modified_time';
-	public const META_VERSION        = '_docsync_wp_google_version';
-	public const META_LAST_HASH      = '_docsync_wp_last_hash';
-	public const META_LAST_SYNCED    = '_docsync_wp_last_synced_at';
-	public const META_LAST_METHOD    = '_docsync_wp_last_sync_method';
-	public const META_OWNER_USER_ID  = '_docsync_wp_sync_owner_user_id';
-	public const META_EXPORT_FORMAT  = '_docsync_wp_export_format';
-	public const META_SYNC_STATUS    = '_docsync_wp_sync_status';
-	public const META_SYNC_ERROR     = '_docsync_wp_sync_error';
-	public const META_SYNC_PROGRESS  = '_docsync_wp_sync_progress';
-	public const META_SYNC_STEP      = '_docsync_wp_sync_step';
-	public const META_SYNC_MESSAGE   = '_docsync_wp_sync_message';
-	public const META_SYNC_STARTED   = '_docsync_wp_sync_started_at';
-	public const META_SYNC_UPDATED   = '_docsync_wp_sync_updated_at';
-	public const META_SYNC_ERR_CODE  = '_docsync_wp_sync_error_code';
-	public const META_SYNC_EVENTS    = '_docsync_wp_sync_events';
-	public const META_ELEMENTOR_SYNC = '_docsync_wp_elementor_sync';
-	public const META_LAYOUT_PRESET  = '_docsync_wp_layout_preset';
-	public const META_LAYOUT_HASH    = '_docsync_wp_last_layout_fingerprint';
+	public const META_FILE_ID          = '_docsync_wp_google_file_id';
+	public const META_DOC_URL          = '_docsync_wp_google_doc_url';
+	public const META_TITLE            = '_docsync_wp_google_title';
+	public const META_MODIFIED_TIME    = '_docsync_wp_google_modified_time';
+	public const META_VERSION          = '_docsync_wp_google_version';
+	public const META_LAST_HASH        = '_docsync_wp_last_hash';
+	public const META_LAST_SYNCED      = '_docsync_wp_last_synced_at';
+	public const META_LAST_METHOD      = '_docsync_wp_last_sync_method';
+	public const META_OWNER_USER_ID    = '_docsync_wp_sync_owner_user_id';
+	public const META_EXPORT_FORMAT    = '_docsync_wp_export_format';
+	public const META_SYNC_STATUS      = '_docsync_wp_sync_status';
+	public const META_SYNC_ERROR       = '_docsync_wp_sync_error';
+	public const META_SYNC_PROGRESS    = '_docsync_wp_sync_progress';
+	public const META_SYNC_STEP        = '_docsync_wp_sync_step';
+	public const META_SYNC_MESSAGE     = '_docsync_wp_sync_message';
+	public const META_SYNC_STARTED     = '_docsync_wp_sync_started_at';
+	public const META_SYNC_UPDATED     = '_docsync_wp_sync_updated_at';
+	public const META_SYNC_ERR_CODE    = '_docsync_wp_sync_error_code';
+	public const META_SYNC_EVENTS      = '_docsync_wp_sync_events';
+	public const META_ELEMENTOR_SYNC   = '_docsync_wp_elementor_sync';
+	public const META_ELEMENTOR_PRESET = '_docsync_wp_elementor_preset';
+	public const META_LAYOUT_PRESET    = '_docsync_wp_layout_preset';
+	public const META_LAYOUT_HASH      = '_docsync_wp_last_layout_fingerprint';
 
 	private const EXPORT_FORMAT_HTML_ZIP = 'html_zip';
 	private const STATUS_SYNCING         = 'syncing';
@@ -65,14 +67,27 @@ final class SourceRepository {
 	private LayoutPresetRegistry $layout_presets;
 
 	/**
+	 * Elementor preset registry.
+	 *
+	 * @var ElementorPresetRegistry
+	 */
+	private ElementorPresetRegistry $elementor_presets;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param SettingsRepository        $settings       Settings repository.
-	 * @param LayoutPresetRegistry|null $layout_presets Layout preset registry.
+	 * @param SettingsRepository           $settings          Settings repository.
+	 * @param LayoutPresetRegistry|null    $layout_presets    Layout preset registry.
+	 * @param ElementorPresetRegistry|null $elementor_presets Elementor preset registry.
 	 */
-	public function __construct( SettingsRepository $settings, ?LayoutPresetRegistry $layout_presets = null ) {
-		$this->settings       = $settings;
-		$this->layout_presets = $layout_presets ?? new LayoutPresetRegistry();
+	public function __construct(
+		SettingsRepository $settings,
+		?LayoutPresetRegistry $layout_presets = null,
+		?ElementorPresetRegistry $elementor_presets = null
+	) {
+		$this->settings          = $settings;
+		$this->layout_presets    = $layout_presets ?? new LayoutPresetRegistry();
+		$this->elementor_presets = $elementor_presets ?? new ElementorPresetRegistry();
 	}
 
 	/**
@@ -113,6 +128,7 @@ final class SourceRepository {
 			'sync_owner_user_id'   => absint( get_post_meta( $post_id, self::META_OWNER_USER_ID, true ) ),
 			'export_format'        => $this->getStringMeta( $post_id, self::META_EXPORT_FORMAT ),
 			'elementor_sync'       => $this->getElementorSync( $post_id ),
+			'elementor_preset'     => $this->getElementorPreset( $post_id ),
 			'sync_status'          => $sync_status,
 			'sync_error'           => $this->sanitizeErrorMessage( $this->getStringMeta( $post_id, self::META_SYNC_ERROR ) ),
 			'sync_progress'        => $this->getSyncProgress( $post_id, $sync_status ),
@@ -177,8 +193,18 @@ final class SourceRepository {
 			update_post_meta( $post_id, self::META_ELEMENTOR_SYNC, $this->sanitizeElementorSync( $source['elementor_sync'] ) );
 		}
 
+		if ( array_key_exists( 'elementor_preset', $source ) ) {
+			$elementor_preset = $this->sanitizeElementorPreset( $source['elementor_preset'] );
+
+			if ( '' === $elementor_preset ) {
+				delete_post_meta( $post_id, self::META_ELEMENTOR_PRESET );
+			} else {
+				update_post_meta( $post_id, self::META_ELEMENTOR_PRESET, $elementor_preset );
+			}
+		}
+
 		update_post_meta( $post_id, self::META_SYNC_STATUS, isset( $source['sync_status'] ) ? sanitize_key( (string) $source['sync_status'] ) : '' );
-			update_post_meta( $post_id, self::META_SYNC_ERROR, isset( $source['sync_error'] ) ? $this->sanitizeErrorMessage( $source['sync_error'] ) : '' );
+		update_post_meta( $post_id, self::META_SYNC_ERROR, isset( $source['sync_error'] ) ? $this->sanitizeErrorMessage( $source['sync_error'] ) : '' );
 		update_post_meta( $post_id, self::META_SYNC_PROGRESS, $this->sanitizeProgress( $source['sync_progress'] ?? 0 ) );
 		update_post_meta( $post_id, self::META_SYNC_STEP, isset( $source['sync_step'] ) ? sanitize_key( (string) $source['sync_step'] ) : 'linked' );
 		update_post_meta( $post_id, self::META_SYNC_MESSAGE, $this->sanitizeProgressMessage( $source['sync_message'] ?? __( 'Linked and ready to sync.', 'brasth-document-sync-for-google-docs' ) ) );
@@ -790,6 +816,7 @@ final class SourceRepository {
 			'syncOwnerUserId'       => $source['sync_owner_user_id'],
 			'exportFormat'          => $source['export_format'],
 			'elementorSync'         => $source['elementor_sync'],
+			'elementorPreset'       => '' !== $source['elementor_preset'] ? $source['elementor_preset'] : null,
 			'syncStatus'            => $source['sync_status'],
 			'syncError'             => $source['sync_error'],
 			'syncProgress'          => $source['sync_progress'],
@@ -1116,6 +1143,23 @@ final class SourceRepository {
 	}
 
 	/**
+	 * Get the optional per-post Elementor preset.
+	 *
+	 * Empty means use the legacy Elementor converter.
+	 *
+	 * @param int $post_id Post ID.
+	 */
+	private function getElementorPreset( int $post_id ): string {
+		if ( ! metadata_exists( 'post', $post_id, self::META_ELEMENTOR_PRESET ) ) {
+			return '';
+		}
+
+		$preset_id = sanitize_key( $this->getStringMeta( $post_id, self::META_ELEMENTOR_PRESET ) );
+
+		return $this->elementor_presets->isValidPresetId( $preset_id ) ? $preset_id : '';
+	}
+
+	/**
 	 * Whether Elementor sync is explicitly enabled for a post.
 	 *
 	 * @param int $post_id Post ID.
@@ -1350,6 +1394,17 @@ final class SourceRepository {
 	}
 
 	/**
+	 * Sanitize an optional Elementor preset.
+	 *
+	 * @param mixed $preset_id Elementor preset ID.
+	 */
+	private function sanitizeElementorPreset( mixed $preset_id ): string {
+		$preset_id = sanitize_key( (string) $preset_id );
+
+		return '' !== $preset_id && $this->elementor_presets->isValidPresetId( $preset_id ) ? $preset_id : '';
+	}
+
+	/**
 	 * Source meta keys.
 	 *
 	 * @return array<int,string>
@@ -1369,6 +1424,7 @@ final class SourceRepository {
 			self::META_OWNER_USER_ID,
 			self::META_EXPORT_FORMAT,
 			self::META_ELEMENTOR_SYNC,
+			self::META_ELEMENTOR_PRESET,
 			self::META_SYNC_STATUS,
 			self::META_SYNC_ERROR,
 			self::META_SYNC_PROGRESS,

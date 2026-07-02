@@ -4,7 +4,7 @@ Tags: google-docs, google-drive, content-sync, editorial-workflow, blocks
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -27,6 +27,7 @@ Features include:
 * One-way Google Docs to WordPress sync for posts, pages, and enabled public custom post types.
 * Media import for images exported from Google Docs.
 * Default synced layout presets for Gutenberg imports: Clean Article, Documentation, and legacy Plain Blocks.
+* Elementor layout presets for Elementor sync: Elementor Hero Page and Elementor Feature Block.
 * Gutenberg block markup for common headings, paragraphs, lists, tables, code, callouts, and images.
 * Documentation preset heuristics for semantic code, fenced code, Google Docs styled code-like paragraphs, and explicit Note/Tip/Warning/Important/Caution callouts.
 * Uninstall cleanup for settings, encrypted user tokens, and scheduled events.
@@ -130,6 +131,14 @@ The build uses Vite and writes screen-specific manifests for Setup, Sources, Log
 5. Synced draft editor with the Brasth Document Sync meta box.
 
 == Changelog ==
+
+= 1.1.2 =
+
+* Added Elementor Hero Page and Elementor Feature Block presets for Elementor sync.
+* Added a separate Elementor preset selector so Gutenberg and Elementor layout choices do not conflict.
+* Added Elementor preset fingerprints so changing an Elementor preset forces safe re-conversion even when Google metadata is unchanged.
+* Preserved existing Elementor sources without an explicit Elementor preset on the legacy Elementor conversion path.
+* Added deterministic Elementor golden fixtures and Composer verification.
 
 = 1.1.1 =
 
