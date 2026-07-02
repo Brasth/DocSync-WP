@@ -1,0 +1,6 @@
+{
+  "preset": "elementor_hero_page",
+  "seed": "hero-page-basic",
+  "input": "input.html",
+  "expected": "expected.json"
+}

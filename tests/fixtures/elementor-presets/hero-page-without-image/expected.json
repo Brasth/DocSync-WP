@@ -1,0 +1,60 @@
+[
+    {
+        "id": "1b1742d3",
+        "elType": "container",
+        "isInner": false,
+        "settings": [],
+        "elements": [
+            {
+                "id": "18d9ef3e",
+                "elType": "widget",
+                "widgetType": "heading",
+                "isInner": false,
+                "settings": {
+                    "title": "Service Overview",
+                    "header_size": "h2"
+                },
+                "elements": []
+            },
+            {
+                "id": "f2c4da05",
+                "elType": "widget",
+                "widgetType": "text-editor",
+                "isInner": false,
+                "settings": {
+                    "editor": "<p>A concise synced page that still works when the Doc has no hero image.</p>"
+                },
+                "elements": []
+            }
+        ]
+    },
+    {
+        "id": "3f39ea74",
+        "elType": "container",
+        "isInner": false,
+        "settings": [],
+        "elements": [
+            {
+                "id": "37b60b44",
+                "elType": "widget",
+                "widgetType": "heading",
+                "isInner": false,
+                "settings": {
+                    "title": "What changes",
+                    "header_size": "h3"
+                },
+                "elements": []
+            },
+            {
+                "id": "eded5934",
+                "elType": "widget",
+                "widgetType": "text-editor",
+                "isInner": false,
+                "settings": {
+                    "editor": "<p>Remaining headings and paragraphs become normal Elementor feature sections.</p>"
+                },
+                "elements": []
+            }
+        ]
+    }
+]

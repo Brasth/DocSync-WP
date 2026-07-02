@@ -1,0 +1,46 @@
+<h1>Google Docs Demo Code Runs</h1>
+<p>Java runner.</p>
+<p>package demo;</p>
+<p>import com.intuit.karate.junit5.Karate;</p>
+<p>class TestRunner {</p>
+<p>  @Karate.Test</p>
+<p>  Karate testUsers() {</p>
+<p>    return Karate.run("users").relativeTo(getClass());</p>
+<p>  }</p>
+<p>}</p>
+<p>Project tree.</p>
+<p>demo-api-tests/</p>
+<p>├── pom.xml</p>
+<p>├── src/main/java/</p>
+<p>│   └── config/</p>
+<p>└── src/test/java/</p>
+<p>    └── features/</p>
+<p>Maven configuration.</p>
+<p>&lt;project xmlns="http://maven.apache.org/POM/4.0.0"&gt;</p>
+<p>  &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;</p>
+<p>  &lt;groupId&gt;org.example&lt;/groupId&gt;</p>
+<p>  &lt;artifactId&gt;demo-tests&lt;/artifactId&gt;</p>
+<p>&lt;/project&gt;</p>
+<p>Karate feature.</p>
+<p>Feature: Users API</p>
+<p>Background:</p>
+<p>* url baseUrl</p>
+<p>* configure headers = { Accept: 'application/json' }</p>
+<p>Scenario: create user</p>
+<p>Given path 'users'</p>
+<p>And request</p>
+<p>"""</p>
+<p>{</p>
+<p>  "name": "Ada"</p>
+<p>}</p>
+<p>"""</p>
+<p>When method post</p>
+<p>Then status 201</p>
+<p>And match response.name == 'Ada'</p>
+<p>Publish results.</p>
+<p>curl -X POST \</p>
+<p>-H "Content-Type: application/json" \</p>
+<p>-H "Authorization: Bearer $XRAY_TOKEN" \</p>
+<p>-d @xray-report.json \</p>
+<p>https://xray.cloud.getxray.app/api/v2/import/execution/cucumber</p>
+<p>Back to prose.</p>
