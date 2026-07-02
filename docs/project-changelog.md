@@ -1,6 +1,20 @@
 # Project Changelog
 
-Last updated: 2026-06-30
+Last updated: 2026-07-02
+
+## 2026-07-02 - 1.1.2 Elementor layout presets
+
+- added separate Elementor preset services for Elementor Hero Page and Elementor Feature Block
+- added `_docsync_wp_elementor_preset`, `elementorPreset`, and `availableElementorLayoutPresets` without changing Gutenberg preset storage
+- changed Elementor preset fingerprints so preset changes force re-conversion even when Google metadata is unchanged
+- preserved existing Elementor sources without an explicit Elementor preset on the legacy Elementor converter
+- switched the post sync and source modal preset selector between Gutenberg and Elementor choices based on active sync mode
+- added deterministic Elementor golden fixtures plus `composer test:elementor-fixtures`
+- bumped plugin header version, `DOCSYNC_WP_VERSION`, `readme.txt` stable tag, package metadata, and admin fallback config to `1.1.2`
+
+Unresolved:
+
+- manual Elementor staging smoke test still needs a configured WordPress site with Elementor active and a connected Google test account
 
 ## 2026-06-30 - Optional anonymous active-install telemetry
 

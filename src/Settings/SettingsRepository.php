@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace DocSyncWP\Settings;
 
 use DocSyncWP\Security\EncryptionService;
+use DocSyncWP\Sync\Elementor\Preset\ElementorPresetRegistry;
 use DocSyncWP\Sync\Layout\LayoutPresetRegistry;
 use WP_Error;
 
@@ -38,6 +39,13 @@ final class SettingsRepository {
 	private LayoutPresetRegistry $layout_presets;
 
 	/**
+	 * Elementor preset registry.
+	 *
+	 * @var ElementorPresetRegistry
+	 */
+	private ElementorPresetRegistry $elementor_presets;
+
+	/**
 	 * Encryption service.
 	 *
 	 * @var EncryptionService
@@ -47,12 +55,18 @@ final class SettingsRepository {
 	/**
 	 * Constructor.
 	 *
-	 * @param EncryptionService         $encryption     Encryption service.
-	 * @param LayoutPresetRegistry|null $layout_presets Layout preset registry.
+	 * @param EncryptionService            $encryption        Encryption service.
+	 * @param LayoutPresetRegistry|null    $layout_presets    Layout preset registry.
+	 * @param ElementorPresetRegistry|null $elementor_presets Elementor preset registry.
 	 */
-	public function __construct( EncryptionService $encryption, ?LayoutPresetRegistry $layout_presets = null ) {
-		$this->encryption     = $encryption;
-		$this->layout_presets = $layout_presets ?? new LayoutPresetRegistry();
+	public function __construct(
+		EncryptionService $encryption,
+		?LayoutPresetRegistry $layout_presets = null,
+		?ElementorPresetRegistry $elementor_presets = null
+	) {
+		$this->encryption        = $encryption;
+		$this->layout_presets    = $layout_presets ?? new LayoutPresetRegistry();
+		$this->elementor_presets = $elementor_presets ?? new ElementorPresetRegistry();
 	}
 
 	/**
@@ -309,6 +323,15 @@ final class SettingsRepository {
 	 */
 	public function getAvailableLayoutPresets(): array {
 		return $this->layout_presets->getAvailablePresets();
+	}
+
+	/**
+	 * Get layout presets available to the Elementor sync path.
+	 *
+	 * @return array<int,array{id:string,label:string,description:string}>
+	 */
+	public function getAvailableElementorLayoutPresets(): array {
+		return $this->elementor_presets->getAvailablePresets();
 	}
 
 	/**

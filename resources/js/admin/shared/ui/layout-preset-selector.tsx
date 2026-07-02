@@ -6,7 +6,10 @@ import type { AvailableLayoutPreset } from '../../config';
 type Props = {
   availableLayoutPresets: AvailableLayoutPreset[];
   defaultLayoutPreset: string;
+  defaultOptionLabel?: string;
   disabled?: boolean;
+  helpText?: string;
+  label?: string;
   value: string;
   onChange: (value: string) => void;
 };
@@ -20,7 +23,10 @@ const defaultPresetLabel = (availableLayoutPresets: AvailableLayoutPreset[], def
 export const LayoutPresetSelector = ({
   availableLayoutPresets,
   defaultLayoutPreset,
+  defaultOptionLabel,
   disabled = false,
+  helpText = __('Choose how this Google Doc becomes block editor content. Elementor presets are separate.', 'brasth-document-sync-for-google-docs'),
+  label = __('Layout preset', 'brasth-document-sync-for-google-docs'),
   value,
   onChange
 }: Props): JSX.Element => {
@@ -31,21 +37,21 @@ export const LayoutPresetSelector = ({
 
   return (
     <label className="docsync-wp-field docsync-wp-layout-preset-selector">
-      <span>{__('Layout preset', 'brasth-document-sync-for-google-docs')}</span>
+      <span>{label}</span>
       <select
         disabled={disabled}
         onChange={(event) => onChange(event.currentTarget.value)}
         value={value}
       >
         <option value="">
-          {sprintf(__('Use site default (%s)', 'brasth-document-sync-for-google-docs'), defaultLabel)}
+          {defaultOptionLabel || sprintf(__('Use site default (%s)', 'brasth-document-sync-for-google-docs'), defaultLabel)}
         </option>
         {availableLayoutPresets.map((preset) => (
           <option key={preset.id} value={preset.id}>{preset.label}</option>
         ))}
       </select>
       <small className="docsync-wp-field-help">
-        {__('Choose how this Google Doc becomes block editor content. Elementor sync keeps using Elementor layout.', 'brasth-document-sync-for-google-docs')}
+        {helpText}
       </small>
     </label>
   );

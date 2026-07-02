@@ -1,6 +1,6 @@
 import { speak } from '@wordpress/a11y';
 import { createElement, Fragment, useState } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 import { getSourceContent, type SourceRecord, type SyncResult } from '../../api';
 import { getAdminConfig } from '../../config';
@@ -19,13 +19,26 @@ type Props = {
   postType: string;
   initialSource: SourceRecord | null;
   elementorAvailable: boolean;
+  defaultElementorSync: boolean;
 };
 
-export const PostMetaBoxApp = ({ postId, postType, initialSource, elementorAvailable }: Props): JSX.Element => {
+export const PostMetaBoxApp = ({ postId, postType, initialSource, elementorAvailable, defaultElementorSync }: Props): JSX.Element => {
   const [modalTarget, setModalTarget] = useState<DocSourceTarget | null>(null);
   const actions = usePostSyncActions(postId, initialSource);
   const isSyncing = actions.source?.syncStatus === 'syncing';
   const config = getAdminConfig();
+  const sourceElementorUnset = actions.source?.elementorSync === null || typeof actions.source?.elementorSync === 'undefined';
+  const sourceUsesElementor = Boolean(
+    elementorAvailable
+    && actions.source
+    && (actions.source.elementorSync === true || (sourceElementorUnset && defaultElementorSync))
+  );
+  const elementorDefaultPreset = 'elementor_feature_block';
+  const elementorDefaultLabel = config.availableElementorLayoutPresets.find((preset) => preset.id === elementorDefaultPreset)?.label || elementorDefaultPreset;
+  const elementorDefaultOptionLabel = actions.source?.elementorPreset
+    ? sprintf(__('Use Elementor default (%s)', 'brasth-document-sync-for-google-docs'), elementorDefaultLabel)
+    : __('Legacy Elementor output', 'brasth-document-sync-for-google-docs');
+  const linkTargetElementorSync = elementorAvailable && (actions.source ? sourceUsesElementor : defaultElementorSync);
 
   const onCompleted = (result: SyncResult) => {
     const nextSource = result.source ?? actions.source;
@@ -128,7 +141,16 @@ export const PostMetaBoxApp = ({ postId, postType, initialSource, elementorAvail
         {actions.source?.syncError ? <p className="docsync-wp-list-error">{actions.source.syncError}</p> : null}
         <AdminNotice className="inline" notice={actions.notice} />
         <div className="docsync-wp-post-box__actions">
-          <AdminButton disabled={actions.busy || isSyncing} onClick={() => setModalTarget({ mode: 'existing', postId, postType })} variant="primary">
+          <AdminButton
+            disabled={actions.busy || isSyncing}
+            onClick={() => setModalTarget({
+              mode: 'existing',
+              postId,
+              postType,
+              elementorSync: linkTargetElementorSync
+            })}
+            variant="primary"
+          >
             {actions.source ? __('Change Doc', 'brasth-document-sync-for-google-docs') : __('Link Google Doc', 'brasth-document-sync-for-google-docs')}
           </AdminButton>
           {actions.source ? <AdminButton disabled={actions.busy} onClick={actions.syncNow}>{__('Sync now', 'brasth-document-sync-for-google-docs')}</AdminButton> : null}
@@ -137,7 +159,7 @@ export const PostMetaBoxApp = ({ postId, postType, initialSource, elementorAvail
         {elementorAvailable && actions.source ? (
           <label className="docsync-wp-checkbox-row">
             <input
-              checked={actions.source.elementorSync === true}
+              checked={sourceUsesElementor}
               disabled={actions.busy || isSyncing}
               onChange={(event) => actions.updateElementorSync(event.currentTarget.checked)}
               type="checkbox"
@@ -145,11 +167,23 @@ export const PostMetaBoxApp = ({ postId, postType, initialSource, elementorAvail
             <span>{__('Sync as Elementor layout', 'brasth-document-sync-for-google-docs')}</span>
           </label>
         ) : null}
-        {actions.source ? (
+        {actions.source && sourceUsesElementor ? (
+          <LayoutPresetSelector
+            availableLayoutPresets={config.availableElementorLayoutPresets}
+            defaultLayoutPreset={elementorDefaultPreset}
+            defaultOptionLabel={elementorDefaultOptionLabel}
+            disabled={actions.busy || isSyncing}
+            helpText={__('Choose how this Google Doc becomes Elementor sections. Existing sources without a preset keep legacy output until changed.', 'brasth-document-sync-for-google-docs')}
+            label={__('Elementor layout preset', 'brasth-document-sync-for-google-docs')}
+            onChange={actions.updateElementorPreset}
+            value={actions.source.elementorPreset ?? ''}
+          />
+        ) : null}
+        {actions.source && !sourceUsesElementor ? (
           <LayoutPresetSelector
             availableLayoutPresets={config.availableLayoutPresets}
             defaultLayoutPreset={config.defaultLayoutPreset}
-            disabled={actions.busy || isSyncing || actions.source.elementorSync === true}
+            disabled={actions.busy || isSyncing}
             onChange={actions.updateLayoutPreset}
             value={actions.source.layoutPreset ?? ''}
           />

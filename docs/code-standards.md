@@ -96,6 +96,8 @@ Use the project-local Composer and pnpm toolchains:
 - `vendor/bin/phpcs -i`
 - `composer validate --no-check-publish`
 - `composer lint`
+- `composer test:layout-fixtures`
+- `composer test:elementor-fixtures`
 - `pnpm install --frozen-lockfile`
 - `pnpm lint`
 - `pnpm typecheck`

@@ -17,6 +17,7 @@ export type SettingsResponse = {
   hasRequiredSettings: boolean;
   availablePostTypes: AvailablePostType[];
   availableLayoutPresets: AvailableLayoutPreset[];
+  availableElementorLayoutPresets: AvailableLayoutPreset[];
 };
 
 export type GoogleAccount = {
@@ -126,6 +127,7 @@ export type SourceRecord = {
   layoutPreset?: string | null;
   lastLayoutFingerprint?: string;
   elementorSync?: boolean | null;
+  elementorPreset?: string | null;
   syncStatus: 'linked' | 'syncing' | 'synced' | 'skipped' | 'error' | string;
   syncError: string;
   syncProgress: number;

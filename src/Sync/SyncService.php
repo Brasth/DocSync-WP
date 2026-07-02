@@ -11,6 +11,8 @@ namespace DocSyncWP\Sync;
 
 use DocSyncWP\Google\DriveClient;
 use DocSyncWP\Sync\Elementor\DataConverter as ElementorDataConverter;
+use DocSyncWP\Sync\Elementor\Preset\ElementorPresetConversionService;
+use DocSyncWP\Sync\Elementor\Preset\ElementorPresetRegistry;
 use DocSyncWP\Sync\Elementor\PostUpdater as ElementorPostUpdater;
 use DocSyncWP\Sync\Elementor\SyncDecider as ElementorSyncDecider;
 use DocSyncWP\Sync\Layout\LayoutConversionService;
@@ -90,6 +92,13 @@ final class SyncService {
 	private ElementorDataConverter $elementor_converter;
 
 	/**
+	 * Elementor preset conversion service.
+	 *
+	 * @var ElementorPresetConversionService
+	 */
+	private ElementorPresetConversionService $elementor_preset_converter;
+
+	/**
 	 * Elementor post updater.
 	 *
 	 * @var ElementorPostUpdater
@@ -99,15 +108,16 @@ final class SyncService {
 	/**
 	 * Constructor.
 	 *
-	 * @param SourceRepository            $source_repository   Source repository.
-	 * @param DriveClient                 $drive_client        Drive client.
-	 * @param HtmlZipImporter             $html_zip_importer   HTML ZIP importer.
-	 * @param DocsApiHtmlImporter         $docs_api_importer   Docs API fallback importer.
-	 * @param LayoutConversionService     $layout_converter    Layout conversion service.
-	 * @param SyncLock                    $sync_lock           Sync lock.
-	 * @param ElementorSyncDecider|null   $elementor_decider   Elementor sync decider.
-	 * @param ElementorDataConverter|null $elementor_converter Elementor data converter.
-	 * @param ElementorPostUpdater|null   $elementor_updater   Elementor post updater.
+	 * @param SourceRepository                      $source_repository   Source repository.
+	 * @param DriveClient                           $drive_client        Drive client.
+	 * @param HtmlZipImporter                       $html_zip_importer   HTML ZIP importer.
+	 * @param DocsApiHtmlImporter                   $docs_api_importer   Docs API fallback importer.
+	 * @param LayoutConversionService               $layout_converter    Layout conversion service.
+	 * @param SyncLock                              $sync_lock           Sync lock.
+	 * @param ElementorSyncDecider|null             $elementor_decider   Elementor sync decider.
+	 * @param ElementorDataConverter|null           $elementor_converter        Elementor data converter.
+	 * @param ElementorPostUpdater|null             $elementor_updater          Elementor post updater.
+	 * @param ElementorPresetConversionService|null $elementor_preset_converter Elementor preset converter.
 	 */
 	public function __construct(
 		SourceRepository $source_repository,
@@ -118,17 +128,19 @@ final class SyncService {
 		SyncLock $sync_lock,
 		?ElementorSyncDecider $elementor_decider = null,
 		?ElementorDataConverter $elementor_converter = null,
-		?ElementorPostUpdater $elementor_updater = null
+		?ElementorPostUpdater $elementor_updater = null,
+		?ElementorPresetConversionService $elementor_preset_converter = null
 	) {
-		$this->source_repository   = $source_repository;
-		$this->drive_client        = $drive_client;
-		$this->html_zip_importer   = $html_zip_importer;
-		$this->docs_api_importer   = $docs_api_importer;
-		$this->layout_converter    = $layout_converter;
-		$this->sync_lock           = $sync_lock;
-		$this->elementor_decider   = $elementor_decider;
-		$this->elementor_converter = $elementor_converter ?? new ElementorDataConverter();
-		$this->elementor_updater   = $elementor_updater ?? new ElementorPostUpdater();
+		$this->source_repository          = $source_repository;
+		$this->drive_client               = $drive_client;
+		$this->html_zip_importer          = $html_zip_importer;
+		$this->docs_api_importer          = $docs_api_importer;
+		$this->layout_converter           = $layout_converter;
+		$this->sync_lock                  = $sync_lock;
+		$this->elementor_decider          = $elementor_decider;
+		$this->elementor_converter        = $elementor_converter ?? new ElementorDataConverter();
+		$this->elementor_updater          = $elementor_updater ?? new ElementorPostUpdater();
+		$this->elementor_preset_converter = $elementor_preset_converter ?? new ElementorPresetConversionService();
 	}
 
 	/**
@@ -149,6 +161,7 @@ final class SyncService {
 	 * @param string    $export_format Export format.
 	 * @param bool|null $elementor_sync Whether to sync this post as an Elementor layout. Null falls back to detection.
 	 * @param string    $layout_preset  Optional Gutenberg layout preset override.
+	 * @param string    $elementor_preset Optional Elementor layout preset.
 	 * @return array<string,mixed>|WP_Error
 	 */
 	public function attachSource(
@@ -157,7 +170,8 @@ final class SyncService {
 		string $file_id,
 		string $export_format = self::EXPORT_FORMAT_HTML_ZIP,
 		?bool $elementor_sync = null,
-		string $layout_preset = ''
+		string $layout_preset = '',
+		string $elementor_preset = ''
 	): array|WP_Error {
 		$export_format = $this->sanitizeExportFormat( $export_format );
 
@@ -191,6 +205,10 @@ final class SyncService {
 			$elementor_sync = $this->elementor_decider->getDefaultElementorSync( $post_id );
 		}
 
+		if ( true === $elementor_sync && '' === $elementor_preset ) {
+			$elementor_preset = ElementorPresetRegistry::DEFAULT_PRESET;
+		}
+
 		$saved = $this->source_repository->saveSource(
 			$post_id,
 			array_merge(
@@ -200,6 +218,7 @@ final class SyncService {
 					'last_synced_at'     => '',
 					'last_sync_method'   => '',
 					'layout_preset'      => $layout_preset,
+					'elementor_preset'   => $elementor_preset,
 					'sync_owner_user_id' => $user_id,
 					'export_format'      => $export_format,
 					'elementor_sync'     => $elementor_sync,
@@ -232,6 +251,7 @@ final class SyncService {
 	 * @param bool      $sync_immediately Whether to sync before returning.
 	 * @param bool|null $elementor_sync   Whether to sync this post as an Elementor layout. Null defaults to false for new drafts.
 	 * @param string    $layout_preset    Optional Gutenberg layout preset override.
+	 * @param string    $elementor_preset Optional Elementor layout preset.
 	 * @return array<string,mixed>|WP_Error
 	 */
 	public function createDraftFromSource(
@@ -241,7 +261,8 @@ final class SyncService {
 		string $export_format = self::EXPORT_FORMAT_HTML_ZIP,
 		bool $sync_immediately = true,
 		?bool $elementor_sync = null,
-		string $layout_preset = ''
+		string $layout_preset = '',
+		string $elementor_preset = ''
 	): array|WP_Error {
 		$export_format = $this->sanitizeExportFormat( $export_format );
 
@@ -262,6 +283,10 @@ final class SyncService {
 		}
 
 		$elementor_sync = $elementor_sync ?? false;
+
+		if ( true === $elementor_sync && '' === $elementor_preset ) {
+			$elementor_preset = ElementorPresetRegistry::DEFAULT_PRESET;
+		}
 
 		$post_id = wp_insert_post(
 			wp_slash(
@@ -293,6 +318,7 @@ final class SyncService {
 					'last_synced_at'     => '',
 					'last_sync_method'   => '',
 					'layout_preset'      => $layout_preset,
+					'elementor_preset'   => $elementor_preset,
 					'sync_owner_user_id' => $user_id,
 					'export_format'      => $export_format,
 					'elementor_sync'     => $elementor_sync,
@@ -488,14 +514,16 @@ final class SyncService {
 			$previous_source = $source;
 			$source          = array_merge( $source, $this->sourceFromMetadata( $metadata ) );
 			$use_elementor   = null !== $this->elementor_decider && $this->elementor_decider->shouldUseElementor( $post_id );
-			$layout_hash     = $use_elementor ? '' : $this->layout_converter->fingerprintForSource( $source );
+			$layout_hash     = $use_elementor
+				? $this->elementor_preset_converter->fingerprintForSource( $source )
+				: $this->layout_converter->fingerprintForSource( $source );
 
 			if (
 				! $force
 				&& '' !== (string) $source['last_hash']
 				&& (string) $previous_source['google_modified_time'] === (string) $metadata['modifiedTime']
 				&& (string) $previous_source['google_version'] === (string) $metadata['version']
-				&& ( $use_elementor || $this->isLayoutFingerprintCurrent( $source, $layout_hash ) )
+				&& $this->isLayoutFingerprintCurrent( $source, $layout_hash, $use_elementor )
 			) {
 				$skip_updates = array(
 					'last_synced_at'     => current_time( 'mysql', true ),
@@ -503,7 +531,7 @@ final class SyncService {
 					'sync_error'         => '',
 				);
 
-				if ( ! $use_elementor ) {
+				if ( '' !== $layout_hash ) {
 					$skip_updates['last_layout_hash'] = $layout_hash;
 				}
 
@@ -564,7 +592,10 @@ final class SyncService {
 			}
 
 			if ( $use_elementor ) {
-				$elementor_json = $this->elementor_converter->convert( $import['html'], $post_id );
+				$elementor_preset = $this->elementor_preset_converter->resolvePresetForSource( $source );
+				$elementor_json   = '' !== $elementor_preset
+					? $this->elementor_preset_converter->convert( $import['html'], $post_id, $elementor_preset )
+					: $this->elementor_converter->convert( $import['html'], $post_id );
 
 				if ( is_wp_error( $elementor_json ) ) {
 					return $this->markError( $post_id, $source, $elementor_json );
@@ -592,7 +623,7 @@ final class SyncService {
 					'sync_error'         => '',
 				);
 
-				if ( ! $use_elementor ) {
+				if ( '' !== $layout_hash ) {
 					$skip_updates['last_layout_hash'] = $layout_hash;
 				}
 
@@ -681,7 +712,7 @@ final class SyncService {
 				'sync_error'         => '',
 			);
 
-			if ( ! $use_elementor ) {
+			if ( '' !== $layout_hash ) {
 				$success_updates['last_layout_hash'] = $layout_hash;
 			}
 
@@ -799,19 +830,29 @@ final class SyncService {
 	}
 
 	/**
-	 * Whether the stored layout fingerprint matches current Gutenberg output policy.
+	 * Whether the stored layout fingerprint matches current output policy.
 	 *
 	 * Legacy sources synced before 1.1.0 have no layout fingerprint. Treat those
 	 * as current only when the effective preset is still the legacy plain_blocks
-	 * preset, preserving upgraded-site skip behavior.
+	 * preset. Legacy Elementor sources without an explicit preset have no current
+	 * fingerprint and keep the pre-1.1.2 skip behavior.
 	 *
 	 * @param array<string,mixed> $source      Source metadata.
 	 * @param string              $layout_hash Current layout fingerprint.
+	 * @param bool                $elementor   Whether Elementor conversion is active.
 	 */
-	private function isLayoutFingerprintCurrent( array $source, string $layout_hash ): bool {
+	private function isLayoutFingerprintCurrent( array $source, string $layout_hash, bool $elementor ): bool {
+		if ( '' === $layout_hash ) {
+			return true;
+		}
+
 		$last_layout_hash = isset( $source['last_layout_hash'] ) ? (string) $source['last_layout_hash'] : '';
 
 		if ( '' === $last_layout_hash ) {
+			if ( $elementor ) {
+				return false;
+			}
+
 			return LayoutPresetRegistry::PRESET_PLAIN_BLOCKS === $this->layout_converter->resolvePresetForSource( $source );
 		}
 

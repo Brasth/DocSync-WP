@@ -56,6 +56,30 @@ final class LayoutBuilder {
 	}
 
 	/**
+	 * Wrap widget groups as top-level Elementor layout sections.
+	 *
+	 * @param array<int,array<int,array<string,mixed>>> $widget_groups Widget groups.
+	 * @param int                                       $post_id       Post ID.
+	 * @return array<int,array<string,mixed>>
+	 */
+	public function wrapWidgetGroups( array $widget_groups, int $post_id ): array {
+		if ( array() === $widget_groups ) {
+			return $this->wrapWidgets( array(), $post_id );
+		}
+
+		return array_map(
+			function ( array $widgets ) use ( $post_id ): array {
+				if ( $this->compatibility->postUsesContainers( $post_id ) ) {
+					return $this->container( $widgets );
+				}
+
+				return $this->section( $widgets );
+			},
+			$widget_groups
+		);
+	}
+
+	/**
 	 * Create a container element holding the widgets.
 	 *
 	 * @param array<int,array<string,mixed>> $widgets Widget arrays.
