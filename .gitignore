@@ -10,6 +10,9 @@
 /.vscode/
 *.log
 *.zip
+client_secret*.json
+.secrets/
+.env.local
 tests/*
 !tests/fixtures/
 !tests/fixtures/**

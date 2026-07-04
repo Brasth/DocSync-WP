@@ -212,6 +212,8 @@ function wp_unschedule_event( int $timestamp, string $hook ): bool {
 }
 
 require_once __DIR__ . '/../src/Security/EncryptionService.php';
+require_once __DIR__ . '/../src/Sync/Elementor/Preset/ElementorPresetBlueprint.php';
+require_once __DIR__ . '/../src/Sync/Elementor/Preset/ElementorPresetRegistry.php';
 require_once __DIR__ . '/../src/Sync/Layout/LayoutBlueprint.php';
 require_once __DIR__ . '/../src/Sync/Layout/LayoutPresetRegistry.php';
 require_once __DIR__ . '/../src/Settings/SettingsRepository.php';
