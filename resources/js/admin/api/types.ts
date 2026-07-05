@@ -192,6 +192,10 @@ export type SyncLogEntry = {
     hasCronEvent?: boolean;
     lastHeartbeat?: string;
     lastStep?: string;
+    outputType?: 'gutenberg' | 'elementor' | string;
+    layoutPreset?: string;
+    elementorMode?: 'preset' | 'legacy' | string;
+    elementorPreset?: string;
   };
 };
 

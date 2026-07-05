@@ -1,6 +1,6 @@
 # System Architecture
 
-Last updated: 2026-06-30
+Last updated: 2026-07-05
 
 ## Overview
 
@@ -156,7 +156,7 @@ Implemented routes:
 
 Source records include additive live progress fields: `syncProgress` from 0 to 100, `syncStep`, and `syncMessage`. Existing status values and route shapes stay unchanged.
 
-Sync log entries are diagnostic events, not audit records. They store only `eventId`, timestamp, level, target/source titles, status, step, progress, message, error code, sync timestamps, and safe context flags such as lock or cron-event state.
+Sync log entries are diagnostic events, not audit records. They store only `eventId`, timestamp, level, target/source titles, status, step, progress, message, error code, sync timestamps, and safe context flags such as lock state, cron-event state, and effective output path labels. Output-path context is limited to validated preset IDs and mode labels: Gutenberg preset, Elementor preset, or legacy Elementor converter.
 
 Clearing sync logs deletes only `_docsync_wp_sync_events` for source posts the current user can edit. It does not delete source links, sync status, progress, credentials, or synced content.
 

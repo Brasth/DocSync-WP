@@ -205,7 +205,16 @@ final class SyncService {
 			$elementor_sync = $this->elementor_decider->getDefaultElementorSync( $post_id );
 		}
 
-		if ( true === $elementor_sync && '' === $elementor_preset ) {
+		$current_uses_elementor    = is_array( $current_source )
+			&& null !== $this->elementor_decider
+			&& $this->elementor_decider->shouldUseElementor( $post_id );
+		$preserve_legacy_elementor = is_array( $current_source )
+			&& $current_uses_elementor
+			&& '' === (string) ( $current_source['elementor_preset'] ?? '' )
+			&& true === $elementor_sync
+			&& '' === $elementor_preset;
+
+		if ( true === $elementor_sync && '' === $elementor_preset && ! $preserve_legacy_elementor ) {
 			$elementor_preset = ElementorPresetRegistry::DEFAULT_PRESET;
 		}
 
@@ -822,11 +831,44 @@ final class SyncService {
 				'errorCode'     => '' !== $event_error_code ? $event_error_code : (string) ( $next_source['sync_error_code'] ?? '' ),
 				'syncStartedAt' => (string) ( $next_source['sync_started_at'] ?? '' ),
 				'syncUpdatedAt' => (string) ( $next_source['sync_updated_at'] ?? '' ),
-				'context'       => $event_context,
+				'context'       => array_merge( $event_context, $this->syncOutputContext( $post_id, $next_source ) ),
 			)
 		);
 
 		return $next_source;
+	}
+
+	/**
+	 * Build safe diagnostic context for the effective output path.
+	 *
+	 * @param int                 $post_id Post ID.
+	 * @param array<string,mixed> $source  Source metadata.
+	 * @return array<string,string>
+	 */
+	private function syncOutputContext( int $post_id, array $source ): array {
+		$use_elementor = null !== $this->elementor_decider && $this->elementor_decider->shouldUseElementor( $post_id );
+
+		if ( $use_elementor ) {
+			$elementor_preset = $this->elementor_preset_converter->resolvePresetForSource( $source );
+
+			if ( '' === $elementor_preset ) {
+				return array(
+					'outputType'    => 'elementor',
+					'elementorMode' => 'legacy',
+				);
+			}
+
+			return array(
+				'outputType'      => 'elementor',
+				'elementorMode'   => 'preset',
+				'elementorPreset' => $elementor_preset,
+			);
+		}
+
+		return array(
+			'outputType'   => 'gutenberg',
+			'layoutPreset' => $this->layout_converter->resolvePresetForSource( $source ),
+		);
 	}
 
 	/**
@@ -1064,10 +1106,11 @@ final class SyncService {
 	 * @param array<string,mixed> $source  Current source.
 	 */
 	private function progressiveFallbackFlushCallback( int $post_id, array &$source ): callable {
-		$last_hash     = '';
-		$use_elementor = null !== $this->elementor_decider && $this->elementor_decider->shouldUseElementor( $post_id );
+		$last_hash        = '';
+		$use_elementor    = null !== $this->elementor_decider && $this->elementor_decider->shouldUseElementor( $post_id );
+		$elementor_preset = $use_elementor ? $this->elementor_preset_converter->resolvePresetForSource( $source ) : '';
 
-		return function ( string $html, int $rendered, int $total ) use ( $post_id, &$source, &$last_hash, $use_elementor ): true|WP_Error {
+		return function ( string $html, int $rendered, int $total ) use ( $post_id, &$source, &$last_hash, $use_elementor, $elementor_preset ): true|WP_Error {
 			$sanitized_html = wp_kses_post( $html );
 			$partial_hash   = hash( 'sha256', $sanitized_html );
 
@@ -1076,7 +1119,9 @@ final class SyncService {
 			}
 
 			if ( $use_elementor ) {
-				$elementor_json = $this->elementor_converter->convert( $sanitized_html, $post_id );
+				$elementor_json = '' !== $elementor_preset
+					? $this->elementor_preset_converter->convert( $sanitized_html, $post_id, $elementor_preset )
+					: $this->elementor_converter->convert( $sanitized_html, $post_id );
 
 				if ( is_wp_error( $elementor_json ) ) {
 					return $elementor_json;

@@ -1,6 +1,6 @@
 # Brasth Document Sync Codebase Summary
 
-Last updated: 2026-06-30
+Last updated: 2026-07-05
 
 ## Snapshot
 
@@ -32,7 +32,7 @@ Summary reflects the current source tree after the Radix plus WordPress-native a
 3. Setup, Sources, and Logs mount through separate React entries under `resources/js/admin/entries/`.
 4. Post/page edit and list-table screens mount through `resources/js/admin/entries/post-sync-entry.tsx`, with source modal and Drive browser assets loaded lazily.
 5. REST controllers handle settings, OAuth, My Drive/shared drive folder browsing, document inspection, source management, sync logs, and sync triggers.
-6. `SyncService` reads Google metadata, exports an HTML ZIP package, imports local images into Media Library, converts sanitized HTML to block content, updates the target post, and persists sync state plus diagnostic events.
+6. `SyncService` reads Google metadata, exports an HTML ZIP package or Docs API fallback HTML, imports local images into Media Library, converts sanitized HTML through the effective Gutenberg or Elementor preset path, updates the target post, and persists sync state plus diagnostic events.
 
 ## Key Backend Modules
 
@@ -41,7 +41,7 @@ Summary reflects the current source tree after the Radix plus WordPress-native a
 - `src/Auth/TokenStore.php` - per-user encrypted Google token storage.
 - `src/Google/DriveClient.php` - My Drive/shared drive folder and Doc listing, Docs metadata, and export requests.
 - `src/Sync/SourceRepository.php` - post meta source records, capability checks, and bounded diagnostic sync events.
-- `src/Sync/SyncService.php` - attach, create draft, sync, skip-on-unchanged, error handling.
+- `src/Sync/SyncService.php` - attach, create draft, sync, large-doc fallback writes, skip-on-unchanged, output-path diagnostics, error handling.
 - `src/Sync/HtmlZipImporter.php` - coordinates HTML ZIP import and sanitization.
 - `src/Sync/HtmlZipPackageExtractor.php` - extracts Google Docs ZIP exports and locates HTML.
 - `src/Sync/HtmlDocumentImageRewriter.php` - rewrites local image refs to attachment URLs.
@@ -97,7 +97,7 @@ The 1.1.x line introduces layout presets to make synced Google Docs publishable 
 - Site-level `default_layout_preset`, per-source `Layout preset` selectors backed by optional `_docsync_wp_layout_preset`, and `_docsync_wp_last_layout_fingerprint`.
 - Built-in Gutenberg presets covering Clean Article, Documentation, and legacy Plain Blocks.
 - Built-in Elementor presets covering Elementor Hero Page and Elementor Feature Block.
-- Tracked Gutenberg and Elementor layout fixtures, wired into Composer and PR CI.
+- Tracked Gutenberg, Elementor, and large-doc fallback layout fixtures, wired into Composer and PR CI.
 
 Preview/gallery UI remains future work.
 

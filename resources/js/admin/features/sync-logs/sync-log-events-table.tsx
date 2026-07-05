@@ -50,6 +50,32 @@ const eventContext = (entry: SyncLogEntry): { label: string; value: string }[] =
     details.push({ label: __('Last step', 'brasth-document-sync-for-google-docs'), value: context.lastStep });
   }
 
+  if (context.outputType) {
+    details.push({
+      label: __('Output', 'brasth-document-sync-for-google-docs'),
+      value: context.outputType === 'elementor'
+        ? __('Elementor', 'brasth-document-sync-for-google-docs')
+        : __('WordPress Blocks', 'brasth-document-sync-for-google-docs')
+    });
+  }
+
+  if (context.layoutPreset) {
+    details.push({ label: __('Gutenberg preset', 'brasth-document-sync-for-google-docs'), value: context.layoutPreset });
+  }
+
+  if (context.elementorMode) {
+    details.push({
+      label: __('Elementor mode', 'brasth-document-sync-for-google-docs'),
+      value: context.elementorMode === 'legacy'
+        ? __('Legacy converter', 'brasth-document-sync-for-google-docs')
+        : __('Preset', 'brasth-document-sync-for-google-docs')
+    });
+  }
+
+  if (context.elementorPreset) {
+    details.push({ label: __('Elementor preset', 'brasth-document-sync-for-google-docs'), value: context.elementorPreset });
+  }
+
   return details;
 };
 

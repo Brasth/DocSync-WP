@@ -3,7 +3,46 @@
         "id": "c478c739",
         "elType": "container",
         "isInner": false,
-        "settings": [],
+        "settings": {
+            "content_width": "boxed",
+            "boxed_width": {
+                "unit": "px",
+                "size": 960,
+                "sizes": []
+            },
+            "flex_direction": "column",
+            "align_items": "stretch",
+            "gap": {
+                "unit": "px",
+                "size": 18,
+                "sizes": []
+            },
+            "padding": {
+                "unit": "px",
+                "top": "48",
+                "right": "24",
+                "bottom": "48",
+                "left": "24",
+                "isLinked": false
+            },
+            "padding_tablet": {
+                "unit": "px",
+                "top": "40",
+                "right": "22",
+                "bottom": "40",
+                "left": "22",
+                "isLinked": false
+            },
+            "padding_mobile": {
+                "unit": "px",
+                "top": "32",
+                "right": "18",
+                "bottom": "32",
+                "left": "18",
+                "isLinked": false
+            },
+            "html_tag": "section"
+        },
         "elements": [
             {
                 "id": "2a0f6ed4",
@@ -12,7 +51,17 @@
                 "isInner": false,
                 "settings": {
                     "title": "Comparison",
-                    "header_size": "h2"
+                    "header_size": "h2",
+                    "size": "xl",
+                    "align": "left",
+                    "_margin": {
+                        "unit": "px",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "8",
+                        "left": "0",
+                        "isLinked": false
+                    }
                 },
                 "elements": []
             },
@@ -22,7 +71,16 @@
                 "widgetType": "text-editor",
                 "isInner": false,
                 "settings": {
-                    "editor": "<p>Structured content keeps safe fallbacks.</p>"
+                    "editor": "<p>Structured content keeps safe fallbacks.</p>",
+                    "align": "left",
+                    "_margin": {
+                        "unit": "px",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "4",
+                        "left": "0",
+                        "isLinked": false
+                    }
                 },
                 "elements": []
             },
@@ -32,7 +90,16 @@
                 "widgetType": "text-editor",
                 "isInner": false,
                 "settings": {
-                    "editor": "<ol>\n  <li>Inspect source</li>\n  <li>Sync layout</li>\n</ol>"
+                    "editor": "<ol>\n  <li>Inspect source</li>\n  <li>Sync layout</li>\n</ol>",
+                    "align": "left",
+                    "_margin": {
+                        "unit": "px",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "4",
+                        "left": "0",
+                        "isLinked": false
+                    }
                 },
                 "elements": []
             },
@@ -42,7 +109,15 @@
                 "widgetType": "html",
                 "isInner": false,
                 "settings": {
-                    "html": "<table>\n  <tbody>\n    <tr><th>Plan</th><th>Use</th></tr>\n    <tr><td>Hero</td><td>Landing pages</td></tr>\n  </tbody>\n</table>"
+                    "html": "<table>\n  <tbody>\n    <tr><th>Plan</th><th>Use</th></tr>\n    <tr><td>Hero</td><td>Landing pages</td></tr>\n  </tbody>\n</table>",
+                    "_margin": {
+                        "unit": "px",
+                        "top": "8",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0",
+                        "isLinked": false
+                    }
                 },
                 "elements": []
             }

@@ -38,7 +38,12 @@ export const ListEntryApp = ({ postType }: { postType: string }): JSX.Element =>
         return;
       }
 
-      setModalTarget({ mode: 'existing', postId, postType: rowPostType });
+      setModalTarget({
+        mode: 'existing',
+        postId,
+        postType: rowPostType,
+        elementorSync: link.dataset.defaultElementorSync === 'true'
+      });
     };
 
     document.addEventListener('click', onClick);

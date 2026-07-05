@@ -155,12 +155,12 @@ final class ElementorPresetConversionService {
 			return $this->encodeLayout( array(), $post_id );
 		}
 
-		$nodes  = $this->contentNodes( $body );
-		$groups = 'hero_page' === $preset->getLayout()
-			? $this->heroWidgetGroups( $nodes )
-			: $this->featureWidgetGroups( $nodes );
+		$nodes      = $this->contentNodes( $body );
+		$group_data = 'hero_page' === $preset->getLayout()
+			? $this->heroWidgetGroupData( $nodes )
+			: $this->featureWidgetGroupData( $nodes );
 
-		return $this->encodeLayout( $groups, $post_id );
+		return $this->encodeLayout( $group_data['groups'], $post_id, $group_data['styles'] );
 	}
 
 	/**
@@ -224,6 +224,21 @@ final class ElementorPresetConversionService {
 	 * Build feature-style widget groups.
 	 *
 	 * @param array<int,DOMNode> $nodes Content nodes.
+	 * @return array{groups:array<int,array<int,array<string,mixed>>>,styles:array<int,string>}
+	 */
+	private function featureWidgetGroupData( array $nodes ): array {
+		$groups = $this->featureWidgetGroups( $nodes );
+
+		return array(
+			'groups' => $groups,
+			'styles' => array_fill( 0, count( $groups ), LayoutBuilder::GROUP_STYLE_FEATURE ),
+		);
+	}
+
+	/**
+	 * Build feature-style widget groups.
+	 *
+	 * @param array<int,DOMNode> $nodes Content nodes.
 	 * @return array<int,array<int,array<string,mixed>>>
 	 */
 	private function featureWidgetGroups( array $nodes ): array {
@@ -231,7 +246,7 @@ final class ElementorPresetConversionService {
 		$current = array();
 
 		foreach ( $nodes as $node ) {
-			$widgets = $this->nodeToWidgets( $node );
+			$widgets = $this->nodeToWidgets( $node, WidgetFactory::STYLE_FEATURE );
 
 			if ( array() === $widgets ) {
 				continue;
@@ -256,38 +271,38 @@ final class ElementorPresetConversionService {
 	 * Build hero-first widget groups.
 	 *
 	 * @param array<int,DOMNode> $nodes Content nodes.
-	 * @return array<int,array<int,array<string,mixed>>>
+	 * @return array{groups:array<int,array<int,array<string,mixed>>>,styles:array<int,string>}
 	 */
-	private function heroWidgetGroups( array $nodes ): array {
+	private function heroWidgetGroupData( array $nodes ): array {
 		$heading_index = $this->findFirstIndex( $nodes, array( $this, 'isHeroHeading' ) );
 
 		if ( null === $heading_index ) {
-			return $this->featureWidgetGroups( $nodes );
+			return $this->featureWidgetGroupData( $nodes );
 		}
 
 		$intro_index = $this->findFirstIndex( $nodes, array( $this, 'isIntroParagraph' ), $heading_index + 1 );
 
 		if ( null === $intro_index ) {
-			return $this->featureWidgetGroups( $nodes );
+			return $this->featureWidgetGroupData( $nodes );
 		}
 
 		$image_index = $this->findFirstImageIndex( $nodes );
 		$selected    = array_filter( array( $heading_index, $intro_index, $image_index ), 'is_int' );
 		$hero        = array_merge(
-			$this->nodeToWidgets( $nodes[ $heading_index ] ),
-			$this->nodeToWidgets( $nodes[ $intro_index ] )
+			$this->nodeToWidgets( $nodes[ $heading_index ], WidgetFactory::STYLE_HERO ),
+			$this->nodeToWidgets( $nodes[ $intro_index ], WidgetFactory::STYLE_HERO )
 		);
 
 		if ( null !== $image_index ) {
 			$image = $this->nodeImageElement( $nodes[ $image_index ] );
 
 			if ( $image instanceof DOMElement ) {
-				$hero[] = $this->widgets->image( $image );
+				$hero[] = $this->widgets->image( $image, WidgetFactory::STYLE_HERO );
 			}
 		}
 
 		if ( array() === $hero ) {
-			return $this->featureWidgetGroups( $nodes );
+			return $this->featureWidgetGroupData( $nodes );
 		}
 
 		$remaining = array();
@@ -300,27 +315,36 @@ final class ElementorPresetConversionService {
 			$remaining[] = $node;
 		}
 
-		return array_merge( array( $hero ), $this->featureWidgetGroups( $remaining ) );
+		$feature_groups = $this->featureWidgetGroups( $remaining );
+
+		return array(
+			'groups' => array_merge( array( $hero ), $feature_groups ),
+			'styles' => array_merge(
+				array( LayoutBuilder::GROUP_STYLE_HERO ),
+				array_fill( 0, count( $feature_groups ), LayoutBuilder::GROUP_STYLE_FEATURE )
+			),
+		);
 	}
 
 	/**
 	 * Convert one DOM node to Elementor widgets.
 	 *
 	 * @param DOMNode $node DOM node.
+	 * @param string  $style Widget style profile.
 	 * @return array<int,array<string,mixed>>
 	 */
-	private function nodeToWidgets( DOMNode $node ): array {
+	private function nodeToWidgets( DOMNode $node, string $style ): array {
 		if ( $node instanceof DOMText ) {
 			$text = trim( $node->textContent );
 
-			return '' === $text ? array() : array( $this->widgets->textEditor( esc_html( $text ) ) );
+			return '' === $text ? array() : array( $this->widgets->textEditor( esc_html( $text ), $style ) );
 		}
 
 		if ( ! $node instanceof DOMElement ) {
 			return array();
 		}
 
-		return array( $this->widgets->fromElement( $node ) );
+		return array( $this->widgets->fromElement( $node, $style ) );
 	}
 
 	/**
@@ -429,10 +453,11 @@ final class ElementorPresetConversionService {
 	 *
 	 * @param array<int,array<int,array<string,mixed>>> $groups  Widget groups.
 	 * @param int                                       $post_id Target post ID.
+	 * @param array<int,string>                         $styles  Group style names.
 	 * @return string|WP_Error
 	 */
-	private function encodeLayout( array $groups, int $post_id ): string|WP_Error {
-		$json = wp_json_encode( $this->layout->wrapWidgetGroups( $groups, $post_id ) );
+	private function encodeLayout( array $groups, int $post_id, array $styles = array() ): string|WP_Error {
+		$json = wp_json_encode( $this->layout->wrapWidgetGroups( $groups, $post_id, $styles ) );
 
 		if ( false === $json ) {
 			return new WP_Error(

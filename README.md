@@ -67,14 +67,14 @@ Each WordPress user must connect their own Google account before inspecting or s
 
 Setup, Sources, and Sync Activity share a branded Brasth admin shell with a compact product masthead, contained notices, consistent button sizing, and the runtime Brasth mark from `resources/images/`. Destructive admin actions use Radix confirmation dialogs instead of native browser prompts.
 
-The Sources screen keeps the table-based workflow for linked Docs, with compact row actions and background sync polling. The Sync Activity screen keeps URL-backed filters and auto-refresh, shows useful summaries only when events exist, and manages source or all-log clearing through the shared confirmation dialog.
+The Sources screen keeps the table-based workflow for linked Docs, with compact row actions and background sync polling. The Sync Activity screen keeps URL-backed filters and auto-refresh, shows useful summaries only when events exist, and manages source or all-log clearing through the shared confirmation dialog. Sync events include the safe output path used for a run: Gutenberg preset, Elementor preset, or legacy Elementor converter. When Elementor is enabled, the Google Doc link modal asks whether the source should sync as WordPress Blocks or an Elementor Layout before saving the source.
 
 ## Sync Behavior
 
 - Google Docs is the source of truth. Manual sync overwrites WordPress post content while preserving normal WordPress revisions.
 - Sync exports Google Docs as an HTML ZIP package, imports local images into the WordPress Media Library, rewrites image URLs, sanitizes HTML, converts common elements to Gutenberg blocks, then updates the target post.
 - Site admins can choose the default Gutenberg sync layout from `Clean Article`, `Documentation`, and `Plain Blocks`. Individual linked sources can override that preset before sync; `Use site default` stores no per-source override.
-- Elementor sync uses separate Elementor presets: `Elementor Hero Page` and `Elementor Feature Block`. Existing Elementor sources without an explicit Elementor preset keep the legacy Elementor conversion path until a preset is selected.
+- Elementor sync uses separate Elementor presets: `Elementor Hero Page` and `Elementor Feature Block`. Existing Elementor sources without an explicit Elementor preset keep the legacy Elementor conversion path until a preset is selected, and the post sync metabox shows upgrade actions for Feature Block or Hero Page.
 - The `Documentation` layout renders semantic `pre`/`code` HTML, fenced snippets, and Google Docs styled code-like paragraphs as `core/code` blocks. It uses balanced heuristics for shell commands, XML/JSON snippets, Java/PHP/JavaScript-like statements, Gherkin steps, paths, and file trees; it is not a full programming-language parser.
 - Explicit `Note:`, `Tip:`, `Warning:`, `Important:`, and `Caution:` paragraphs render as quote-style callouts in the `Documentation` layout.
 - If Google blocks an HTML ZIP export because the exported Workspace document exceeds its 10 MB export limit, Brasth Document Sync automatically retries through the Google Docs API large-doc fallback before changing WordPress content.
@@ -110,6 +110,7 @@ composer validate --no-check-publish
 composer lint
 composer test:layout-fixtures
 composer test:elementor-fixtures
+composer test:large-doc-fallback-fixtures
 pnpm install --frozen-lockfile
 pnpm lint
 pnpm typecheck

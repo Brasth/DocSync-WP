@@ -3,7 +3,46 @@
         "id": "56b2eb0d",
         "elType": "container",
         "isInner": false,
-        "settings": [],
+        "settings": {
+            "content_width": "boxed",
+            "boxed_width": {
+                "unit": "px",
+                "size": 960,
+                "sizes": []
+            },
+            "flex_direction": "column",
+            "align_items": "stretch",
+            "gap": {
+                "unit": "px",
+                "size": 18,
+                "sizes": []
+            },
+            "padding": {
+                "unit": "px",
+                "top": "48",
+                "right": "24",
+                "bottom": "48",
+                "left": "24",
+                "isLinked": false
+            },
+            "padding_tablet": {
+                "unit": "px",
+                "top": "40",
+                "right": "22",
+                "bottom": "40",
+                "left": "22",
+                "isLinked": false
+            },
+            "padding_mobile": {
+                "unit": "px",
+                "top": "32",
+                "right": "18",
+                "bottom": "32",
+                "left": "18",
+                "isLinked": false
+            },
+            "html_tag": "section"
+        },
         "elements": [
             {
                 "id": "ec5cdc4a",
@@ -12,7 +51,17 @@
                 "isInner": false,
                 "settings": {
                     "title": "Feature Sync",
-                    "header_size": "h1"
+                    "header_size": "h1",
+                    "size": "xl",
+                    "align": "left",
+                    "_margin": {
+                        "unit": "px",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "8",
+                        "left": "0",
+                        "isLinked": false
+                    }
                 },
                 "elements": []
             },
@@ -22,7 +71,16 @@
                 "widgetType": "text-editor",
                 "isInner": false,
                 "settings": {
-                    "editor": "<p><strong>Editors</strong> can keep launch copy in Google Docs.</p>"
+                    "editor": "<p><strong>Editors</strong> can keep launch copy in Google Docs.</p>",
+                    "align": "left",
+                    "_margin": {
+                        "unit": "px",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "4",
+                        "left": "0",
+                        "isLinked": false
+                    }
                 },
                 "elements": []
             },
@@ -36,7 +94,7 @@
                         {
                             "text": "One-way sync",
                             "selected_icon": {
-                                "value": "fas fa-circle",
+                                "value": "fas fa-check",
                                 "library": "fa-solid"
                             },
                             "link": {
@@ -48,7 +106,7 @@
                         {
                             "text": "Elementor widgets",
                             "selected_icon": {
-                                "value": "fas fa-circle",
+                                "value": "fas fa-check",
                                 "library": "fa-solid"
                             },
                             "link": {
@@ -57,7 +115,30 @@
                                 "nofollow": ""
                             }
                         }
-                    ]
+                    ],
+                    "space_between": {
+                        "unit": "px",
+                        "size": 10,
+                        "sizes": []
+                    },
+                    "icon_size": {
+                        "unit": "px",
+                        "size": 14,
+                        "sizes": []
+                    },
+                    "text_indent": {
+                        "unit": "px",
+                        "size": 8,
+                        "sizes": []
+                    },
+                    "_margin": {
+                        "unit": "px",
+                        "top": "4",
+                        "right": "0",
+                        "bottom": "4",
+                        "left": "0",
+                        "isLinked": false
+                    }
                 },
                 "elements": []
             },
@@ -71,6 +152,31 @@
                         "url": "https://example.com/uploads/feature.png",
                         "id": 0,
                         "alt": "Feature blocks"
+                    },
+                    "image_size": "large",
+                    "align": "center",
+                    "width": {
+                        "unit": "%",
+                        "size": 72,
+                        "sizes": []
+                    },
+                    "width_tablet": {
+                        "unit": "%",
+                        "size": 86,
+                        "sizes": []
+                    },
+                    "width_mobile": {
+                        "unit": "%",
+                        "size": 100,
+                        "sizes": []
+                    },
+                    "_margin": {
+                        "unit": "px",
+                        "top": "8",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0",
+                        "isLinked": false
                     }
                 },
                 "elements": []
@@ -81,7 +187,46 @@
         "id": "0a05bde3",
         "elType": "container",
         "isInner": false,
-        "settings": [],
+        "settings": {
+            "content_width": "boxed",
+            "boxed_width": {
+                "unit": "px",
+                "size": 960,
+                "sizes": []
+            },
+            "flex_direction": "column",
+            "align_items": "stretch",
+            "gap": {
+                "unit": "px",
+                "size": 18,
+                "sizes": []
+            },
+            "padding": {
+                "unit": "px",
+                "top": "48",
+                "right": "24",
+                "bottom": "48",
+                "left": "24",
+                "isLinked": false
+            },
+            "padding_tablet": {
+                "unit": "px",
+                "top": "40",
+                "right": "22",
+                "bottom": "40",
+                "left": "22",
+                "isLinked": false
+            },
+            "padding_mobile": {
+                "unit": "px",
+                "top": "32",
+                "right": "18",
+                "bottom": "32",
+                "left": "18",
+                "isLinked": false
+            },
+            "html_tag": "section"
+        },
         "elements": [
             {
                 "id": "a495b39c",
@@ -90,7 +235,17 @@
                 "isInner": false,
                 "settings": {
                     "title": "Reusable sections",
-                    "header_size": "h2"
+                    "header_size": "h2",
+                    "size": "xl",
+                    "align": "left",
+                    "_margin": {
+                        "unit": "px",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "8",
+                        "left": "0",
+                        "isLinked": false
+                    }
                 },
                 "elements": []
             },
@@ -100,7 +255,16 @@
                 "widgetType": "text-editor",
                 "isInner": false,
                 "settings": {
-                    "editor": "<p>Each heading starts a clean Elementor section.</p>"
+                    "editor": "<p>Each heading starts a clean Elementor section.</p>",
+                    "align": "left",
+                    "_margin": {
+                        "unit": "px",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "4",
+                        "left": "0",
+                        "isLinked": false
+                    }
                 },
                 "elements": []
             }

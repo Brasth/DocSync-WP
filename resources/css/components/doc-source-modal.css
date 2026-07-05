@@ -197,9 +197,85 @@
     word-break: break-all;
   }
 
+  .docsync-wp-doc-preview__options {
+    display: grid;
+    gap: 10px;
+    min-width: 0;
+  }
+
   .docsync-wp-doc-preview .docsync-wp-layout-preset-selector {
     margin-top: 0;
     max-width: none;
+  }
+
+  .docsync-wp-output-choice {
+    border: 0;
+    margin: 0;
+    min-width: 0;
+    padding: 0;
+  }
+
+  .docsync-wp-output-choice legend {
+    color: var(--docsync-text-primary);
+    font-weight: 600;
+    margin-bottom: 6px;
+    padding: 0;
+  }
+
+  .docsync-wp-output-choice__options {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .docsync-wp-output-choice__option {
+    align-items: flex-start;
+    background: var(--docsync-surface);
+    border: 1px solid var(--docsync-border-muted);
+    border-radius: var(--docsync-radius-sm);
+    cursor: pointer;
+    display: flex;
+    gap: 8px;
+    min-width: 0;
+    padding: 8px;
+    transition:
+      background-color var(--docsync-motion-fast) var(--docsync-motion-ease),
+      border-color var(--docsync-motion-fast) var(--docsync-motion-ease),
+      box-shadow var(--docsync-motion-fast) var(--docsync-motion-ease);
+  }
+
+  .docsync-wp-output-choice__option[data-selected="true"] {
+    background: var(--docsync-teal-bg);
+    border-color: var(--docsync-teal);
+    box-shadow: inset 3px 0 0 var(--docsync-teal);
+  }
+
+  .docsync-wp-output-choice__option[data-disabled="true"] {
+    cursor: default;
+    opacity: 0.72;
+  }
+
+  .docsync-wp-output-choice__option input {
+    flex: 0 0 auto;
+    margin-top: 2px;
+  }
+
+  .docsync-wp-output-choice__option span {
+    min-width: 0;
+  }
+
+  .docsync-wp-output-choice__option strong {
+    color: var(--docsync-text-primary);
+    display: block;
+    font-size: 13px;
+    margin: 0;
+  }
+
+  .docsync-wp-output-choice__option small {
+    color: var(--docsync-text-muted);
+    display: block;
+    line-height: 1.35;
+    margin-top: 2px;
   }
 
   .docsync-wp-modal__footer {
@@ -245,6 +321,10 @@
     }
 
     .docsync-wp-doc-preview {
+      grid-template-columns: 1fr;
+    }
+
+    .docsync-wp-output-choice__options {
       grid-template-columns: 1fr;
     }
 

@@ -2,6 +2,7 @@ import { __ } from '@wordpress/i18n';
 
 export type SourceMode = 'url' | 'file_id';
 export type DocSourceUiMode = 'browse' | SourceMode;
+export type DocSourceOutputType = 'blocks' | 'elementor';
 
 export const docSourceLabels: Record<DocSourceUiMode, string> = {
   browse: __('Browse Google Docs', 'brasth-document-sync-for-google-docs'),
