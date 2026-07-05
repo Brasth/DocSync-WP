@@ -57,7 +57,8 @@ final class LayoutPresetRegistry {
 				__( 'Best for posts and pages. Keeps headings, media, tables, and lists clean for the block editor.', 'brasth-document-sync-for-google-docs' ),
 				true,
 				false,
-				false
+				false,
+				'2'
 			),
 			self::PRESET_DOCUMENTATION => new LayoutBlueprint(
 				self::PRESET_DOCUMENTATION,
@@ -66,7 +67,7 @@ final class LayoutPresetRegistry {
 				false,
 				true,
 				true,
-				'2'
+				'3'
 			),
 			self::PRESET_PLAIN_BLOCKS  => new LayoutBlueprint(
 				self::PRESET_PLAIN_BLOCKS,
@@ -74,7 +75,8 @@ final class LayoutPresetRegistry {
 				__( 'Compatibility mode for existing synced posts. Keeps output closest to earlier versions.', 'brasth-document-sync-for-google-docs' ),
 				false,
 				false,
-				false
+				false,
+				'2'
 			),
 		);
 

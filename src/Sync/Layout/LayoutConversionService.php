@@ -255,7 +255,7 @@ final class LayoutConversionService {
 		}
 
 		if ( ContentRoleClassifier::ROLE_IMAGE === $role ) {
-			return array( $this->imageBlock( $node ) );
+			return array( $this->blocks->fromElement( $node ) );
 		}
 
 		if ( ContentRoleClassifier::ROLE_CODE === $role && $preset->shouldRenderCodeBlocks() ) {
@@ -422,71 +422,6 @@ final class LayoutConversionService {
 			array( 'className' => 'docsync-wp-callout' ),
 			'<blockquote class="wp-block-quote docsync-wp-callout">' . $inner_html . '</blockquote>'
 		);
-	}
-
-	/**
-	 * Create an image block from an image or figure-like wrapper.
-	 *
-	 * @param DOMElement $element Image or wrapper element.
-	 * @return array<string,mixed>
-	 */
-	private function imageBlock( DOMElement $element ): array {
-		$image = 'img' === strtolower( $element->tagName ) ? $element : $this->classifier->singleImageElement( $element );
-
-		if ( ! $image instanceof DOMElement ) {
-			return $this->blocks->fromElement( $element );
-		}
-
-		$attrs   = array();
-		$url     = $image->getAttribute( 'src' );
-		$alt     = $image->getAttribute( 'alt' );
-		$caption = $this->imageCaption( $element );
-
-		if ( '' !== $url ) {
-			$attrs['url'] = esc_url_raw( $url );
-		}
-
-		if ( '' !== $alt ) {
-			$attrs['alt'] = sanitize_text_field( $alt );
-		}
-
-		if ( '' !== $caption ) {
-			$attrs['caption'] = $caption;
-		}
-
-		$img = '<img src="' . esc_url( $url ) . '"';
-
-		if ( '' !== $alt ) {
-			$img .= ' alt="' . esc_attr( $alt ) . '"';
-		}
-
-		$img .= ' />';
-
-		$inner_html = '<figure class="wp-block-image">' . $img;
-
-		if ( '' !== $caption ) {
-			$inner_html .= '<figcaption class="wp-element-caption">' . esc_html( $caption ) . '</figcaption>';
-		}
-
-		$inner_html .= '</figure>';
-
-		return $this->block( 'core/image', $attrs, $inner_html );
-	}
-
-	/**
-	 * Get a figure caption for an image wrapper.
-	 *
-	 * @param DOMElement $element Image or wrapper element.
-	 */
-	private function imageCaption( DOMElement $element ): string {
-		if ( 'figure' !== strtolower( $element->tagName ) ) {
-			return '';
-		}
-
-		$captions = $element->getElementsByTagName( 'figcaption' );
-		$caption  = $captions->item( 0 );
-
-		return $caption instanceof DOMElement ? sanitize_text_field( $caption->textContent ) : '';
 	}
 
 	/**

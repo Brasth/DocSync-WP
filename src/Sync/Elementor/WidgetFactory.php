@@ -10,6 +10,8 @@ declare(strict_types=1);
 namespace DocSyncWP\Sync\Elementor;
 
 use DocSyncWP\Sync\HtmlBlockMarkupSanitizer;
+use DocSyncWP\Sync\HtmlStandaloneImage;
+use DocSyncWP\Sync\HtmlStandaloneImageDetector;
 use DOMElement;
 
 defined( 'ABSPATH' ) || exit;
@@ -37,14 +39,27 @@ final class WidgetFactory {
 	private IdGenerator $ids;
 
 	/**
+	 * Standalone image detector.
+	 *
+	 * @var HtmlStandaloneImageDetector
+	 */
+	private HtmlStandaloneImageDetector $standalone_images;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param HtmlBlockMarkupSanitizer|null $markup Markup sanitizer.
-	 * @param IdGenerator|null              $ids    ID generator.
+	 * @param HtmlBlockMarkupSanitizer|null    $markup            Markup sanitizer.
+	 * @param IdGenerator|null                 $ids               ID generator.
+	 * @param HtmlStandaloneImageDetector|null $standalone_images Standalone image detector.
 	 */
-	public function __construct( ?HtmlBlockMarkupSanitizer $markup = null, ?IdGenerator $ids = null ) {
-		$this->markup = $markup ?? new HtmlBlockMarkupSanitizer();
-		$this->ids    = $ids ?? new IdGenerator();
+	public function __construct(
+		?HtmlBlockMarkupSanitizer $markup = null,
+		?IdGenerator $ids = null,
+		?HtmlStandaloneImageDetector $standalone_images = null
+	) {
+		$this->markup            = $markup ?? new HtmlBlockMarkupSanitizer();
+		$this->ids               = $ids ?? new IdGenerator();
+		$this->standalone_images = $standalone_images ?? new HtmlStandaloneImageDetector();
 	}
 
 	/**
@@ -61,13 +76,13 @@ final class WidgetFactory {
 			return $this->heading( $element, (int) $matches[1], $style );
 		}
 
+		$standalone_image = $this->standalone_images->detect( $element );
+
+		if ( $standalone_image instanceof HtmlStandaloneImage ) {
+			return $this->imageFromStandalone( $standalone_image, $style );
+		}
+
 		if ( 'p' === $tag ) {
-			$image = $this->singleImageElement( $element );
-
-			if ( null !== $image ) {
-				return $this->image( $image, $style );
-			}
-
 			if ( $this->isEmptyBlock( $element ) ) {
 				return $this->spacer();
 			}
@@ -81,10 +96,6 @@ final class WidgetFactory {
 
 		if ( 'ol' === $tag ) {
 			return $this->textEditor( '<ol>' . $this->markup->cleanListInnerHtml( $element ) . '</ol>', $style );
-		}
-
-		if ( 'img' === $tag ) {
-			return $this->image( $element, $style );
 		}
 
 		if ( 'table' === $tag ) {
@@ -186,11 +197,13 @@ final class WidgetFactory {
 	 *
 	 * @param DOMElement $image Image element.
 	 * @param string     $style Widget style profile.
+	 * @param string     $link_url Linked image URL.
+	 * @param string     $caption Caption text.
 	 */
-	public function image( DOMElement $image, string $style = self::STYLE_LEGACY ): array {
+	public function image( DOMElement $image, string $style = self::STYLE_LEGACY, string $link_url = '', string $caption = '' ): array {
 		$url      = $image->getAttribute( 'src' );
 		$alt      = $image->getAttribute( 'alt' );
-		$link     = $image->getAttribute( 'data-docsync-link' );
+		$link     = '' !== $link_url ? $link_url : $image->getAttribute( 'data-docsync-link' );
 		$settings = array(
 			'image' => array(
 				'url' => $this->sanitizeUrl( $url ),
@@ -225,6 +238,11 @@ final class WidgetFactory {
 			);
 		}
 
+		if ( '' !== $caption ) {
+			$settings['caption_source'] = 'custom';
+			$settings['caption']        = sanitize_text_field( $caption );
+		}
+
 		if ( '' !== $link ) {
 			$settings['link'] = array(
 				'url'         => $this->sanitizeUrl( $link ),
@@ -234,6 +252,16 @@ final class WidgetFactory {
 		}
 
 		return $this->widget( 'image', $settings );
+	}
+
+	/**
+	 * Create an image widget from a standalone image.
+	 *
+	 * @param HtmlStandaloneImage $image Standalone image.
+	 * @param string              $style Widget style profile.
+	 */
+	public function imageFromStandalone( HtmlStandaloneImage $image, string $style = self::STYLE_LEGACY ): array {
+		return $this->image( $image->getImageElement(), $style, $image->getLinkUrl(), $image->getCaption() );
 	}
 
 	/**
@@ -350,57 +378,6 @@ final class WidgetFactory {
 			'settings'   => $settings,
 			'elements'   => array(),
 		);
-	}
-
-	/**
-	 * Return a single image if the element only wraps one image.
-	 *
-	 * Accepts an image wrapped in a single anchor as well.
-	 *
-	 * @param DOMElement $element Candidate wrapper.
-	 */
-	private function singleImageElement( DOMElement $element ): ?DOMElement {
-		if ( '' !== trim( $element->textContent ) ) {
-			return null;
-		}
-
-		$images = $element->getElementsByTagName( 'img' );
-
-		if ( 1 !== $images->length ) {
-			return null;
-		}
-
-		$image = $images->item( 0 );
-
-		if ( ! $image instanceof DOMElement ) {
-			return null;
-		}
-
-		foreach ( $element->childNodes as $child ) {
-			if ( ! $child instanceof DOMElement ) {
-				continue;
-			}
-
-			if ( 'a' !== strtolower( $child->tagName ) ) {
-				continue;
-			}
-
-			$child_images = $child->getElementsByTagName( 'img' );
-
-			if ( 1 !== $child_images->length ) {
-				continue;
-			}
-
-			$link = $child->getAttribute( 'href' );
-
-			if ( '' !== $link ) {
-				$image->setAttribute( 'data-docsync-link', esc_url( $link ) );
-			}
-
-			break;
-		}
-
-		return $image;
 	}
 
 	/**

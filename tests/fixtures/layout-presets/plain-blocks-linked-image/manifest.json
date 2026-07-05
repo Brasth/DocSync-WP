@@ -1,0 +1,5 @@
+{
+  "preset": "plain_blocks",
+  "input": "input.html",
+  "expected": "expected.html"
+}
