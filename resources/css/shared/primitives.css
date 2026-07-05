@@ -410,6 +410,22 @@
     color: var(--docsync-blue);
   }
 
+  #docsync-wp-admin-root .button-link {
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+    color: var(--docsync-text-secondary);
+    text-decoration: underline;
+  }
+
+  #docsync-wp-admin-root .button-link:hover,
+  #docsync-wp-admin-root .button-link:focus {
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+    color: var(--docsync-blue);
+  }
+
   #docsync-wp-admin-root .docsync-wp-button,
   #docsync-wp-post-sync-root .docsync-wp-button,
   #docsync-wp-list-sync-root .docsync-wp-button,
