@@ -10,6 +10,8 @@ declare(strict_types=1);
 namespace DocSyncWP\Sync\Layout;
 
 use DOMElement;
+use DocSyncWP\Sync\HtmlStandaloneImage;
+use DocSyncWP\Sync\HtmlStandaloneImageDetector;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -25,6 +27,22 @@ final class ContentRoleClassifier {
 	public const ROLE_LIST      = 'list';
 	public const ROLE_TABLE     = 'table';
 	public const ROLE_DEFAULT   = 'default';
+
+	/**
+	 * Standalone image detector.
+	 *
+	 * @var HtmlStandaloneImageDetector
+	 */
+	private HtmlStandaloneImageDetector $standalone_images;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param HtmlStandaloneImageDetector|null $standalone_images Standalone image detector.
+	 */
+	public function __construct( ?HtmlStandaloneImageDetector $standalone_images = null ) {
+		$this->standalone_images = $standalone_images ?? new HtmlStandaloneImageDetector();
+	}
 
 	/**
 	 * Classify one element.
@@ -50,7 +68,7 @@ final class ContentRoleClassifier {
 			return self::ROLE_CODE;
 		}
 
-		if ( 'img' === $tag || $this->singleImageElement( $element ) instanceof DOMElement ) {
+		if ( $this->standalone_images->detect( $element ) instanceof HtmlStandaloneImage ) {
 			return self::ROLE_IMAGE;
 		}
 
@@ -63,29 +81,6 @@ final class ContentRoleClassifier {
 		}
 
 		return self::ROLE_DEFAULT;
-	}
-
-	/**
-	 * Return a single image if the element only wraps one image.
-	 *
-	 * @param DOMElement $element Candidate wrapper.
-	 */
-	public function singleImageElement( DOMElement $element ): ?DOMElement {
-		$is_figure = 'figure' === strtolower( $element->tagName );
-
-		if ( ! $is_figure && '' !== trim( $element->textContent ) ) {
-			return null;
-		}
-
-		$images = $element->getElementsByTagName( 'img' );
-
-		if ( 1 !== $images->length ) {
-			return null;
-		}
-
-		$image = $images->item( 0 );
-
-		return $image instanceof DOMElement ? $image : null;
 	}
 
 	/**

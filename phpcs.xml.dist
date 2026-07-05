@@ -29,6 +29,7 @@
 			<property name="allowed_custom_properties" type="array">
 				<element value="childNodes"/>
 				<element value="ownerDocument"/>
+				<element value="parentNode"/>
 				<element value="tagName"/>
 				<element value="textContent"/>
 			</property>

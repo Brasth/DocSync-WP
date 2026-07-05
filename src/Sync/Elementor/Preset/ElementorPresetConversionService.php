@@ -15,6 +15,8 @@ use DOMNode;
 use DOMText;
 use DocSyncWP\Sync\Elementor\LayoutBuilder;
 use DocSyncWP\Sync\Elementor\WidgetFactory;
+use DocSyncWP\Sync\HtmlStandaloneImage;
+use DocSyncWP\Sync\HtmlStandaloneImageDetector;
 use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
@@ -45,20 +47,30 @@ final class ElementorPresetConversionService {
 	private ElementorPresetRegistry $presets;
 
 	/**
+	 * Standalone image detector.
+	 *
+	 * @var HtmlStandaloneImageDetector
+	 */
+	private HtmlStandaloneImageDetector $standalone_images;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param WidgetFactory|null           $widgets Widget factory.
-	 * @param LayoutBuilder|null           $layout  Layout builder.
-	 * @param ElementorPresetRegistry|null $presets Preset registry.
+	 * @param WidgetFactory|null               $widgets           Widget factory.
+	 * @param LayoutBuilder|null               $layout            Layout builder.
+	 * @param ElementorPresetRegistry|null     $presets           Preset registry.
+	 * @param HtmlStandaloneImageDetector|null $standalone_images Standalone image detector.
 	 */
 	public function __construct(
 		?WidgetFactory $widgets = null,
 		?LayoutBuilder $layout = null,
-		?ElementorPresetRegistry $presets = null
+		?ElementorPresetRegistry $presets = null,
+		?HtmlStandaloneImageDetector $standalone_images = null
 	) {
-		$this->widgets = $widgets ?? new WidgetFactory();
-		$this->layout  = $layout ?? new LayoutBuilder();
-		$this->presets = $presets ?? new ElementorPresetRegistry();
+		$this->widgets           = $widgets ?? new WidgetFactory();
+		$this->layout            = $layout ?? new LayoutBuilder();
+		$this->presets           = $presets ?? new ElementorPresetRegistry();
+		$this->standalone_images = $standalone_images ?? new HtmlStandaloneImageDetector();
 	}
 
 	/**
@@ -294,10 +306,10 @@ final class ElementorPresetConversionService {
 		);
 
 		if ( null !== $image_index ) {
-			$image = $this->nodeImageElement( $nodes[ $image_index ] );
+			$image = $this->nodeStandaloneImage( $nodes[ $image_index ] );
 
-			if ( $image instanceof DOMElement ) {
-				$hero[] = $this->widgets->image( $image, WidgetFactory::STYLE_HERO );
+			if ( $image instanceof HtmlStandaloneImage ) {
+				$hero[] = $this->widgets->imageFromStandalone( $image, WidgetFactory::STYLE_HERO );
 			}
 		}
 
@@ -375,7 +387,7 @@ final class ElementorPresetConversionService {
 	private function findFirstImageIndex( array $nodes, int $start = 0 ): ?int {
 		return $this->findFirstIndex(
 			$nodes,
-			fn ( DOMNode $node ): bool => $this->nodeImageElement( $node ) instanceof DOMElement,
+			fn ( DOMNode $node ): bool => $this->nodeStandaloneImage( $node ) instanceof HtmlStandaloneImage,
 			$start
 		);
 	}
@@ -410,23 +422,16 @@ final class ElementorPresetConversionService {
 	}
 
 	/**
-	 * Get the first image element represented by a node.
+	 * Get the standalone image represented by a node.
 	 *
 	 * @param DOMNode $node DOM node.
 	 */
-	private function nodeImageElement( DOMNode $node ): ?DOMElement {
+	private function nodeStandaloneImage( DOMNode $node ): ?HtmlStandaloneImage {
 		if ( ! $node instanceof DOMElement ) {
 			return null;
 		}
 
-		if ( 'img' === strtolower( $node->tagName ) ) {
-			return $node;
-		}
-
-		$images = $node->getElementsByTagName( 'img' );
-		$image  = $images->item( 0 );
-
-		return $image instanceof DOMElement ? $image : null;
+		return $this->standalone_images->detect( $node );
 	}
 
 	/**

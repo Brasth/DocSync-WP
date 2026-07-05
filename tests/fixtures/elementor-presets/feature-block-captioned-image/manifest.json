@@ -1,0 +1,6 @@
+{
+  "preset": "elementor_feature_block",
+  "seed": "feature-block-captioned-image",
+  "input": "input.html",
+  "expected": "expected.json"
+}

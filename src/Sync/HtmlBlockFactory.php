@@ -25,12 +25,21 @@ final class HtmlBlockFactory {
 	private HtmlBlockMarkupSanitizer $markup;
 
 	/**
+	 * Standalone image detector.
+	 *
+	 * @var HtmlStandaloneImageDetector
+	 */
+	private HtmlStandaloneImageDetector $standalone_images;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param HtmlBlockMarkupSanitizer|null $markup Markup sanitizer.
+	 * @param HtmlBlockMarkupSanitizer|null    $markup            Markup sanitizer.
+	 * @param HtmlStandaloneImageDetector|null $standalone_images Standalone image detector.
 	 */
-	public function __construct( ?HtmlBlockMarkupSanitizer $markup = null ) {
-		$this->markup = $markup ?? new HtmlBlockMarkupSanitizer();
+	public function __construct( ?HtmlBlockMarkupSanitizer $markup = null, ?HtmlStandaloneImageDetector $standalone_images = null ) {
+		$this->markup            = $markup ?? new HtmlBlockMarkupSanitizer();
+		$this->standalone_images = $standalone_images ?? new HtmlStandaloneImageDetector();
 	}
 
 	/**
@@ -49,13 +58,13 @@ final class HtmlBlockFactory {
 			return $this->block( 'core/heading', array( 'level' => $level ), $inner_html );
 		}
 
+		$standalone_image = $this->standalone_images->detect( $element );
+
+		if ( null !== $standalone_image ) {
+			return $this->imageBlock( $standalone_image );
+		}
+
 		if ( 'p' === $tag ) {
-			$image = $this->singleImageElement( $element );
-
-			if ( null !== $image ) {
-				return $this->imageBlock( $image );
-			}
-
 			return $this->block( 'core/paragraph', array(), '<p>' . $this->markup->cleanInlineHtml( $element ) . '</p>' );
 		}
 
@@ -70,7 +79,6 @@ final class HtmlBlockFactory {
 				array( 'ordered' => true ),
 				'<ol>' . $this->markup->cleanListInnerHtml( $element ) . '</ol>'
 			),
-			'img' => $this->imageBlock( $element ),
 			'table' => $this->block(
 				'core/table',
 				array(),
@@ -98,36 +106,17 @@ final class HtmlBlockFactory {
 	}
 
 	/**
-	 * Return a single image if the element only wraps one image.
+	 * Create a core image block from a standalone image.
 	 *
-	 * @param DOMElement $element Candidate wrapper.
-	 */
-	private function singleImageElement( DOMElement $element ): ?DOMElement {
-		if ( '' !== trim( $element->textContent ) ) {
-			return null;
-		}
-
-		$images = $element->getElementsByTagName( 'img' );
-
-		if ( 1 !== $images->length ) {
-			return null;
-		}
-
-		$image = $images->item( 0 );
-
-		return $image instanceof DOMElement ? $image : null;
-	}
-
-	/**
-	 * Create a core image block from an img element.
-	 *
-	 * @param DOMElement $image Image element.
+	 * @param HtmlStandaloneImage $image Standalone image.
 	 * @return array<string,mixed>
 	 */
-	private function imageBlock( DOMElement $image ): array {
-		$attrs = array();
-		$url   = $image->getAttribute( 'src' );
-		$alt   = $image->getAttribute( 'alt' );
+	private function imageBlock( HtmlStandaloneImage $image ): array {
+		$attrs   = array();
+		$url     = $image->getUrl();
+		$alt     = $image->getAlt();
+		$caption = $image->getCaption();
+		$link    = $image->getLinkUrl();
 
 		if ( '' !== $url ) {
 			$attrs['url'] = esc_url_raw( $url );
@@ -135,6 +124,15 @@ final class HtmlBlockFactory {
 
 		if ( '' !== $alt ) {
 			$attrs['alt'] = sanitize_text_field( $alt );
+		}
+
+		if ( '' !== $caption ) {
+			$attrs['caption'] = $caption;
+		}
+
+		if ( '' !== $link ) {
+			$attrs['href']            = esc_url_raw( $link );
+			$attrs['linkDestination'] = 'custom';
 		}
 
 		$img = '<img src="' . esc_url( $url ) . '"';
@@ -145,7 +143,21 @@ final class HtmlBlockFactory {
 
 		$img .= ' />';
 
-		return $this->block( 'core/image', $attrs, '<figure class="wp-block-image">' . $img . '</figure>' );
+		$inner_html = '<figure class="wp-block-image">';
+
+		if ( '' !== $link ) {
+			$inner_html .= '<a href="' . esc_url( $link ) . '">' . $img . '</a>';
+		} else {
+			$inner_html .= $img;
+		}
+
+		if ( '' !== $caption ) {
+			$inner_html .= '<figcaption class="wp-element-caption">' . esc_html( $caption ) . '</figcaption>';
+		}
+
+		$inner_html .= '</figure>';
+
+		return $this->block( 'core/image', $attrs, $inner_html );
 	}
 
 	/**

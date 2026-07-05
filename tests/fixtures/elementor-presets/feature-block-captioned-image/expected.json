@@ -1,0 +1,111 @@
+[
+    {
+        "id": "43a1d837",
+        "elType": "container",
+        "isInner": false,
+        "settings": {
+            "content_width": "boxed",
+            "boxed_width": {
+                "unit": "px",
+                "size": 960,
+                "sizes": []
+            },
+            "flex_direction": "column",
+            "align_items": "stretch",
+            "gap": {
+                "unit": "px",
+                "size": 18,
+                "sizes": []
+            },
+            "padding": {
+                "unit": "px",
+                "top": "48",
+                "right": "24",
+                "bottom": "48",
+                "left": "24",
+                "isLinked": false
+            },
+            "padding_tablet": {
+                "unit": "px",
+                "top": "40",
+                "right": "22",
+                "bottom": "40",
+                "left": "22",
+                "isLinked": false
+            },
+            "padding_mobile": {
+                "unit": "px",
+                "top": "32",
+                "right": "18",
+                "bottom": "32",
+                "left": "18",
+                "isLinked": false
+            },
+            "html_tag": "section"
+        },
+        "elements": [
+            {
+                "id": "fb6d0192",
+                "elType": "widget",
+                "widgetType": "heading",
+                "isInner": false,
+                "settings": {
+                    "title": "Feature Media",
+                    "header_size": "h1",
+                    "size": "xl",
+                    "align": "left",
+                    "_margin": {
+                        "unit": "px",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "8",
+                        "left": "0",
+                        "isLinked": false
+                    }
+                },
+                "elements": []
+            },
+            {
+                "id": "95d5be6c",
+                "elType": "widget",
+                "widgetType": "image",
+                "isInner": false,
+                "settings": {
+                    "image": {
+                        "url": "https://example.com/uploads/feature-caption.png",
+                        "id": 0,
+                        "alt": "Feature caption"
+                    },
+                    "image_size": "large",
+                    "align": "center",
+                    "width": {
+                        "unit": "%",
+                        "size": 72,
+                        "sizes": []
+                    },
+                    "width_tablet": {
+                        "unit": "%",
+                        "size": 86,
+                        "sizes": []
+                    },
+                    "width_mobile": {
+                        "unit": "%",
+                        "size": 100,
+                        "sizes": []
+                    },
+                    "_margin": {
+                        "unit": "px",
+                        "top": "8",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0",
+                        "isLinked": false
+                    },
+                    "caption_source": "custom",
+                    "caption": "Imported Elementor caption."
+                },
+                "elements": []
+            }
+        ]
+    }
+]

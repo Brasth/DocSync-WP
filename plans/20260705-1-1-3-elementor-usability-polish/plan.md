@@ -32,7 +32,7 @@ Make Elementor sync match end-user expectation: when users choose Elementor, syn
 | 02 Explicit Output Choice | Complete | 100% | [phase-02-explicit-output-choice.md](phase-02-explicit-output-choice.md) |
 | 03 Legacy Elementor Upgrade Path | Complete | 100% | [phase-03-legacy-elementor-upgrade-path.md](phase-03-legacy-elementor-upgrade-path.md) |
 | 04 Elementor Preset Output Polish | Pending | 0% | [phase-04-elementor-preset-output-polish.md](phase-04-elementor-preset-output-polish.md) |
-| 05 Diagnostics Verification Release | Pending | 0% | [phase-05-diagnostics-verification-release.md](phase-05-diagnostics-verification-release.md) |
+| 05 Diagnostics Verification Release | Complete | 100% | [phase-05-diagnostics-verification-release.md](phase-05-diagnostics-verification-release.md) |
 
 ## Architecture Summary
 

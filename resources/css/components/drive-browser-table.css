@@ -33,8 +33,22 @@
   }
 
   .docsync-wp-drive-browser__table tr.is-selected td {
-    background: var(--docsync-surface-selected);
-    box-shadow: inset 4px 0 0 var(--docsync-selected-rail);
+    background: var(--docsync-blue-soft);
+    color: var(--docsync-text-primary);
+  }
+
+  .docsync-wp-drive-browser__table tr.is-selected:hover td {
+    background: color-mix(in srgb, var(--docsync-blue-soft) 85%, var(--docsync-blue));
+  }
+
+  .docsync-wp-drive-browser__table tr.is-selected td:first-child {
+    border-top-left-radius: var(--docsync-radius-sm);
+    border-bottom-left-radius: var(--docsync-radius-sm);
+  }
+
+  .docsync-wp-drive-browser__table tr.is-selected td:last-child {
+    border-top-right-radius: var(--docsync-radius-sm);
+    border-bottom-right-radius: var(--docsync-radius-sm);
   }
 
   /* Folder rows get subtle cyan tint */
