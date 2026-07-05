@@ -1,5 +1,5 @@
 import { speak } from '@wordpress/a11y';
-import { createElement, Fragment, useState } from '@wordpress/element';
+import { createElement, Fragment, useEffect, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 
 import { getSourceContent, type SourceRecord, type SyncResult } from '../../api';
@@ -11,6 +11,7 @@ import { LayoutPresetSelector } from '../../shared/ui/layout-preset-selector';
 import { shouldShowSyncProgress, SyncProgress } from '../../shared/ui/sync-progress';
 import { BackgroundSyncPoller } from './background-sync-poller';
 import { applyPostContentToEditor, getEditorDirtyState } from './post-editor-content';
+import { LegacyElementorUpgradeNotice } from './legacy-elementor-upgrade-notice';
 import { sourceLabel } from './post-sync-dom';
 import { usePostSyncActions } from './use-post-sync-actions';
 
@@ -24,6 +25,7 @@ type Props = {
 
 export const PostMetaBoxApp = ({ postId, postType, initialSource, elementorAvailable, defaultElementorSync }: Props): JSX.Element => {
   const [modalTarget, setModalTarget] = useState<DocSourceTarget | null>(null);
+  const [legacyNoticeDismissed, setLegacyNoticeDismissed] = useState(false);
   const actions = usePostSyncActions(postId, initialSource);
   const isSyncing = actions.source?.syncStatus === 'syncing';
   const config = getAdminConfig();
@@ -39,6 +41,19 @@ export const PostMetaBoxApp = ({ postId, postType, initialSource, elementorAvail
     ? sprintf(__('Use Elementor default (%s)', 'brasth-document-sync-for-google-docs'), elementorDefaultLabel)
     : __('Legacy Elementor output', 'brasth-document-sync-for-google-docs');
   const linkTargetElementorSync = elementorAvailable && (actions.source ? sourceUsesElementor : defaultElementorSync);
+  const legacyElementorNoticeKey = actions.source
+    ? `${actions.source.postId}:${actions.source.googleFileId}:${actions.source.elementorPreset || ''}:${sourceUsesElementor ? 'elementor' : 'blocks'}`
+    : '';
+  const showLegacyElementorNotice = Boolean(
+    actions.source
+    && sourceUsesElementor
+    && !actions.source.elementorPreset
+    && !legacyNoticeDismissed
+  );
+
+  useEffect(() => {
+    setLegacyNoticeDismissed(false);
+  }, [legacyElementorNoticeKey]);
 
   const onCompleted = (result: SyncResult) => {
     const nextSource = result.source ?? actions.source;
@@ -140,6 +155,14 @@ export const PostMetaBoxApp = ({ postId, postType, initialSource, elementorAvail
         {actions.source?.lastSyncedAt ? <p><strong>{__('Last sync:', 'brasth-document-sync-for-google-docs')}</strong> {actions.source.lastSyncedAt}</p> : null}
         {actions.source?.syncError ? <p className="docsync-wp-list-error">{actions.source.syncError}</p> : null}
         <AdminNotice className="inline" notice={actions.notice} />
+        {showLegacyElementorNotice ? (
+          <LegacyElementorUpgradeNotice
+            disabled={actions.busy || isSyncing}
+            onFeatureBlock={() => actions.updateElementorPreset('elementor_feature_block')}
+            onHeroPage={() => actions.updateElementorPreset('elementor_hero_page')}
+            onKeepLegacy={() => setLegacyNoticeDismissed(true)}
+          />
+        ) : null}
         <div className="docsync-wp-post-box__actions">
           <AdminButton
             disabled={actions.busy || isSyncing}
@@ -147,7 +170,9 @@ export const PostMetaBoxApp = ({ postId, postType, initialSource, elementorAvail
               mode: 'existing',
               postId,
               postType,
-              elementorSync: linkTargetElementorSync
+              elementorSync: linkTargetElementorSync,
+              elementorPreset: actions.source ? actions.source.elementorPreset ?? null : undefined,
+              layoutPreset: actions.source?.layoutPreset ?? null
             })}
             variant="primary"
           >

@@ -22,7 +22,7 @@ Features include:
 * Server-side Google Drive document browser for My Drive and shared drives.
 * Advanced Google Docs URL and raw file ID linking.
 * Background sync through WP-Cron with source status and diagnostic logs.
-* Searchable Sync Activity logs with troubleshooting views, advanced filters, and recovery hints.
+* Searchable Sync Activity logs with troubleshooting views, advanced filters, recovery hints, and safe output-path details.
 * Safe log clearing for one source or all visible sources without deleting synced content or source links.
 * One-way Google Docs to WordPress sync for posts, pages, and enabled public custom post types.
 * Media import for images exported from Google Docs.
@@ -131,6 +131,14 @@ The build uses Vite and writes screen-specific manifests for Setup, Sources, Log
 5. Synced draft editor with the Brasth Document Sync meta box.
 
 == Changelog ==
+
+= 1.1.3 =
+
+* Added explicit WordPress Blocks versus Elementor Layout selection when linking Google Docs on Elementor-enabled sites.
+* Added legacy Elementor upgrade actions for existing sources that predate explicit Elementor presets.
+* Added safe Sync Activity details showing whether a sync used a Gutenberg preset, Elementor preset, or the legacy Elementor converter.
+* Fixed large-doc fallback partial writes so selected Elementor presets are used consistently.
+* Added Composer fixture coverage for large-doc fallback Elementor preset consistency.
 
 = 1.1.2 =
 

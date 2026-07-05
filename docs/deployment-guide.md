@@ -1,6 +1,6 @@
 # DocSync-WP Deployment and Release Guide
 
-Last updated: 2026-06-30
+Last updated: 2026-07-05
 
 This guide describes how to release DocSync-WP on WordPress.org and GitHub. It supports the release cadence defined in `docs/project-roadmap.md`:
 
@@ -34,6 +34,9 @@ Before tagging a release, verify all of the following:
 - [ ] PHP validation passes in CI:
   - `composer validate --no-check-publish`
   - `composer lint`
+  - `composer test:layout-fixtures`
+  - `composer test:elementor-fixtures`
+  - `composer test:large-doc-fallback-fixtures`
   - `vendor/bin/phpcs -i`
 - [ ] Plugin Check (WordPress.org) passes in CI or locally.
 - [ ] readme.txt validator passes.

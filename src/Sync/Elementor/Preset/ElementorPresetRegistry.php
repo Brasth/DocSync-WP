@@ -52,13 +52,15 @@ final class ElementorPresetRegistry {
 				self::PRESET_HERO_PAGE,
 				__( 'Elementor Hero Page', 'brasth-document-sync-for-google-docs' ),
 				__( 'Builds a page-style Elementor layout with the first heading, intro paragraph, and image as the hero section.', 'brasth-document-sync-for-google-docs' ),
-				'hero_page'
+				'hero_page',
+				'2'
 			),
 			self::PRESET_FEATURE_BLOCK => new ElementorPresetBlueprint(
 				self::PRESET_FEATURE_BLOCK,
 				__( 'Elementor Feature Block', 'brasth-document-sync-for-google-docs' ),
 				__( 'Builds clean Elementor sections from document headings, text, lists, media, tables, and dividers.', 'brasth-document-sync-for-google-docs' ),
-				'feature_block'
+				'feature_block',
+				'2'
 			),
 		);
 

@@ -3,7 +3,61 @@
         "id": "1b1742d3",
         "elType": "container",
         "isInner": false,
-        "settings": [],
+        "settings": {
+            "content_width": "boxed",
+            "boxed_width": {
+                "unit": "px",
+                "size": 1120,
+                "sizes": []
+            },
+            "height": "min-height",
+            "min_height": {
+                "unit": "px",
+                "size": 520,
+                "sizes": []
+            },
+            "min_height_tablet": {
+                "unit": "px",
+                "size": 440,
+                "sizes": []
+            },
+            "content_position": "middle",
+            "flex_direction": "column",
+            "justify_content": "center",
+            "align_items": "center",
+            "gap": {
+                "unit": "px",
+                "size": 24,
+                "sizes": []
+            },
+            "background_background": "classic",
+            "background_color": "#f6f8fb",
+            "padding": {
+                "unit": "px",
+                "top": "96",
+                "right": "24",
+                "bottom": "80",
+                "left": "24",
+                "isLinked": false
+            },
+            "padding_tablet": {
+                "unit": "px",
+                "top": "72",
+                "right": "22",
+                "bottom": "64",
+                "left": "22",
+                "isLinked": false
+            },
+            "padding_mobile": {
+                "unit": "px",
+                "top": "56",
+                "right": "18",
+                "bottom": "48",
+                "left": "18",
+                "isLinked": false
+            },
+            "html_tag": "section"
+        },
         "elements": [
             {
                 "id": "18d9ef3e",
@@ -12,7 +66,17 @@
                 "isInner": false,
                 "settings": {
                     "title": "Service Overview",
-                    "header_size": "h2"
+                    "header_size": "h2",
+                    "size": "xxl",
+                    "align": "center",
+                    "_margin": {
+                        "unit": "px",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "8",
+                        "left": "0",
+                        "isLinked": false
+                    }
                 },
                 "elements": []
             },
@@ -22,7 +86,16 @@
                 "widgetType": "text-editor",
                 "isInner": false,
                 "settings": {
-                    "editor": "<p>A concise synced page that still works when the Doc has no hero image.</p>"
+                    "editor": "<p>A concise synced page that still works when the Doc has no hero image.</p>",
+                    "align": "center",
+                    "_margin": {
+                        "unit": "px",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "16",
+                        "left": "0",
+                        "isLinked": false
+                    }
                 },
                 "elements": []
             }
@@ -32,7 +105,46 @@
         "id": "3f39ea74",
         "elType": "container",
         "isInner": false,
-        "settings": [],
+        "settings": {
+            "content_width": "boxed",
+            "boxed_width": {
+                "unit": "px",
+                "size": 960,
+                "sizes": []
+            },
+            "flex_direction": "column",
+            "align_items": "stretch",
+            "gap": {
+                "unit": "px",
+                "size": 18,
+                "sizes": []
+            },
+            "padding": {
+                "unit": "px",
+                "top": "48",
+                "right": "24",
+                "bottom": "48",
+                "left": "24",
+                "isLinked": false
+            },
+            "padding_tablet": {
+                "unit": "px",
+                "top": "40",
+                "right": "22",
+                "bottom": "40",
+                "left": "22",
+                "isLinked": false
+            },
+            "padding_mobile": {
+                "unit": "px",
+                "top": "32",
+                "right": "18",
+                "bottom": "32",
+                "left": "18",
+                "isLinked": false
+            },
+            "html_tag": "section"
+        },
         "elements": [
             {
                 "id": "37b60b44",
@@ -41,7 +153,17 @@
                 "isInner": false,
                 "settings": {
                     "title": "What changes",
-                    "header_size": "h3"
+                    "header_size": "h3",
+                    "size": "large",
+                    "align": "left",
+                    "_margin": {
+                        "unit": "px",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "8",
+                        "left": "0",
+                        "isLinked": false
+                    }
                 },
                 "elements": []
             },
@@ -51,7 +173,16 @@
                 "widgetType": "text-editor",
                 "isInner": false,
                 "settings": {
-                    "editor": "<p>Remaining headings and paragraphs become normal Elementor feature sections.</p>"
+                    "editor": "<p>Remaining headings and paragraphs become normal Elementor feature sections.</p>",
+                    "align": "left",
+                    "_margin": {
+                        "unit": "px",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "4",
+                        "left": "0",
+                        "isLinked": false
+                    }
                 },
                 "elements": []
             }

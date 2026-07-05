@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace DocSyncWP\Admin;
 
 use DocSyncWP\Rest\RestPermissions;
+use DocSyncWP\Sync\Elementor\SyncDecider;
 use DocSyncWP\Sync\SourceRepository;
 use WP_Post;
 
@@ -29,12 +30,21 @@ final class PostListActions {
 	private SourceRepository $source_repository;
 
 	/**
+	 * Elementor sync decider.
+	 *
+	 * @var SyncDecider
+	 */
+	private SyncDecider $elementor_decider;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param SourceRepository $source_repository Source repository.
+	 * @param SyncDecider      $elementor_decider Elementor sync decider.
 	 */
-	public function __construct( SourceRepository $source_repository ) {
+	public function __construct( SourceRepository $source_repository, SyncDecider $elementor_decider ) {
 		$this->source_repository = $source_repository;
+		$this->elementor_decider = $elementor_decider;
 	}
 
 	/**
@@ -81,10 +91,11 @@ final class PostListActions {
 		$label  = null === $source ? __( 'Link Google Doc', 'brasth-document-sync-for-google-docs' ) : __( 'Sync Doc', 'brasth-document-sync-for-google-docs' );
 
 		$actions['docsync_wp'] = sprintf(
-			'<a href="#" class="docsync-wp-row-action" data-mode="%1$s" data-post-id="%2$d" data-post-type="%3$s">%4$s</a>',
+			'<a href="#" class="docsync-wp-row-action" data-mode="%1$s" data-post-id="%2$d" data-post-type="%3$s" data-default-elementor-sync="%4$s">%5$s</a>',
 			esc_attr( $mode ),
 			absint( $post->ID ),
 			esc_attr( $post->post_type ),
+			$this->elementor_decider->getDefaultElementorSync( $post->ID ) ? 'true' : 'false',
 			esc_html( $label )
 		);
 

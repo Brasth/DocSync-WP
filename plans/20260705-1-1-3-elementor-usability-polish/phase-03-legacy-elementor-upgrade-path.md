@@ -11,8 +11,8 @@
 - Date: 2026-07-05
 - Description: Make existing legacy Elementor sources understandable and safely upgradeable.
 - Priority: P1
-- Implementation status: Pending
-- Review status: Pending
+- Implementation status: Complete
+- Review status: Local checks passed
 
 ## Key Insights
 
@@ -53,11 +53,11 @@ Use source fields already returned by REST: `elementorSync`, `elementorPreset`. 
 
 ## Todo list
 
-- [ ] Add legacy detection helper.
-- [ ] Add upgrade notice UI.
-- [ ] Add Feature Block and Hero Page quick actions.
-- [ ] Confirm sync fingerprint forces reconversion.
-- [ ] Decide whether "Keep legacy" needs persisted dismissal.
+- [x] Add legacy detection helper.
+- [x] Add upgrade notice UI.
+- [x] Add Feature Block and Hero Page quick actions.
+- [x] Confirm sync fingerprint forces reconversion.
+- [x] Decide whether "Keep legacy" needs persisted dismissal.
 
 ## Success Criteria
 
@@ -79,6 +79,12 @@ Use source fields already returned by REST: `elementorSync`, `elementorPreset`. 
 
 Improve actual Elementor preset output quality.
 
+## Verification
+
+- `pnpm typecheck`
+- `pnpm lint:js`
+- `pnpm build`
+
 ## Unresolved Questions
 
-- Should upgrade action queue sync immediately? Recommended: update preset, then show "Sync now" action.
+- None. Keep legacy dismissal is local to the metabox session; no new source meta was added.

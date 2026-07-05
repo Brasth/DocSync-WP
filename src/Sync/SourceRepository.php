@@ -904,6 +904,11 @@ final class SourceRepository {
 			(string) ( $event['step'] ?? '' ),
 			(string) ( $event['status'] ?? '' ),
 		);
+		$context  = isset( $event['context'] ) && is_array( $event['context'] ) ? $event['context'] : array();
+
+		foreach ( array( 'outputType', 'layoutPreset', 'elementorMode', 'elementorPreset' ) as $context_key ) {
+			$haystack[] = (string) ( $context[ $context_key ] ?? '' );
+		}
 
 		$needle = function_exists( 'mb_strtolower' ) ? mb_strtolower( $search ) : strtolower( $search );
 
@@ -1241,6 +1246,30 @@ final class SourceRepository {
 
 		if ( isset( $context['lastStep'] ) ) {
 			$sanitized['lastStep'] = sanitize_key( (string) $context['lastStep'] );
+		}
+
+		$output_type = isset( $context['outputType'] ) ? sanitize_key( (string) $context['outputType'] ) : '';
+
+		if ( in_array( $output_type, array( 'gutenberg', 'elementor' ), true ) ) {
+			$sanitized['outputType'] = $output_type;
+		}
+
+		$layout_preset = isset( $context['layoutPreset'] ) ? sanitize_key( (string) $context['layoutPreset'] ) : '';
+
+		if ( '' !== $layout_preset && $this->layout_presets->isValidPresetId( $layout_preset ) ) {
+			$sanitized['layoutPreset'] = $layout_preset;
+		}
+
+		$elementor_mode = isset( $context['elementorMode'] ) ? sanitize_key( (string) $context['elementorMode'] ) : '';
+
+		if ( in_array( $elementor_mode, array( 'preset', 'legacy' ), true ) ) {
+			$sanitized['elementorMode'] = $elementor_mode;
+		}
+
+		$elementor_preset = isset( $context['elementorPreset'] ) ? sanitize_key( (string) $context['elementorPreset'] ) : '';
+
+		if ( '' !== $elementor_preset && $this->elementor_presets->isValidPresetId( $elementor_preset ) ) {
+			$sanitized['elementorPreset'] = $elementor_preset;
 		}
 
 		return $sanitized;

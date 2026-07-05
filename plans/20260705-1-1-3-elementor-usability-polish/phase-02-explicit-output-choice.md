@@ -11,8 +11,8 @@
 - Date: 2026-07-05
 - Description: Ask users during linking whether output should be WordPress Blocks or Elementor Layout.
 - Priority: P1
-- Implementation status: Pending
-- Review status: Pending
+- Implementation status: Complete
+- Review status: Local checks passed
 
 ## Key Insights
 
@@ -57,12 +57,12 @@ Extend existing `DocSourceModal` state. Keep REST payload shape unchanged: `elem
 
 ## Todo list
 
-- [ ] Add output type UI.
-- [ ] Add modal state and reset behavior.
-- [ ] Wire new draft Elementor payload.
-- [ ] Wire existing post Elementor payload.
-- [ ] Add UI copy that is concise and non-technical.
-- [ ] Typecheck frontend payload changes.
+- [x] Add output type UI.
+- [x] Add modal state and reset behavior.
+- [x] Wire new draft Elementor payload.
+- [x] Wire existing post Elementor payload.
+- [x] Add UI copy that is concise and non-technical.
+- [x] Typecheck frontend payload changes.
 
 ## Success Criteria
 
@@ -83,6 +83,12 @@ Extend existing `DocSourceModal` state. Keep REST payload shape unchanged: `elem
 
 Add legacy Elementor source upgrade prompt.
 
+## Verification
+
+- `pnpm typecheck`
+- `pnpm lint:js`
+- `pnpm build`
+
 ## Unresolved Questions
 
-- Should output type be required before doc selection, or only after selected doc? Recommended: after selected doc.
+- None.

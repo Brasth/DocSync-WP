@@ -11,8 +11,8 @@
 - Date: 2026-07-05
 - Description: Ensure selected Elementor preset is logged, fallback is consistent, and release is verifiable.
 - Priority: P1
-- Implementation status: Pending
-- Review status: Pending
+- Implementation status: Complete
+- Review status: Local checks passed; staging smoke not run
 
 ## Key Insights
 
@@ -55,13 +55,28 @@ Keep bounded sync log model. Add safe context only; no document content, IDs bey
 
 ## Todo list
 
-- [ ] Log effective preset/legacy path safely.
-- [ ] Fix large-doc fallback preset path.
-- [ ] Update changelog/release notes.
-- [ ] Run `composer test:layout-fixtures`.
-- [ ] Run `composer test:elementor-fixtures`.
-- [ ] Run `pnpm lint`, `pnpm typecheck`, `pnpm build`.
+- [x] Log effective preset/legacy path safely.
+- [x] Fix large-doc fallback preset path.
+- [x] Update changelog/release notes.
+- [x] Run `composer test:layout-fixtures`.
+- [x] Run `composer test:large-doc-fallback-fixtures`.
+- [x] Run `composer test:elementor-fixtures`.
+- [x] Run `pnpm lint`, `pnpm typecheck`, `pnpm build`.
 - [ ] Run staging smoke checklist.
+
+## Verification
+
+- `composer validate --no-check-publish` passed.
+- `vendor/bin/phpcs -i` passed.
+- `composer lint` passed.
+- `composer test:layout-fixtures` passed.
+- `composer test:elementor-fixtures` passed.
+- `composer test:large-doc-fallback-fixtures` passed.
+- `pnpm lint` passed.
+- `pnpm typecheck` passed.
+- `pnpm build` passed.
+- `git diff --check` passed.
+- Staging smoke with browser screenshots was not run because this checkout does not include a staging target, URL, or credentials.
 
 ## Success Criteria
 

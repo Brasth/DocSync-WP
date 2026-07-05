@@ -18,6 +18,10 @@ defined( 'ABSPATH' ) || exit;
  * Creates Elementor core widget arrays from DOM nodes.
  */
 final class WidgetFactory {
+	public const STYLE_LEGACY  = 'legacy';
+	public const STYLE_FEATURE = 'feature';
+	public const STYLE_HERO    = 'hero';
+
 	/**
 	 * Markup sanitizer.
 	 *
@@ -47,47 +51,48 @@ final class WidgetFactory {
 	 * Convert a DOM element to an Elementor widget array.
 	 *
 	 * @param DOMElement $element HTML element.
+	 * @param string     $style   Widget style profile.
 	 * @return array<string,mixed>
 	 */
-	public function fromElement( DOMElement $element ): array {
+	public function fromElement( DOMElement $element, string $style = self::STYLE_LEGACY ): array {
 		$tag = strtolower( $element->tagName );
 
 		if ( preg_match( '/^h([1-6])$/', $tag, $matches ) ) {
-			return $this->heading( $element, (int) $matches[1] );
+			return $this->heading( $element, (int) $matches[1], $style );
 		}
 
 		if ( 'p' === $tag ) {
 			$image = $this->singleImageElement( $element );
 
 			if ( null !== $image ) {
-				return $this->image( $image );
+				return $this->image( $image, $style );
 			}
 
 			if ( $this->isEmptyBlock( $element ) ) {
 				return $this->spacer();
 			}
 
-			return $this->textEditor( $this->markup->cleanInlineHtml( $element ) );
+			return $this->textEditor( $this->markup->cleanInlineHtml( $element ), $style );
 		}
 
 		if ( 'ul' === $tag ) {
-			return $this->iconList( $element );
+			return $this->iconList( $element, $style );
 		}
 
 		if ( 'ol' === $tag ) {
-			return $this->textEditor( '<ol>' . $this->markup->cleanListInnerHtml( $element ) . '</ol>' );
+			return $this->textEditor( '<ol>' . $this->markup->cleanListInnerHtml( $element ) . '</ol>', $style );
 		}
 
 		if ( 'img' === $tag ) {
-			return $this->image( $element );
+			return $this->image( $element, $style );
 		}
 
 		if ( 'table' === $tag ) {
-			return $this->htmlWidget( '<table>' . $this->markup->cleanTableInnerHtml( $element ) . '</table>' );
+			return $this->htmlWidget( '<table>' . $this->markup->cleanTableInnerHtml( $element ) . '</table>', $style );
 		}
 
 		if ( 'blockquote' === $tag ) {
-			return $this->textEditor( $this->markup->cleanQuoteInnerHtml( $element ) );
+			return $this->textEditor( $this->markup->cleanQuoteInnerHtml( $element ), $style );
 		}
 
 		if ( 'hr' === $tag ) {
@@ -95,10 +100,10 @@ final class WidgetFactory {
 		}
 
 		if ( $this->isInlineElement( $tag ) ) {
-			return $this->textEditor( $this->markup->cleanInlineFragment( $element ) );
+			return $this->textEditor( $this->markup->cleanInlineFragment( $element ), $style );
 		}
 
-		return $this->htmlWidget( $this->markup->nodeHtml( $element ) );
+		return $this->htmlWidget( $this->markup->nodeHtml( $element ), $style );
 	}
 
 	/**
@@ -106,16 +111,38 @@ final class WidgetFactory {
 	 *
 	 * @param DOMElement $element HTML element.
 	 * @param int        $level   Heading level 1-6.
+	 * @param string     $style   Widget style profile.
 	 */
-	public function heading( DOMElement $element, int $level ): array {
-		$text = $this->markup->cleanInlineHtml( $element );
+	public function heading( DOMElement $element, int $level, string $style = self::STYLE_LEGACY ): array {
+		$text     = $this->markup->cleanInlineHtml( $element );
+		$settings = array(
+			'title'       => $text,
+			'header_size' => 'h' . max( 1, min( 6, $level ) ),
+		);
+
+		if ( self::STYLE_HERO === $style ) {
+			$settings = array_merge(
+				$settings,
+				array(
+					'size'    => 'xxl',
+					'align'   => 'center',
+					'_margin' => $this->edge( 0, 0, 8, 0 ),
+				)
+			);
+		} elseif ( self::STYLE_FEATURE === $style ) {
+			$settings = array_merge(
+				$settings,
+				array(
+					'size'    => $level <= 2 ? 'xl' : 'large',
+					'align'   => 'left',
+					'_margin' => $this->edge( 0, 0, 8, 0 ),
+				)
+			);
+		}
 
 		return $this->widget(
 			'heading',
-			array(
-				'title'       => $text,
-				'header_size' => 'h' . max( 1, min( 6, $level ) ),
-			)
+			$settings
 		);
 	}
 
@@ -123,13 +150,34 @@ final class WidgetFactory {
 	 * Create a text-editor widget.
 	 *
 	 * @param string $html HTML content.
+	 * @param string $style Widget style profile.
 	 */
-	public function textEditor( string $html ): array {
+	public function textEditor( string $html, string $style = self::STYLE_LEGACY ): array {
+		$settings = array(
+			'editor' => $this->ensureWrapped( $html ),
+		);
+
+		if ( self::STYLE_HERO === $style ) {
+			$settings = array_merge(
+				$settings,
+				array(
+					'align'   => 'center',
+					'_margin' => $this->edge( 0, 0, 16, 0 ),
+				)
+			);
+		} elseif ( self::STYLE_FEATURE === $style ) {
+			$settings = array_merge(
+				$settings,
+				array(
+					'align'   => 'left',
+					'_margin' => $this->edge( 0, 0, 4, 0 ),
+				)
+			);
+		}
+
 		return $this->widget(
 			'text-editor',
-			array(
-				'editor' => $this->ensureWrapped( $html ),
-			)
+			$settings
 		);
 	}
 
@@ -137,8 +185,9 @@ final class WidgetFactory {
 	 * Create an image widget from an img element.
 	 *
 	 * @param DOMElement $image Image element.
+	 * @param string     $style Widget style profile.
 	 */
-	public function image( DOMElement $image ): array {
+	public function image( DOMElement $image, string $style = self::STYLE_LEGACY ): array {
 		$url      = $image->getAttribute( 'src' );
 		$alt      = $image->getAttribute( 'alt' );
 		$link     = $image->getAttribute( 'data-docsync-link' );
@@ -149,6 +198,32 @@ final class WidgetFactory {
 				'alt' => sanitize_text_field( $alt ),
 			),
 		);
+
+		if ( self::STYLE_HERO === $style ) {
+			$settings = array_merge(
+				$settings,
+				array(
+					'image_size'   => 'large',
+					'align'        => 'center',
+					'width'        => $this->size( 86, '%' ),
+					'width_tablet' => $this->size( 92, '%' ),
+					'width_mobile' => $this->size( 100, '%' ),
+					'_margin'      => $this->edge( 8, 0, 0, 0 ),
+				)
+			);
+		} elseif ( self::STYLE_FEATURE === $style ) {
+			$settings = array_merge(
+				$settings,
+				array(
+					'image_size'   => 'large',
+					'align'        => 'center',
+					'width'        => $this->size( 72, '%' ),
+					'width_tablet' => $this->size( 86, '%' ),
+					'width_mobile' => $this->size( 100, '%' ),
+					'_margin'      => $this->edge( 8, 0, 0, 0 ),
+				)
+			);
+		}
 
 		if ( '' !== $link ) {
 			$settings['link'] = array(
@@ -165,10 +240,12 @@ final class WidgetFactory {
 	 * Create an icon-list widget from a ul element.
 	 *
 	 * @param DOMElement $element UL element.
+	 * @param string     $style   Widget style profile.
 	 */
-	public function iconList( DOMElement $element ): array {
+	public function iconList( DOMElement $element, string $style = self::STYLE_LEGACY ): array {
 		$items    = array();
 		$children = $element->getElementsByTagName( 'li' );
+		$icon     = self::STYLE_LEGACY === $style ? 'fas fa-circle' : 'fas fa-check';
 
 		foreach ( $children as $child ) {
 			if ( ! $child instanceof DOMElement ) {
@@ -178,7 +255,7 @@ final class WidgetFactory {
 			$items[] = array(
 				'text'          => $this->markup->cleanInlineHtml( $child ),
 				'selected_icon' => array(
-					'value'   => 'fas fa-circle',
+					'value'   => $icon,
 					'library' => 'fa-solid',
 				),
 				'link'          => array(
@@ -190,14 +267,28 @@ final class WidgetFactory {
 		}
 
 		if ( array() === $items ) {
-			return $this->textEditor( $this->markup->cleanListInnerHtml( $element ) );
+			return $this->textEditor( $this->markup->cleanListInnerHtml( $element ), $style );
+		}
+
+		$settings = array(
+			'icon_list' => $items,
+		);
+
+		if ( self::STYLE_LEGACY !== $style ) {
+			$settings = array_merge(
+				$settings,
+				array(
+					'space_between' => $this->size( 10, 'px' ),
+					'icon_size'     => $this->size( 14, 'px' ),
+					'text_indent'   => $this->size( 8, 'px' ),
+					'_margin'       => $this->edge( 4, 0, 4, 0 ),
+				)
+			);
 		}
 
 		return $this->widget(
 			'icon-list',
-			array(
-				'icon_list' => $items,
-			)
+			$settings
 		);
 	}
 
@@ -227,13 +318,20 @@ final class WidgetFactory {
 	 * Create an HTML widget.
 	 *
 	 * @param string $html HTML content.
+	 * @param string $style Widget style profile.
 	 */
-	public function htmlWidget( string $html ): array {
+	public function htmlWidget( string $html, string $style = self::STYLE_LEGACY ): array {
+		$settings = array(
+			'html' => $this->ensureWrapped( $html ),
+		);
+
+		if ( self::STYLE_LEGACY !== $style ) {
+			$settings['_margin'] = $this->edge( 8, 0, 0, 0 );
+		}
+
 		return $this->widget(
 			'html',
-			array(
-				'html' => $this->ensureWrapped( $html ),
-			)
+			$settings
 		);
 	}
 
@@ -376,5 +474,40 @@ final class WidgetFactory {
 		$post_id = attachment_url_to_postid( $url );
 
 		return is_int( $post_id ) && $post_id > 0 ? $post_id : 0;
+	}
+
+	/**
+	 * Create an Elementor dimension setting.
+	 *
+	 * @param int    $size Size.
+	 * @param string $unit Unit.
+	 * @return array{unit:string,size:int,sizes:array<int,mixed>}
+	 */
+	private function size( int $size, string $unit ): array {
+		return array(
+			'unit'  => $unit,
+			'size'  => $size,
+			'sizes' => array(),
+		);
+	}
+
+	/**
+	 * Create an Elementor edge control setting.
+	 *
+	 * @param int $top    Top.
+	 * @param int $right  Right.
+	 * @param int $bottom Bottom.
+	 * @param int $left   Left.
+	 * @return array{unit:string,top:string,right:string,bottom:string,left:string,isLinked:bool}
+	 */
+	private function edge( int $top, int $right, int $bottom, int $left ): array {
+		return array(
+			'unit'     => 'px',
+			'top'      => (string) $top,
+			'right'    => (string) $right,
+			'bottom'   => (string) $bottom,
+			'left'     => (string) $left,
+			'isLinked' => false,
+		);
 	}
 }

@@ -209,6 +209,38 @@
     max-width: none;
   }
 
+  .docsync-wp-legacy-elementor-upgrade {
+    background: var(--docsync-warning-bg);
+    border: 1px solid color-mix(in srgb, var(--docsync-warning) 42%, var(--docsync-border));
+    border-left: 3px solid var(--docsync-warning);
+    border-radius: var(--docsync-radius-sm);
+    color: var(--docsync-text-secondary);
+    margin-top: 12px;
+    padding: 10px;
+  }
+
+  .docsync-wp-legacy-elementor-upgrade strong {
+    color: var(--docsync-text-primary);
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .docsync-wp-legacy-elementor-upgrade p {
+    margin-bottom: 8px;
+  }
+
+  .docsync-wp-legacy-elementor-upgrade__actions {
+    display: grid;
+    gap: 7px;
+  }
+
+  .docsync-wp-legacy-elementor-upgrade__actions .button {
+    justify-content: center;
+    min-height: 34px;
+    white-space: normal;
+    width: 100%;
+  }
+
   @media (max-width: 782px) {
     .docsync-wp-toast-stack {
       bottom: 16px;

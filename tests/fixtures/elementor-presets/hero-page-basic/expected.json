@@ -3,7 +3,61 @@
         "id": "7dcdac5b",
         "elType": "container",
         "isInner": false,
-        "settings": [],
+        "settings": {
+            "content_width": "boxed",
+            "boxed_width": {
+                "unit": "px",
+                "size": 1120,
+                "sizes": []
+            },
+            "height": "min-height",
+            "min_height": {
+                "unit": "px",
+                "size": 520,
+                "sizes": []
+            },
+            "min_height_tablet": {
+                "unit": "px",
+                "size": 440,
+                "sizes": []
+            },
+            "content_position": "middle",
+            "flex_direction": "column",
+            "justify_content": "center",
+            "align_items": "center",
+            "gap": {
+                "unit": "px",
+                "size": 24,
+                "sizes": []
+            },
+            "background_background": "classic",
+            "background_color": "#f6f8fb",
+            "padding": {
+                "unit": "px",
+                "top": "96",
+                "right": "24",
+                "bottom": "80",
+                "left": "24",
+                "isLinked": false
+            },
+            "padding_tablet": {
+                "unit": "px",
+                "top": "72",
+                "right": "22",
+                "bottom": "64",
+                "left": "22",
+                "isLinked": false
+            },
+            "padding_mobile": {
+                "unit": "px",
+                "top": "56",
+                "right": "18",
+                "bottom": "48",
+                "left": "18",
+                "isLinked": false
+            },
+            "html_tag": "section"
+        },
         "elements": [
             {
                 "id": "bf3b03a9",
@@ -12,7 +66,17 @@
                 "isInner": false,
                 "settings": {
                     "title": "Launch Faster",
-                    "header_size": "h1"
+                    "header_size": "h1",
+                    "size": "xxl",
+                    "align": "center",
+                    "_margin": {
+                        "unit": "px",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "8",
+                        "left": "0",
+                        "isLinked": false
+                    }
                 },
                 "elements": []
             },
@@ -22,7 +86,16 @@
                 "widgetType": "text-editor",
                 "isInner": false,
                 "settings": {
-                    "editor": "<p>Turn approved Google Docs into Elementor-ready pages without rebuilding the layout.</p>"
+                    "editor": "<p>Turn approved Google Docs into Elementor-ready pages without rebuilding the layout.</p>",
+                    "align": "center",
+                    "_margin": {
+                        "unit": "px",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "16",
+                        "left": "0",
+                        "isLinked": false
+                    }
                 },
                 "elements": []
             },
@@ -36,6 +109,31 @@
                         "url": "https://example.com/uploads/launch.jpg",
                         "id": 0,
                         "alt": "Launch dashboard"
+                    },
+                    "image_size": "large",
+                    "align": "center",
+                    "width": {
+                        "unit": "%",
+                        "size": 86,
+                        "sizes": []
+                    },
+                    "width_tablet": {
+                        "unit": "%",
+                        "size": 92,
+                        "sizes": []
+                    },
+                    "width_mobile": {
+                        "unit": "%",
+                        "size": 100,
+                        "sizes": []
+                    },
+                    "_margin": {
+                        "unit": "px",
+                        "top": "8",
+                        "right": "0",
+                        "bottom": "0",
+                        "left": "0",
+                        "isLinked": false
                     }
                 },
                 "elements": []
@@ -46,7 +144,46 @@
         "id": "784ed2a4",
         "elType": "container",
         "isInner": false,
-        "settings": [],
+        "settings": {
+            "content_width": "boxed",
+            "boxed_width": {
+                "unit": "px",
+                "size": 960,
+                "sizes": []
+            },
+            "flex_direction": "column",
+            "align_items": "stretch",
+            "gap": {
+                "unit": "px",
+                "size": 18,
+                "sizes": []
+            },
+            "padding": {
+                "unit": "px",
+                "top": "48",
+                "right": "24",
+                "bottom": "48",
+                "left": "24",
+                "isLinked": false
+            },
+            "padding_tablet": {
+                "unit": "px",
+                "top": "40",
+                "right": "22",
+                "bottom": "40",
+                "left": "22",
+                "isLinked": false
+            },
+            "padding_mobile": {
+                "unit": "px",
+                "top": "32",
+                "right": "18",
+                "bottom": "32",
+                "left": "18",
+                "isLinked": false
+            },
+            "html_tag": "section"
+        },
         "elements": [
             {
                 "id": "57e0a528",
@@ -55,7 +192,17 @@
                 "isInner": false,
                 "settings": {
                     "title": "Built for agency delivery",
-                    "header_size": "h2"
+                    "header_size": "h2",
+                    "size": "xl",
+                    "align": "left",
+                    "_margin": {
+                        "unit": "px",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "8",
+                        "left": "0",
+                        "isLinked": false
+                    }
                 },
                 "elements": []
             },
@@ -65,7 +212,16 @@
                 "widgetType": "text-editor",
                 "isInner": false,
                 "settings": {
-                    "editor": "<p>Use repeatable sections for client pages, service pages, and campaign drafts.</p>"
+                    "editor": "<p>Use repeatable sections for client pages, service pages, and campaign drafts.</p>",
+                    "align": "left",
+                    "_margin": {
+                        "unit": "px",
+                        "top": "0",
+                        "right": "0",
+                        "bottom": "4",
+                        "left": "0",
+                        "isLinked": false
+                    }
                 },
                 "elements": []
             },
@@ -79,7 +235,7 @@
                         {
                             "text": "Cleaner first syncs",
                             "selected_icon": {
-                                "value": "fas fa-circle",
+                                "value": "fas fa-check",
                                 "library": "fa-solid"
                             },
                             "link": {
@@ -91,7 +247,7 @@
                         {
                             "text": "Reusable Elementor widgets",
                             "selected_icon": {
-                                "value": "fas fa-circle",
+                                "value": "fas fa-check",
                                 "library": "fa-solid"
                             },
                             "link": {
@@ -100,7 +256,30 @@
                                 "nofollow": ""
                             }
                         }
-                    ]
+                    ],
+                    "space_between": {
+                        "unit": "px",
+                        "size": 10,
+                        "sizes": []
+                    },
+                    "icon_size": {
+                        "unit": "px",
+                        "size": 14,
+                        "sizes": []
+                    },
+                    "text_indent": {
+                        "unit": "px",
+                        "size": 8,
+                        "sizes": []
+                    },
+                    "_margin": {
+                        "unit": "px",
+                        "top": "4",
+                        "right": "0",
+                        "bottom": "4",
+                        "left": "0",
+                        "isLinked": false
+                    }
                 },
                 "elements": []
             }

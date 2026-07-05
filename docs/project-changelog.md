@@ -1,6 +1,28 @@
 # Project Changelog
 
-Last updated: 2026-07-02
+Last updated: 2026-07-05
+
+## 2026-07-05 - Elementor diagnostics and release verification
+
+- added safe Sync Activity context for effective output path: Gutenberg preset, Elementor preset, or legacy Elementor converter
+- fixed large-doc fallback partial draft writes so selected Elementor presets use the same converter path as normal sync
+- added `composer test:large-doc-fallback-fixtures` to guard the Elementor preset fallback path
+- updated release notes and local verification docs for the 1.1.3 Elementor usability polish scope
+
+Unresolved:
+
+- staging smoke screenshots still need a configured Elementor site and connected Google test fixtures
+
+## 2026-07-05 - Elementor linking choice and legacy upgrade path
+
+- added an explicit WordPress Blocks vs Elementor Layout choice to the Google Doc link modal when Elementor sync is available
+- kept the existing source create/update REST payload shape while sending remembered `elementorSync`, `elementorPreset`, and `layoutPreset` choices consistently for existing posts and new drafts
+- added a legacy Elementor notice in the post sync metabox for sources that sync through Elementor without an explicit Elementor preset
+- added one-click upgrades from legacy Elementor output to Elementor Feature Block or Elementor Hero Page, with Keep legacy as a local dismissal
+
+Unresolved:
+
+- staging QA still needs a configured Elementor site and connected Google test fixtures
 
 ## 2026-07-02 - 1.1.2 Elementor layout presets
 

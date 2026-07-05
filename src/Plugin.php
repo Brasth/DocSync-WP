@@ -235,7 +235,7 @@ final class Plugin {
 				new SyncLogController( $source_repository )
 			),
 			new PostSyncMetaBox( $source_repository, $settings, $sync_service->getElementorDecider() ),
-			new PostListActions( $source_repository ),
+			new PostListActions( $source_repository, $sync_service->getElementorDecider() ),
 			new SyncCron( $settings, $source_repository, $sync_service ),
 			new TelemetryCron( $settings, $telemetry_service ),
 			$token_store,

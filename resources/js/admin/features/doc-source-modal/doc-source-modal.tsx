@@ -10,6 +10,7 @@ import type { SyncResult } from '../../api';
 import { getAdminConfig } from '../../config';
 import { ensureLazyStyle, useLazyDriveBrowserPanel } from './lazy-drive-browser-panel';
 import { AdvancedSourcePanel } from './advanced-source-panel';
+import { OutputTypeChoice } from './output-type-choice';
 import { SourceModeTabs } from './source-mode-tabs';
 import { type DocSourceTarget, useDocSourceModal } from './use-doc-source-modal';
 
@@ -32,9 +33,12 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
   const DriveBrowserPanel = driveBrowser.Component;
   const config = getAdminConfig();
   const markUrl = config.pluginUrl ? `${trimTrailingSlash(config.pluginUrl)}/resources/images/brasth-mark.png` : '';
-  const useElementorPreset = Boolean(target?.mode === 'existing' && target.elementorSync);
+  const useElementorPreset = modal.canChooseElementor && modal.outputType === 'elementor';
   const elementorDefaultPreset = 'elementor_feature_block';
   const elementorDefaultLabel = config.availableElementorLayoutPresets.find((preset) => preset.id === elementorDefaultPreset)?.label || elementorDefaultPreset;
+  const elementorDefaultOptionLabel = target?.mode === 'existing' && target.elementorPreset === null
+    ? __('Legacy Elementor output', 'brasth-document-sync-for-google-docs')
+    : sprintf(__('Use Elementor default (%s)', 'brasth-document-sync-for-google-docs'), elementorDefaultLabel);
 
   useEffect(() => {
     if (!isOpen) {
@@ -137,26 +141,35 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
                   <strong>{modal.metadata.name}</strong>
                   <span>{modal.metadata.webViewLink || modal.metadata.fileId}</span>
                 </div>
-                {useElementorPreset ? (
-                  <LayoutPresetSelector
-                    availableLayoutPresets={config.availableElementorLayoutPresets}
-                    defaultLayoutPreset={elementorDefaultPreset}
-                    defaultOptionLabel={sprintf(__('Use Elementor default (%s)', 'brasth-document-sync-for-google-docs'), elementorDefaultLabel)}
-                    disabled={modal.busy}
-                    helpText={__('Choose how this Google Doc becomes Elementor sections. Gutenberg presets stay separate.', 'brasth-document-sync-for-google-docs')}
-                    label={__('Elementor layout preset', 'brasth-document-sync-for-google-docs')}
-                    onChange={modal.setElementorPreset}
-                    value={modal.elementorPreset}
-                  />
-                ) : (
-                  <LayoutPresetSelector
-                    availableLayoutPresets={config.availableLayoutPresets}
-                    defaultLayoutPreset={config.defaultLayoutPreset}
-                    disabled={modal.busy}
-                    onChange={modal.setLayoutPreset}
-                    value={modal.layoutPreset}
-                  />
-                )}
+                <div className="docsync-wp-doc-preview__options">
+                  {modal.canChooseElementor ? (
+                    <OutputTypeChoice
+                      disabled={modal.busy}
+                      onChange={modal.setOutputType}
+                      value={modal.outputType}
+                    />
+                  ) : null}
+                  {useElementorPreset ? (
+                    <LayoutPresetSelector
+                      availableLayoutPresets={config.availableElementorLayoutPresets}
+                      defaultLayoutPreset={elementorDefaultPreset}
+                      defaultOptionLabel={elementorDefaultOptionLabel}
+                      disabled={modal.busy}
+                      helpText={__('Choose how this Google Doc becomes Elementor sections. Gutenberg presets stay separate.', 'brasth-document-sync-for-google-docs')}
+                      label={__('Elementor layout preset', 'brasth-document-sync-for-google-docs')}
+                      onChange={modal.setElementorPreset}
+                      value={modal.elementorPreset}
+                    />
+                  ) : (
+                    <LayoutPresetSelector
+                      availableLayoutPresets={config.availableLayoutPresets}
+                      defaultLayoutPreset={config.defaultLayoutPreset}
+                      disabled={modal.busy}
+                      onChange={modal.setLayoutPreset}
+                      value={modal.layoutPreset}
+                    />
+                  )}
+                </div>
               </div>
             ) : null}
           </div>
