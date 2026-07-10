@@ -3,26 +3,26 @@
 This dev container runs a local WordPress site for Brasth Document Sync at:
 
 ```text
-http://localhost:8888
+http://localhost:8890
 ```
 
 WordPress admin:
 
 ```text
-http://localhost:8888/wp-admin/
+http://localhost:8890/wp-admin/
 admin / password
 ```
 
 Plugin setup:
 
 ```text
-http://localhost:8888/wp-admin/admin.php?page=brasth-document-sync-for-google-docs
+http://localhost:8890/wp-admin/admin.php?page=brasth-document-sync-for-google-docs
 ```
 
 OAuth redirect URI:
 
 ```text
-http://localhost:8888/wp-json/brasth-document-sync-for-google-docs/v1/oauth/google/callback
+http://localhost:8890/wp-json/brasth-document-sync-for-google-docs/v1/oauth/google/callback
 ```
 
 ## Start
@@ -36,7 +36,42 @@ The Docker Compose stack includes:
 
 - `wordpress`: `wordpress:php8.3-apache` with Composer, WP-CLI, Node 24, pnpm 9.15.0, and plugin PHP extensions.
 - `db`: `mysql:8.0`.
-- `adminer`: local DB inspection at `http://localhost:8081`.
+
+The MySQL service is also published to the host at `127.0.0.1:3307` for PhpStorm's Database tool window. Use this data source when PhpStorm is running on macOS:
+
+```text
+Data source: DocSync WP Dev MySQL (Host)
+Host: 127.0.0.1
+Port: 3307
+Database: wordpress
+User: wordpress
+Password: wordpress
+```
+
+When PhpStorm opens this project through Remote Development, it loads the shared data source from `.idea/dataSources.xml` automatically and uses the container-only `db:3306` hostname. Enter `wordpress` as the password the first time PhpStorm requests it, then save it in the IDE password store so later devcontainer sessions connect without prompting.
+
+Use this data source when PhpStorm is attached to the devcontainer. Inside the container, `127.0.0.1` is the WordPress container, so MySQL must be reached through the Compose service name:
+
+```text
+Data source: DocSync WP Dev MySQL (Dev Container)
+Host: db
+Port: 3306
+Database: wordpress
+User: wordpress
+Password: wordpress
+```
+
+Adminer is optional and does not start with the default stack. Start it when DB inspection is needed:
+
+```sh
+docker compose -f .devcontainer/docker-compose.yml --profile tools up -d adminer
+```
+
+Adminer is then available at:
+
+```text
+http://localhost:8091
+```
 
 Data persists in Docker named volumes. The current repository is mounted as the active plugin at:
 
@@ -76,7 +111,7 @@ Do not copy OAuth credentials into the Docker image and do not commit them.
 1. In Google Cloud, add this Authorized redirect URI:
 
    ```text
-   http://localhost:8888/wp-json/brasth-document-sync-for-google-docs/v1/oauth/google/callback
+   http://localhost:8890/wp-json/brasth-document-sync-for-google-docs/v1/oauth/google/callback
    ```
 
 2. Download the OAuth Web application JSON locally.
@@ -95,6 +130,31 @@ client_secret*.json
 ```
 
 ## Troubleshooting
+
+### MySQL no space left on device
+
+If MySQL fails with `OS errno 28` or startup logs mention `No space left on device`, recover the local Docker state from the host:
+
+```sh
+docker system df
+docker container prune -f
+docker builder prune -f
+docker system prune -af
+docker compose -f .devcontainer/docker-compose.yml down
+docker volume rm docsync-wp-devcontainer_db_data
+```
+
+`docker system prune -af` removes unused Docker images, networks, containers, and build cache across Docker, so other projects may need to rebuild or redownload images afterward. The final `docker volume rm` command removes only this project's local dev database volume. It is safe for disposable dev data, but it deletes the local WordPress database contents. Avoid `docker system prune --volumes`; that can remove unrelated local Docker volumes from other projects.
+
+After cleanup, rebuild the default stack:
+
+```sh
+docker compose -f .devcontainer/docker-compose.yml up -d --build db wordpress
+docker compose -f .devcontainer/docker-compose.yml ps
+docker logs docsync-wp-devcontainer-db-1
+```
+
+The DB logs should not contain `No space left on device` or `--initialize specified but the data directory has files in it`.
 
 If WordPress is not ready, rerun:
 

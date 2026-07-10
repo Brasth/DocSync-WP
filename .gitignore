@@ -6,7 +6,9 @@
 /.phpunit.cache/
 /.phpunit.result.cache
 /.DS_Store
-/.idea/
+/.idea/*
+!/.idea/
+!/.idea/dataSources.xml
 /.vscode/
 *.log
 *.zip

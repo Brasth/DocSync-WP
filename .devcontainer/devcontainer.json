@@ -2,19 +2,9 @@
   "name": "Brasth Document Sync WordPress",
   "dockerComposeFile": "docker-compose.yml",
   "service": "wordpress",
+  "overrideCommand": false,
   "workspaceFolder": "/var/www/html/wp-content/plugins/brasth-document-sync-for-google-docs",
   "shutdownAction": "stopCompose",
-  "forwardPorts": [8888, 8081],
-  "portsAttributes": {
-    "8888": {
-      "label": "WordPress",
-      "onAutoForward": "notify"
-    },
-    "8081": {
-      "label": "Adminer",
-      "onAutoForward": "silent"
-    }
-  },
   "remoteEnv": {
     "COMPOSER_ALLOW_SUPERUSER": "1",
     "WP_CLI_ALLOW_ROOT": "1"

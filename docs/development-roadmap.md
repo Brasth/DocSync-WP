@@ -1,10 +1,10 @@
 # Development Roadmap
 
-Last updated: 2026-06-29
+Last updated: 2026-07-10
 
 ## Status
 
-The Google Docs Sync Admin Actions implementation is complete in code. The self-managed Google onboarding, Drive-like My Drive/shared drive document browser, dedicated Sources submenu, Logs submenu, page target support, source filters, HTML ZIP media import, Gutenberg block conversion, default Gutenberg layout presets, layout reliability fixtures, admin frontend structure refactor, Drive modal polish, OAuth JSON import, fullscreen picker, dense picker layout, infinite Drive loading, non-blocking background draft sync, oversized Google Doc fallback, inline editor sync-completion apply, progressive empty-draft large-doc writes, large-doc stuck-state recovery, bounded sync diagnostic logging, first-pass WordPress.org release packaging, GitHub Release ZIP asset packaging, WordPress.org pre-review rename/package scoping, listing artwork refresh, and release hardening with admin loading/empty-state polish are also complete in code.
+The Google Docs Sync Admin Actions implementation is complete in code. The self-managed Google onboarding, Drive-like My Drive/shared drive document browser, dedicated Sources submenu, Logs submenu, page target support, source filters, HTML ZIP media import, Gutenberg block conversion, default Gutenberg layout presets, layout reliability fixtures, Elementor presets, explicit output choice, legacy Elementor upgrade path, standalone native image block rendering, admin frontend structure refactor, Drive modal polish, OAuth JSON import, fullscreen picker, dense picker layout, infinite Drive loading, non-blocking background draft sync, oversized Google Doc fallback, inline editor sync-completion apply, progressive empty-draft large-doc writes, large-doc stuck-state recovery, bounded sync diagnostic logging, optional telemetry, devcontainer runtime, first-pass WordPress.org release packaging, GitHub Release ZIP asset packaging, WordPress.org pre-review rename/package scoping, listing artwork refresh, and release hardening with admin loading/empty-state polish are also complete in code.
 
 ## Phase Summary
 
@@ -15,14 +15,14 @@ The Google Docs Sync Admin Actions implementation is complete in code. The self-
 | 3 | Sync Service and Import Pipeline | Complete |
 | 4 | Post Edit and List Table Entry Points | Complete |
 | 5 | Central Admin App, Scheduling, Logs | Complete |
-| 6 | Verification and Release Hardening | Complete in code, local PHP validation blocked |
-| 7 | Sources Submenu and Media Sync | Complete in code, local PHP validation blocked |
-| 8 | Custom Drive Document Browser | Complete in code, local PHP validation blocked |
-| 9 | Drive-Like Browser Navigation | Complete in code, local PHP validation blocked |
-| 10 | Shared Drive Browser and List Refresh | Complete in code, local PHP validation blocked |
-| 11 | Radix and WordPress-Native Frontend Refactor | Complete in code, local PHP validation blocked |
-| 12 | Drive Modal Polish and OAuth JSON Import | Complete in code, local PHP validation blocked |
-| 13 | Admin UI Fixes and Gutenberg Sync Content | Complete in code, local PHP validation blocked |
+| 6 | Verification and Release Hardening | Complete in code |
+| 7 | Sources Submenu and Media Sync | Complete in code |
+| 8 | Custom Drive Document Browser | Complete in code |
+| 9 | Drive-Like Browser Navigation | Complete in code |
+| 10 | Shared Drive Browser and List Refresh | Complete in code |
+| 11 | Radix and WordPress-Native Frontend Refactor | Complete in code |
+| 12 | Drive Modal Polish and OAuth JSON Import | Complete in code |
+| 13 | Admin UI Fixes and Gutenberg Sync Content | Complete in code |
 | 14 | Non-Blocking Picker and Background Sync Feedback | Complete in code |
 | 15 | Oversized Google Doc Export Fallback | Complete in code |
 | 16 | WordPress.org Readiness First Pass | Complete in code, final validation pending |
@@ -43,7 +43,7 @@ The Google Docs Sync Admin Actions implementation is complete in code. The self-
 - compact source modal close control and table sizing that avoids desktop horizontal overflow
 - feature-first admin frontend structure with split API modules, feature hooks, shared UI atoms, and WordPress-native REST/i18n/a11y/component integration
 - browser-only Google OAuth client JSON import that fills setup credentials and warns on redirect URI mismatch
-- synced Google Docs content is saved as Gutenberg block markup for common document structures, with `core/html` fallback for unsupported nodes
+- synced Google Docs content is saved as Gutenberg block markup for common document structures, with native `core/image` blocks for standalone images and `core/html` fallback for unsupported nodes
 - post list-table actions update visible source status after link/sync and auto-refresh after new draft creation
 - post list-table draft creation queues background sync, closes the picker quickly, polls source status, shows admin toasts, and refreshes visible list-table content when the sync reaches a terminal state
 - Drive browser pagination now uses infinite loading with 50-result pages
@@ -76,13 +76,13 @@ The Google Docs Sync Admin Actions implementation is complete in code. The self-
 
 The implementation is usable, but a few follow-ups remain open for future iterations:
 
-- add automated PHP and JS tests
+- add automated JS tests and broaden PHP tests beyond fixture verifiers
 - run official Plugin Check and readme validator in a release test site
 - add final WordPress.org screenshots before SVN submission if product screenshots are available
 - consider a custom sync-log table if support needs search-heavy or long-retention diagnostics
 - improve block-perfect conversion for complex Google Docs layouts if needed
 - add preview/gallery UI in the 1.2.x line
-- add fixtures around Docs API fallback conversion when that fallback path is added to the fixture harness
+- broaden fixtures around Docs API fallback conversion beyond current large-doc fallback cases
 - decide whether to add a separate audit log table
 - decide whether to add a managed Google connector service for true nontechnical one-click onboarding
 
@@ -93,5 +93,5 @@ The implementation is usable, but a few follow-ups remain open for future iterat
 - current one-click improvement is plugin-only and still requires a self-managed Google Cloud app
 - frontend lint blocks inline PHPCS suppression comments in plugin source
 - workflow packaging now uploads installer-ready GitHub Release ZIP assets instead of a staged folder artifact
-- local PHP and frontend verification completed for the latest oversized-doc fallback changes
+- local PHP/frontend verification and devcontainer runtime verification are available for release candidates
 - production validation still needs CI PHP checks, Plugin Check, the official readme validator, and manual Google sync scenarios before SVN submission

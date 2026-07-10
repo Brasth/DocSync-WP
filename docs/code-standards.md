@@ -1,6 +1,6 @@
 # Code Standards
 
-Last updated: 2026-06-30
+Last updated: 2026-07-10
 
 ## Purpose
 
@@ -78,6 +78,7 @@ Rules:
 - Do not allow source attach/detach operations to overwrite or remove a source while that source is actively syncing.
 - Preserve user capability checks even when a source already exists.
 - Upload exported local images through WordPress Media Library APIs and reuse matching attachments.
+- Render standalone imported images as native editor media blocks when the sanitized structure is an image-only `img`, `a`, `figure`, `p`, or `span`; preserve supported captions and custom links.
 
 ## Security Standards
 
@@ -98,12 +99,14 @@ Use the project-local Composer and pnpm toolchains:
 - `composer lint`
 - `composer test:layout-fixtures`
 - `composer test:elementor-fixtures`
+- `composer test:large-doc-fallback-fixtures`
+- `composer test:telemetry-settings`
 - `pnpm install --frozen-lockfile`
 - `pnpm lint`
 - `pnpm typecheck`
 - `pnpm build`
 
-Run `composer lint:fix` only for safe automatic PHPCS fixes. Confirm `vendor/bin/phpcs -i` includes `WordPress`, `WordPress-Core`, `WordPress-Docs`, `WordPress-Extra`, and `PHPCompatibilityWP` after dependency installation.
+Run `composer lint:fix` only for safe automatic PHPCS fixes. Confirm `vendor/bin/phpcs -i` includes `WordPress`, `WordPress-Core`, `WordPress-Docs`, `WordPress-Extra`, and `PHPCompatibilityWP` after dependency installation. For full runtime verification, use the `.devcontainer/` WordPress stack and rerun `.devcontainer/scripts/bootstrap-wordpress.sh` plus `.devcontainer/scripts/verify-runtime.sh`.
 
 ## File Organization
 
@@ -111,3 +114,4 @@ Run `composer lint:fix` only for safe automatic PHPCS fixes. Confirm `vendor/bin
 - Keep individual code files small where possible.
 - Prefer `src/<Domain>/` for backend code and `resources/js/admin/` for admin UI code.
 - Keep docs concise and split by topic when a file starts to drift into a second subject.
+- Do not commit OAuth credential JSON, `.secrets/`, `.env.local`, local database dumps, or generated release ZIPs.

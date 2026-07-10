@@ -1,6 +1,6 @@
 # DocSync-WP Deployment and Release Guide
 
-Last updated: 2026-07-05
+Last updated: 2026-07-10
 
 This guide describes how to release DocSync-WP on WordPress.org and GitHub. It supports the release cadence defined in `docs/project-roadmap.md`:
 
@@ -37,11 +37,12 @@ Before tagging a release, verify all of the following:
   - `composer test:layout-fixtures`
   - `composer test:elementor-fixtures`
   - `composer test:large-doc-fallback-fixtures`
+  - `composer test:telemetry-settings`
   - `vendor/bin/phpcs -i`
 - [ ] Plugin Check (WordPress.org) passes in CI or locally.
 - [ ] readme.txt validator passes.
 - [ ] PHP compatibility check passes for declared minimum version (8.1) and current supported versions.
-- [ ] No secrets, credentials, or API keys in the diff.
+- [ ] No secrets, credentials, OAuth client JSON, `.env.local`, `.secrets/`, local DB dumps, or API keys in the diff.
 - [ ] If optional telemetry ships, `https://docsyncwp.com/privacy-policy` exists and matches `readme.txt` disclosure.
 - [ ] Uninstall behavior is unchanged unless explicitly intended.
 - [ ] No untracked files will be included in the ZIP unless intended.
@@ -73,6 +74,19 @@ Each minor and major release must go through a beta period:
 5. Ship the final release only after the beta exits with no critical blockers.
 
 Patch releases do not require a beta period but should be tested on a staging site before tagging.
+
+## Local WordPress Runtime
+
+The repository includes a disposable devcontainer runtime for release smoke tests before staging:
+
+- WordPress URL: `http://localhost:8890`
+- Admin: `admin / password`
+- Plugin setup URL: `http://localhost:8890/wp-admin/admin.php?page=brasth-document-sync-for-google-docs`
+- OAuth callback URL: `http://localhost:8890/wp-json/brasth-document-sync-for-google-docs/v1/oauth/google/callback`
+
+On container startup, `postCreateCommand` installs Composer and pnpm dependencies and builds assets. `postStartCommand` runs `.devcontainer/scripts/bootstrap-wordpress.sh` and `.devcontainer/scripts/verify-runtime.sh` to install WordPress, activate the plugin, verify required PHP extensions, confirm route registration, and validate the local callback URL.
+
+Use it for smoke checks only. Do not bake OAuth credentials into the image and do not commit downloaded `client_secret*.json` files.
 
 ## WordPress.org Release Steps
 

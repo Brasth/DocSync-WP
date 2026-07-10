@@ -1,6 +1,6 @@
 # Brasth Admin Design Guidelines
 
-Last updated: 2026-06-29
+Last updated: 2026-07-10
 
 ## Purpose
 
@@ -59,7 +59,7 @@ Use this guide for Brasth Document Sync admin UI work. The product direction is 
 
 ## Modal And Drive Browser
 
-- The Doc Source modal is one workflow: choose source, confirm document, choose layout, attach.
+- The Doc Source modal is one workflow: choose source, confirm document, choose output type when needed, choose layout, attach.
 - Header order: product label, action title, concise risk statement.
 - Browse, URL, and File ID modes use tabs with clear active and focus states.
 - Drive toolbar order: location, search, search action, refresh, clear search.
@@ -67,6 +67,8 @@ Use this guide for Brasth Document Sync admin UI work. The product direction is 
 - Selected Drive docs need a strong row rail and a confirmation panel before footer actions.
 - Disabled/download-blocked docs must explain why inline.
 - Footer primary action stays rightmost.
+- Output type radio cards must make WordPress Blocks vs Elementor Layout obvious without adding a separate wizard step.
+- Legacy Elementor upgrade notices should be visible but not alarmist; offer Feature Block, Hero Page, and keep-legacy actions.
 
 ## Setup Workspace
 
@@ -116,4 +118,5 @@ Use this guide for Brasth Document Sync admin UI work. The product direction is 
 - No GSAP in plugin admin.
 - Keep Radix Dialog/Tabs for complex modal/tab behavior.
 - Keep Vite screen-specific bundles and lazy Drive browser/modal styles.
+- Keep standalone image output editor-native when possible so users can select and edit images normally in Gutenberg.
 - Preserve REST, settings, post meta, and Vite entry contracts.

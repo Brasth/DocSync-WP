@@ -1,6 +1,17 @@
 # Project Changelog
 
-Last updated: 2026-07-05
+Last updated: 2026-07-10
+
+## 2026-07-10 - Standalone image and docs refresh
+
+- added standalone image detection for image-only `img`, `a`, `figure`, `p`, and `span` structures
+- render supported standalone images as native Gutenberg `core/image` blocks with caption and custom-link context when present
+- added/updated golden fixtures for plain blocks and Elementor captioned image output
+- documented the devcontainer WordPress runtime, telemetry verifier, native image behavior, and 1.1.3 usability scope across project docs
+
+Unresolved:
+
+- staging smoke screenshots still need a configured Elementor site and connected Google test fixtures
 
 ## 2026-07-05 - Elementor diagnostics and release verification
 

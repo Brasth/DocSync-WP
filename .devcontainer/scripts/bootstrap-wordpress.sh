@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 wp_root="/var/www/html"
 plugin_slug="brasth-document-sync-for-google-docs"
-site_url="${WP_HOME:-http://localhost:8888}"
+site_url="${WP_HOME:-http://localhost:8890}"
 admin_user="${WP_ADMIN_USER:-admin}"
 admin_password="${WP_ADMIN_PASSWORD:-password}"
 admin_email="${WP_ADMIN_EMAIL:-admin@example.test}"
@@ -35,7 +35,7 @@ wait_for_database() {
 	fi
 
 	for _ in {1..60}; do
-		if mysqladmin ping --host="${host}" --port="${port}" --user="${db_user}" --password="${db_password}" --silent >/dev/null 2>&1; then
+		if mysqladmin ping --protocol=TCP --ssl=0 --host="${host}" --port="${port}" --user="${db_user}" --password="${db_password}" --silent >/dev/null 2>&1; then
 			return 0
 		fi
 

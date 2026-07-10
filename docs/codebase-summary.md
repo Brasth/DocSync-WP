@@ -1,14 +1,14 @@
 # Brasth Document Sync Codebase Summary
 
-Last updated: 2026-07-05
+Last updated: 2026-07-10
 
 ## Snapshot
 
 Brasth Document Sync for Google Docs is a WordPress plugin for one-way Google Docs -> WordPress sync. This checkout includes Google OAuth, document inspection, post/page linking and sync, list-table actions, setup/Sources/Logs admin pages, HTML ZIP media import, Gutenberg block conversion, diagnostic sync events, WP-Cron scheduling, optional anonymous active-install telemetry, and first-pass WordPress.org release packaging.
 
-Summary reflects the current source tree after the Radix plus WordPress-native admin frontend refactor, Drive modal polish, OAuth JSON import, admin UI fixes, Gutenberg sync conversion, layout preset foundation, Elementor preset release, layout reliability fixture coverage, background sync progress, large-doc fallback, stale sync recovery, bounded sync logging, privacy disclosure, Elementor sync support, optional telemetry, and the screen-specific admin asset split.
+Summary reflects the current source tree after the Radix plus WordPress-native admin frontend refactor, Drive modal polish, OAuth JSON import, admin UI fixes, Gutenberg sync conversion, layout preset foundation, Elementor preset release, 1.1.3 Elementor usability polish, standalone image block fixes, layout reliability fixture coverage, background sync progress, large-doc fallback, stale sync recovery, bounded sync logging, privacy disclosure, optional telemetry, screen-specific admin asset split, and local WordPress devcontainer setup.
 
-- Total files tracked by `rg --files`: 254
+- Total files tracked by `rg --files`: 268
 - Main languages: PHP, TypeScript, CSS
 
 ## Top-Level Structure
@@ -21,6 +21,8 @@ Summary reflects the current source tree after the Radix plus WordPress-native a
 - `resources/css/shared/` and `resources/css/components/` - reusable CSS partials
 - `docs/` - project documentation and research
 - `plans/` - implementation plans and phase notes
+- `tests/fixtures/` - golden fixtures for Gutenberg layout presets, Elementor presets, and large-doc fallback behavior
+- `.devcontainer/` - Docker Compose WordPress/MySQL development runtime with WP-CLI verification scripts
 - `build/` - Vite output used by WordPress admin screens
 - `assets/` - WordPress.org listing banner and icon assets
 - `cloudflare/telemetry-worker/` - isolated Cloudflare Worker package for optional anonymous active-install telemetry; excluded from installable WordPress ZIPs
@@ -51,7 +53,8 @@ Summary reflects the current source tree after the Radix plus WordPress-native a
 - `src/Sync/Layout/LayoutBlueprint.php` - immutable preset metadata and behavior switches.
 - `src/Sync/Elementor/Preset/` - Elementor Hero Page and Elementor Feature Block registry, fingerprinting, and conversion services.
 - `src/Sync/Layout/ContentRoleClassifier.php` - detects headings, images, lists, tables, code, callouts, and containers.
-- `src/Sync/HtmlBlockFactory.php` - creates common core block arrays from DOM elements.
+- `src/Sync/HtmlBlockFactory.php` - creates common core block arrays from DOM elements, including native `core/image` blocks for standalone images.
+- `src/Sync/HtmlStandaloneImageDetector.php` and `src/Sync/HtmlStandaloneImage.php` - detect image-only wrappers, links, and captions before block serialization.
 - `src/Sync/HtmlBlockMarkupSanitizer.php` - strips export-specific markup from block inner HTML.
 - `src/Sync/MediaAssetImporter.php` - uploads and dedupes Media Library images.
 - `src/Cron/SyncCron.php` - scheduled sync registration and batch execution.
@@ -85,7 +88,8 @@ Summary reflects the current source tree after the Radix plus WordPress-native a
 
 - `pnpm` and installed Node dependencies are available in this checkout environment.
 - Composer, PHPCS, PHP syntax linting, pnpm, and Node dependencies are available in this checkout environment.
-- Current local validation uses `composer validate --no-check-publish`, `composer lint`, `vendor/bin/phpcs -i`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, and the telemetry Worker package tests.
+- The devcontainer provides WordPress, MySQL, Composer, WP-CLI, Node 24, pnpm 9.15.0, plugin activation, and runtime route verification at `http://localhost:8890`.
+- Current local validation uses `composer validate --no-check-publish`, `composer lint`, `composer test:layout-fixtures`, `composer test:elementor-fixtures`, `composer test:large-doc-fallback-fixtures`, `composer test:telemetry-settings`, `vendor/bin/phpcs -i`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, and the telemetry Worker package tests.
 
 ## Upcoming Work
 
@@ -97,7 +101,9 @@ The 1.1.x line introduces layout presets to make synced Google Docs publishable 
 - Site-level `default_layout_preset`, per-source `Layout preset` selectors backed by optional `_docsync_wp_layout_preset`, and `_docsync_wp_last_layout_fingerprint`.
 - Built-in Gutenberg presets covering Clean Article, Documentation, and legacy Plain Blocks.
 - Built-in Elementor presets covering Elementor Hero Page and Elementor Feature Block.
-- Tracked Gutenberg, Elementor, and large-doc fallback layout fixtures, wired into Composer and PR CI.
+- Explicit output type choice in the linking modal when Elementor is available.
+- Legacy Elementor upgrade actions in post-sync surfaces.
+- Tracked Gutenberg, Elementor, image-block, and large-doc fallback fixtures, wired into Composer and PR CI.
 
 Preview/gallery UI remains future work.
 
@@ -109,6 +115,6 @@ Later releases add bulk Drive folder import, a Pro tier with a custom preset bui
 - REST namespace: `brasth-document-sync-for-google-docs/v1`.
 - Google tokens and the OAuth client secret are encrypted with WordPress salts.
 - WordPress privacy policy suggested text discloses Google OAuth, Drive API, Docs API, stored credentials/tokens, linked metadata, imported media, optional Brasth telemetry, and uninstall retention.
-- Release packaging includes `resources/`, `package.json`, `pnpm-lock.yaml`, `vite.config.ts`, `composer.json`, `build/`, and WordPress.org `readme.txt` so reviewers can inspect human-readable source for built assets. Installable ZIP files exclude `assets/` and `cloudflare/`; listing assets stay in the repository for WordPress.org SVN root upload. The release metadata currently targets `1.1.2`.
+- Release packaging includes `resources/`, `package.json`, `pnpm-lock.yaml`, `vite.config.ts`, `composer.json`, `build/`, and WordPress.org `readme.txt` so reviewers can inspect human-readable source for built assets. Installable ZIP files exclude `assets/`, `.devcontainer/`, and `cloudflare/`; listing assets stay in the repository for WordPress.org SVN root upload. The release metadata currently targets `1.1.2`, while development docs include 1.1.3 usability work already merged to the branch.
 - The admin app depends on WordPress packages for REST, i18n, a11y, URL helpers, components, and element runtime; Radix Dialog/Tabs remain the complex interaction primitives.
 - Frontend lint blocks inline PHPCS suppression comments in plugin source.

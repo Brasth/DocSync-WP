@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 wp_root="/var/www/html"
 plugin_slug="brasth-document-sync-for-google-docs"
-site_url="${WP_HOME:-http://localhost:8888}"
+site_url="${WP_HOME:-http://localhost:8890}"
 rest_callback="${site_url}/wp-json/${plugin_slug}/v1/oauth/google/callback"
 required_extensions=(zip dom xml mbstring openssl sodium mysqli gd curl)
 wp_cli=(wp --allow-root --path="${wp_root}")

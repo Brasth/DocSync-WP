@@ -1,6 +1,6 @@
 # DocSync-WP Development Roadmap
 
-Last updated: 2026-06-29
+Last updated: 2026-07-10
 
 ## Strategic Direction
 
@@ -20,7 +20,7 @@ Each release must pass the existing validation pipeline (`pnpm lint`, `pnpm type
 
 ## Current State
 
-- Version 1.1.2 is the current Elementor preset release.
+- Version 1.1.2 is the current release metadata; 1.1.3 usability polish is merged in development docs/code and awaiting release versioning.
 - Core sync engine is stable: Google export, media import, Gutenberg block conversion, Elementor JSON conversion, background sync, and sync logging.
 - The plugin supports one-way sync from Google Docs to WordPress posts, pages, and enabled public custom post types.
 - Setup now uses a task-first Brasth workspace with one primary next action, Sources keeps a tighter table workflow with compact row actions, and Logs presents a searchable Sync Activity workspace with Radix confirmation dialogs, recovery hints, and safe clear actions.
@@ -53,8 +53,8 @@ Each release must pass the existing validation pipeline (`pnpm lint`, `pnpm type
 |---|---|---|---|
 | **1.1.0** | Released | Layout preset registry (`LayoutBlueprint`, `LayoutPresetRegistry`, `ContentRoleClassifier`, `LayoutConversionService`), 2 enhanced Gutenberg presets (`Clean Article`, `Documentation`), legacy `Plain Blocks`, site default setting, Setup dropdown, per-source/post selectors, layout fingerprints | Site admin sets a default layout; all synced posts look better |
 | **1.1.1** | Released | Layout preset reliability patch, clearer preset copy, tracked edge-case fixtures, CI fixture verification | Recommended update with more predictable preset output |
-| **1.1.2** | Now | 2 Elementor presets (`Elementor Hero Page`, `Elementor Feature Block`) | Elementor users get layouts too |
-| **1.1.3** | +2 weeks | Sync logging for preset usage and follow-up fixture gaps | QA confidence and usage analytics |
+| **1.1.2** | Released/current metadata | 2 Elementor presets (`Elementor Hero Page`, `Elementor Feature Block`) | Elementor users get layouts too |
+| **1.1.3** | Now | Elementor usability polish: explicit output choice, legacy upgrade path, preset output fixes, standalone native image blocks, follow-up fixtures | Users choose the right output path and get cleaner editor-native media |
 
 ### 1.2.x line — Layout foundation: UI
 
@@ -122,8 +122,8 @@ Each release must pass the existing validation pipeline (`pnpm lint`, `pnpm type
 
 | Horizon | Versions | Focus | Key Deliverables |
 |---|---|---|---|
-| **Now** | 1.1.2 | Elementor presets | Hero Page, Feature Block, Elementor fixtures, separate selector |
-| **Next** | 1.1.3 - 1.2.3 | Layout UI expansion | Preset usage logging, wizard gallery, preview, preset selector polish |
+| **Now** | 1.1.3 | Elementor usability polish | Explicit output choice, legacy upgrade actions, native image block fixes, preset fixture coverage |
+| **Next** | 1.2.0 - 1.2.3 | Layout UI expansion | Preset usage logging, wizard gallery, preview, preset selector polish |
 | **Later** | 1.3.0 - 1.4.3 | Agency scale and monetization | Bulk import, Pro tier, custom preset builder |
 | **Future** | 1.5.0 - 2.2.0 | Writer discovery, smart sync, expansion | Add-on, AI, managed OAuth, Notion, team workflows |
 
@@ -137,7 +137,7 @@ Each release must pass the existing validation pipeline (`pnpm lint`, `pnpm type
 | 1.1.0 | 2 Gutenberg presets pass golden tests | 100% on 5 fixtures |
 | 1.1.1 | Layout reliability fixture suite | 100% on tracked Clean Article, Documentation, Plain Blocks, and source override fixtures |
 | 1.1.2 | 4 total publishable presets pass golden tests | 100% on Gutenberg and Elementor fixtures |
-| 1.1.3 | Manual QA publishable output | 0 developer edits for fixture set |
+| 1.1.3 | Manual QA publishable output and output-path clarity | 0 developer edits for fixture set; explicit output choice visible; standalone image fixtures pass |
 | 1.2.0 | Wizard step completion rate | 80% of new drafts |
 | 1.3.0 | Bulk import 50 Docs | 0 failures, <5 min |
 | 1.4.0 | Pro license activations | 10 paid customers |

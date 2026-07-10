@@ -1,6 +1,6 @@
 # Project Overview and PDR
 
-Last updated: 2026-06-29
+Last updated: 2026-07-10
 
 ## Purpose
 
@@ -14,12 +14,18 @@ Brasth Document Sync for Google Docs syncs Google Docs into WordPress posts, pag
 - attach source to an existing WordPress target
 - create a synced draft from a Google Doc
 - post/page edit screen actions: link, change, sync now, detach
+- explicit WordPress Blocks vs Elementor Layout choice when Elementor is available
+- legacy Elementor source upgrade actions for Feature Block or Hero Page presets
 - list-table actions: add sync doc, inline link/sync, status column
-- setup admin page for settings and account state
+- setup admin page for settings, account state, sync defaults, and optional telemetry consent
 - dedicated Sources submenu for source list, filters, and bulk sync
+- Sync Activity submenu with bounded diagnostic events, filters, recovery hints, and safe clearing
 - HTML ZIP import with Media Library image sideloading and URL rewriting
-- scheduled sync with WP-Cron
-- sync status and error persistence in post meta
+- Google Docs API fallback for oversized exports
+- layout presets for Gutenberg and Elementor output
+- standalone image rendering as native editor media blocks
+- scheduled and manual background sync with WP-Cron progress polling
+- sync status, progress, diagnostics, and error persistence in post meta
 
 ## Product Decisions Reflected In Code
 
@@ -46,6 +52,11 @@ Brasth Document Sync for Google Docs syncs Google Docs into WordPress posts, pag
 | Source status visibility in admin | Implemented |
 | Capability checks on post actions | Implemented |
 | Imported Google Docs images in Media Library | Implemented |
+| Gutenberg layout presets | Implemented |
+| Elementor layout presets | Implemented |
+| Large-doc Docs API fallback | Implemented |
+| Optional anonymous telemetry | Implemented |
+| Local WordPress dev container | Implemented |
 
 ## Non-Functional Requirements
 
@@ -66,23 +77,16 @@ Brasth Document Sync for Google Docs syncs Google Docs into WordPress posts, pag
 - post/page edit and list-table entry points work
 - manual sync updates post content and sync state
 - synced images use local WordPress attachment URLs
+- standalone images render as native editor media where possible
 - scheduled sync is registered only when enabled
-- local verification blockers are documented
-
-## Known Environment Blocker
-
-Local verification in this checkout is blocked because:
-
-- `php` is unavailable
-- `composer` is unavailable
-- `vendor/autoload.php` is not present until `composer install` runs
+- local verification runs through Composer, pnpm, and optional devcontainer runtime checks
 
 ## Open Follow-Ups
 
-- Decide whether to add automated PHP and JS tests.
-- Decide whether to add richer sync history beyond last status and last error.
+- Decide whether to add automated JS tests beyond TypeScript/lint/build checks.
+- Decide whether to add richer audit history beyond bounded diagnostic events.
 - Decide whether to add a managed Google connector service for simpler setup.
-- Validate Elementor preset edge cases from real agency documents after the 1.1.2 preset release.
+- Validate Elementor preset edge cases from real agency documents after the 1.1.3 usability polish.
 - Choose the primary target niche (Elementor agencies vs. news publishers) before Phase 2 case studies.
 - Lock the Free/Pro tier boundary before writing Phase 2 feature-gating code.
 - Validate whether to register built-in presets as global block patterns in a later release.

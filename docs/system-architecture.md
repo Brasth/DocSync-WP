@@ -1,6 +1,6 @@
 # System Architecture
 
-Last updated: 2026-07-05
+Last updated: 2026-07-10
 
 ## Overview
 
@@ -35,6 +35,7 @@ flowchart LR
   Import --> Layouts["LayoutConversionService"]
   FallbackImport --> Layouts
   Layouts --> Blocks["HtmlToBlockContentConverter / preset renderer"]
+  Blocks --> NativeImages["Standalone image detector -> core/image"]
   Sync --> Lock["SyncLock"]
   Import --> Media["Media Library attachments"]
   Blocks --> WP["wp_update_post / wp_insert_post"]
@@ -99,8 +100,11 @@ Responsibilities:
 Responsibilities:
 
 - link a Google Doc to the current target with the Drive-like My Drive/shared drive browser, with pasted URL/file ID under advanced linking
+- choose WordPress Blocks or Elementor Layout when Elementor is available
+- select the matching Gutenberg or Elementor layout preset
 - change or detach the source
 - trigger immediate sync
+- upgrade legacy Elementor sources to Feature Block or Hero Page presets, or keep legacy conversion
 - show active sync progress, terminal status, last sync, and error state
 - prompt or reload the editor after background sync completes so stale editor content is not silently shown
 
@@ -228,7 +232,7 @@ These identify images imported from a Google Docs HTML ZIP export so re-sync can
 10. `DriveClient` exports an HTML ZIP package by default; progress moves to `exporting`.
 11. If Google returns the 10 MB export-size failure, progress moves to `large_doc_fallback`, then `DocsApiHtmlImporter` reads the same document through `documents.get?includeTabsContent=true`, converts supported Docs structures to sanitized HTML, and imports inline image `contentUri` assets into Media Library.
 12. `HtmlZipImporter` extracts the normal ZIP package, imports local images into Media Library, rewrites image URLs, and sanitizes HTML; progress moves through `importing`.
-13. Gutenberg sync uses `LayoutConversionService` to resolve the effective Gutenberg layout preset from `_docsync_wp_layout_preset` or the site default, then either delegates `plain_blocks` to `HtmlToBlockContentConverter` or renders the selected preset; Elementor sync uses `ElementorPresetConversionService` when `_docsync_wp_elementor_preset` is set and otherwise keeps the legacy Elementor converter; progress moves to `converting`.
+13. Gutenberg sync uses `LayoutConversionService` to resolve the effective Gutenberg layout preset from `_docsync_wp_layout_preset` or the site default, then either delegates `plain_blocks` to `HtmlToBlockContentConverter` or renders the selected preset; standalone image structures become native `core/image` blocks with supported captions and custom links. Elementor sync uses `ElementorPresetConversionService` when `_docsync_wp_elementor_preset` is set and otherwise keeps the legacy Elementor converter; progress moves to `converting`.
     - `Clean Article` demotes top-level document headings for post bodies and keeps code-looking Google Docs paragraphs as normal paragraphs.
     - `Documentation` uses `ContentRoleClassifier` plus `DocumentationCodeBlockDetector` to render semantic `pre`/`code`, fenced snippets, and code-like paragraph groups as `core/code`, while explicit `Note:`, `Tip:`, `Warning:`, `Important:`, and `Caution:` labels remain quote callouts.
     - `DocumentationCodeBlockDetector` is heuristic. It recognizes common shell, XML/JSON, Java/PHP/JavaScript-like, Gherkin, path, and file-tree shapes, but it is not a programming-language parser.
@@ -316,6 +320,8 @@ Current components:
 - `_docsync_wp_last_layout_fingerprint` post meta — prevents preset changes from being hidden by unchanged Google metadata.
 - Setup sync defaults expose a compact `Default synced layout` dropdown through `GET/POST /settings`.
 - Source linking and the post sync metabox switch the compact preset dropdown between Gutenberg presets and Elementor presets based on the active sync mode.
+- `OutputTypeChoice` makes the WordPress Blocks vs Elementor Layout decision explicit before attach when Elementor is available.
+- `LegacyElementorUpgradeNotice` gives existing legacy Elementor sources an in-place preset upgrade path without forcing migration.
 
 Later phases add an in-linking preset gallery, preview endpoint, bulk Drive folder import, a custom preset builder, a Pro tier, a Google Docs Workspace Add-on, and optional managed OAuth. See `docs/project-roadmap.md` for the full phased plan.
 
@@ -331,5 +337,6 @@ Later phases add an in-linking preset gallery, preview endpoint, bulk Drive fold
 - pasted Docs or raw file IDs only work when the connected Google account already has access
 - Vite externalizes Radix React peer imports and WordPress package imports to WordPress globals, and aliases Radix JSX runtime imports to the local WordPress JSX runtime shim; avoid direct app imports from `react` or `react-dom`
 - Inline PHPCS suppression comments are blocked by the frontend lint guard; unavoidable standards exceptions must live in `phpcs.xml.dist`
-- local verification uses Composer, PHPCS, PHP syntax checks, pnpm lint/typecheck, and Vite builds
+- local verification uses Composer, PHPCS, PHP syntax checks, fixture verifiers, pnpm lint/typecheck, and Vite builds
+- `.devcontainer/` provides a disposable WordPress/MySQL runtime at `http://localhost:8890` with WP-CLI bootstrap and route verification scripts
 - the Cloudflare telemetry Worker is excluded from WordPress plugin ZIPs and has separate Node-based checks under `cloudflare/telemetry-worker/`

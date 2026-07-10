@@ -72,7 +72,7 @@ The Sources screen keeps the table-based workflow for linked Docs, with compact 
 ## Sync Behavior
 
 - Google Docs is the source of truth. Manual sync overwrites WordPress post content while preserving normal WordPress revisions.
-- Sync exports Google Docs as an HTML ZIP package, imports local images into the WordPress Media Library, rewrites image URLs, sanitizes HTML, converts common elements to Gutenberg blocks, then updates the target post.
+- Sync exports Google Docs as an HTML ZIP package, imports local images into the WordPress Media Library, rewrites image URLs, sanitizes HTML, converts common elements to Gutenberg blocks, renders standalone images as native `core/image` blocks, then updates the target post.
 - Site admins can choose the default Gutenberg sync layout from `Clean Article`, `Documentation`, and `Plain Blocks`. Individual linked sources can override that preset before sync; `Use site default` stores no per-source override.
 - Elementor sync uses separate Elementor presets: `Elementor Hero Page` and `Elementor Feature Block`. Existing Elementor sources without an explicit Elementor preset keep the legacy Elementor conversion path until a preset is selected, and the post sync metabox shows upgrade actions for Feature Block or Hero Page.
 - The `Documentation` layout renders semantic `pre`/`code` HTML, fenced snippets, and Google Docs styled code-like paragraphs as `core/code` blocks. It uses balanced heuristics for shell commands, XML/JSON snippets, Java/PHP/JavaScript-like statements, Gherkin steps, paths, and file trees; it is not a full programming-language parser.
@@ -111,6 +111,7 @@ composer lint
 composer test:layout-fixtures
 composer test:elementor-fixtures
 composer test:large-doc-fallback-fixtures
+composer test:telemetry-settings
 pnpm install --frozen-lockfile
 pnpm lint
 pnpm typecheck
@@ -118,6 +119,8 @@ pnpm build
 ```
 
 Use `composer lint:fix` only for safe automatic PHPCS fixes. Keep unavoidable WordPress coding standards exceptions narrow and centralized in `phpcs.xml.dist`.
+
+A ready-to-use WordPress dev container is available under `.devcontainer/`. It runs WordPress at `http://localhost:8890`, activates the plugin, and verifies core runtime routes after startup.
 
 ## Release Packaging
 
