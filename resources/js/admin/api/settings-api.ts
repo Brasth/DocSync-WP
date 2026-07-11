@@ -10,6 +10,10 @@ export const saveSettings = (settings: Partial<SettingsResponse> & { clientSecre
   });
 };
 
+export const clearOAuthConfiguration = (): Promise<SettingsResponse> => {
+  return request<SettingsResponse>('settings/oauth-configuration', { method: 'DELETE' });
+};
+
 export const getGoogleAccount = (): Promise<GoogleAccount> => request<GoogleAccount>('oauth/google/account');
 
 export const disconnectGoogleAccount = (): Promise<{ disconnected: boolean }> => {

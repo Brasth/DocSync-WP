@@ -1,8 +1,9 @@
-import { createElement } from '@wordpress/element';
+import { createElement, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 import type { GoogleAccount } from '../../api';
 import { AdminButton } from '../../shared/ui/admin-button';
+import { ConfirmDialog } from '../../shared/ui/confirm-dialog';
 import { GoogleSetupTestResult } from './google-setup-test-result';
 import { OAuthClientJsonImport } from './oauth-client-json-import';
 import type { OAuthClientJsonCredentials } from './oauth-client-json';
@@ -17,10 +18,12 @@ type Props = {
   clientSecret: string;
   copyMessage: string;
   hasClientSecret: boolean;
+  hasSavedOAuthConfiguration: boolean;
   hasUnsavedChanges: boolean;
   nextAction: GoogleSetupNextActionConfig;
   redirectUri: string;
   testChecks: SetupCheck[] | null;
+  onClearOAuthConfiguration: () => Promise<boolean>;
   onClientIdChange: (clientId: string) => void;
   onClientSecretChange: (clientSecret: string) => void;
   onCopyValue: (value: string, label: string) => void;
@@ -56,16 +59,28 @@ export const GoogleSetupActiveTaskPanel = ({
   clientSecret,
   copyMessage,
   hasClientSecret,
+  hasSavedOAuthConfiguration,
   hasUnsavedChanges,
   nextAction,
   redirectUri,
   testChecks,
+  onClearOAuthConfiguration,
   onClientIdChange,
   onClientSecretChange,
   onCopyValue,
   onImported,
   onTestSetup
 }: Props): JSX.Element => {
+  const [clearOAuthOpen, setClearOAuthOpen] = useState(false);
+
+  const clearOAuthConfiguration = async () => {
+    const cleared = await onClearOAuthConfiguration();
+
+    if (cleared) {
+      setClearOAuthOpen(false);
+    }
+  };
+
   const renderBody = (): JSX.Element => {
     if (activeTask === 'credentials') {
       return (
@@ -166,6 +181,37 @@ export const GoogleSetupActiveTaskPanel = ({
       </div>
 
       {testChecks ? <GoogleSetupTestResult checks={testChecks} /> : null}
+
+      {hasSavedOAuthConfiguration ? (
+        <details className="docsync-wp-setup-advanced-disclosure">
+          <summary>{__('Advanced', 'brasth-document-sync-for-google-docs')}</summary>
+          <div className="docsync-wp-oauth-danger-zone">
+            <div className="docsync-wp-oauth-danger-zone__content">
+              <h3>{__('Clear saved OAuth configuration', 'brasth-document-sync-for-google-docs')}</h3>
+              <p>
+                {__(
+                  'Removes the saved client credentials, disconnects all plugin users locally, and cancels queued syncs. Sources and synced content stay intact.',
+                  'brasth-document-sync-for-google-docs'
+                )}
+              </p>
+            </div>
+            <AdminButton disabled={busy} onClick={() => setClearOAuthOpen(true)} variant="delete">
+              {__('Clear configuration', 'brasth-document-sync-for-google-docs')}
+            </AdminButton>
+          </div>
+        </details>
+      ) : null}
+
+      <ConfirmDialog
+        busy={busy}
+        confirmLabel={__('Clear configuration', 'brasth-document-sync-for-google-docs')}
+        description={__('This removes the saved OAuth client ID and secret, disconnects every plugin user locally, and cancels queued syncs. Linked sources, posts, revisions, media, and logs are retained.', 'brasth-document-sync-for-google-docs')}
+        open={clearOAuthOpen}
+        title={__('Clear saved OAuth configuration?', 'brasth-document-sync-for-google-docs')}
+        variant="danger"
+        onConfirm={clearOAuthConfiguration}
+        onOpenChange={setClearOAuthOpen}
+      />
     </section>
   );
 };

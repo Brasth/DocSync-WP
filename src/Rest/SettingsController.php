@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace DocSyncWP\Rest;
 
+use DocSyncWP\Auth\TokenStore;
+use DocSyncWP\Cron\SyncCron;
 use DocSyncWP\Settings\SettingsRepository;
 use WP_Error;
 use WP_REST_Request;
@@ -29,12 +31,21 @@ final class SettingsController {
 	private SettingsRepository $settings;
 
 	/**
+	 * Google token store.
+	 *
+	 * @var TokenStore
+	 */
+	private TokenStore $token_store;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param SettingsRepository $settings Settings repository.
+	 * @param SettingsRepository $settings    Settings repository.
+	 * @param TokenStore         $token_store Google token store.
 	 */
-	public function __construct( SettingsRepository $settings ) {
-		$this->settings = $settings;
+	public function __construct( SettingsRepository $settings, TokenStore $token_store ) {
+		$this->settings    = $settings;
+		$this->token_store = $token_store;
 	}
 
 	/**
@@ -57,6 +68,16 @@ final class SettingsController {
 					'callback'            => array( $this, 'updateSettings' ),
 					'permission_callback' => array( RestPermissions::class, 'canManageSettings' ),
 				),
+			)
+		);
+
+		register_rest_route(
+			$rest_namespace,
+			'/settings/oauth-configuration',
+			array(
+				'methods'             => WP_REST_Server::DELETABLE,
+				'callback'            => array( $this, 'clearOAuthConfiguration' ),
+				'permission_callback' => array( RestPermissions::class, 'canManageSettings' ),
 			)
 		);
 	}
@@ -100,6 +121,24 @@ final class SettingsController {
 		if ( is_wp_error( $saved ) ) {
 			return $saved;
 		}
+
+		return rest_ensure_response( $this->formatSettingsResponse() );
+	}
+
+	/**
+	 * Clear the site OAuth client and all locally stored Google connections.
+	 *
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function clearOAuthConfiguration(): WP_REST_Response|WP_Error {
+		$cleared = $this->settings->clearOAuthConfiguration();
+
+		if ( is_wp_error( $cleared ) ) {
+			return $cleared;
+		}
+
+		$this->token_store->deleteAll();
+		SyncCron::unschedule();
 
 		return rest_ensure_response( $this->formatSettingsResponse() );
 	}

@@ -224,7 +224,7 @@ final class SourceController {
 	public function createSource( WP_REST_Request $request ): WP_REST_Response|WP_Error {
 		$params = $this->getRequestParams(
 			$request,
-			array( 'fileId', 'target', 'exportFormat', 'syncMode', 'elementorSync', 'layoutPreset', 'elementorPreset' ),
+			array( 'fileId', 'target', 'exportFormat', 'syncMode', 'elementorSync', 'layoutPreset', 'elementorPreset', 'transferOwnership' ),
 			'docsync_wp_unknown_source_fields'
 		);
 
@@ -263,6 +263,7 @@ final class SourceController {
 		$export_format    = $this->getExportFormat( $params );
 		$sync_mode        = $this->getSyncMode( $params );
 		$elementor_sync   = $this->getOptionalBoolean( $params, 'elementorSync' );
+		$transfer_owner   = $this->getOptionalBoolean( $params, 'transferOwnership' );
 		$layout_preset    = $this->getOptionalLayoutPreset( $params );
 		$elementor_preset = $this->getOptionalElementorPreset( $params );
 		$user_id          = get_current_user_id();
@@ -277,6 +278,10 @@ final class SourceController {
 
 		if ( is_wp_error( $elementor_sync ) ) {
 			return $elementor_sync;
+		}
+
+		if ( is_wp_error( $transfer_owner ) ) {
+			return $transfer_owner;
 		}
 
 		if ( is_wp_error( $layout_preset ) ) {
@@ -298,6 +303,17 @@ final class SourceController {
 
 			if ( is_wp_error( $allowed ) ) {
 				return $allowed;
+			}
+
+			$current_source = $this->source_repository->getSource( $post_id );
+			$current_owner  = is_array( $current_source ) ? absint( $current_source['sync_owner_user_id'] ?? 0 ) : 0;
+
+			if ( $current_owner > 0 && $current_owner !== $user_id && true !== $transfer_owner ) {
+				return new WP_Error(
+					'docsync_wp_source_owner_transfer_required',
+					__( 'This source uses another editor\'s Google connection for scheduled syncs. Confirm the ownership transfer before relinking it to your connection.', 'brasth-document-sync-for-google-docs' ),
+					array( 'status' => 409 )
+				);
 			}
 
 			$result = $this->sync_service->attachSource(
@@ -1101,19 +1117,23 @@ final class SourceController {
 		$sync_owner_user   = is_array( $source ) ? absint( $source['sync_owner_user_id'] ?? 0 ) : 0;
 		$event_user_id     = $sync_owner_user > 0 ? $sync_owner_user : $user_id;
 		$has_pending_event = SyncCron::hasScheduledSourceSync( $post_id, $event_user_id );
-		$result            = $this->sync_service->markSyncQueued( $post_id, $user_id, $has_pending_event );
+		$result            = $this->sync_service->markSyncQueued( $post_id, $event_user_id, $has_pending_event );
 
 		if ( is_wp_error( $result ) ) {
-			return $result;
+			return $created ? $this->createdQueueFailureResult( $post_id, $result ) : $result;
 		}
 
 		$already_queued = ! empty( $result['alreadyQueued'] );
 		unset( $result['alreadyQueued'] );
 
 		if ( ! $already_queued ) {
-			$scheduled = SyncCron::scheduleSourceSync( $post_id, $user_id, $spawn );
+			$scheduled = SyncCron::scheduleSourceSync( $post_id, $event_user_id, $spawn );
 
 			if ( is_wp_error( $scheduled ) ) {
+				if ( $created ) {
+					return $this->createdQueueFailureResult( $post_id, $scheduled );
+				}
+
 				$this->sync_service->markSyncError( $post_id, $scheduled );
 				return $scheduled;
 			}
@@ -1129,6 +1149,36 @@ final class SourceController {
 	}
 
 	/**
+	 * Return an already-created draft in terminal error state after queue failure.
+	 *
+	 * The request remains a successful creation response so clients retain the
+	 * post ID and source record instead of retrying the create operation.
+	 *
+	 * @param int      $post_id Post ID created by this request.
+	 * @param WP_Error $error   Queue failure.
+	 * @return array<string,mixed>
+	 */
+	private function createdQueueFailureResult( int $post_id, WP_Error $error ): array {
+		$failed = $this->sync_service->markSyncError( $post_id, $error );
+
+		if ( is_wp_error( $failed ) ) {
+			$source = $this->source_repository->formatSource( $post_id );
+			$failed = array(
+				'postId'         => $post_id,
+				'status'         => SyncService::STATUS_ERROR,
+				'changed'        => false,
+				'lastSyncMethod' => is_array( $source ) ? ( $source['lastSyncMethod'] ?? null ) : null,
+				'source'         => $source,
+			);
+		}
+
+		$failed['created'] = true;
+		$failed['queued']  = false;
+
+		return $failed;
+	}
+
+	/**
 	 * Convert abandoned background sync state into an actionable error.
 	 *
 	 * @param int $post_id Post ID.
@@ -1141,16 +1191,21 @@ final class SourceController {
 			return true;
 		}
 
-		$owner_user_id = absint( $source['sync_owner_user_id'] ?? 0 );
-		$has_lock      = $this->sync_service->hasActiveSyncLock( $post_id );
-		$has_cron      = $owner_user_id > 0 && SyncCron::hasScheduledSourceSync( $post_id, $owner_user_id );
+		$owner_user_id       = absint( $source['sync_owner_user_id'] ?? 0 );
+		$has_lock            = $this->sync_service->hasActiveSyncLock( $post_id );
+		$scheduled_timestamp = $owner_user_id > 0 ? SyncCron::getScheduledSourceSyncTimestamp( $post_id, $owner_user_id ) : false;
+		$has_cron            = false !== $scheduled_timestamp;
 
-		if ( $has_lock || $has_cron ) {
+		if ( $has_lock || ( $has_cron && ! $this->isStaleSyncHeartbeat( $source ) ) ) {
 			return true;
 		}
 
 		if ( ! $this->isStaleSyncHeartbeat( $source ) ) {
 			return true;
+		}
+
+		if ( $has_cron ) {
+			SyncCron::unscheduleSourceSync( $post_id, $owner_user_id );
 		}
 
 		$message = __( 'Sync stopped before completion. Retry sync, and check WP-Cron or PHP error logs if it keeps happening.', 'brasth-document-sync-for-google-docs' );

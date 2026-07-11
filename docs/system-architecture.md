@@ -1,13 +1,13 @@
 # System Architecture
 
-Last updated: 2026-07-10
+Last updated: 2026-07-11
 
 ## Overview
 
 Brasth Document Sync for Google Docs is a WordPress plugin with four admin surfaces and one shared sync backend:
 
-- `Brasth Document Sync > Setup` for Google connection settings
-- `Brasth Document Sync > Sources` for linked source operations
+- `Brasth Document Sync > Setup` for administrator-only site configuration and administrator activation
+- `Brasth Document Sync > Sources` for capability-safe activation continuation and linked source operations
 - `Brasth Document Sync > Logs` for bounded sync diagnostics
 - post/page edit meta boxes and list-table actions
 - REST API and sync services shared by all surfaces
@@ -26,6 +26,7 @@ flowchart LR
   REST --> OAuth["GoogleOAuthService + TokenStore"]
   REST --> Docs["DocumentIdParser + DriveClient"]
   REST --> Sources["SourceRepository"]
+  REST --> Workspace["WorkspaceController"]
   REST --> Sync["SyncService"]
   REST --> Cron["SyncCron"]
   Sync --> Drive["Google Drive metadata + HTML ZIP export"]
@@ -60,10 +61,12 @@ flowchart LR
 
 Responsibilities:
 
-- configure Google OAuth settings
+- configure administrator-only site Google OAuth settings
 - guide self-managed Google Cloud setup with saved-state checks
 - connect or disconnect the current WordPress user
-- show current connection mode and account readiness
+- distinguish site configuration, personal account readiness, and first-source activation
+- open the shared Doc source modal directly, poll the first draft sync, and link to the completed draft
+- clear site OAuth configuration, all local Google connections, and sync schedules through an explicit administrator-only action
 
 ### Sources Admin Page
 
@@ -73,6 +76,9 @@ Responsibilities:
 
 Responsibilities:
 
+- provide safe site/account/first-source guidance to users who can operate at least one enabled target type
+- launch the shared Doc source modal directly for the first accessible source
+- show accessible-source health counts and activation status
 - list linked sources across enabled WordPress targets
 - filter by search, post type, and sync status
 - paginate source results
@@ -115,8 +121,8 @@ The post sync UI imports `resources/css/post-sync-entry.css` for initial control
 ## Frontend Architecture
 
 - Vite builds screen-specific Setup, Sources, Logs, post-sync, source-modal-style, and Drive-browser entries from `resources/js/admin/entries/`.
-- REST access is split under `resources/js/admin/api/`, with `apiFetch` imported from `@wordpress/api-fetch` and query strings built with `@wordpress/url`.
-- Stateful workflows live in feature hooks, including Drive browser, source modal, setup/Sources admin, and post-sync actions.
+- REST access is split under `resources/js/admin/api/`, including a normalized `workspace-api.ts` boundary; `apiFetch` comes from `@wordpress/api-fetch` and query strings use `@wordpress/url`.
+- Stateful workflows live in feature hooks, including Drive browser, source modal, first-source activation, setup/Sources admin, and post-sync actions. `features/activation/activation-advisor.ts` is a pure mapper over server-authoritative workspace and current-account facts; it persists no wizard state.
 - Shared UI atoms under `resources/js/admin/shared/ui/` wrap WordPress components where useful while preserving existing sync CSS classes.
 - `resources/js/admin/components/` remains as thin compatibility exports during the refactor.
 
@@ -138,8 +144,10 @@ REST namespace: `brasth-document-sync-for-google-docs/v1`
 
 Implemented routes:
 
+- `GET /workspace`, returning `canManageSettings`, site connection readiness, capability-filtered available/enabled/creatable post types, safe publishing defaults/preset labels, Elementor availability, and an accessible-source summary
 - `GET /settings`, including `defaultLayoutPreset`, `availableLayoutPresets`, `availableElementorLayoutPresets`, `telemetryEnabled`, and `telemetryPromptDismissed`
 - `POST /settings`, including `defaultLayoutPreset`, optional `telemetryEnabled`, and optional `telemetryPromptDismissed`
+- `DELETE /settings/oauth-configuration`, clearing the site OAuth client, all stored plugin Google tokens, and sync schedules while retaining sources and WordPress content
 - `GET /oauth/google/url`
 - `GET /oauth/google/account`
 - `DELETE /oauth/google/account`
@@ -149,7 +157,7 @@ Implemented routes:
 - `GET /documents` with `search`, `page_token`, and `page_size` filters
 - `POST /documents/inspect`
 - `GET /sources` with `search`, `post_type`, `status`, `page`, and `per_page` filters
-- `POST /sources`, including optional `layoutPreset`, `elementorPreset`, and `elementorSync`
+- `POST /sources`, including optional `layoutPreset`, `elementorPreset`, `elementorSync`, and explicit `transferOwnership`
 - `GET /sources/{postId}`
 - `POST /sources/{postId}`, including optional `layoutPreset`, `elementorPreset`, and `elementorSync`
 - `DELETE /sources/{postId}`
@@ -158,7 +166,11 @@ Implemented routes:
 - `GET /sync-log` with `search`, `post_id`, `level`, `status`, `step`, `page`, and `per_page` filters
 - `DELETE /sync-log` with optional `post_id`, returning `{ cleared: number }`
 
-Source records include additive live progress fields: `syncProgress` from 0 to 100, `syncStep`, and `syncMessage`. Existing status values and route shapes stay unchanged.
+`GET /workspace` is nonce-protected through `canUseAuthenticatedRest()` and uses an explicit safe-field allowlist. It contains no OAuth identifiers/secrets, tokens, Google account/email data, telemetry or schedule configuration, source/post/Google IDs, ownership identity, raw errors, messages, titles, or content. Its source summary includes only enabled targets passing normal per-post source authority, is capped at 500 accessible records, and reports `truncated` when the cap is reached.
+
+Workspace source categories are exhaustive: `syncing` is active work; `healthy` is `synced` or `skipped` with a non-empty successful timestamp; every other accessible source is `attention`. `activated` becomes true only when at least one accessible source is healthy. Account connection alone is not activation.
+
+Source records include additive live progress fields: `syncProgress` from 0 to 100, `syncStep`, and `syncMessage`. Existing status values and route shapes stay unchanged. Relinking an existing source owned by another operator requires `transferOwnership: true`; an unconfirmed request returns HTTP 409 with `docsync_wp_source_owner_transfer_required`.
 
 Sync log entries are diagnostic events, not audit records. They store only `eventId`, timestamp, level, target/source titles, status, step, progress, message, error code, sync timestamps, and safe context flags such as lock state, cron-event state, and effective output path labels. Output-path context is limited to validated preset IDs and mode labels: Gutenberg preset, Elementor preset, or legacy Elementor converter.
 
@@ -170,8 +182,12 @@ Common permission model:
 
 - user must be logged in
 - valid `X-WP-Nonce` or `_wpnonce`
+- Setup and all settings/site OAuth mutations require `manage_options`
+- Sources, Logs, personal OAuth, Drive browsing, and workspace bootstrap require capability to edit or create at least one enabled target type
 - capability checks for the target post or post type
 - enabled post type gate before source actions
+
+Menu visibility is only discoverability. Setup remains administrator-only; Sources and Logs render for capability-qualified operators. The top-level menu resolves to Sources for non-administrator operators and for administrators with a complete site connection plus at least one accessible source; otherwise it resolves to Setup. Direct Setup, Sources, and Logs URLs remain stable.
 
 ## Data Model
 
@@ -224,6 +240,8 @@ These identify images imported from a Google Docs HTML ZIP export so re-sync can
 2. User browses My Drive or a selected shared drive and selects a Doc through the Drive browser, or inspects advanced pasted URL/raw file ID entry.
 3. `DocumentController` lists Drive folders/Docs server-side and validates advanced input through Drive metadata.
 4. `SourceController` attaches the source to an existing target or creates a new draft.
+   - Setup and Sources reuse this same modal/API path for first-source activation; no dedicated activation route or persisted wizard record exists.
+   - Relinking does not silently replace `_docsync_wp_sync_owner_user_id`; a different operator must confirm transfer, after which scheduled sync responsibility moves to that operator's connection.
 5. Admin manual syncs request background mode; inline REST mode remains available for compatibility.
 6. Background mode stores source state as `syncing`, sets progress to `0` with step `queued`, schedules a single WP-Cron event, and returns a queued result.
 7. `SyncService` acquires a per-post lock and updates milestone progress in source post meta while confirming the linked Google file has not changed.
@@ -241,6 +259,7 @@ These identify images imported from a Google Docs HTML ZIP export so re-sync can
 14. WordPress post content is updated only after export/import or fallback conversion and block conversion succeed; progress moves to `updating_post`.
 15. Source state is saved back to post meta with `lastSyncMethod` set to `html_zip` or `docs_api_fallback` after successful content import.
 16. Result state becomes `linked`, `syncing`, `synced`, `skipped`, or `error`; `synced` and `skipped` finish at `100`, while queued API responses use top-level `status: queued` and persisted state remains `syncing`.
+17. First-source UI derives activation only from `synced`/`skipped` plus `lastSyncedAt`; success offers the real draft edit URL and Sources, while terminal errors preserve the created draft/source and expose a safe retry path.
 
 Skip behavior:
 
@@ -262,6 +281,8 @@ Skip behavior:
 - schedule is controlled by the `sync_interval` setting
 - supported intervals: `off`, `hourly`, `twicedaily`, `daily`
 - cron job runs in small batches and syncs linked posts for the current source owner
+- manual queueing of an existing source also preserves the recorded sync owner; another editor's request does not silently change the scheduled Google identity
+- recurring and single-source jobs do not schedule or run when the site OAuth configuration is incomplete
 - the single-source handler calls `SyncService::syncPost()` so locking, imports, conversion, and error states stay centralized
 - `src/Telemetry/TelemetryCron.php` registers `docsync_wp_telemetry_checkin` only when `telemetry_enabled` is true
 - telemetry uses a weekly WP-Cron interval and unschedules itself when the site owner disables telemetry, deactivates, or uninstalls the plugin
@@ -338,5 +359,5 @@ Later phases add an in-linking preset gallery, preview endpoint, bulk Drive fold
 - Vite externalizes Radix React peer imports and WordPress package imports to WordPress globals, and aliases Radix JSX runtime imports to the local WordPress JSX runtime shim; avoid direct app imports from `react` or `react-dom`
 - Inline PHPCS suppression comments are blocked by the frontend lint guard; unavoidable standards exceptions must live in `phpcs.xml.dist`
 - local verification uses Composer, PHPCS, PHP syntax checks, fixture verifiers, pnpm lint/typecheck, and Vite builds
-- `.devcontainer/` provides a disposable WordPress/MySQL runtime at `http://localhost:8890` with WP-CLI bootstrap and route verification scripts
+- `.devcontainer/` provides a disposable WordPress/MySQL runtime at `http://localhost:8890` with WP-CLI bootstrap and route verification scripts; `verify-runtime.sh` requires `/workspace` alongside the existing core routes
 - the Cloudflare telemetry Worker is excluded from WordPress plugin ZIPs and has separate Node-based checks under `cloudflare/telemetry-worker/`

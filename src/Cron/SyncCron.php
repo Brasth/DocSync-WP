@@ -75,7 +75,7 @@ final class SyncCron {
 	public function syncSchedule(): void {
 		$interval = $this->getInterval();
 
-		if ( 'off' === $interval ) {
+		if ( ! $this->settings->hasRequiredOAuthConfiguration() || 'off' === $interval ) {
 			self::unscheduleRecurring();
 			return;
 		}
@@ -95,6 +95,10 @@ final class SyncCron {
 	 * Run a small batch of source syncs.
 	 */
 	public function run(): void {
+		if ( ! $this->settings->hasRequiredOAuthConfiguration() ) {
+			return;
+		}
+
 		$post_ids = $this->getLinkedPostIds();
 
 		foreach ( $post_ids as $post_id ) {
@@ -175,6 +179,17 @@ final class SyncCron {
 	 * @param int $user_id User ID whose Google token should run the sync.
 	 */
 	public static function hasScheduledSourceSync( int $post_id, int $user_id ): bool {
+		return false !== self::getScheduledSourceSyncTimestamp( $post_id, $user_id );
+	}
+
+	/**
+	 * Get the timestamp for a queued source sync event.
+	 *
+	 * @param int $post_id Post ID.
+	 * @param int $user_id User ID whose Google token should run the sync.
+	 * @return int|false Unix timestamp when scheduled, otherwise false.
+	 */
+	public static function getScheduledSourceSyncTimestamp( int $post_id, int $user_id ): int|false {
 		$post_id = absint( $post_id );
 		$user_id = absint( $user_id );
 
@@ -182,7 +197,35 @@ final class SyncCron {
 			return false;
 		}
 
-		return false !== wp_next_scheduled( self::SOURCE_HOOK, array( $post_id, $user_id ) );
+		return wp_next_scheduled( self::SOURCE_HOOK, array( $post_id, $user_id ) );
+	}
+
+	/**
+	 * Remove queued source sync events for one source owner pair.
+	 *
+	 * @param int $post_id Post ID.
+	 * @param int $user_id User ID whose Google token would run the sync.
+	 */
+	public static function unscheduleSourceSync( int $post_id, int $user_id ): void {
+		$post_id = absint( $post_id );
+		$user_id = absint( $user_id );
+
+		if ( $post_id <= 0 || $user_id <= 0 ) {
+			return;
+		}
+
+		$args      = array( $post_id, $user_id );
+		$timestamp = wp_next_scheduled( self::SOURCE_HOOK, $args );
+
+		while ( false !== $timestamp ) {
+			$unscheduled = wp_unschedule_event( $timestamp, self::SOURCE_HOOK, $args );
+
+			if ( false === $unscheduled || is_wp_error( $unscheduled ) ) {
+				return;
+			}
+
+			$timestamp = wp_next_scheduled( self::SOURCE_HOOK, $args );
+		}
 	}
 
 	/**
@@ -196,6 +239,20 @@ final class SyncCron {
 		$user_id = absint( $user_id );
 
 		if ( $post_id <= 0 || $user_id <= 0 ) {
+			return;
+		}
+
+		$source = $this->source_repository->getSource( $post_id );
+
+		if ( null === $source || SyncService::STATUS_SYNCING !== (string) $source['sync_status'] ) {
+			return;
+		}
+
+		if ( ! $this->settings->hasRequiredOAuthConfiguration() ) {
+			$this->sync_service->markSyncError(
+				$post_id,
+				__( 'Brasth Document Sync could not run this background sync because the site OAuth configuration is incomplete.', 'brasth-document-sync-for-google-docs' )
+			);
 			return;
 		}
 

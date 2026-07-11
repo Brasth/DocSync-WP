@@ -52,7 +52,9 @@ https://example.com/wp-json/brasth-document-sync-for-google-docs/v1/oauth/google
 
 Replace `https://example.com` with the WordPress site URL. The OAuth callback URL belongs in **Authorized redirect URIs** and must include `/wp-json/brasth-document-sync-for-google-docs/v1/oauth/google/callback`.
 
-In WordPress admin, open **Brasth Document Sync** and follow the compact setup workspace. It shows one primary next action, keeps the setup checklist and account status visible, keeps detailed Google Cloud guidance in a disclosure inside the credential task, provides the exact redirect URI to copy, links to the required Google Cloud screens, and tests whether the saved plugin settings are complete.
+In WordPress admin, administrators open **Brasth Document Sync > Setup** to configure the site connection. The role-aware workspace separates the site-wide OAuth client from the current user's personal Google connection, shows one primary next action, and treats setup readiness as an intermediate state. Activation requires at least one source accessible to the current user to finish as `synced` or unchanged-complete (`skipped`) with a successful sync timestamp.
+
+When the site and personal connections are ready, **Choose Google Doc** opens the existing source workflow directly on Setup or Sources. It creates a WordPress draft, queues the first sync, shows background progress and safe recovery copy, then offers **Open draft** after successful completion.
 
 Save:
 
@@ -65,9 +67,11 @@ Each WordPress user must connect their own Google account before inspecting or s
 
 ## Admin Experience
 
-Setup, Sources, and Sync Activity share a branded Brasth admin shell with a compact product masthead, contained notices, consistent button sizing, and the runtime Brasth mark from `resources/images/`. Destructive admin actions use Radix confirmation dialogs instead of native browser prompts.
+Setup, Sources, and Sync Activity share a branded Brasth admin shell with a compact product masthead, contained notices, consistent button sizing, and the runtime Brasth mark from `resources/images/`. Setup remains restricted to administrators with `manage_options`; users who can edit or create an enabled target type can use the operational Sources and Sync Activity surfaces. Direct submenu URLs remain stable. The top-level plugin entry opens Setup for administrators who still need site configuration or an initial source, and Sources for operational users. Destructive admin actions use Radix confirmation dialogs instead of native browser prompts.
 
-The Sources screen keeps the table-based workflow for linked Docs, with compact row actions and background sync polling. The Sync Activity screen keeps URL-backed filters and auto-refresh, shows useful summaries only when events exist, and manages source or all-log clearing through the shared confirmation dialog. Sync events include the safe output path used for a run: Gutenberg preset, Elementor preset, or legacy Elementor converter. When Elementor is enabled, the Google Doc link modal asks whether the source should sync as WordPress Blocks or an Elementor Layout before saving the source.
+The Sources screen is the daily operational home. It shows a permission-filtered health summary and orders sources needing attention before active syncs, then healthy sources, while preserving URL-backed search/status/type filters and pagination. It also keeps compact row actions and background sync polling. The Sync Activity screen keeps URL-backed filters and auto-refresh, shows useful summaries only when events exist, and manages source or all-log clearing through the shared confirmation dialog. Sync events include the safe output path used for a run: Gutenberg preset, Elementor preset, or legacy Elementor converter. When Elementor is enabled, the Google Doc link modal asks whether the source should sync as WordPress Blocks or an Elementor Layout before saving the source.
+
+Scheduled syncs continue to use the source's recorded sync owner. Relinking a source from another operator's Google connection returns an explicit transfer requirement; the confirmation changes scheduled-sync responsibility without removing WordPress content, revisions, or source settings.
 
 ## Sync Behavior
 
@@ -86,7 +90,7 @@ The Sources screen keeps the table-based workflow for linked Docs, with compact 
 
 ## Scheduling
 
-Brasth Document Sync uses WP-Cron for scheduled sync and manual background sync. WP-Cron runs only when WordPress receives traffic, so low-traffic sites or sites with `DISABLE_WP_CRON` should use a real server cron hitting `wp-cron.php` for reliable sync completion.
+Brasth Document Sync uses WP-Cron for scheduled sync and manual background sync. WP-Cron runs only when WordPress receives traffic, so low-traffic sites or sites with `DISABLE_WP_CRON` should use a real server cron hitting `wp-cron.php` for reliable sync completion. The supplied local dev stack includes an internal WP-CLI cron worker because its browser-facing port is intentionally not available to container loopback requests.
 
 ## Runtime Notes
 
@@ -96,7 +100,9 @@ Brasth Document Sync uses WP-Cron for scheduled sync and manual background sync.
 - Admin app source imports WordPress packages for element runtime, REST fetch, i18n, URL helpers, a11y, and simple admin UI controls.
 - Radix UI primitives remain the modal/tab interaction layer. React and React DOM are build-time peer dependencies only; Vite maps their runtime imports and JSX runtime helpers back to `wp.element`.
 - The REST namespace reserved for future features is `brasth-document-sync-for-google-docs/v1`.
+- `GET /workspace` is the nonce-protected, least-privilege operational bootstrap route. It returns capability-filtered target types, safe publishing defaults, Elementor availability, and accessible-source health counts; it never returns OAuth credentials, Google account identity, telemetry choices, schedules, source IDs, owner IDs, or raw errors.
 - Google OAuth client secrets and user tokens are encrypted with WordPress salts. Rotating those salts invalidates stored Brasth Document Sync credentials and tokens, so users must reconnect Google accounts afterward.
+- Clearing the saved site OAuth configuration is administrator-only. It removes the client credentials, invalidates in-flight OAuth state, deletes locally stored Google connections for all plugin users, and unschedules sync jobs while retaining linked sources and WordPress content.
 - Optional anonymous active-install telemetry is default off. Setup includes a dismissible inline opt-in prompt plus the permanent Sync defaults checkbox. When enabled, telemetry sends one weekly install-level check-in to `https://telemetry.brasth.com/v1/check-in` through `src/Telemetry/`; the Cloudflare Worker lives under `cloudflare/telemetry-worker/` and is excluded from installable plugin ZIPs.
 - Uninstall removes plugin settings, encrypted user Google tokens, and scheduled cron events. Linked post metadata is kept by default; define `DOCSYNC_WP_FULL_UNINSTALL` or return true from `docsync_wp_full_uninstall` to remove linked post meta. Synced posts are never deleted.
 - Inline PHPCS suppression comments are prohibited in plugin source. Use code changes first; if a WordPress standards exception is unavoidable, keep it narrow in `phpcs.xml.dist`.
@@ -120,7 +126,7 @@ pnpm build
 
 Use `composer lint:fix` only for safe automatic PHPCS fixes. Keep unavoidable WordPress coding standards exceptions narrow and centralized in `phpcs.xml.dist`.
 
-A ready-to-use WordPress dev container is available under `.devcontainer/`. It runs WordPress at `http://localhost:8890`, activates the plugin, and verifies core runtime routes after startup.
+A ready-to-use WordPress dev container is available under `.devcontainer/`. It runs WordPress at `http://localhost:8890`, activates the plugin, and verifies core runtime routes after startup, including the role-aware `/workspace` route.
 
 ## Release Packaging
 

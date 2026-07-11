@@ -20,6 +20,31 @@ export type SettingsResponse = {
   availableElementorLayoutPresets: AvailableLayoutPreset[];
 };
 
+export type WorkspaceSourceSummary = {
+  total: number;
+  attention: number;
+  syncing: number;
+  healthy: number;
+  activated: boolean;
+  truncated: boolean;
+};
+
+export type WorkspaceResponse = {
+  canManageSettings: boolean;
+  siteConnectionReady: boolean;
+  availablePostTypes: AvailablePostType[];
+  enabledPostTypes: string[];
+  creatablePostTypes: string[];
+  defaultPostStatus: string;
+  defaultExportFormat: string;
+  defaultLayoutPreset: string;
+  availableLayoutPresets: AvailableLayoutPreset[];
+  elementorSyncEnabled: boolean;
+  elementorAvailable: boolean;
+  availableElementorLayoutPresets: AvailableLayoutPreset[];
+  sourceSummary: WorkspaceSourceSummary;
+};
+
 export type GoogleAccount = {
   connected: boolean;
   googleAccountEmail?: string;

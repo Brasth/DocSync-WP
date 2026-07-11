@@ -143,6 +143,13 @@ final class TokenStore {
 	}
 
 	/**
+	 * Delete every locally stored Google token record.
+	 */
+	public function deleteAll(): void {
+		delete_metadata( 'user', 0, self::META_KEY, '', true );
+	}
+
+	/**
 	 * Whether a user has a stored token record.
 	 *
 	 * @param int $user_id User ID.

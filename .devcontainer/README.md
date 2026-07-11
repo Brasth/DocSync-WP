@@ -27,15 +27,20 @@ http://localhost:8890/wp-json/brasth-document-sync-for-google-docs/v1/oauth/goog
 
 ## Start
 
-1. Open this repository in VS Code.
-2. Run **Dev Containers: Reopen in Container**.
+1. Open this repository in PhpStorm using **Remote Development > Dev Containers** or in VS Code using the Dev Containers extension.
+2. Start or reopen the project in the dev container.
 3. Wait for `postCreateCommand` to install Composer dependencies, install pnpm dependencies, and build Vite assets.
 4. Wait for `postStartCommand` to install WordPress, activate the plugin, and run runtime verification.
+5. Open `http://localhost:8890` if PhpStorm does not open the forwarded browser URL automatically.
+
+The Dev Container forwards port `8890` as **WordPress**. VS Code-compatible clients use `onAutoForward: openBrowser`; PhpStorm may require opening the URL from its forwarded-port or Services interface. The container lifecycle command cannot directly launch a browser on the host computer.
 
 The Docker Compose stack includes:
 
-- `wordpress`: `wordpress:php8.3-apache` with Composer, WP-CLI, Node 24, pnpm 9.15.0, and plugin PHP extensions.
+- `wordpress`: `wordpress:php8.3-apache` with PHP, Composer, WP-CLI, Node 24, pnpm 9.15.0, and plugin PHP extensions.
 - `db`: `mysql:8.0`.
+
+The image keeps the runtime focused on the tools needed for this plugin. Composer and pnpm dependencies are installed after container creation instead of being baked into the image. The Compose stack stores `node_modules/`, `.pnpm-store/`, and `vendor/` in named Docker volumes so host dependencies are not bind-mounted into the Linux container. Temporary Debian, npm, and WP-CLI caches are removed during the image build.
 
 The MySQL service is also published to the host at `127.0.0.1:3307` for PhpStorm's Database tool window. Use this data source when PhpStorm is running on macOS:
 
@@ -120,6 +125,8 @@ Do not copy OAuth credentials into the Docker image and do not commit them.
 5. Connect a Google account.
 6. Browse Drive or inspect a Google Doc URL/file ID.
 7. Link a Doc to a post, trigger background sync, and confirm synced content, imported media, progress state, and Sync Activity logs.
+
+The Compose stack includes a development-only `cron` worker. It runs due WordPress events with WP-CLI inside the Docker network, so local background sync does not depend on the browser-facing `http://localhost:8890` URL being reachable from the WordPress container.
 
 Local secret paths ignored by Git:
 

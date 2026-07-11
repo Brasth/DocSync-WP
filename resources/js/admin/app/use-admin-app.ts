@@ -3,6 +3,7 @@ import { useMemo, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 
 import {
+  clearOAuthConfiguration,
   disconnectGoogleAccount,
   getGoogleAccount,
   getGoogleAuthUrl,
@@ -122,14 +123,36 @@ export const useAdminApp = (view: AdminView) => {
     });
   };
 
+  const clearSavedOAuthConfiguration = async () => {
+    let clearedSuccessfully = false;
+
+    await runAction(async () => {
+      const saved = await clearOAuthConfiguration();
+      const message = __('Saved OAuth configuration cleared. All plugin users must reconnect after new credentials are saved.', 'brasth-document-sync-for-google-docs');
+
+      setSettings(saved);
+      setAccount(emptyAccount);
+      setNotice({ type: 'success', message });
+      speak(message);
+      clearedSuccessfully = true;
+    });
+
+    return clearedSuccessfully;
+  };
+
   const persistSettings = async (nextSettings: Partial<SettingsResponse> & { clientSecret?: string }) => {
+    let savedSuccessfully = false;
+
     await runAction(async () => {
       const saved = await saveSettings(nextSettings);
       const message = __('Settings saved.', 'brasth-document-sync-for-google-docs');
       setSettings(saved);
       setNotice({ type: 'success', message });
       speak(message);
+      savedSuccessfully = true;
     });
+
+    return savedSuccessfully;
   };
 
   const syncOne = async (postId: number) => {
@@ -175,6 +198,7 @@ export const useAdminApp = (view: AdminView) => {
   return {
     account,
     applySourceFilters,
+    clearSavedOAuthConfiguration,
     busy,
     config,
     connectGoogle,

@@ -3,13 +3,21 @@
   "dockerComposeFile": "docker-compose.yml",
   "service": "wordpress",
   "overrideCommand": false,
+  "forwardPorts": [8890],
+  "portsAttributes": {
+    "8890": {
+      "label": "WordPress",
+      "protocol": "http",
+      "onAutoForward": "openBrowser"
+    }
+  },
   "workspaceFolder": "/var/www/html/wp-content/plugins/brasth-document-sync-for-google-docs",
-  "shutdownAction": "stopCompose",
+  "shutdownAction": "none",
   "remoteEnv": {
     "COMPOSER_ALLOW_SUPERUSER": "1",
     "WP_CLI_ALLOW_ROOT": "1"
   },
-  "postCreateCommand": "composer install && corepack enable && corepack prepare pnpm@9.15.0 --activate && pnpm install --frozen-lockfile && pnpm build",
+  "postCreateCommand": "composer install --no-interaction --prefer-dist && CI=1 pnpm install --frozen-lockfile --reporter=append-only && pnpm build",
   "postStartCommand": ".devcontainer/scripts/bootstrap-wordpress.sh && .devcontainer/scripts/verify-runtime.sh",
   "customizations": {
     "vscode": {
@@ -23,6 +31,11 @@
         "editor.formatOnSave": false,
         "php.validate.executablePath": "/usr/local/bin/php"
       }
+    },
+    "jetbrains": {
+      "plugins": [
+        "com.intellij.ml.llm"
+      ]
     }
   }
 }

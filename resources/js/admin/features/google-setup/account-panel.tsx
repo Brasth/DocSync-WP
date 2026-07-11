@@ -12,6 +12,11 @@ type Props = {
   createSyncedDraftUrl: string;
   onConnect: () => Promise<void>;
   onDisconnect: () => Promise<void>;
+  /**
+   * When false, only show connection status and disconnect.
+   * Primary setup actions stay in the active task panel (Option A ready mode).
+   */
+  primaryActions?: boolean;
 };
 
 export const AccountPanel = ({
@@ -20,7 +25,8 @@ export const AccountPanel = ({
   canConnect,
   createSyncedDraftUrl,
   onConnect,
-  onDisconnect
+  onDisconnect,
+  primaryActions = true
 }: Props): JSX.Element => {
   const [disconnectOpen, setDisconnectOpen] = useState(false);
   const needsReconnect = account.connected && !account.hasRequiredScope;
@@ -42,12 +48,12 @@ export const AccountPanel = ({
           <div className="docsync-wp-account">
             <strong>{account.googleAccountEmail || __('Google account connected', 'brasth-document-sync-for-google-docs')}</strong>
             <span>{account.scope || __('Drive read-only scope', 'brasth-document-sync-for-google-docs')}</span>
-            {needsReconnect ? (
+            {primaryActions && needsReconnect ? (
               <AdminButton disabled={busy || !canConnect} onClick={onConnect}>
                 {__('Reconnect Google', 'brasth-document-sync-for-google-docs')}
               </AdminButton>
             ) : null}
-            {canCreateDraft ? (
+            {primaryActions && canCreateDraft ? (
               <a className="button button-secondary docsync-wp-button docsync-wp-button--default" href={createSyncedDraftUrl}>
                 {__('Create synced draft', 'brasth-document-sync-for-google-docs')}
               </a>
@@ -55,7 +61,11 @@ export const AccountPanel = ({
             <AdminButton disabled={busy} onClick={() => setDisconnectOpen(true)} variant="delete">
               {__('Disconnect', 'brasth-document-sync-for-google-docs')}
             </AdminButton>
-            {needsReconnect ? <span className="docsync-wp-inline-warning">{__('Reconnect to grant Drive read-only access before browsing Docs.', 'brasth-document-sync-for-google-docs')}</span> : null}
+            {needsReconnect ? (
+              <span className="docsync-wp-inline-warning">
+                {__('Reconnect to grant Drive read-only access before browsing Docs.', 'brasth-document-sync-for-google-docs')}
+              </span>
+            ) : null}
           </div>
         ) : (
           <div className="docsync-wp-account">
@@ -65,9 +75,11 @@ export const AccountPanel = ({
                 ? __('Connect Google before inspecting or syncing Docs. Brasth Document Sync will send OAuth requests to Google, request Drive read-only access, and use Google Drive and Docs APIs to list, inspect, export, and sync Docs this account can read.', 'brasth-document-sync-for-google-docs')
                 : __('Save OAuth client ID and client secret before connecting. The Google Cloud project must have Drive API and Docs API enabled.', 'brasth-document-sync-for-google-docs')}
             </span>
-            <AdminButton disabled={busy || !canConnect} onClick={onConnect}>
-              {__('Connect Google', 'brasth-document-sync-for-google-docs')}
-            </AdminButton>
+            {primaryActions ? (
+              <AdminButton disabled={busy || !canConnect} onClick={onConnect}>
+                {__('Connect Google', 'brasth-document-sync-for-google-docs')}
+              </AdminButton>
+            ) : null}
           </div>
         )}
       </section>

@@ -5,6 +5,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import { type SourceRecord, type SyncResult } from '../../api';
 import { DocSourceModal, type DocSourceTarget } from '../doc-source-modal/doc-source-modal';
 import { AdminButton } from '../../shared/ui/admin-button';
+import { isQueuedSync } from '../../shared/ui/sync-progress';
 import { BackgroundSyncPoller } from './background-sync-poller';
 import { syncRowAction } from './post-list-row-action-sync';
 import { refreshPostListTable, reloadPostListPage, updateListRowSource } from './post-sync-dom';
@@ -88,9 +89,7 @@ export const ListEntryApp = ({ postType }: { postType: string }): JSX.Element =>
 
   const trackBackgroundSync = (result: SyncResult) => {
     const syncId = `sync-${result.postId}-${Date.now()}`;
-    const message = result.created
-      ? __('Draft created. Syncing Google Doc in the background.', 'brasth-document-sync-for-google-docs')
-      : __('Google Doc sync queued.', 'brasth-document-sync-for-google-docs');
+    const message = __('Waiting for the background worker.', 'brasth-document-sync-for-google-docs');
 
     setTrackedSyncs((current) => [...current, {
       id: syncId,
@@ -100,6 +99,7 @@ export const ListEntryApp = ({ postType }: { postType: string }): JSX.Element =>
     showToast({
       busy: true,
       id: syncId,
+      indeterminate: true,
       message,
       progress: result.source?.syncProgress,
       title: __('Sync queued', 'brasth-document-sync-for-google-docs'),
@@ -130,13 +130,16 @@ export const ListEntryApp = ({ postType }: { postType: string }): JSX.Element =>
   };
 
   const handleProgressStatus = (sync: TrackedSync, source: SourceRecord) => {
+    const queued = isQueuedSync(source);
+
     updateListRowSource(source);
     showToast({
       busy: true,
       id: sync.id,
-      message: source.syncMessage || __('Google Doc sync is running.', 'brasth-document-sync-for-google-docs'),
+      indeterminate: queued,
+      message: queued ? __('Waiting for the background worker.', 'brasth-document-sync-for-google-docs') : source.syncMessage || __('Google Doc sync is running.', 'brasth-document-sync-for-google-docs'),
       progress: source.syncProgress,
-      title: __('Syncing Google Doc', 'brasth-document-sync-for-google-docs'),
+      title: queued ? __('Sync queued', 'brasth-document-sync-for-google-docs') : __('Syncing Google Doc', 'brasth-document-sync-for-google-docs'),
       tone: 'info'
     });
   };

@@ -1,6 +1,21 @@
 # Project Changelog
 
-Last updated: 2026-07-10
+Last updated: 2026-07-11
+
+## 2026-07-11 - Role-aware product activation workspace
+
+- added nonce-protected `GET /workspace` with capability-filtered target types, safe publishing defaults, and bounded accessible-source health/activation counts
+- kept Setup and settings/site OAuth mutations administrator-only while opening Sources and Sync Activity to capability-qualified content operators
+- defined activation as an accessible `synced` or `skipped` source with a successful timestamp; account readiness alone is not completion
+- reused the Doc source modal directly from Setup and Sources, with background first-sync progress, safe retry, and completed draft actions
+- ordered Sources globally by attention, active sync, then healthy state while preserving permission filtering, URL filters, and pagination
+- required explicit confirmation before relinking transfers scheduled-sync responsibility to another operator's Google connection
+- added administrator-only OAuth configuration clearing that removes local Google connections and sync schedules while retaining linked sources and WordPress content
+- extended devcontainer runtime verification to require the `/workspace` route
+
+Unresolved:
+
+- release role/nonce/accessibility matrix and configured Google/Elementor runtime smoke tests remain pending
 
 ## 2026-07-10 - Standalone image and docs refresh
 

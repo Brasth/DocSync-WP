@@ -37,7 +37,7 @@ export type DocSyncWPAdminConfig = {
 
 declare global {
   interface Window {
-    DocSyncWPAdmin?: DocSyncWPAdminConfig;
+    DocSyncWPAdmin?: Partial<DocSyncWPAdminConfig>;
   }
 }
 
@@ -80,5 +80,8 @@ const fallbackConfig: DocSyncWPAdminConfig = {
 };
 
 export const getAdminConfig = (): DocSyncWPAdminConfig => {
-  return window.DocSyncWPAdmin ?? fallbackConfig;
+  return {
+    ...fallbackConfig,
+    ...(window.DocSyncWPAdmin ?? {})
+  };
 };

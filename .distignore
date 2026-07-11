@@ -21,3 +21,6 @@
 /cloudflare
 *.zip
 *.log
+client_secret*.json
+.secrets/
+.env*

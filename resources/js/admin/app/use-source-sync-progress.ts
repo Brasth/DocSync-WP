@@ -37,7 +37,7 @@ export const useSourceSyncProgress = (setSources: SetSources, setNotice: SetNoti
     mergeSources([source]);
   };
 
-  const handleSourceTerminal = (source: SourceRecord) => {
+  const handleSourceTerminal = (source: SourceRecord, announce = true) => {
     const isError = source.syncStatus === 'error';
     const message = isError
       ? source.syncError || __('Google Doc sync failed.', 'brasth-document-sync-for-google-docs')
@@ -45,14 +45,16 @@ export const useSourceSyncProgress = (setSources: SetSources, setNotice: SetNoti
 
     mergeSources([source]);
     stopTrackingSource(source.postId);
-    setNotice({ type: isError ? 'error' : 'success', message });
-    speak(message, isError ? 'assertive' : 'polite');
+
+    if (announce) {
+      setNotice({ type: isError ? 'error' : 'success', message });
+      speak(message, isError ? 'assertive' : 'polite');
+    }
   };
 
-  const handleSourcePollingError = (postId: number, message: string) => {
-    stopTrackingSource(postId);
-    setNotice({ type: 'error', message });
-    speak(message, 'assertive');
+  const handleSourcePollingError = (_postId: number, message: string) => {
+    setNotice({ type: 'warning', message });
+    speak(message);
   };
 
   const handleSourcePollingTimeout = (postId: number) => {

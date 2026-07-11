@@ -2,6 +2,9 @@ import { createElement, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 import { AccountPanel } from '../features/google-setup/account-panel';
+import { ActivationResult } from '../features/activation/activation-result';
+import { BackgroundSyncPoller } from '../features/post-sync/background-sync-poller';
+import { DocSourceModal } from '../features/doc-source-modal/doc-source-modal';
 import { GoogleSetupSyncDefaultsPanel } from '../features/google-setup/google-setup-sync-defaults-panel';
 import { SettingsPanel } from '../features/google-setup/settings-panel';
 import { TelemetryConsentPanel } from '../features/google-setup/telemetry-consent-panel';
@@ -19,8 +22,11 @@ export const SetupApp = (): JSX.Element => {
     });
   }, []);
 
-  const setupReady = Boolean(app.settings?.hasRequiredSettings && app.account.connected && app.account.hasRequiredScope);
-  const showTelemetryConsent = Boolean(app.settings && !app.settings.telemetryEnabled && !app.settings.telemetryPromptDismissed);
+  const setupReady = Boolean(app.workspace?.siteConnectionReady && app.account.connected && app.account.hasRequiredScope);
+  const activated = Boolean(app.workspace?.sourceSummary.activated);
+  const showTelemetryConsent = Boolean(
+    setupReady && app.settings && !app.settings.telemetryEnabled && !app.settings.telemetryPromptDismissed
+  );
 
   return (
     <AdminShell
@@ -33,7 +39,7 @@ export const SetupApp = (): JSX.Element => {
       title={__('Google Setup', 'brasth-document-sync-for-google-docs')}
       version={app.config.version}
     >
-      {!app.settings ? (
+      {!app.settings || !app.workspace ? (
         <div className="docsync-wp-admin-grid docsync-wp-admin-grid--single">
           <div className="docsync-wp-admin-grid__main">
             <section aria-busy="true" className="docsync-wp-card" role="status">
@@ -41,14 +47,18 @@ export const SetupApp = (): JSX.Element => {
             </section>
           </div>
         </div>
-      ) : (
-        <div className="docsync-wp-admin-grid">
+      ) : setupReady ? (
+        <div className="docsync-wp-admin-grid docsync-wp-admin-grid--ready">
           <div className="docsync-wp-admin-grid__main">
             <SettingsPanel
               account={app.account}
+              activated={activated}
               busy={app.busy}
-              createSyncedDraftUrl={app.config.createSyncedDraftUrl}
+              canCreateSource={app.workspace.creatablePostTypes.length > 0}
+              layoutMode="ready"
+              onClearOAuthConfiguration={app.clearSavedOAuthConfiguration}
               onConnect={app.connectGoogle}
+              onCreateSource={app.openSourceModal}
               onSave={app.persistSettings}
               redirectUri={app.redirectUri}
               settings={app.settings}
@@ -62,6 +72,7 @@ export const SetupApp = (): JSX.Element => {
               createSyncedDraftUrl={app.config.createSyncedDraftUrl}
               onConnect={app.connectGoogle}
               onDisconnect={app.disconnectGoogle}
+              primaryActions={false}
             />
             {showTelemetryConsent ? (
               <TelemetryConsentPanel
@@ -80,7 +91,43 @@ export const SetupApp = (): JSX.Element => {
             />
           </aside>
         </div>
+      ) : (
+        <div className="docsync-wp-admin-grid docsync-wp-admin-grid--single docsync-wp-admin-grid--focus">
+          <div className="docsync-wp-admin-grid__main">
+            <SettingsPanel
+              account={app.account}
+              activated={activated}
+              busy={app.busy}
+              canCreateSource={app.workspace.creatablePostTypes.length > 0}
+              layoutMode="focus"
+              onClearOAuthConfiguration={app.clearSavedOAuthConfiguration}
+              onConnect={app.connectGoogle}
+              onCreateSource={app.openSourceModal}
+              onSave={app.persistSettings}
+              redirectUri={app.redirectUri}
+              settings={app.settings}
+            />
+          </div>
+        </div>
       )}
+      {app.activationSource ? (
+        <ActivationResult busy={app.busy} onRetry={app.retryActivationSource} source={app.activationSource} />
+      ) : null}
+      {app.activationSource && !['synced', 'skipped', 'error'].includes(app.activationSource.syncStatus) ? (
+        <BackgroundSyncPoller
+          onError={app.handleActivationPollingError}
+          onStatus={app.handleActivationSourceStatus}
+          onTerminal={app.handleActivationSourceTerminal}
+          onTimeout={app.handleActivationSourceTimeout}
+          postId={app.activationSource.postId}
+        />
+      ) : null}
+      <DocSourceModal
+        isOpen={app.sourceModalOpen}
+        onClose={app.closeSourceModal}
+        onCompleted={app.handleSourceCreated}
+        target={app.sourceModalOpen && app.workspace?.creatablePostTypes[0] ? { mode: 'new', postType: app.workspace.creatablePostTypes[0] } : null}
+      />
     </AdminShell>
   );
 };

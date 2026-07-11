@@ -7,8 +7,8 @@ const privacyPolicyUrl = 'https://docsyncwp.com/privacy-policy';
 
 type Props = {
   busy: boolean;
-  onAccept: () => Promise<void>;
-  onDismiss: () => Promise<void>;
+  onAccept: () => Promise<boolean>;
+  onDismiss: () => Promise<boolean>;
 };
 
 export const TelemetryConsentPanel = ({
@@ -24,10 +24,10 @@ export const TelemetryConsentPanel = ({
         {__('Share one anonymous weekly check-in so we can understand active installs and version compatibility. No Google data, site URL, user email, document IDs, or content is sent.', 'brasth-document-sync-for-google-docs')}
       </p>
       <div className="docsync-wp-telemetry-consent__actions">
-        <AdminButton disabled={busy} onClick={onAccept} size="small" variant="primary">
+        <AdminButton disabled={busy} onClick={async () => { await onAccept(); }} size="small" variant="primary">
           {__('Share anonymous diagnostics', 'brasth-document-sync-for-google-docs')}
         </AdminButton>
-        <AdminButton disabled={busy} onClick={onDismiss} size="small" variant="link">
+        <AdminButton disabled={busy} onClick={async () => { await onDismiss(); }} size="small" variant="link">
           {__('No thanks', 'brasth-document-sync-for-google-docs')}
         </AdminButton>
         <a href={privacyPolicyUrl} rel="noreferrer" target="_blank">

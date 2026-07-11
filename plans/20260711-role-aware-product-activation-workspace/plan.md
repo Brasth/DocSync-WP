@@ -1,7 +1,7 @@
 ---
 title: "Role-Aware Product Activation Workspace"
 description: "Turn setup into a capability-aware path from site connection to a first successfully synced WordPress draft, then make Sources the daily home."
-status: pending
+status: in_progress
 priority: P1
 effort: 68h
 branch: main
@@ -38,12 +38,12 @@ These decisions must close in Phase 01 before dependent behavior ships:
 
 | Phase | Effort | Status | File |
 | --- | ---: | --- | --- |
-| 01 Product gates and capability baseline | 8h | Pending | [phase-01-product-gates-and-capability-baseline.md](phase-01-product-gates-and-capability-baseline.md) |
-| 02 Operational workspace contract | 12h | Pending | [phase-02-operational-workspace-contract.md](phase-02-operational-workspace-contract.md) |
-| 03 Role-aware activation workspace | 16h | Pending | [phase-03-role-aware-activation-workspace.md](phase-03-role-aware-activation-workspace.md) |
-| 04 First-source completion flow | 12h | Pending | [phase-04-first-source-completion-flow.md](phase-04-first-source-completion-flow.md) |
-| 05 Sources health home and routing | 12h | Pending | [phase-05-sources-health-home-and-routing.md](phase-05-sources-health-home-and-routing.md) |
-| 06 Reliability, accessibility, and release validation | 8h | Pending | [phase-06-reliability-accessibility-and-release-validation.md](phase-06-reliability-accessibility-and-release-validation.md) |
+| 01 Product gates and capability baseline | 8h | Complete | [phase-01-product-gates-and-capability-baseline.md](phase-01-product-gates-and-capability-baseline.md) |
+| 02 Operational workspace contract | 12h | Implementation complete; runtime QA pending | [phase-02-operational-workspace-contract.md](phase-02-operational-workspace-contract.md) |
+| 03 Role-aware activation workspace | 16h | Implementation complete; manual a11y/responsive QA pending | [phase-03-role-aware-activation-workspace.md](phase-03-role-aware-activation-workspace.md) |
+| 04 First-source completion flow | 12h | Implementation complete; runtime E2E pending | [phase-04-first-source-completion-flow.md](phase-04-first-source-completion-flow.md) |
+| 05 Sources health home and routing | 12h | Implementation complete; runtime compatibility QA pending | [phase-05-sources-health-home-and-routing.md](phase-05-sources-health-home-and-routing.md) |
+| 06 Reliability, accessibility, and release validation | 8h | In progress; sync-toast lifecycle polish implemented, runtime/manual QA pending | [phase-06-reliability-accessibility-and-release-validation.md](phase-06-reliability-accessibility-and-release-validation.md) |
 
 ## Architecture Summary
 
@@ -58,6 +58,16 @@ Add an authenticated, least-privilege operational workspace response for role-sa
 - Activated users reach Sources, with attention states ordered first.
 - Existing sources, URLs, sync output, permissions, and telemetry consent remain compatible.
 
+## Validation Status
+
+Implementation and automated verification are complete. Composer validation/lint, all tracked PHP fixture suites, telemetry settings verification, frontend lint/typecheck/build, touched/new PHP syntax checks, and `git diff --check` pass. The build emits exactly the six expected manifests: Setup, Sources, Logs, Post Sync, Doc Source Modal, and Drive Browser, each with one JavaScript entry and `style.css`. Final code review scored 9.6/10 with zero critical findings.
+
+Release acceptance remains open because the WordPress service was unavailable: port 8890 returned HTTP 000 and only the database and Adminer services were running. Runtime role/nonce/cross-post isolation, end-to-end activation/recovery, and browser keyboard/screen-reader/reduced-motion checks at 375/768/1440 were not executed. Overall status remains `in_progress` until those release-validation items pass.
+
+The local background-sync reliability patch now adds a development-only WP-CLI cron worker, retains the browser and OAuth URL at port 8890, presents queued work separately from active sync progress, and recovers a stale scheduled event into a retryable error. It does not close release acceptance.
+
+The approved sync-toast lifecycle polish is implemented in the shared `SyncToastStack`: every toast now uses a content row plus a separate full-width, padded progress row. The queued state renders `Sync queued`, `Waiting for the background worker.`, and an indeterminate bar without repeated status copy; active work renders its milestone with determinate progress. Success, warning, and error retain the same frame without a progress row. The existing dismiss control and narrow-screen layout remain in that component and its stylesheet. Browser visual QA for this polish is still pending, so it does not close release acceptance.
+
 ## References
 
 - [Approved design](../../docs/plans/2026-07-11-role-aware-product-activation-design.md)
@@ -66,4 +76,4 @@ Add an authenticated, least-privilege operational workspace response for role-sa
 
 ## Unresolved Questions
 
-- None beyond the four Phase 01 product gates; dependent phases must record their approved outcomes.
+- When can the WordPress devcontainer be started to complete runtime, role-isolation, end-to-end, accessibility, and responsive acceptance?

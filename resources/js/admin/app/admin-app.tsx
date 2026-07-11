@@ -88,7 +88,7 @@ const SetupSourcesApp = ({ view }: { view: SetupAdminView }): JSX.Element => {
             <SettingsPanel
               account={app.account}
               busy={app.busy}
-              createSyncedDraftUrl={app.config.createSyncedDraftUrl}
+              onClearOAuthConfiguration={app.clearSavedOAuthConfiguration}
               onConnect={app.connectGoogle}
               onSave={app.persistSettings}
               redirectUri={app.redirectUri}

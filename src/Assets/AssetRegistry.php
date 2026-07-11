@@ -90,7 +90,7 @@ final class AssetRegistry {
 
 		$admin_entry = $this->adminEntryForPluginPage( is_string( $plugin_page ) ? $plugin_page : '' );
 
-		if ( null !== $admin_entry && current_user_can( 'manage_options' ) ) {
+		if ( null !== $admin_entry && $this->currentUserCanLoadAdminEntry( $plugin_page ) ) {
 			$this->enqueueEntry( $admin_entry['entry'], $admin_entry['manifest'], $admin_entry['handle'] );
 			return;
 		}
@@ -107,7 +107,7 @@ final class AssetRegistry {
 		$plugin_page = $GLOBALS['plugin_page'] ?? '';
 		$admin_entry = $this->adminEntryForPluginPage( is_string( $plugin_page ) ? $plugin_page : '' );
 
-		$is_admin_app_screen = null !== $admin_entry && current_user_can( 'manage_options' );
+		$is_admin_app_screen = null !== $admin_entry && $this->currentUserCanLoadAdminEntry( is_string( $plugin_page ) ? $plugin_page : '' );
 
 		$is_post_sync_screen = false;
 
@@ -286,6 +286,19 @@ final class AssetRegistry {
 	}
 
 	/**
+	 * Keep Setup administrator-only while operational screens follow DocSync use.
+	 *
+	 * @param string $plugin_page Current plugin page slug.
+	 */
+	private function currentUserCanLoadAdminEntry( string $plugin_page ): bool {
+		if ( AdminPage::MENU_SLUG === $plugin_page ) {
+			return current_user_can( 'manage_options' );
+		}
+
+		return RestPermissions::currentUserCanUseDocSync();
+	}
+
+	/**
 	 * Whether to load post sync controls on the current admin screen.
 	 *
 	 * @param string $hook Current admin page hook suffix.
@@ -380,32 +393,35 @@ final class AssetRegistry {
 	 */
 	private function adminConfig(): array {
 		$settings = $this->settings->getPublicSettings();
-
-		return array(
+		$config   = array(
 			'restUrl'                         => esc_url_raw( rest_url( 'brasth-document-sync-for-google-docs/v1' ) ),
 			'nonce'                           => wp_create_nonce( 'wp_rest' ),
 			'pluginUrl'                       => esc_url_raw( $this->plugin_url ),
 			'version'                         => $this->version,
-			'currentUserId'                   => get_current_user_id(),
-			'clientId'                        => $settings['client_id'],
-			'connectionMode'                  => $settings['connection_mode'],
-			'enabledPostTypes'                => $settings['enabled_post_types'],
-			'availablePostTypes'              => $this->settings->getAvailablePostTypes(),
 			'defaultExportFormat'             => $settings['default_export_format'],
 			'defaultLayoutPreset'             => $settings['default_layout_preset'],
 			'availableLayoutPresets'          => $this->settings->getAvailableLayoutPresets(),
 			'availableElementorLayoutPresets' => $this->settings->getAvailableElementorLayoutPresets(),
 			'elementorSyncEnabled'            => (bool) $settings['elementor_sync_enabled'],
 			'elementorAvailable'              => class_exists( '\Elementor\Plugin' ),
-			'syncInterval'                    => $settings['sync_interval'],
-			'hasClientId'                     => (bool) $settings['has_client_id'],
-			'hasClientSecret'                 => (bool) $settings['has_client_secret'],
-			'hasRequiredSettings'             => (bool) $settings['has_required_settings'],
-			'createSyncedDraftUrl'            => esc_url_raw( admin_url( 'edit.php' ) ),
 			'docSourceModalStyleUrls'         => $this->entryStyleUrls( self::DOC_SOURCE_MODAL_ENTRY, self::DOC_SOURCE_MODAL_MANIFEST ),
 			'driveBrowserScriptUrl'           => $this->entryScriptUrl( self::DRIVE_BROWSER_ENTRY, self::DRIVE_BROWSER_MANIFEST ),
 			'driveBrowserStyleUrls'           => $this->entryStyleUrls( self::DRIVE_BROWSER_ENTRY, self::DRIVE_BROWSER_MANIFEST ),
 		);
+
+		if ( current_user_can( 'manage_options' ) ) {
+			$config['clientId']             = $settings['client_id'];
+			$config['connectionMode']       = $settings['connection_mode'];
+			$config['enabledPostTypes']     = $settings['enabled_post_types'];
+			$config['availablePostTypes']   = $this->settings->getAvailablePostTypes();
+			$config['syncInterval']         = $settings['sync_interval'];
+			$config['hasClientId']          = (bool) $settings['has_client_id'];
+			$config['hasClientSecret']      = (bool) $settings['has_client_secret'];
+			$config['hasRequiredSettings']  = (bool) $settings['has_required_settings'];
+			$config['createSyncedDraftUrl'] = esc_url_raw( admin_url( 'edit.php' ) );
+		}
+
+		return $config;
 	}
 
 	/**

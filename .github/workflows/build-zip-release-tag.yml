@@ -198,6 +198,11 @@ jobs:
             exit 1
           fi
 
+          if grep -Eiq '(^|/)(client_secret[^/]*\.json|\.secrets/|\.env($|\.))' "${ZIP_LIST}"; then
+            echo "ZIP contains a credential file or directory."
+            exit 1
+          fi
+
       - name: Upload release ZIP artifact
         uses: actions/upload-artifact@v7
         with:

@@ -81,9 +81,10 @@ final class GoogleOAuthService {
 		}
 
 		$state_data = array(
-			'user_id'    => $user_id,
-			'return_url' => admin_url( 'admin.php?page=brasth-document-sync-for-google-docs' ),
-			'created_at' => time(),
+			'user_id'                        => $user_id,
+			'return_url'                     => admin_url( 'admin.php?page=brasth-document-sync-for-google-docs' ),
+			'created_at'                     => time(),
+			'oauth_configuration_generation' => $this->settings->getOAuthConfigurationGeneration(),
 		);
 
 		set_transient( $this->stateTransientKey( $state ), $state_data, self::STATE_TTL_SECONDS );
@@ -115,6 +116,10 @@ final class GoogleOAuthService {
 
 		if ( is_wp_error( $state_data ) ) {
 			return $state_data;
+		}
+
+		if ( $this->settings->getOAuthConfigurationGeneration() !== $state_data['oauth_configuration_generation'] ) {
+			return $this->invalidStateError();
 		}
 
 		$code = sanitize_text_field( $code );
@@ -416,7 +421,7 @@ final class GoogleOAuthService {
 	 * Consume an OAuth state transient.
 	 *
 	 * @param string $state OAuth state.
-	 * @return array{user_id:int,return_url:string,created_at:int}|WP_Error
+	 * @return array{user_id:int,return_url:string,created_at:int,oauth_configuration_generation:int}|WP_Error
 	 */
 	private function consumeState( string $state ): array|WP_Error {
 		$state = sanitize_text_field( $state );
@@ -435,14 +440,16 @@ final class GoogleOAuthService {
 			|| empty( $state_data['user_id'] )
 			|| empty( $state_data['return_url'] )
 			|| empty( $state_data['created_at'] )
+			|| ! array_key_exists( 'oauth_configuration_generation', $state_data )
 		) {
 			return $this->invalidStateError();
 		}
 
 		return array(
-			'user_id'    => absint( $state_data['user_id'] ),
-			'return_url' => esc_url_raw( (string) $state_data['return_url'] ),
-			'created_at' => absint( $state_data['created_at'] ),
+			'user_id'                        => absint( $state_data['user_id'] ),
+			'return_url'                     => esc_url_raw( (string) $state_data['return_url'] ),
+			'created_at'                     => absint( $state_data['created_at'] ),
+			'oauth_configuration_generation' => absint( $state_data['oauth_configuration_generation'] ),
 		);
 	}
 

@@ -2,12 +2,12 @@ import { createElement, useEffect, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 
 import type { SourceRecord } from '../../api';
-import { getAdminConfig, type AvailablePostType } from '../../config';
+import type { AvailablePostType } from '../../config';
 import { AdminButton } from '../../shared/ui/admin-button';
 import { EmptyState } from '../../shared/ui/empty-state';
 import { SkeletonTableRows, SkeletonText } from '../../shared/ui/skeleton';
 import { StatusPill } from '../../shared/ui/status-pill';
-import { shouldShowSyncProgress, SyncProgress } from '../../shared/ui/sync-progress';
+import { isQueuedSync, shouldShowSyncProgress, SyncProgress } from '../../shared/ui/sync-progress';
 
 export type SourceListFilters = {
   search: string;
@@ -26,6 +26,8 @@ type Props = {
   onLoadMore: () => Promise<void>;
   onSync: (postId: number) => Promise<void>;
   onSyncAll: () => Promise<void>;
+  onCreateSource?: () => void;
+  canCreateSource?: boolean;
 };
 
 const statusLabel = (source: SourceRecord): string => {
@@ -119,9 +121,10 @@ export const SourcesTable = ({
   onRefresh,
   onLoadMore,
   onSync,
-  onSyncAll
+  onSyncAll,
+  onCreateSource = () => undefined,
+  canCreateSource = false
 }: Props): JSX.Element => {
-  const createSyncedDraftUrl = getAdminConfig().createSyncedDraftUrl || 'edit.php';
   const [search, setSearch] = useState(filters.search);
   const [postType, setPostType] = useState(filters.postType);
   const [status, setStatus] = useState(filters.status);
@@ -224,14 +227,18 @@ export const SourcesTable = ({
                         {__('Reset filters', 'brasth-document-sync-for-google-docs')}
                       </AdminButton>
                     ) : (
-                      <a className="button button-primary" href={createSyncedDraftUrl}>
-                        {__('Create synced draft', 'brasth-document-sync-for-google-docs')}
-                      </a>
+                      canCreateSource ? (
+                        <AdminButton disabled={busy} onClick={onCreateSource} variant="primary">
+                          {__('Choose Google Doc', 'brasth-document-sync-for-google-docs')}
+                        </AdminButton>
+                      ) : undefined
                     )}
                     className="docsync-wp-table-empty-state"
                     description={hasActiveFilters
                       ? __('Adjust the filters or reset to see all linked sources.', 'brasth-document-sync-for-google-docs')
-                      : __('Open Posts and use Add Sync Doc to choose a Google Doc and create the first synced draft.', 'brasth-document-sync-for-google-docs')}
+                      : canCreateSource
+                        ? __('Choose an accessible Google Doc to create the first synced WordPress draft.', 'brasth-document-sync-for-google-docs')
+                        : __('Complete the connection responsibility above before creating a source.', 'brasth-document-sync-for-google-docs')}
                     title={hasActiveFilters
                       ? __('No sources match these filters.', 'brasth-document-sync-for-google-docs')
                       : __('No linked Docs yet', 'brasth-document-sync-for-google-docs')}
@@ -271,7 +278,7 @@ export const SourcesTable = ({
                     <StatusPill status={statusLabel(source)} />
                     {shouldShowSyncProgress(source) ? (
                       <div className="docsync-wp-source-sync-block">
-                        <SyncProgress message={source.syncMessage} progress={source.syncProgress} />
+                        <SyncProgress indeterminate={isQueuedSync(source)} message={source.syncMessage} progress={source.syncProgress} />
                       </div>
                     ) : null}
                     {source.syncError ? <small className="docsync-wp-source-error-text">{source.syncError}</small> : null}

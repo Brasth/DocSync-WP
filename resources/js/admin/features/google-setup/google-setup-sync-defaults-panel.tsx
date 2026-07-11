@@ -9,7 +9,7 @@ import { samePostTypes } from './google-setup-utils';
 type Props = {
   busy: boolean;
   settings: SettingsResponse;
-  onSave: (settings: Partial<SettingsResponse>) => Promise<void>;
+  onSave: (settings: Partial<SettingsResponse>) => Promise<boolean>;
 };
 
 export const GoogleSetupSyncDefaultsPanel = ({

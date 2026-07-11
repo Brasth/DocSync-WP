@@ -1,14 +1,18 @@
 import { speak } from '@wordpress/a11y';
-import { useMemo, useState } from '@wordpress/element';
+import { useMemo, useRef, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 
 import {
-  getSettings,
+  getGoogleAccount,
+  getGoogleAuthUrl,
+  getWorkspace,
   listSources,
   syncAllSources,
   syncSource,
-  type SettingsResponse,
-  type SourceRecord
+  type GoogleAccount,
+  type SourceRecord,
+  type SyncResult,
+  type WorkspaceResponse
 } from '../api';
 import { getAdminConfig } from '../config';
 import type { SourceListFilters } from '../features/sources/sources-table';
@@ -16,39 +20,93 @@ import type { AdminNoticeState } from '../shared/ui/admin-notice';
 import { useSourceSyncProgress } from './use-source-sync-progress';
 
 const sourcePageSize = 100;
-const defaultSourceFilters: SourceListFilters = { search: '', postType: '', status: '' };
+const emptyAccount: GoogleAccount = { connected: false, hasRequiredScope: false };
+
+const readSourceFiltersFromUrl = (): SourceListFilters => {
+  const params = new URL(window.location.href).searchParams;
+
+  return {
+    search: params.get('search') || '',
+    postType: params.get('post_type') || '',
+    status: params.get('status') || ''
+  };
+};
+
+const writeSourceFiltersToUrl = (filters: SourceListFilters) => {
+  const url = new URL(window.location.href);
+  const values = { search: filters.search, post_type: filters.postType, status: filters.status };
+
+  Object.entries(values).forEach(([key, value]) => {
+    if (value) {
+      url.searchParams.set(key, value);
+    } else {
+      url.searchParams.delete(key);
+    }
+  });
+
+  window.history.replaceState(window.history.state, '', url.toString());
+};
 
 export const useSourcesApp = () => {
   const config = useMemo(() => getAdminConfig(), []);
-  const [settings, setSettings] = useState<SettingsResponse | null>(null);
+  const [workspace, setWorkspace] = useState<WorkspaceResponse | null>(null);
+  const [account, setAccount] = useState<GoogleAccount>(emptyAccount);
   const [sources, setSources] = useState<SourceRecord[]>([]);
   const [sourcePage, setSourcePage] = useState(1);
-  const [sourceFilters, setSourceFilters] = useState<SourceListFilters>(defaultSourceFilters);
+  const [sourceFilters, setSourceFilters] = useState<SourceListFilters>(readSourceFiltersFromUrl);
   const [hasMoreSources, setHasMoreSources] = useState(false);
   const [notice, setNotice] = useState<AdminNoticeState | null>(null);
   const [busy, setBusy] = useState(false);
+  const [sourceModalOpen, setSourceModalOpen] = useState(false);
+  const [activationSource, setActivationSource] = useState<SourceRecord | null>(null);
   const sourceSync = useSourceSyncProgress(setSources, setNotice);
+  const sourceModalTrigger = useRef<HTMLElement | null>(null);
+  const restoreModalFocus = useRef(true);
+  const requestGeneration = useRef(0);
+  const sourceFiltersRef = useRef(sourceFilters);
 
-  const refreshSources = async (filters = sourceFilters, page = 1, append = false) => {
-    const [settingsResponse, sourcesResponse] = await Promise.all([
-      getSettings(),
-      listSources({
-        ...filters,
-        page,
-        perPage: sourcePageSize
-      })
-    ]);
+  const refreshSources = async (filters = sourceFiltersRef.current, page = 1, append = false) => {
+    const generation = ++requestGeneration.current;
+    let responses: [WorkspaceResponse, GoogleAccount, Awaited<ReturnType<typeof listSources>>];
 
-    setSettings(settingsResponse);
+    try {
+      responses = await Promise.all([
+        getWorkspace(),
+        getGoogleAccount(),
+        listSources({
+          ...filters,
+          page,
+          perPage: sourcePageSize
+        })
+      ]);
+    } catch (caught) {
+      if (generation !== requestGeneration.current) {
+        return false;
+      }
+
+      throw caught;
+    }
+
+    if (generation !== requestGeneration.current) {
+      return false;
+    }
+
+    const [workspaceResponse, accountResponse, sourcesResponse] = responses;
+
+    setWorkspace(workspaceResponse);
+    setAccount(accountResponse);
+    sourceFiltersRef.current = filters;
     setSourceFilters(filters);
     setSources((current) => append ? [...current, ...sourcesResponse.sources] : sourcesResponse.sources);
     setSourcePage(page);
     setHasMoreSources(Boolean(sourcesResponse.has_more ?? sourcesResponse.hasMore));
     sourceSync.trackSourceIds(sourcesResponse.sources.filter((source) => source.syncStatus === 'syncing').map((source) => source.postId));
+
+    return true;
   };
 
   const refresh = async () => {
-    await refreshSources(sourceFilters, 1);
+    await refreshSources(sourceFiltersRef.current, 1);
   };
 
   const runAction = async (action: () => Promise<void>) => {
@@ -69,7 +127,7 @@ export const useSourcesApp = () => {
   const loadMoreSources = async () => {
     await runAction(async () => {
       const nextPage = sourcePage + 1;
-      await refreshSources(sourceFilters, nextPage, true);
+      await refreshSources(sourceFiltersRef.current, nextPage, true);
     });
   };
 
@@ -81,6 +139,7 @@ export const useSourcesApp = () => {
 
       if (source) {
         sourceSync.mergeSources([source]);
+        setActivationSource((current) => current?.postId === postId ? source : current);
       }
 
       sourceSync.trackSourceIds([postId]);
@@ -109,20 +168,94 @@ export const useSourcesApp = () => {
 
   const applySourceFilters = async (filters: SourceListFilters) => {
     await runAction(async () => {
-      await refreshSources(filters, 1);
+      const committed = await refreshSources(filters, 1);
+
+      if (committed) {
+        writeSourceFiltersToUrl(filters);
+      }
     });
   };
 
+  const connectGoogle = async () => {
+    await runAction(async () => {
+      const response = await getGoogleAuthUrl();
+      window.location.assign(response.authUrl);
+    });
+  };
+
+  const handleSourceCreated = (result: SyncResult) => {
+    if (!result.source) {
+      return;
+    }
+
+    setActivationSource(result.source);
+    restoreModalFocus.current = !['synced', 'skipped', 'error'].includes(result.source.syncStatus);
+    if (!['synced', 'skipped', 'error'].includes(result.source.syncStatus)) {
+      sourceSync.trackSourceIds([result.postId]);
+    }
+    void refreshSources(sourceFiltersRef.current, 1).catch((caught) => {
+      const message = caught instanceof Error ? caught.message : __('The source was created, but the filtered list could not refresh.', 'brasth-document-sync-for-google-docs');
+      setNotice({ type: 'warning', message });
+    });
+  };
+
+  const handleSourceTerminal = (source: SourceRecord) => {
+    const isActivationSource = activationSource?.postId === source.postId;
+
+    sourceSync.handleSourceTerminal(source, !isActivationSource);
+    setActivationSource((current) => current?.postId === source.postId ? source : current);
+    void refreshSources(sourceFiltersRef.current, 1).catch((caught) => {
+      const message = caught instanceof Error ? caught.message : __('Sync completed, but Sources could not refresh.', 'brasth-document-sync-for-google-docs');
+      setNotice({ type: 'warning', message });
+    });
+  };
+
+  const handleSourceStatus = (source: SourceRecord) => {
+    sourceSync.handleSourceStatus(source);
+    setActivationSource((current) => current?.postId === source.postId ? source : current);
+  };
+
+  const retryActivationSource = async () => {
+    if (!activationSource) {
+      return;
+    }
+
+    await syncOne(activationSource.postId);
+  };
+
+  const openSourceModal = () => {
+    sourceModalTrigger.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    restoreModalFocus.current = true;
+    setSourceModalOpen(true);
+  };
+
+  const closeSourceModal = () => {
+    setSourceModalOpen(false);
+
+    if (restoreModalFocus.current) {
+      window.setTimeout(() => sourceModalTrigger.current?.focus(), 0);
+    }
+
+    restoreModalFocus.current = true;
+  };
+
   return {
+    account,
+    activationSource,
     applySourceFilters,
     busy,
+    connectGoogle,
+    closeSourceModal,
     config,
     hasMoreSources,
+    handleSourceCreated,
     loadMoreSources,
     notice,
+    openSourceModal,
     refresh,
+    retryActivationSource,
     runAction,
-    settings,
+    sourceModalOpen,
     sourceFilters,
     sources,
     syncAll,
@@ -130,7 +263,8 @@ export const useSourcesApp = () => {
     trackedSourceIds: sourceSync.trackedSourceIds,
     handleSourcePollingError: sourceSync.handleSourcePollingError,
     handleSourcePollingTimeout: sourceSync.handleSourcePollingTimeout,
-    handleSourceStatus: sourceSync.handleSourceStatus,
-    handleSourceTerminal: sourceSync.handleSourceTerminal
+    handleSourceStatus,
+    handleSourceTerminal,
+    workspace
   };
 };

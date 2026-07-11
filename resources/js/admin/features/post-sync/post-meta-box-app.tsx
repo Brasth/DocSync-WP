@@ -8,11 +8,11 @@ import { DocSourceModal, type DocSourceTarget } from '../doc-source-modal/doc-so
 import { AdminButton } from '../../shared/ui/admin-button';
 import { AdminNotice } from '../../shared/ui/admin-notice';
 import { LayoutPresetSelector } from '../../shared/ui/layout-preset-selector';
-import { shouldShowSyncProgress, SyncProgress } from '../../shared/ui/sync-progress';
+import { isQueuedSync, shouldShowSyncProgress, SyncProgress } from '../../shared/ui/sync-progress';
 import { BackgroundSyncPoller } from './background-sync-poller';
 import { applyPostContentToEditor, getEditorDirtyState } from './post-editor-content';
 import { LegacyElementorUpgradeNotice } from './legacy-elementor-upgrade-notice';
-import { sourceLabel } from './post-sync-dom';
+import { SourceInspectorSummary } from './source-inspector-summary';
 import { usePostSyncActions } from './use-post-sync-actions';
 
 type Props = {
@@ -143,18 +143,40 @@ export const PostMetaBoxApp = ({ postId, postType, initialSource, elementorAvail
   return (
     <Fragment>
       <div className="docsync-wp-post-box">
-        <p>{sourceLabel(actions.source)}</p>
-        {shouldShowSyncProgress(actions.source) ? (
-          <SyncProgress
-            message={actions.source.syncMessage}
-            progress={actions.source.syncProgress}
-            updatedAt={actions.source.syncUpdatedAt}
-          />
-        ) : null}
-        {isSyncing ? <p className="docsync-wp-post-box__busy-note">{__('Source changes are locked while this sync is running.', 'brasth-document-sync-for-google-docs')}</p> : null}
-        {actions.source?.lastSyncedAt ? <p><strong>{__('Last sync:', 'brasth-document-sync-for-google-docs')}</strong> {actions.source.lastSyncedAt}</p> : null}
-        {actions.source?.syncError ? <p className="docsync-wp-list-error">{actions.source.syncError}</p> : null}
-        <AdminNotice className="inline" notice={actions.notice} />
+        <SourceInspectorSummary source={actions.source} />
+        <section aria-labelledby="docsync-wp-post-box-actions-heading" className="docsync-wp-post-box__section docsync-wp-post-box__section--actions">
+          <h3 className="docsync-wp-post-box__section-label" id="docsync-wp-post-box-actions-heading">{__('Actions', 'brasth-document-sync-for-google-docs')}</h3>
+          {shouldShowSyncProgress(actions.source) ? (
+            <SyncProgress
+              indeterminate={isQueuedSync(actions.source)}
+              message={actions.source.syncMessage}
+              progress={actions.source.syncProgress}
+              updatedAt={actions.source.syncUpdatedAt}
+            />
+          ) : null}
+          {isSyncing ? <p className="docsync-wp-post-box__busy-note">{__('Source changes are locked while this sync is running.', 'brasth-document-sync-for-google-docs')}</p> : null}
+          {actions.source?.syncError ? <p className="docsync-wp-list-error">{actions.source.syncError}</p> : null}
+          <AdminNotice className="inline docsync-wp-post-box__notice" notice={actions.notice} />
+          <div className="docsync-wp-post-box__actions">
+            {actions.source ? <AdminButton className="docsync-wp-post-box__sync-action" disabled={actions.busy || isSyncing} onClick={actions.syncNow} variant="primary">{__('Sync now', 'brasth-document-sync-for-google-docs')}</AdminButton> : null}
+            <AdminButton
+              className="docsync-wp-post-box__change-action"
+              disabled={actions.busy || isSyncing}
+              onClick={() => setModalTarget({
+                mode: 'existing',
+                postId,
+                postType,
+                elementorSync: linkTargetElementorSync,
+                elementorPreset: actions.source ? actions.source.elementorPreset ?? null : undefined,
+                layoutPreset: actions.source?.layoutPreset ?? null
+              })}
+              variant={actions.source ? 'secondary' : 'primary'}
+            >
+              {actions.source ? __('Change Doc', 'brasth-document-sync-for-google-docs') : __('Link Google Doc', 'brasth-document-sync-for-google-docs')}
+            </AdminButton>
+            {actions.source ? <AdminButton className="docsync-wp-post-box__detach-action" disabled={actions.busy || isSyncing} onClick={actions.detach} variant="delete">{__('Detach', 'brasth-document-sync-for-google-docs')}</AdminButton> : null}
+          </div>
+        </section>
         {showLegacyElementorNotice ? (
           <LegacyElementorUpgradeNotice
             disabled={actions.busy || isSyncing}
@@ -163,55 +185,41 @@ export const PostMetaBoxApp = ({ postId, postType, initialSource, elementorAvail
             onKeepLegacy={() => setLegacyNoticeDismissed(true)}
           />
         ) : null}
-        <div className="docsync-wp-post-box__actions">
-          <AdminButton
-            disabled={actions.busy || isSyncing}
-            onClick={() => setModalTarget({
-              mode: 'existing',
-              postId,
-              postType,
-              elementorSync: linkTargetElementorSync,
-              elementorPreset: actions.source ? actions.source.elementorPreset ?? null : undefined,
-              layoutPreset: actions.source?.layoutPreset ?? null
-            })}
-            variant="primary"
-          >
-            {actions.source ? __('Change Doc', 'brasth-document-sync-for-google-docs') : __('Link Google Doc', 'brasth-document-sync-for-google-docs')}
-          </AdminButton>
-          {actions.source ? <AdminButton disabled={actions.busy} onClick={actions.syncNow}>{__('Sync now', 'brasth-document-sync-for-google-docs')}</AdminButton> : null}
-          {actions.source ? <AdminButton disabled={actions.busy || isSyncing} onClick={actions.detach} variant="delete">{__('Detach', 'brasth-document-sync-for-google-docs')}</AdminButton> : null}
-        </div>
-        {elementorAvailable && actions.source ? (
-          <label className="docsync-wp-checkbox-row">
-            <input
-              checked={sourceUsesElementor}
-              disabled={actions.busy || isSyncing}
-              onChange={(event) => actions.updateElementorSync(event.currentTarget.checked)}
-              type="checkbox"
-            />
-            <span>{__('Sync as Elementor layout', 'brasth-document-sync-for-google-docs')}</span>
-          </label>
-        ) : null}
-        {actions.source && sourceUsesElementor ? (
-          <LayoutPresetSelector
-            availableLayoutPresets={config.availableElementorLayoutPresets}
-            defaultLayoutPreset={elementorDefaultPreset}
-            defaultOptionLabel={elementorDefaultOptionLabel}
-            disabled={actions.busy || isSyncing}
-            helpText={__('Choose how this Google Doc becomes Elementor sections. Existing sources without a preset keep legacy output until changed.', 'brasth-document-sync-for-google-docs')}
-            label={__('Elementor layout preset', 'brasth-document-sync-for-google-docs')}
-            onChange={actions.updateElementorPreset}
-            value={actions.source.elementorPreset ?? ''}
-          />
-        ) : null}
-        {actions.source && !sourceUsesElementor ? (
-          <LayoutPresetSelector
-            availableLayoutPresets={config.availableLayoutPresets}
-            defaultLayoutPreset={config.defaultLayoutPreset}
-            disabled={actions.busy || isSyncing}
-            onChange={actions.updateLayoutPreset}
-            value={actions.source.layoutPreset ?? ''}
-          />
+        {actions.source ? (
+          <section aria-labelledby="docsync-wp-post-box-settings-heading" className="docsync-wp-post-box__section docsync-wp-post-box__section--settings">
+            <h3 className="docsync-wp-post-box__section-label" id="docsync-wp-post-box-settings-heading">{__('Sync settings', 'brasth-document-sync-for-google-docs')}</h3>
+            {elementorAvailable ? (
+              <label className="docsync-wp-checkbox-row">
+                <input
+                  checked={sourceUsesElementor}
+                  disabled={actions.busy || isSyncing}
+                  onChange={(event) => actions.updateElementorSync(event.currentTarget.checked)}
+                  type="checkbox"
+                />
+                <span>{__('Sync as Elementor layout', 'brasth-document-sync-for-google-docs')}</span>
+              </label>
+            ) : null}
+            {sourceUsesElementor ? (
+              <LayoutPresetSelector
+                availableLayoutPresets={config.availableElementorLayoutPresets}
+                defaultLayoutPreset={elementorDefaultPreset}
+                defaultOptionLabel={elementorDefaultOptionLabel}
+                disabled={actions.busy || isSyncing}
+                helpText={__('Choose how this Google Doc becomes Elementor sections. Existing sources without a preset keep legacy output until changed.', 'brasth-document-sync-for-google-docs')}
+                label={__('Elementor layout preset', 'brasth-document-sync-for-google-docs')}
+                onChange={actions.updateElementorPreset}
+                value={actions.source.elementorPreset ?? ''}
+              />
+            ) : (
+              <LayoutPresetSelector
+                availableLayoutPresets={config.availableLayoutPresets}
+                defaultLayoutPreset={config.defaultLayoutPreset}
+                disabled={actions.busy || isSyncing}
+                onChange={actions.updateLayoutPreset}
+                value={actions.source.layoutPreset ?? ''}
+              />
+            )}
+          </section>
         ) : null}
       </div>
       {actions.source?.syncStatus === 'syncing' ? (

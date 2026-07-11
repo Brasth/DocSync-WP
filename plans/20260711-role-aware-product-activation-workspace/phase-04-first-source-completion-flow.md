@@ -10,7 +10,7 @@
 
 - Effort: 12h
 - Priority: P1
-- Status: Pending
+- Status: Implementation Complete; Runtime E2E Pending
 - Outcome: let a ready user choose a Doc, watch safe background creation, recover failure, and open the synced draft without leaving activation context.
 
 ## Key Insights
@@ -55,12 +55,18 @@ Generalize modal invocation/callback only where Setup/Sources reuse requires it;
 
 ## Todo list
 
-- [ ] Reuse modal from the activation CTA.
-- [ ] Preserve modal focus return and recoverable input state.
-- [ ] Add first-source polling and activation result mapping.
-- [ ] Add safe success and failure panels/actions.
-- [ ] Implement the approved source-owner handoff interaction where applicable.
+- [x] Reuse modal from the activation CTA.
+- [x] Preserve modal focus return and recoverable input state in the implementation.
+- [x] Add first-source polling and activation result mapping.
+- [x] Add safe success and failure panels/actions.
+- [x] Implement the approved explicit source-owner handoff interaction where applicable.
 - [ ] Verify no duplicate source creation or concurrent sync regression.
+
+## Validation Evidence
+
+- Static review confirmed activation requires `synced` or `skipped` plus a successful timestamp, safe recovery copy, explicit owner-transfer confirmation, and retained modal state/focus return.
+- Frontend lint/typecheck/build and PHP verification pass; final review reported zero critical findings.
+- Normal export, unchanged completion, large-document fallback, blocked download, token failure, stale cron, duplicate creation, and concurrent-sync scenarios remain runtime E2E work because WordPress was unavailable.
 
 ## Success Criteria
 
@@ -85,5 +91,5 @@ Promote Sources into the post-activation home with attention-first health and ro
 
 ## Unresolved Questions
 
-- Product gate: exact source-owner handoff confirmation and whether receiver acceptance is required.
+- Resolved: an authorized operator must explicitly confirm transfer; receiving-editor acceptance is not required in this release.
 - Resolved: reuse the modal on the current route; do not add a dedicated activation route unless focus/history testing proves it necessary.

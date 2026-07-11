@@ -229,6 +229,28 @@
     transition: width var(--docsync-motion-normal) var(--docsync-motion-ease);
   }
 
+  .docsync-wp-sync-progress.is-indeterminate span {
+    animation: docsync-wp-sync-progress-indeterminate 1.2s ease-in-out infinite;
+    width: 38% !important;
+  }
+
+  @keyframes docsync-wp-sync-progress-indeterminate {
+    0% {
+      transform: translateX(-110%);
+    }
+
+    100% {
+      transform: translateX(290%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .docsync-wp-sync-progress.is-indeterminate span {
+      animation: none;
+      transform: translateX(0);
+    }
+  }
+
   .docsync-wp-skeleton {
     animation: docsync-wp-skeleton-pulse 1.35s ease-in-out infinite;
     background: linear-gradient(90deg, var(--docsync-border-subtle) 25%, var(--docsync-surface-subtle) 37%, var(--docsync-border-subtle) 63%);
@@ -353,79 +375,6 @@
     padding: 1px 6px;
   }
 
-  /* Ensure primary/secondary buttons keep readable text on hover/focus. */
-  #docsync-wp-admin-root .button-primary,
-  #docsync-wp-admin-root .button-primary:focus,
-  #docsync-wp-admin-root .button-primary:active,
-  #docsync-wp-post-sync-root .button-primary,
-  #docsync-wp-post-sync-root .button-primary:focus,
-  #docsync-wp-post-sync-root .button-primary:active,
-  #docsync-wp-list-sync-root .button-primary,
-  #docsync-wp-list-sync-root .button-primary:focus,
-  #docsync-wp-list-sync-root .button-primary:active {
-    background: var(--docsync-blue);
-    border-color: var(--docsync-blue);
-    color: var(--docsync-text-inverse);
-  }
-
-  #docsync-wp-admin-root .button-primary:hover,
-  #docsync-wp-post-sync-root .button-primary:hover,
-  #docsync-wp-list-sync-root .button-primary:hover {
-    background: var(--docsync-blue-hover);
-    border-color: var(--docsync-blue-hover);
-    color: var(--docsync-text-inverse);
-  }
-
-  #docsync-wp-admin-root .button-primary:disabled,
-  #docsync-wp-admin-root .button-primary[disabled],
-  #docsync-wp-post-sync-root .button-primary:disabled,
-  #docsync-wp-post-sync-root .button-primary[disabled],
-  #docsync-wp-list-sync-root .button-primary:disabled,
-  #docsync-wp-list-sync-root .button-primary[disabled] {
-    background: var(--docsync-blue);
-    border-color: var(--docsync-blue);
-    color: var(--docsync-text-inverse);
-    opacity: 0.6;
-  }
-
-  #docsync-wp-admin-root .button-secondary,
-  #docsync-wp-admin-root .button-secondary:focus,
-  #docsync-wp-admin-root .button-secondary:active,
-  #docsync-wp-post-sync-root .button-secondary,
-  #docsync-wp-post-sync-root .button-secondary:focus,
-  #docsync-wp-post-sync-root .button-secondary:active,
-  #docsync-wp-list-sync-root .button-secondary,
-  #docsync-wp-list-sync-root .button-secondary:focus,
-  #docsync-wp-list-sync-root .button-secondary:active {
-    background: var(--docsync-surface);
-    border-color: var(--docsync-blue);
-    color: var(--docsync-blue);
-  }
-
-  #docsync-wp-admin-root .button-secondary:hover,
-  #docsync-wp-post-sync-root .button-secondary:hover,
-  #docsync-wp-list-sync-root .button-secondary:hover {
-    background: var(--docsync-blue-soft);
-    border-color: var(--docsync-blue);
-    color: var(--docsync-blue);
-  }
-
-  #docsync-wp-admin-root .button-link {
-    background: transparent;
-    border-color: transparent;
-    box-shadow: none;
-    color: var(--docsync-text-secondary);
-    text-decoration: underline;
-  }
-
-  #docsync-wp-admin-root .button-link:hover,
-  #docsync-wp-admin-root .button-link:focus {
-    background: transparent;
-    border-color: transparent;
-    box-shadow: none;
-    color: var(--docsync-blue);
-  }
-
   #docsync-wp-admin-root .docsync-wp-button,
   #docsync-wp-post-sync-root .docsync-wp-button,
   #docsync-wp-list-sync-root .docsync-wp-button,
@@ -511,6 +460,205 @@
       transform: none;
     }
   }
+}
+
+@layer components {
+  .docsync-wp-activation-guidance,
+  .docsync-wp-activation-result {
+    align-items: center;
+    background: var(--docsync-surface);
+    border: 1px solid var(--docsync-card-border);
+    border-left: 4px solid var(--docsync-blue);
+    border-radius: var(--docsync-radius-md);
+    display: flex;
+    gap: 16px;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding: 16px;
+  }
+
+  .docsync-wp-activation-guidance.is-activated,
+  .docsync-wp-activation-result.is-success {
+    border-left-color: var(--docsync-teal);
+  }
+
+  .docsync-wp-activation-guidance.is-needs_attention,
+  .docsync-wp-activation-result.is-error {
+    border-left-color: var(--docsync-error);
+  }
+
+  .docsync-wp-activation-guidance__copy,
+  .docsync-wp-activation-result > div:first-child {
+    min-width: 0;
+  }
+
+  .docsync-wp-activation-guidance h2,
+  .docsync-wp-activation-guidance p,
+  .docsync-wp-activation-result h2,
+  .docsync-wp-activation-result p {
+    margin: 0;
+  }
+
+  .docsync-wp-activation-guidance h2,
+  .docsync-wp-activation-result h2 {
+    font-size: 17px;
+    margin-top: 3px;
+  }
+
+  .docsync-wp-activation-guidance p,
+  .docsync-wp-activation-result p {
+    color: var(--docsync-text-secondary);
+    margin-top: 5px;
+  }
+
+  .docsync-wp-activation-guidance__evidence {
+    color: var(--docsync-text-muted);
+    display: block;
+    margin-top: 8px;
+  }
+
+  .docsync-wp-activation-guidance__action {
+    align-items: flex-end;
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .docsync-wp-source-health-summary {
+    background: var(--docsync-surface-subtle);
+    border: 1px solid var(--docsync-card-border);
+    border-radius: var(--docsync-radius-md);
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-bottom: 16px;
+  }
+
+  .docsync-wp-source-health-summary > div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 12px 14px;
+  }
+
+  .docsync-wp-source-health-summary > div + div {
+    border-left: 1px solid var(--docsync-card-border);
+  }
+
+  .docsync-wp-source-health-summary strong {
+    font-size: 18px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .docsync-wp-source-health-summary span {
+    color: var(--docsync-text-muted);
+    font-size: 12px;
+  }
+
+  @media (max-width: 720px) {
+    .docsync-wp-activation-guidance,
+    .docsync-wp-activation-result {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .docsync-wp-activation-guidance__action {
+      align-items: flex-start;
+    }
+
+    .docsync-wp-source-health-summary {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .docsync-wp-source-health-summary > div:nth-child(3) {
+      border-left: 0;
+      border-top: 1px solid var(--docsync-card-border);
+    }
+
+    .docsync-wp-source-health-summary > div:nth-child(4) {
+      border-top: 1px solid var(--docsync-card-border);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .docsync-wp-activation-guidance,
+    .docsync-wp-activation-result {
+      scroll-behavior: auto;
+    }
+  }
+}
+
+/* WordPress component styles are unlayered, so these overrides must be too. */
+#docsync-wp-admin-root .button-primary,
+#docsync-wp-admin-root .button-primary:focus,
+#docsync-wp-admin-root .button-primary:active,
+#docsync-wp-post-sync-root .button-primary,
+#docsync-wp-post-sync-root .button-primary:focus,
+#docsync-wp-post-sync-root .button-primary:active,
+#docsync-wp-list-sync-root .button-primary,
+#docsync-wp-list-sync-root .button-primary:focus,
+#docsync-wp-list-sync-root .button-primary:active {
+  background: var(--docsync-blue);
+  border-color: var(--docsync-blue);
+  color: var(--docsync-text-inverse);
+}
+
+#docsync-wp-admin-root .button-primary:hover,
+#docsync-wp-post-sync-root .button-primary:hover,
+#docsync-wp-list-sync-root .button-primary:hover {
+  background: var(--docsync-blue-hover);
+  border-color: var(--docsync-blue-hover);
+  color: var(--docsync-text-inverse);
+}
+
+#docsync-wp-admin-root .button-primary:disabled,
+#docsync-wp-admin-root .button-primary[disabled],
+#docsync-wp-post-sync-root .button-primary:disabled,
+#docsync-wp-post-sync-root .button-primary[disabled],
+#docsync-wp-list-sync-root .button-primary:disabled,
+#docsync-wp-list-sync-root .button-primary[disabled] {
+  background: var(--docsync-blue);
+  border-color: var(--docsync-blue);
+  color: var(--docsync-text-inverse);
+  opacity: 0.6;
+}
+
+#docsync-wp-admin-root .button-secondary,
+#docsync-wp-admin-root .button-secondary:focus,
+#docsync-wp-admin-root .button-secondary:active,
+#docsync-wp-post-sync-root .button-secondary,
+#docsync-wp-post-sync-root .button-secondary:focus,
+#docsync-wp-post-sync-root .button-secondary:active,
+#docsync-wp-list-sync-root .button-secondary,
+#docsync-wp-list-sync-root .button-secondary:focus,
+#docsync-wp-list-sync-root .button-secondary:active {
+  background: var(--docsync-surface);
+  border-color: var(--docsync-blue);
+  color: var(--docsync-blue);
+}
+
+#docsync-wp-admin-root .button-secondary:hover,
+#docsync-wp-post-sync-root .button-secondary:hover,
+#docsync-wp-list-sync-root .button-secondary:hover {
+  background: var(--docsync-blue-soft);
+  border-color: var(--docsync-blue);
+  color: var(--docsync-blue);
+}
+
+#docsync-wp-admin-root .button-link {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  color: var(--docsync-text-secondary);
+  text-decoration: underline;
+}
+
+#docsync-wp-admin-root .button-link:hover,
+#docsync-wp-admin-root .button-link:focus {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  color: var(--docsync-blue);
 }
 
 .docsync-wp-confirm-dialog {

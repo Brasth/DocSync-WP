@@ -4,6 +4,7 @@ import { __, sprintf } from '@wordpress/i18n';
 
 import { AdminButton } from '../../shared/ui/admin-button';
 import { AdminNotice } from '../../shared/ui/admin-notice';
+import { ConfirmDialog } from '../../shared/ui/confirm-dialog';
 import { LayoutPresetSelector } from '../../shared/ui/layout-preset-selector';
 import { LoadingState } from '../../shared/ui/loading-state';
 import type { SyncResult } from '../../api';
@@ -196,7 +197,7 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
             ) : null}
             <AdminButton
               disabled={modal.busy || !modal.canAttach}
-              onClick={modal.attach}
+              onClick={() => modal.attach()}
               variant="primary"
             >
               {target.mode === 'new' ? __('Create synced draft', 'brasth-document-sync-for-google-docs') : __('Link source', 'brasth-document-sync-for-google-docs')}
@@ -204,6 +205,15 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
           </div>
         </Dialog.Content>
       </Dialog.Portal>
+      <ConfirmDialog
+        busy={modal.busy}
+        confirmLabel={__('Transfer sync responsibility', 'brasth-document-sync-for-google-docs')}
+        description={__('This linked source currently uses another operator\'s Google connection for scheduled syncs. Transfer responsibility to your connected account? Existing WordPress content, revisions, and source settings are retained.', 'brasth-document-sync-for-google-docs')}
+        open={modal.ownershipTransferRequired}
+        title={__('Transfer scheduled sync responsibility?', 'brasth-document-sync-for-google-docs')}
+        onConfirm={() => modal.attach(true)}
+        onOpenChange={modal.setOwnershipTransferRequired}
+      />
     </Dialog.Root>
   );
 };

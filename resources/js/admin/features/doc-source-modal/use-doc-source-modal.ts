@@ -9,6 +9,7 @@ import {
   type DriveDocumentSummary,
   type SyncResult
 } from '../../api';
+import { AdminApiError } from '../../api/client';
 import { getAdminConfig } from '../../config';
 import { type DocSourceOutputType, type DocSourceUiMode } from './doc-source-modal-options';
 
@@ -40,6 +41,7 @@ export const useDocSourceModal = ({ isOpen, target, onClose, onCompleted }: Args
   const [outputTypeTouched, setOutputTypeTouched] = useState(false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [ownershipTransferRequired, setOwnershipTransferRequired] = useState(false);
   const config = useMemo(() => getAdminConfig(), []);
   const canChooseElementor = Boolean(
     config.elementorAvailable
@@ -58,6 +60,7 @@ export const useDocSourceModal = ({ isOpen, target, onClose, onCompleted }: Args
       setOutputTypeTouched(false);
       setError('');
       setBusy(false);
+      setOwnershipTransferRequired(false);
     }
   }, [isOpen]);
 
@@ -114,7 +117,7 @@ export const useDocSourceModal = ({ isOpen, target, onClose, onCompleted }: Args
     setError('');
   };
 
-  const attach = async () => {
+  const attach = async (transferOwnership = false) => {
     if (!metadata || !target) {
       setError(__('Select or inspect a Google Doc before linking it.', 'brasth-document-sync-for-google-docs'));
       return;
@@ -152,12 +155,19 @@ export const useDocSourceModal = ({ isOpen, target, onClose, onCompleted }: Args
         elementorSync: useExplicitOutputChoice ? useElementorOutput : undefined,
         elementorPreset: useElementorOutput && !preserveLegacyElementorPreset ? elementorPreset : undefined,
         syncMode: 'background',
-        layoutPreset: useElementorOutput ? undefined : layoutPreset
+        layoutPreset: useElementorOutput ? undefined : layoutPreset,
+        transferOwnership: transferOwnership || undefined
       });
 
+      setOwnershipTransferRequired(false);
       onCompleted(result);
       onClose();
     } catch (caught) {
+      if (caught instanceof AdminApiError && caught.code === 'docsync_wp_source_owner_transfer_required') {
+        setOwnershipTransferRequired(true);
+        return;
+      }
+
       const message = caught instanceof Error ? caught.message : __('Could not link this Google Doc.', 'brasth-document-sync-for-google-docs');
       setError(message);
       speak(message, 'assertive');
@@ -179,11 +189,13 @@ export const useDocSourceModal = ({ isOpen, target, onClose, onCompleted }: Args
     layoutPreset,
     metadata,
     outputType,
+    ownershipTransferRequired,
     selectDocument,
     setDocumentInput,
     setElementorPreset,
     setLayoutPreset,
     setOutputType: changeOutputType,
+    setOwnershipTransferRequired,
     uiMode
   };
 };

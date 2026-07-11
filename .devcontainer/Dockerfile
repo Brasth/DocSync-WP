@@ -10,7 +10,6 @@ ENV COMPOSER_ALLOW_SUPERUSER=1 \
 COPY --from=composer /usr/bin/composer /usr/local/bin/composer
 
 RUN set -eux; \
-	savedAptMark="$(apt-mark showmanual)"; \
 	apt-get update; \
 	apt-get install -y --no-install-recommends \
 		ca-certificates \
@@ -18,17 +17,8 @@ RUN set -eux; \
 		default-mysql-client \
 		git \
 		gnupg \
-		less \
-		libcurl4-openssl-dev \
-		libfreetype6-dev \
-		libjpeg62-turbo-dev \
-		libonig-dev \
-		libpng-dev \
-		libzip-dev \
 		unzip \
 		zip; \
-	docker-php-ext-configure gd --with-freetype --with-jpeg; \
-	docker-php-ext-install -j"$(nproc)" curl gd mbstring mysqli pdo_mysql zip; \
 	install -d -m 0755 /etc/apt/keyrings; \
 	curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg; \
 	chmod a+r /etc/apt/keyrings/nodesource.gpg; \
@@ -40,18 +30,7 @@ RUN set -eux; \
 	curl -fsSL https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -o /usr/local/bin/wp; \
 	chmod +x /usr/local/bin/wp; \
 	wp --allow-root --info; \
-	apt-mark auto '.*' > /dev/null; \
-	if [ -n "${savedAptMark}" ]; then apt-mark manual ${savedAptMark} > /dev/null; fi; \
-	apt-mark manual \
-		ca-certificates \
-		curl \
-		default-mysql-client \
-		git \
-		less \
-		nodejs \
-		unzip \
-		zip \
-		> /dev/null; \
+	apt-mark auto gnupg > /dev/null; \
 	apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
 	npm cache clean --force; \
 	rm -rf \

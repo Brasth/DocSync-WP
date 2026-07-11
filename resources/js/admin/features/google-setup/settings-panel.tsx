@@ -14,23 +14,34 @@ import {
   setupFirstSyncStepState
 } from './google-setup-task-state';
 
+export type SettingsPanelLayoutMode = 'focus' | 'ready';
+
 type Props = {
   account: GoogleAccount;
   settings: SettingsResponse;
   busy: boolean;
-  createSyncedDraftUrl: string;
+  canCreateSource?: boolean;
+  activated?: boolean;
+  /** focus = first-run single column; ready = maintenance layout with quieter rail. */
+  layoutMode?: SettingsPanelLayoutMode;
   redirectUri: string;
+  onClearOAuthConfiguration: () => Promise<boolean>;
   onConnect: () => Promise<void>;
-  onSave: (settings: Partial<SettingsResponse> & { clientSecret?: string }) => Promise<void>;
+  onCreateSource?: () => void;
+  onSave: (settings: Partial<SettingsResponse> & { clientSecret?: string }) => Promise<boolean>;
 };
 
 export const SettingsPanel = ({
   account,
   settings,
   busy,
-  createSyncedDraftUrl,
+  canCreateSource = true,
+  activated = false,
+  layoutMode = 'focus',
   redirectUri,
+  onClearOAuthConfiguration,
   onConnect,
+  onCreateSource = () => undefined,
   onSave
 }: Props): JSX.Element => {
   const [clientId, setClientId] = useState(settings.clientId);
@@ -69,7 +80,7 @@ export const SettingsPanel = ({
   };
 
   const submit = async () => {
-    await onSave({
+    const saved = await onSave({
       clientId,
       ...(clientSecret ? { clientSecret } : {}),
       connectionMode: settings.connectionMode || 'self_managed',
@@ -77,7 +88,10 @@ export const SettingsPanel = ({
       defaultPostStatus: settings.defaultPostStatus,
       scopeMode: settings.scopeMode
     });
-    setClientSecret('');
+
+    if (saved) {
+      setClientSecret('');
+    }
   };
 
   const testSetup = () => {
@@ -86,17 +100,20 @@ export const SettingsPanel = ({
 
   const nextAction = buildGoogleSetupNextAction({
     account,
+    activated,
     busy,
     canSaveCredentials,
-    createSyncedDraftUrl,
+    canCreateSource,
     hasCredentialChanges,
     settings,
     onConnect,
+    onCreateSource,
     onSaveCredentials: submit
   });
   const activeTask = activeGoogleSetupTask(settings, account, hasCredentialChanges);
   const checklistItems = buildGoogleSetupChecklistItems({
     account,
+    activated,
     canCreateDraft,
     credentialStepState,
     firstSyncStepState,
@@ -110,7 +127,7 @@ export const SettingsPanel = ({
   };
 
   return (
-    <section className="docsync-wp-setup-workspace">
+    <section className={`docsync-wp-setup-workspace docsync-wp-setup-workspace--${layoutMode}`}>
       <GoogleSetupProgressRail
         activeTask={activeTask}
         checklistItems={checklistItems}
@@ -127,8 +144,10 @@ export const SettingsPanel = ({
         clientSecret={clientSecret}
         copyMessage={copyMessage}
         hasClientSecret={settings.hasClientSecret}
+        hasSavedOAuthConfiguration={settings.hasRequiredSettings}
         hasUnsavedChanges={hasCredentialChanges}
         nextAction={nextAction}
+        onClearOAuthConfiguration={onClearOAuthConfiguration}
         onClientIdChange={setClientId}
         onClientSecretChange={setClientSecret}
         onCopyValue={copyValue}

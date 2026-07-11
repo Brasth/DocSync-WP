@@ -30,6 +30,7 @@ if [ -z "${VERSION}" ]; then
 fi
 
 mkdir -p "${OUTPUT_DIR}"
+OUTPUT_DIR="$(cd "${OUTPUT_DIR}" && pwd)"
 
 STAGING_DIR="$(mktemp -d)"
 RSYNC_EXCLUDES="$(mktemp)"
@@ -69,9 +70,11 @@ validate_build_manifests() {
 
 validate_forbidden_paths() {
   local plugin_dir="$1"
+  local credential_file
   local forbidden_path
   local forbidden_paths=(
     "cloudflare"
+    ".secrets"
   )
 
   for forbidden_path in "${forbidden_paths[@]}"; do
@@ -80,6 +83,13 @@ validate_forbidden_paths() {
       exit 1
     fi
   done
+
+  credential_file="$(find "${plugin_dir}" -type f \( -name 'client_secret*.json' -o -name '.env' -o -name '.env.*' \) -print -quit)"
+
+  if [ -n "${credential_file}" ]; then
+    echo "Staging failed: installable plugin must not contain credential files." >&2
+    exit 1
+  fi
 }
 
 # Build assets if missing

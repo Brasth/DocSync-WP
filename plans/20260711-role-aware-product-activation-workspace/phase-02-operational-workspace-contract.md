@@ -10,7 +10,7 @@
 
 - Effort: 12h
 - Priority: P1
-- Status: Pending
+- Status: Implementation Complete; Runtime QA Pending
 - Outcome: provide authenticated operators a least-privilege readiness/bootstrap contract without weakening `/settings`.
 
 ## Key Insights
@@ -30,6 +30,30 @@
 ## Architecture
 
 Add a focused workspace controller/service registered by `RestServiceProvider`. It reads settings through domain methods but serializes only operational fields. A source-summary query reuses repository filters and returns counts for attention, syncing, healthy, and activation evidence. If current repository APIs are sufficient at expected scale, compose them first; add a bounded count method only when needed.
+
+## Implemented wire contract
+
+`GET /workspace` uses `RestPermissions::canUseAuthenticatedRest()` and returns this additive response without changing `/settings`:
+
+```text
+WorkspaceResponse
+├── canManageSettings: boolean
+├── siteConnectionReady: boolean
+├── availablePostTypes: capability-filtered safe names/labels
+├── enabledPostTypes: stored-enabled ∩ capability-filtered names
+├── defaultPostStatus, defaultExportFormat, defaultLayoutPreset
+├── availableLayoutPresets: safe IDs/labels/descriptions
+├── elementorSyncEnabled, elementorAvailable
+├── availableElementorLayoutPresets: safe IDs/labels/descriptions
+└── sourceSummary
+    ├── total, attention, syncing, healthy
+    ├── activated
+    └── truncated
+```
+
+Summary categories are exhaustive: `syncing` is active work; `healthy` is `synced`/`skipped` with a non-empty successful timestamp; every other accessible source needs `attention`. Therefore `total = attention + syncing + healthy`. The query is capped at 500 accessible records and reports `truncated` when that cap is exceeded.
+
+The serializer is an explicit allowlist. It contains no OAuth identifier/secret, token, current-user Google account/email, telemetry choice, schedule configuration, source/post/user/Google ID, ownership identity, raw error, message, or source title/content. Account state remains on the existing current-user account endpoint.
 
 ## Related code files
 
@@ -53,12 +77,18 @@ Add a focused workspace controller/service registered by `RestServiceProvider`. 
 
 ## Todo list
 
-- [ ] Define and document `WorkspaceResponse`.
-- [ ] Implement read-only controller and route registration.
-- [ ] Implement bounded, permission-filtered source summary.
-- [ ] Add TypeScript API client/types.
+- [x] Define and document `WorkspaceResponse`.
+- [x] Implement read-only controller and route registration.
+- [x] Implement bounded, permission-filtered source summary.
+- [x] Add TypeScript API client/types.
 - [ ] Test malformed nonce, logged-out, editor, admin, disabled type, and uneditable source cases.
-- [ ] Confirm no existing route response changed.
+- [x] Confirm by static review that the additive route leaves existing response serializers unchanged.
+
+## Validation Evidence
+
+- Static review confirmed the `/workspace` allowlist and explicit source editability filtering; final code review scored 9.6/10 with zero critical findings.
+- Composer validation/lint, fixture suites, telemetry verification, frontend lint/typecheck/build, PHP syntax checks, and `git diff --check` pass.
+- Runtime permission cases remain open because WordPress was not running at port 8890; only database and Adminer services were available.
 
 ## Success Criteria
 
@@ -85,4 +115,4 @@ Use the workspace and account responses to build the pure activation advisor and
 ## Unresolved Questions
 
 - Resolved by default: use a new `/workspace` endpoint instead of conditionally changing `/settings` response permissions.
-- Confirm the Phase 01-approved shape of the editor readiness summary before freezing the wire contract.
+- None in the contract. Runtime role/nonce/isolation acceptance remains a Phase 06 environment-dependent check.

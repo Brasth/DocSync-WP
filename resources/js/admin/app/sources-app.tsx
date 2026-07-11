@@ -3,6 +3,10 @@ import { __ } from '@wordpress/i18n';
 
 import { BackgroundSyncPoller } from '../features/post-sync/background-sync-poller';
 import { SourcesTable, SourcesTableSkeleton } from '../features/sources/sources-table';
+import { SourceHealthSummary } from '../features/sources/source-health-summary';
+import { ActivationGuidance } from '../features/activation/activation-guidance';
+import { ActivationResult } from '../features/activation/activation-result';
+import { DocSourceModal } from '../features/doc-source-modal/doc-source-modal';
 import { AdminShell } from '../shared/ui/admin-shell';
 import { useSourcesApp } from './use-sources-app';
 
@@ -27,7 +31,7 @@ export const SourcesApp = (): JSX.Element => {
       title={__('Sources', 'brasth-document-sync-for-google-docs')}
       version={app.config.version}
     >
-      {!app.settings ? (
+      {!app.workspace ? (
         <div className="docsync-wp-admin-grid docsync-wp-admin-grid--single">
           <div className="docsync-wp-admin-grid__main">
             <SourcesTableSkeleton />
@@ -46,19 +50,39 @@ export const SourcesApp = (): JSX.Element => {
             />
           ))}
           <div className="docsync-wp-admin-grid__main">
-            <SourcesTable
-              availablePostTypes={app.settings.availablePostTypes.filter((postType) => app.settings?.enabledPostTypes.includes(postType.name))}
+            <ActivationGuidance
+              account={app.account}
               busy={app.busy}
+              onConnect={app.connectGoogle}
+              onCreateSource={app.openSourceModal}
+              setupUrl="admin.php?page=brasth-document-sync-for-google-docs"
+              workspace={app.workspace}
+            />
+            <SourceHealthSummary summary={app.workspace.sourceSummary} />
+            {app.activationSource ? (
+              <ActivationResult busy={app.busy} onRetry={app.retryActivationSource} source={app.activationSource} />
+            ) : null}
+            <SourcesTable
+              availablePostTypes={app.workspace.availablePostTypes.filter((postType) => app.workspace?.enabledPostTypes.includes(postType.name))}
+              busy={app.busy}
+              canCreateSource={app.workspace.siteConnectionReady && app.account.connected && app.account.hasRequiredScope && app.workspace.creatablePostTypes.length > 0}
               filters={app.sourceFilters}
               hasMore={app.hasMoreSources}
               onFiltersChange={app.applySourceFilters}
               onLoadMore={app.loadMoreSources}
+              onCreateSource={app.openSourceModal}
               onRefresh={() => app.runAction(app.refresh)}
               onSync={app.syncOne}
               onSyncAll={app.syncAll}
               sources={app.sources}
             />
           </div>
+          <DocSourceModal
+            isOpen={app.sourceModalOpen}
+            onClose={app.closeSourceModal}
+            onCompleted={app.handleSourceCreated}
+            target={app.sourceModalOpen && app.workspace.creatablePostTypes[0] ? { mode: 'new', postType: app.workspace.creatablePostTypes[0] } : null}
+          />
         </div>
       )}
     </AdminShell>

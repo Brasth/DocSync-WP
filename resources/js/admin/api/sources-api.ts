@@ -13,6 +13,7 @@ type CreateSourcePayload = {
   elementorSync?: boolean;
   layoutPreset?: string | null;
   elementorPreset?: string | null;
+  transferOwnership?: boolean;
 };
 
 type UpdateSourcePayload = {

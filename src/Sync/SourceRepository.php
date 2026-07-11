@@ -49,6 +49,8 @@ final class SourceRepository {
 
 	private const EXPORT_FORMAT_HTML_ZIP = 'html_zip';
 	private const STATUS_SYNCING         = 'syncing';
+	private const SOURCE_SCAN_BATCH_SIZE = 100;
+	private const SUMMARY_SOURCE_LIMIT   = 500;
 	private const SYNC_EVENT_LIMIT       = 50;
 	private const SYNC_EVENT_LEVELS      = array( 'info', 'warning', 'error' );
 
@@ -486,47 +488,68 @@ final class SourceRepository {
 		}
 
 		$query_args = array(
-			'fields'                 => 'ids',
-			'meta_query'             => $meta_query,
-			'no_found_rows'          => true,
-			'order'                  => 'DESC',
-			'orderby'                => 'modified',
-			'post_status'            => 'any',
-			'post_type'              => $post_types,
-			'posts_per_page'         => $limit + 1,
-			'offset'                 => ( $page - 1 ) * $limit,
-			'update_post_meta_cache' => true,
-			'update_post_term_cache' => false,
+			'docsync_wp_source_health_order' => true,
+			'fields'                         => 'ids',
+			'meta_query'                     => $meta_query,
+			'no_found_rows'                  => true,
+			'post_status'                    => 'any',
+			'post_type'                      => $post_types,
+			'posts_per_page'                 => self::SOURCE_SCAN_BATCH_SIZE,
+			'update_post_meta_cache'         => true,
+			'update_post_term_cache'         => false,
 		);
 
 		if ( array() !== $matching_ids ) {
 			$query_args['post__in'] = $matching_ids;
 		}
 
-		$query = new WP_Query(
-			$query_args
-		);
+		$sources         = array();
+		$has_more        = false;
+		$accessible_seen = 0;
+		$page_start      = ( $page - 1 ) * $limit;
+		$page_end        = $page_start + $limit;
+		$scan_page       = 1;
 
-		$sources = array();
+		add_filter( 'posts_clauses', array( $this, 'applySourceHealthOrder' ), 10, 2 );
 
-		foreach ( $query->posts as $post_id ) {
-			$post_id = absint( $post_id );
+		try {
+			while ( true ) {
+				$query_args['paged'] = $scan_page;
+				$query               = new WP_Query( $query_args );
 
-			if ( ! $this->userCanSyncPost( $post_id, $user_id ) ) {
-				continue;
+				foreach ( $query->posts as $post_id ) {
+					$post_id = absint( $post_id );
+
+					if ( ! $this->userCanSyncPost( $post_id, $user_id ) ) {
+						continue;
+					}
+
+					$source = $this->formatSource( $post_id );
+
+					if ( null === $source ) {
+						continue;
+					}
+
+					if ( $accessible_seen >= $page_end ) {
+						$has_more = true;
+						break 2;
+					}
+
+					if ( $accessible_seen >= $page_start ) {
+						$sources[] = $source;
+					}
+
+					++$accessible_seen;
+				}
+
+				if ( count( $query->posts ) < self::SOURCE_SCAN_BATCH_SIZE ) {
+					break;
+				}
+
+				++$scan_page;
 			}
-
-			$source = $this->formatSource( $post_id );
-
-			if ( null !== $source ) {
-				$sources[] = $source;
-			}
-		}
-
-		$has_more = count( $query->posts ) > $limit;
-
-		if ( $has_more ) {
-			$sources = array_slice( $sources, 0, $limit );
+		} finally {
+			remove_filter( 'posts_clauses', array( $this, 'applySourceHealthOrder' ), 10 );
 		}
 
 		return array(
@@ -535,6 +558,54 @@ final class SourceRepository {
 			'page'     => $page,
 			'per_page' => $limit,
 		);
+	}
+
+	/**
+	 * Order source candidates by operational health before pagination.
+	 *
+	 * @param array<string,string> $clauses SQL query clauses.
+	 * @param WP_Query             $query   WordPress query.
+	 * @return array<string,string>
+	 */
+	public function applySourceHealthOrder( array $clauses, WP_Query $query ): array {
+		if ( true !== $query->get( 'docsync_wp_source_health_order' ) ) {
+			return $clauses;
+		}
+
+		global $wpdb;
+
+		$clauses['orderby'] = (string) $wpdb->prepare(
+			"CASE
+				WHEN EXISTS (
+					SELECT 1 FROM {$wpdb->postmeta} AS docsync_syncing
+					WHERE docsync_syncing.post_id = {$wpdb->posts}.ID
+						AND docsync_syncing.meta_key = %s
+						AND docsync_syncing.meta_value = %s
+				) THEN 1
+				WHEN EXISTS (
+					SELECT 1 FROM {$wpdb->postmeta} AS docsync_healthy_status
+					WHERE docsync_healthy_status.post_id = {$wpdb->posts}.ID
+						AND docsync_healthy_status.meta_key = %s
+						AND docsync_healthy_status.meta_value IN ( %s, %s )
+				) AND EXISTS (
+					SELECT 1 FROM {$wpdb->postmeta} AS docsync_last_synced
+					WHERE docsync_last_synced.post_id = {$wpdb->posts}.ID
+						AND docsync_last_synced.meta_key = %s
+						AND docsync_last_synced.meta_value <> ''
+				) THEN 2
+				ELSE 0
+			END ASC,
+			{$wpdb->posts}.post_modified DESC,
+			{$wpdb->posts}.ID DESC",
+			self::META_SYNC_STATUS,
+			self::STATUS_SYNCING,
+			self::META_SYNC_STATUS,
+			'synced',
+			'skipped',
+			self::META_LAST_SYNCED
+		);
+
+		return $clauses;
 	}
 
 	/**
@@ -835,6 +906,153 @@ final class SourceRepository {
 	 */
 	public function getEnabledPostTypes(): array {
 		return $this->settings->getEnabledPostTypes();
+	}
+
+	/**
+	 * Whether the user can access at least one valid linked source.
+	 *
+	 * This menu-time predicate avoids source formatting, health joins, and full
+	 * summary counts. Candidates are scanned in bounded batches and stop at the
+	 * first post accepted by the normal source-operation authority.
+	 *
+	 * @param int $user_id User ID.
+	 */
+	public function hasAccessibleSource( int $user_id ): bool {
+		$post_types = array_values(
+			array_filter(
+				$this->getEnabledPostTypes(),
+				function ( string $post_type ) use ( $user_id ): bool {
+					return $this->userCanEditPostType( $post_type, $user_id );
+				}
+			)
+		);
+
+		if ( array() === $post_types ) {
+			return false;
+		}
+
+		$query_args = array(
+			'fields'                 => 'ids',
+			'meta_query'             => array(
+				array(
+					'key'     => self::META_FILE_ID,
+					'value'   => '',
+					'compare' => '!=',
+				),
+			),
+			'no_found_rows'          => true,
+			'order'                  => 'ASC',
+			'orderby'                => 'ID',
+			'post_status'            => 'any',
+			'post_type'              => $post_types,
+			'posts_per_page'         => self::SOURCE_SCAN_BATCH_SIZE,
+			'update_post_meta_cache' => false,
+			'update_post_term_cache' => false,
+		);
+		$scan_page  = 1;
+
+		while ( true ) {
+			$query_args['paged'] = $scan_page;
+			$query               = new WP_Query( $query_args );
+
+			foreach ( $query->posts as $post_id ) {
+				if ( $this->userCanSyncPost( absint( $post_id ), $user_id ) ) {
+					return true;
+				}
+			}
+
+			if ( count( $query->posts ) < self::SOURCE_SCAN_BATCH_SIZE ) {
+				return false;
+			}
+
+			++$scan_page;
+		}
+	}
+
+	/**
+	 * Summarize accessible sources without exposing source records or identities.
+	 *
+	 * Candidates are scanned in bounded batches and every record is checked with
+	 * the same per-post authority used by source operations. This preserves
+	 * custom per-post capability grants without counting inaccessible records.
+	 *
+	 * @param int $user_id User ID.
+	 * @return array{total:int,attention:int,syncing:int,healthy:int,activated:bool,truncated:bool}
+	 */
+	public function getAccessibleSourceSummary( int $user_id ): array {
+		$summary = array(
+			'total'     => 0,
+			'attention' => 0,
+			'syncing'   => 0,
+			'healthy'   => 0,
+			'activated' => false,
+			'truncated' => false,
+		);
+
+		foreach ( $this->getEnabledPostTypes() as $post_type ) {
+			if ( ! $this->userCanEditPostType( $post_type, $user_id ) ) {
+				continue;
+			}
+
+			$query_args = array(
+				'fields'                 => 'ids',
+				'meta_query'             => array(
+					array(
+						'key'     => self::META_FILE_ID,
+						'compare' => 'EXISTS',
+					),
+				),
+				'no_found_rows'          => true,
+				'post_status'            => 'any',
+				'post_type'              => $post_type,
+				'posts_per_page'         => self::SOURCE_SCAN_BATCH_SIZE,
+				'update_post_meta_cache' => true,
+				'update_post_term_cache' => false,
+			);
+
+			$scan_page = 1;
+
+			while ( true ) {
+				$query_args['paged'] = $scan_page;
+				$query               = new WP_Query( $query_args );
+
+				foreach ( $query->posts as $post_id ) {
+					$post_id = absint( $post_id );
+
+					if ( ! $this->userCanSyncPost( $post_id, $user_id ) || null === $this->getSource( $post_id ) ) {
+						continue;
+					}
+
+					if ( $summary['total'] >= self::SUMMARY_SOURCE_LIMIT ) {
+						$summary['truncated'] = true;
+						break 3;
+					}
+
+					$status      = sanitize_key( $this->getStringMeta( $post_id, self::META_SYNC_STATUS ) );
+					$last_synced = $this->getStringMeta( $post_id, self::META_LAST_SYNCED );
+					$is_healthy  = in_array( $status, array( 'synced', 'skipped' ), true ) && '' !== $last_synced;
+
+					++$summary['total'];
+
+					if ( self::STATUS_SYNCING === $status ) {
+						++$summary['syncing'];
+					} elseif ( $is_healthy ) {
+						++$summary['healthy'];
+						$summary['activated'] = true;
+					} else {
+						++$summary['attention'];
+					}
+				}
+
+				if ( count( $query->posts ) < self::SOURCE_SCAN_BATCH_SIZE ) {
+					break;
+				}
+
+				++$scan_page;
+			}
+		}
+
+		return $summary;
 	}
 
 	/**

@@ -25,6 +25,7 @@ use DocSyncWP\Rest\RestServiceProvider;
 use DocSyncWP\Rest\SettingsController;
 use DocSyncWP\Rest\SourceController;
 use DocSyncWP\Rest\SyncLogController;
+use DocSyncWP\Rest\WorkspaceController;
 use DocSyncWP\Security\EncryptionService;
 use DocSyncWP\Settings\SettingsRepository;
 use DocSyncWP\Sync\DocsApiHtmlBuilder;
@@ -211,7 +212,7 @@ final class Plugin {
 		);
 
 		$plugin = new self(
-			new AdminPage(),
+			new AdminPage( $settings, $source_repository ),
 			new AssetRegistry(
 				DOCSYNC_WP_PATH,
 				DOCSYNC_WP_URL,
@@ -219,7 +220,8 @@ final class Plugin {
 				$settings
 			),
 			new RestServiceProvider(
-				new SettingsController( $settings ),
+				new SettingsController( $settings, $token_store ),
+				new WorkspaceController( $settings, $source_repository, $elementor_checker ),
 				new OAuthController( $google_oauth, $token_store ),
 				new DocumentController(
 					$document_id_parser,

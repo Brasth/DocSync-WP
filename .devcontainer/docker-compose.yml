@@ -22,6 +22,30 @@ services:
     volumes:
       - wordpress_data:/var/www/html
       - ..:/var/www/html/wp-content/plugins/brasth-document-sync-for-google-docs:cached
+      - plugin_node_modules:/var/www/html/wp-content/plugins/brasth-document-sync-for-google-docs/node_modules
+      - plugin_pnpm_store:/var/www/html/wp-content/plugins/brasth-document-sync-for-google-docs/.pnpm-store
+      - plugin_vendor:/var/www/html/wp-content/plugins/brasth-document-sync-for-google-docs/vendor
+      - ./php/conf.d/docsync-dev.ini:/usr/local/etc/php/conf.d/docsync-dev.ini:ro
+
+  cron:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["/bin/sh", "/var/www/html/wp-content/plugins/brasth-document-sync-for-google-docs/.devcontainer/scripts/run-cron-worker.sh"]
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_USER: wordpress
+    volumes:
+      - wordpress_data:/var/www/html
+      - ..:/var/www/html/wp-content/plugins/brasth-document-sync-for-google-docs:cached
+      - plugin_node_modules:/var/www/html/wp-content/plugins/brasth-document-sync-for-google-docs/node_modules
+      - plugin_pnpm_store:/var/www/html/wp-content/plugins/brasth-document-sync-for-google-docs/.pnpm-store
+      - plugin_vendor:/var/www/html/wp-content/plugins/brasth-document-sync-for-google-docs/vendor
       - ./php/conf.d/docsync-dev.ini:/usr/local/etc/php/conf.d/docsync-dev.ini:ro
 
   db:
@@ -55,5 +79,8 @@ services:
       - "8091:8080"
 
 volumes:
+  plugin_node_modules:
+  plugin_pnpm_store:
+  plugin_vendor:
   db_data:
   wordpress_data:

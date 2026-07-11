@@ -111,7 +111,7 @@ const sourceStatusElement = (source: SourceRecord): HTMLDivElement => {
 
   wrapper.className = 'docsync-wp-list-status is-linked';
   title.textContent = source.googleTitle || source.googleFileId;
-  status.textContent = sourceStatusLabel(source.syncStatus || 'linked');
+  status.textContent = sourceStatusLabel(source.syncStatus || 'linked', source.syncStep);
   wrapper.append(title, document.createElement('br'), status);
 
   if (shouldShowSyncProgress(source)) {
@@ -137,30 +137,33 @@ const sourceStatusElement = (source: SourceRecord): HTMLDivElement => {
 const sourceProgressElement = (source: SourceRecord): HTMLDivElement => {
   const progress = Math.max(0, Math.min(100, Math.round(source.syncProgress ?? 0)));
   const message = source.syncMessage || '';
+  const queued = source.syncStatus === 'syncing' && source.syncStep === 'queued';
   const wrapper = document.createElement('div');
   const bar = document.createElement('div');
   const fill = document.createElement('span');
   const label = document.createElement('small');
 
   wrapper.className = 'docsync-wp-sync-progress-wrap';
-  bar.className = 'docsync-wp-sync-progress';
+  bar.className = `docsync-wp-sync-progress${queued ? ' is-indeterminate' : ''}`;
   bar.setAttribute('role', 'progressbar');
-  bar.setAttribute('aria-label', sprintf(__('Sync progress: %d%%', 'brasth-document-sync-for-google-docs'), progress));
+  bar.setAttribute('aria-label', queued ? __('Waiting for the background worker.', 'brasth-document-sync-for-google-docs') : sprintf(__('Sync progress: %d%%', 'brasth-document-sync-for-google-docs'), progress));
   bar.setAttribute('aria-valuemin', '0');
   bar.setAttribute('aria-valuemax', '100');
-  bar.setAttribute('aria-valuenow', String(progress));
-  fill.style.width = `${progress}%`;
-  label.textContent = message ? `${progress}% - ${message}` : `${progress}%`;
+  if (!queued) {
+    bar.setAttribute('aria-valuenow', String(progress));
+  }
+  fill.style.width = queued ? '38%' : `${progress}%`;
+  label.textContent = queued ? message || __('Waiting for the background worker.', 'brasth-document-sync-for-google-docs') : message ? `${progress}% - ${message}` : `${progress}%`;
   bar.append(fill);
   wrapper.append(bar, label);
 
   return wrapper;
 };
 
-const sourceStatusLabel = (status: string): string => {
+const sourceStatusLabel = (status: string, step = ''): string => {
   switch (status) {
     case 'syncing':
-      return __('Syncing', 'brasth-document-sync-for-google-docs');
+      return step === 'queued' ? __('Queued', 'brasth-document-sync-for-google-docs') : __('Syncing', 'brasth-document-sync-for-google-docs');
     case 'synced':
       return __('Synced', 'brasth-document-sync-for-google-docs');
     case 'skipped':

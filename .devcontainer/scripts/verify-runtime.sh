@@ -63,6 +63,7 @@ $routes = $server->get_routes();
 		"/brasth-document-sync-for-google-docs/v1/oauth/google/callback",
 		"/brasth-document-sync-for-google-docs/v1/sources",
 		"/brasth-document-sync-for-google-docs/v1/sync-log",
+		"/brasth-document-sync-for-google-docs/v1/workspace",
 	);
 foreach ( $required as $route ) {
 	if ( ! isset( $routes[ $route ] ) ) {

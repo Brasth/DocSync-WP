@@ -12,16 +12,19 @@ type NextActionArgs = {
   account: GoogleAccount;
   busy: boolean;
   canSaveCredentials: boolean;
-  createSyncedDraftUrl: string;
+  canCreateSource: boolean;
+  activated: boolean;
   hasCredentialChanges: boolean;
   settings: SettingsResponse;
   onConnect: () => Promise<void>;
+  onCreateSource: () => void;
   onSaveCredentials: () => Promise<void>;
 };
 
 type ChecklistArgs = {
   account: GoogleAccount;
   canCreateDraft: boolean;
+  activated: boolean;
   credentialStepState: SetupStepState;
   firstSyncStepState: SetupStepState;
   settings: SettingsResponse;
@@ -57,12 +60,14 @@ export const activeGoogleSetupTask = (
 
 export const buildGoogleSetupNextAction = ({
   account,
+  activated,
   busy,
   canSaveCredentials,
-  createSyncedDraftUrl,
+  canCreateSource,
   hasCredentialChanges,
   settings,
   onConnect,
+  onCreateSource,
   onSaveCredentials
 }: NextActionArgs): GoogleSetupNextActionConfig => {
   if (!settings.hasRequiredSettings || hasCredentialChanges) {
@@ -95,16 +100,29 @@ export const buildGoogleSetupNextAction = ({
     };
   }
 
+  if (activated) {
+    return {
+      title: __('Publishing workspace active', 'brasth-document-sync-for-google-docs'),
+      description: __('At least one source has completed successfully. Use Sources for daily publishing work.', 'brasth-document-sync-for-google-docs'),
+      label: __('View Sources', 'brasth-document-sync-for-google-docs'),
+      href: 'admin.php?page=brasth-document-sync-for-google-docs-sources'
+    };
+  }
+
   return {
     title: __('Create first synced draft', 'brasth-document-sync-for-google-docs'),
-    description: __('Open the Posts list, choose Add Sync Doc, select a Google Doc, and create the first synced draft.', 'brasth-document-sync-for-google-docs'),
-    label: __('Create synced draft', 'brasth-document-sync-for-google-docs'),
-    href: createSyncedDraftUrl
+    description: canCreateSource
+      ? __('Choose an accessible Google Doc and create a WordPress draft without leaving Setup.', 'brasth-document-sync-for-google-docs')
+      : __('No enabled WordPress target is available for this user. Adjust post-type permissions before creating a source.', 'brasth-document-sync-for-google-docs'),
+    label: __('Choose Google Doc', 'brasth-document-sync-for-google-docs'),
+    disabled: busy || !canCreateSource,
+    onClick: async () => onCreateSource()
   };
 };
 
 export const buildGoogleSetupChecklistItems = ({
   account,
+  activated,
   canCreateDraft,
   credentialStepState,
   firstSyncStepState,
@@ -112,28 +130,30 @@ export const buildGoogleSetupChecklistItems = ({
 }: ChecklistArgs): GoogleSetupChecklistItem[] => [
   {
     id: 'credentials',
-    label: __('OAuth credentials', 'brasth-document-sync-for-google-docs'),
+    label: __('Site connection', 'brasth-document-sync-for-google-docs'),
     description: settings.hasRequiredSettings
-      ? __('Client ID and secret saved.', 'brasth-document-sync-for-google-docs')
-      : __('Save a Google OAuth web client.', 'brasth-document-sync-for-google-docs'),
+      ? __('Administrator responsibility complete: OAuth web client saved.', 'brasth-document-sync-for-google-docs')
+      : __('Administrator responsibility: save the site OAuth web client.', 'brasth-document-sync-for-google-docs'),
     state: credentialStepState
   },
   {
     id: 'google-account',
     label: account.connected && !account.hasRequiredScope
       ? __('Reconnect Google', 'brasth-document-sync-for-google-docs')
-      : __('Connect Google', 'brasth-document-sync-for-google-docs'),
+      : __('Your Google account', 'brasth-document-sync-for-google-docs'),
     description: account.connected && account.hasRequiredScope
-      ? __('Drive read-only scope granted.', 'brasth-document-sync-for-google-docs')
-      : __('Authorize this WordPress user.', 'brasth-document-sync-for-google-docs'),
+      ? __('Your responsibility complete: Drive read-only access granted.', 'brasth-document-sync-for-google-docs')
+      : __('Your responsibility: authorize this WordPress user.', 'brasth-document-sync-for-google-docs'),
     state: account.connected && account.hasRequiredScope ? 'complete' : 'needs-action'
   },
   {
     id: 'first-draft',
-    label: __('First synced draft', 'brasth-document-sync-for-google-docs'),
-    description: canCreateDraft
-      ? __('Ready from the Posts list.', 'brasth-document-sync-for-google-docs')
-      : __('Available after Google is connected.', 'brasth-document-sync-for-google-docs'),
-    state: firstSyncStepState
+    label: __('First publishing source', 'brasth-document-sync-for-google-docs'),
+    description: activated
+      ? __('Publishing responsibility complete: a source synced successfully.', 'brasth-document-sync-for-google-docs')
+      : canCreateDraft
+      ? __('Publishing responsibility: choose a Google Doc.', 'brasth-document-sync-for-google-docs')
+      : __('Publishing responsibility unlocks after Google is connected.', 'brasth-document-sync-for-google-docs'),
+    state: activated ? 'complete' : firstSyncStepState
   }
 ];

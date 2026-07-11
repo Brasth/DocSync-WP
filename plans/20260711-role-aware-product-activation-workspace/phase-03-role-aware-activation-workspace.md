@@ -10,7 +10,7 @@
 
 - Effort: 16h
 - Priority: P1
-- Status: Pending
+- Status: Implementation Complete; Manual Accessibility/Responsive QA Pending
 - Outcome: replace generic setup completion with a capability-aware blueprint for administrators and a safe activation continuation in Sources for content operators.
 
 ## Key Insights
@@ -57,12 +57,18 @@ Compose workspace facts, current-user account state, admin settings when authori
 
 ## Todo list
 
-- [ ] Add pure activation/advisor types and mapper.
-- [ ] Cover all state combinations deterministically.
-- [ ] Implement semantic blueprint and active task hierarchy.
-- [ ] Implement administrator Setup and operator Sources variants from the shared mapper.
-- [ ] Preserve credential import/manual/test/recovery behavior.
-- [ ] Add responsive, focus, live-region, and reduced-motion styles.
+- [x] Add pure activation/advisor types and mapper.
+- [x] Cover the typed advisor states with deterministic, exhaustive branch mapping.
+- [x] Implement semantic blueprint and active task hierarchy.
+- [x] Implement administrator Setup and operator Sources variants from the shared mapper.
+- [x] Preserve credential import/manual/test/recovery behavior in the implementation.
+- [x] Add responsive, focus, live-region, and reduced-motion styles.
+
+## Validation Evidence
+
+- Frontend lint, typecheck, and production build pass; static review found one primary advisor action per typed state.
+- Focus-return, terminal-result focus, semantic headings, and reduced-motion rules are implemented and passed final static review.
+- Browser validation for keyboard/screen-reader behavior, long content, reduced motion, and 375/768/1440 layouts remains open because WordPress was unavailable.
 
 ## Success Criteria
 
@@ -89,4 +95,4 @@ Connect the ready-for-source advisor action to the existing Doc source modal and
 ## Unresolved Questions
 
 - Resolved: use WordPress/system typography and existing Brasth tokens; no webfont, new icon library, or runtime dependency.
-- Confirm approved wording for an editor waiting on an administrator.
+- None in implementation. Editor waiting-state wording still requires browser/content acceptance during manual QA.

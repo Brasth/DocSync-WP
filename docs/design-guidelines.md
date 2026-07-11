@@ -1,6 +1,6 @@
 # Brasth Admin Design Guidelines
 
-Last updated: 2026-07-10
+Last updated: 2026-07-11
 
 ## Purpose
 
@@ -72,16 +72,24 @@ Use this guide for Brasth Document Sync admin UI work. The product direction is 
 
 ## Setup Workspace
 
+- Present the responsibility sequence as Site connection -> Your Google account -> First publishing source; do not present account connection alone as completion.
 - Make the next action dominant.
 - Keep checklist/progress visible but visually quiet.
+- Keep Setup administrator-only. Site-wide credentials, defaults, telemetry, and destructive configuration actions must not appear in operator-facing Sources guidance.
+- When site and account readiness permit, open the shared Doc source flow directly and keep queued/terminal first-sync feedback in the activation context.
 - Group credential import, redirect URI copy, Google Cloud links, connection test, and sync defaults by job.
 - Dirty/saved state belongs near the panel it affects.
 - Long setup instructions belong in disclosures.
 
 ## Sources And Logs
 
+- Sources is the post-activation daily workspace and the capability-safe continuation surface for operators who cannot access Setup.
+- Show one role-safe next responsibility from site readiness, personal account state, and accessible-source state. Never expose site credentials, cross-user identity, scheduling, telemetry, or raw errors in this guidance.
+- A compact health summary may show attention, syncing, healthy, and accessible counts. Mark capped totals with `+` and keep category language consistent with the workspace contract.
+- Globally order attention before active syncs and healthy sources so pagination does not hide intervention work.
 - Sources filters act as a command console: search first, post type/status next, actions last.
 - Sources rows show target title, Google Doc, status/progress, last sync, then actions.
+- First-source success must offer **Open draft** as primary and Sources as secondary. Failure copy must state content safety, likely recovery owner, and one retry/recovery action.
 - Logs filters use a simple default row and advanced filters in a disclosure.
 - Log summaries appear only when entries exist and use tabular numbers.
 - Warning/error log rows use a left rail plus hover tint.

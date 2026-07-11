@@ -10,7 +10,7 @@
 
 - Effort: 12h
 - Priority: P1
-- Status: Pending
+- Status: Implementation Complete; Runtime Compatibility QA Pending
 - Outcome: make Sources the capability-safe daily workspace after activation while preserving dense operational workflows.
 
 ## Key Insights
@@ -56,12 +56,18 @@ Use workspace summary for the header and existing paginated Sources API for reco
 
 ## Todo list
 
-- [ ] Define health mapping and attention ordering.
-- [ ] Preserve pagination/filter correctness.
-- [ ] Add safe summary and role-aware empty/recovery states.
-- [ ] Improve row hierarchy and narrow layout.
-- [ ] Implement approved landing behavior.
+- [x] Define health mapping and attention ordering.
+- [x] Preserve pagination/filter correctness through server-side health ordering.
+- [x] Add safe summary and role-aware empty/recovery states.
+- [x] Improve row hierarchy and narrow-layout implementation.
+- [x] Implement approved top-level-only landing behavior while preserving submenu URLs.
 - [ ] Test existing activated sites and zero-source sites for compatibility.
+
+## Validation Evidence
+
+- Static review confirmed attention-first ordering before pagination, capability-filtered summary use, and top-level-only landing resolution with stable direct submenu URLs.
+- Frontend and PHP automated gates pass; exactly six expected Vite manifests were emitted.
+- Filters, pagination, bulk/row sync, custom roles, activated/zero-source compatibility, and narrow-screen behavior remain runtime/browser QA because WordPress was unavailable.
 
 ## Success Criteria
 
@@ -87,5 +93,5 @@ Validate recovery language, scheduling diagnostics, accessibility, compatibility
 
 ## Unresolved Questions
 
-- Product gate: final top-level landing and OAuth callback destination rules.
-- Product gate: exact editor readiness summary shown above Sources.
+- Resolved: conditional routing applies only to the top-level plugin entry; direct Setup/Sources URLs and OAuth callback destinations remain unchanged.
+- Resolved: Sources uses the least-privilege workspace readiness and accessible-source summary approved in Phase 01.

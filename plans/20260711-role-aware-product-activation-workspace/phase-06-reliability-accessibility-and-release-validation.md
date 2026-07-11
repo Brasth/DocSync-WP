@@ -10,7 +10,7 @@
 
 - Effort: 8h
 - Priority: P1
-- Status: Pending
+- Status: In Progress; Automated Gates Pass, Runtime/Manual QA Pending
 - Outcome: prove the role-aware activation and Sources workflow is safe, accessible, compatible, and privacy-preserving.
 
 ## Key Insights
@@ -18,12 +18,14 @@
 - Reliability messaging must explain content safety and recovery, not expose raw codes as headlines.
 - Existing telemetry consent does not silently authorize a materially broader activation funnel.
 - Capability, source ownership, WP-Cron, long-copy, and background polling are cross-surface risks.
+- A scheduled event is evidence of pending work only while the source heartbeat is fresh; a stale event must not block recovery indefinitely.
 
 ## Requirements
 
 - Validate the full admin/editor/custom-role journey from site-not-ready through second successful sync.
 - Audit keyboard, screen reader semantics, focus return, live updates, contrast, reduced motion, and 375/768/1440 layouts.
 - Verify recovery for token/scope, site config, download, cron stale, large export, transform/import, and insufficient capability failures.
+- In local development, run due events through the internal WP-CLI worker without changing the browser-facing site or OAuth URL; expose queued work as indeterminate and active work as percentage progress.
 - Keep activation metrics local-only unless a new consent version and privacy review are separately approved.
 - Run focused and full project verification without weakening tests.
 
@@ -39,6 +41,11 @@ Use existing sync events and source state for recovery context. Add no analytics
 - `resources/css/shared/responsive.css`
 - `src/Telemetry/TelemetryService.php`
 - `src/Telemetry/TelemetryCron.php`
+- `src/Cron/SyncCron.php`
+- `src/Rest/SourceController.php`
+- `resources/js/admin/shared/ui/sync-progress.tsx`
+- `.devcontainer/docker-compose.yml`
+- `.devcontainer/scripts/run-cron-worker.sh`
 - `.devcontainer/scripts/verify-runtime.sh`
 - `README.md`
 - `docs/system-architecture.md`
@@ -58,10 +65,33 @@ Use existing sync events and source state for recovery context. Add no analytics
 
 - [ ] Complete role/capability and data-isolation matrix.
 - [ ] Complete activation/recovery E2E scenarios.
+- [x] Implement the development-only WP-CLI worker, stale scheduled-event recovery, and distinct queued/active sync presentation; focused post-change verification remains open.
 - [ ] Complete keyboard, screen-reader, responsive, and reduced-motion audit.
-- [ ] Confirm telemetry contract and consent are unchanged.
-- [ ] Run all PHP/frontend/build/runtime checks.
+- [x] Confirm telemetry contract and consent are unchanged by static review and telemetry settings verification.
+- [x] Run all PHP/frontend/build checks; runtime verification remains open.
 - [ ] Update documentation for final route, contract, ownership, and landing decisions.
+
+## Validation Evidence
+
+Passed with exit code 0:
+
+- `composer validate --no-check-publish`
+- `composer lint`
+- `composer test:layout-fixtures` (12/12)
+- `composer test:elementor-fixtures` (5/5)
+- `composer test:large-doc-fallback-fixtures` (1/1)
+- `composer test:telemetry-settings`
+- `pnpm lint`
+- `pnpm typecheck`
+- `pnpm build`
+- PHP syntax checks for touched/new PHP files
+- `git diff --check`
+
+The production build emitted exactly six manifests—Setup, Sources, Logs, Post Sync, Doc Source Modal, and Drive Browser—with one JavaScript entry and `style.css` each. The runtime verifier now asserts `/workspace`. Final code review scored 9.6/10 with zero critical findings.
+
+Runtime validation could not run: the WordPress service was absent, port 8890 returned HTTP 000, and only database and Adminer services were running. Therefore admin/editor/author/custom-role nonce and cross-post isolation, activation/recovery E2E, and keyboard/screen-reader/reduced-motion/responsive checks at 375/768/1440 remain open. No manual acceptance item is marked complete from static evidence alone.
+
+Static implementation evidence for the follow-up reliability patch: the local Compose stack now contains a development-only `cron` service which invokes `wp cron event run --due-now` inside the Docker network; the public site URL remains `http://localhost:8890`. The UI retains `syncing` storage compatibility but renders `syncStep === 'queued'` as **Sync queued** with indeterminate progress, then renders percentage progress once work begins. Stale recovery now considers a scheduled event non-blocking once the sync heartbeat exceeds the stale threshold, unschedules it, and records the existing safe retry guidance. These are implementation findings only: no post-change worker consumption, stale-event, or UI browser test is yet recorded.
 
 ## Success Criteria
 
@@ -87,4 +117,5 @@ Ship only after product gates, compatibility suite, runtime checks, and accessib
 
 ## Unresolved Questions
 
-- Product gate: whether a future remote activation funnel is valuable enough to justify new versioned consent, payload documentation, retention, and privacy review.
+- When can the WordPress devcontainer be started to complete runtime and browser acceptance?
+- Future remote activation telemetry remains explicitly out of scope pending a separate versioned consent, payload, retention, privacy, and product approval.

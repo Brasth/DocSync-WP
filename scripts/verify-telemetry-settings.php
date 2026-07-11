@@ -73,6 +73,15 @@ function sanitize_text_field( string $value ): string {
 }
 
 /**
+ * Absolute integer stub.
+ *
+ * @param mixed $value Value.
+ */
+function absint( mixed $value ): int {
+	return abs( (int) $value );
+}
+
+/**
  * WordPress error helper stub.
  *
  * @param mixed $value Value.
@@ -111,6 +120,14 @@ function get_option( string $name, mixed $default = false ): mixed {
  */
 function update_option( string $name, mixed $value, mixed ...$args ): bool {
 	unset( $args );
+
+	if ( ! empty( $GLOBALS['docsync_wp_test_fail_option_update'] ) ) {
+		return false;
+	}
+
+	if ( ! empty( $GLOBALS['docsync_wp_test_skip_option_update'] ) ) {
+		return false;
+	}
 
 	$GLOBALS['docsync_wp_test_options'][ $name ] = $value;
 
@@ -222,6 +239,8 @@ require_once __DIR__ . '/../src/Telemetry/TelemetryCron.php';
 
 $GLOBALS['docsync_wp_test_options'] = array();
 $GLOBALS['docsync_wp_test_cron']    = array();
+$GLOBALS['docsync_wp_test_fail_option_update'] = false;
+$GLOBALS['docsync_wp_test_skip_option_update'] = false;
 
 $settings = new SettingsRepository( new EncryptionService() );
 
@@ -271,6 +290,17 @@ assert_same( '', $settings->getTelemetrySiteId(), 'site id is removed on opt-out
 
 $cron->syncSchedule();
 assert_same( false, wp_next_scheduled( TelemetryCron::HOOK ), 'cron unschedules when disabled' );
+
+$GLOBALS['docsync_wp_test_skip_option_update'] = true;
+$unchanged = $settings->save( array() );
+assert_false( is_wp_error( $unchanged ), 'unchanged settings do not fail persistence verification' );
+$GLOBALS['docsync_wp_test_skip_option_update'] = false;
+
+$GLOBALS['docsync_wp_test_fail_option_update'] = true;
+$not_persisted = $settings->save( array( 'sync_interval' => 'hourly' ) );
+assert_true( is_wp_error( $not_persisted ), 'settings persistence failure is returned' );
+assert_same( 'docsync_wp_settings_not_persisted', $not_persisted->get_error_code(), 'settings persistence error code is returned' );
+$GLOBALS['docsync_wp_test_fail_option_update'] = false;
 
 echo "Telemetry settings checks passed.\n";
 
