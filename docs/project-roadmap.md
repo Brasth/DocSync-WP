@@ -20,7 +20,7 @@ Each release must pass the existing validation pipeline (`pnpm lint`, `pnpm type
 
 ## Current State
 
-- Version 1.1.2 is the current release metadata; 1.1.3 usability polish is merged in development docs/code and awaiting release versioning.
+- Version 1.1.3 is the current release metadata, covering the merged usability polish and role-aware admin workspace work.
 - Core sync engine is stable: Google export, media import, Gutenberg block conversion, Elementor JSON conversion, background sync, and sync logging.
 - The plugin supports one-way sync from Google Docs to WordPress posts, pages, and enabled public custom post types.
 - Setup now separates administrator-owned site configuration from personal Google access; capability-qualified operators continue activation in Sources without receiving settings secrets. Activation is an accessible successfully completed source, not account readiness.

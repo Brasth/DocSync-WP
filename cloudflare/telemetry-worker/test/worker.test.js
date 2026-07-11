@@ -45,14 +45,14 @@ test('repeat check-in updates last_seen and increments count', async () => {
   const nextWeek = new Date('2026-07-07T12:00:00.000Z');
 
   await handleRequest(checkInRequest(validPayload), env, undefined, now);
-  await handleRequest(checkInRequest({ ...validPayload, pluginVersion: '1.1.2' }), env, undefined, nextWeek);
+  await handleRequest(checkInRequest({ ...validPayload, pluginVersion: '1.1.3' }), env, undefined, nextWeek);
 
   const row = env.DB.rows.get(validPayload.siteHash);
 
   assert.equal(row.checkin_count, 2);
   assert.equal(row.first_seen, now.toISOString());
   assert.equal(row.last_seen, nextWeek.toISOString());
-  assert.equal(row.plugin_version, '1.1.2');
+  assert.equal(row.plugin_version, '1.1.3');
 });
 
 test('invalid check-in payloads are rejected', async (t) => {
