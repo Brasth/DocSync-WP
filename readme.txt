@@ -4,7 +4,7 @@ Tags: google-docs, google-drive, content-sync, editorial-workflow, blocks
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 1.1.3
+Stable tag: 1.1.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -131,6 +131,12 @@ The build uses Vite and writes screen-specific manifests for Setup, Sources, Log
 5. Synced draft editor with the Brasth Document Sync meta box.
 
 == Changelog ==
+
+= 1.1.4 =
+
+* Hardened release validation with exact-commit provenance, PHP 8.1 compatibility checks, official readme validation, release ZIP inspection, and clean-install runtime smoke coverage.
+* Fixed background sync scheduling and source-state handling found during internal release hardening.
+* Improved HTML ZIP extraction cleanup and sync lock behavior to protect reliable retries.
 
 = 1.1.3 =
 
