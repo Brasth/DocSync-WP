@@ -94,9 +94,10 @@ if ( ! function_exists( 'wp_kses' ) ) {
 
 if ( ! function_exists( 'get_post_meta' ) ) {
 	function get_post_meta( int $post_id, string $key = '', bool $single = false ): mixed {
-		unset( $post_id, $key, $single );
+		unset( $single );
+		$fixture_meta = $GLOBALS['docsync_fixture_post_meta'][ $post_id ] ?? array();
 
-		return '';
+		return is_array( $fixture_meta ) ? ( $fixture_meta[ $key ] ?? '' ) : '';
 	}
 }
 
@@ -133,6 +134,10 @@ foreach ( $manifest_paths as $manifest_path ) {
 	$post_id       = (int) ( $manifest['postId'] ?? 123 );
 	$input_path    = $fixture_dir . '/' . (string) ( $manifest['input'] ?? 'input.html' );
 	$expected_path = $fixture_dir . '/' . (string) ( $manifest['expected'] ?? 'expected.json' );
+	$post_meta     = $manifest['postMeta'] ?? array();
+	$GLOBALS['docsync_fixture_post_meta'] = array(
+		$post_id => is_array( $post_meta ) ? $post_meta : array(),
+	);
 	$ids           = new IdGenerator( $seed );
 	$converter     = new ElementorPresetConversionService(
 		new WidgetFactory( null, $ids ),

@@ -51,6 +51,13 @@ final class ElementorPresetBlueprint {
 	private string $version;
 
 	/**
+	 * Whether eligible standalone images should render as a visual grid.
+	 *
+	 * @var bool
+	 */
+	private bool $render_image_collections;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param string $id          Preset ID.
@@ -58,13 +65,15 @@ final class ElementorPresetBlueprint {
 	 * @param string $description User-facing description.
 	 * @param string $layout      Conversion behavior key.
 	 * @param string $version     Conversion behavior version.
+	 * @param bool   $render_image_collections Whether standalone image collections should render as grids.
 	 */
-	public function __construct( string $id, string $label, string $description, string $layout, string $version = '1' ) {
-		$this->id          = $id;
-		$this->label       = $label;
-		$this->description = $description;
-		$this->layout      = $layout;
-		$this->version     = $version;
+	public function __construct( string $id, string $label, string $description, string $layout, string $version = '1', bool $render_image_collections = false ) {
+		$this->id                       = $id;
+		$this->label                    = $label;
+		$this->description              = $description;
+		$this->layout                   = $layout;
+		$this->version                  = $version;
+		$this->render_image_collections = $render_image_collections;
 	}
 
 	/**
@@ -96,16 +105,24 @@ final class ElementorPresetBlueprint {
 	}
 
 	/**
+	 * Whether eligible standalone images should render as grids.
+	 */
+	public function shouldRenderImageCollections(): bool {
+		return $this->render_image_collections;
+	}
+
+	/**
 	 * Get stable data used to fingerprint converted output policy.
 	 *
-	 * @return array<string,string>
+	 * @return array<string,string|bool>
 	 */
 	public function getFingerprintSeed(): array {
 		return array(
-			'editor'  => 'elementor',
-			'id'      => $this->id,
-			'layout'  => $this->layout,
-			'version' => $this->version,
+			'editor'                   => 'elementor',
+			'id'                       => $this->id,
+			'layout'                   => $this->layout,
+			'version'                  => $this->version,
+			'render_image_collections' => $this->render_image_collections,
 		);
 	}
 }

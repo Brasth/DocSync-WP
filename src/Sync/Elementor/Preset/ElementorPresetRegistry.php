@@ -17,6 +17,7 @@ defined( 'ABSPATH' ) || exit;
 final class ElementorPresetRegistry {
 	public const PRESET_HERO_PAGE     = 'elementor_hero_page';
 	public const PRESET_FEATURE_BLOCK = 'elementor_feature_block';
+	public const PRESET_VISUAL_STORY  = 'elementor_visual_story';
 	public const DEFAULT_PRESET       = self::PRESET_FEATURE_BLOCK;
 
 	/**
@@ -61,6 +62,14 @@ final class ElementorPresetRegistry {
 				__( 'Builds clean Elementor sections from document headings, text, lists, media, tables, and dividers.', 'brasth-document-sync-for-google-docs' ),
 				'feature_block',
 				'3'
+			),
+			self::PRESET_VISUAL_STORY  => new ElementorPresetBlueprint(
+				self::PRESET_VISUAL_STORY,
+				__( 'Elementor Visual Story', 'brasth-document-sync-for-google-docs' ),
+				__( 'Builds editable Elementor image grids from consecutive standalone images while retaining the document source order.', 'brasth-document-sync-for-google-docs' ),
+				'visual_story',
+				'1',
+				true
 			),
 		);
 

@@ -20,9 +20,10 @@ defined( 'ABSPATH' ) || exit;
  * Creates Elementor core widget arrays from DOM nodes.
  */
 final class WidgetFactory {
-	public const STYLE_LEGACY  = 'legacy';
-	public const STYLE_FEATURE = 'feature';
-	public const STYLE_HERO    = 'hero';
+	public const STYLE_LEGACY       = 'legacy';
+	public const STYLE_FEATURE      = 'feature';
+	public const STYLE_HERO         = 'hero';
+	public const STYLE_VISUAL_STORY = 'visual_story';
 
 	/**
 	 * Markup sanitizer.
@@ -234,6 +235,18 @@ final class WidgetFactory {
 					'width_tablet' => $this->size( 86, '%' ),
 					'width_mobile' => $this->size( 100, '%' ),
 					'_margin'      => $this->edge( 8, 0, 0, 0 ),
+				)
+			);
+		} elseif ( self::STYLE_VISUAL_STORY === $style ) {
+			$settings = array_merge(
+				$settings,
+				array(
+					'image_size'   => 'large',
+					'align'        => 'center',
+					'width'        => $this->size( 100, '%' ),
+					'width_tablet' => $this->size( 100, '%' ),
+					'width_mobile' => $this->size( 100, '%' ),
+					'_margin'      => $this->edge( 0, 0, 0, 0 ),
 				)
 			);
 		}

@@ -96,6 +96,27 @@ final class HtmlBlockFactory {
 	}
 
 	/**
+	 * Create a native gallery block from standalone images.
+	 *
+	 * @param HtmlStandaloneImageCollection $collection Standalone image collection.
+	 * @return array<string,mixed>
+	 */
+	public function galleryBlock( HtmlStandaloneImageCollection $collection ): array {
+		$images  = $collection->getImages();
+		$columns = min( 3, count( $images ) );
+		$opening = '<figure class="wp-block-gallery has-nested-images columns-' . $columns . ' is-layout-flex wp-block-gallery-is-layout-flex">';
+		$blocks  = array_map( fn ( HtmlStandaloneImage $image ): array => $this->imageBlock( $image ), $images );
+
+		return array(
+			'blockName'    => 'core/gallery',
+			'attrs'        => array( 'columns' => $columns ),
+			'innerBlocks'  => $blocks,
+			'innerHTML'    => $opening . '</figure>',
+			'innerContent' => array_merge( array( $opening ), array_fill( 0, count( $blocks ), null ), array( '</figure>' ) ),
+		);
+	}
+
+	/**
 	 * Create a paragraph block from plain text.
 	 *
 	 * @param string $text Plain text.

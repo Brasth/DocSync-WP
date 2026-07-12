@@ -18,6 +18,7 @@ final class LayoutPresetRegistry {
 	public const PRESET_PLAIN_BLOCKS  = 'plain_blocks';
 	public const PRESET_CLEAN_ARTICLE = 'clean_article';
 	public const PRESET_DOCUMENTATION = 'documentation';
+	public const PRESET_VISUAL_STORY  = 'visual_story';
 
 	public const DEFAULT_EXISTING_INSTALL = self::PRESET_PLAIN_BLOCKS;
 	public const DEFAULT_NEW_INSTALL      = self::PRESET_CLEAN_ARTICLE;
@@ -68,6 +69,16 @@ final class LayoutPresetRegistry {
 				true,
 				true,
 				'3'
+			),
+			self::PRESET_VISUAL_STORY  => new LayoutBlueprint(
+				self::PRESET_VISUAL_STORY,
+				__( 'Visual Story', 'brasth-document-sync-for-google-docs' ),
+				__( 'Groups consecutive standalone images into editable WordPress galleries while keeping all other content in source order.', 'brasth-document-sync-for-google-docs' ),
+				false,
+				false,
+				false,
+				'1',
+				true
 			),
 			self::PRESET_PLAIN_BLOCKS  => new LayoutBlueprint(
 				self::PRESET_PLAIN_BLOCKS,

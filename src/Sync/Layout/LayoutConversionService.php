@@ -16,6 +16,8 @@ use DOMText;
 use DocSyncWP\Settings\SettingsRepository;
 use DocSyncWP\Sync\HtmlBlockFactory;
 use DocSyncWP\Sync\HtmlBlockMarkupSanitizer;
+use DocSyncWP\Sync\HtmlStandaloneImageCollection;
+use DocSyncWP\Sync\HtmlStandaloneImageCollectionDetector;
 use DocSyncWP\Sync\HtmlToBlockContentConverter;
 use WP_Error;
 
@@ -75,15 +77,23 @@ final class LayoutConversionService {
 	private DocumentationCodeBlockDetector $documentation_code;
 
 	/**
+	 * Standalone image collection detector.
+	 *
+	 * @var HtmlStandaloneImageCollectionDetector
+	 */
+	private HtmlStandaloneImageCollectionDetector $image_collections;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param SettingsRepository                  $settings           Settings repository.
-	 * @param HtmlToBlockContentConverter         $plain_converter    Legacy plain block converter.
-	 * @param LayoutPresetRegistry|null           $presets            Preset registry.
-	 * @param HtmlBlockFactory|null               $blocks             Block factory.
-	 * @param HtmlBlockMarkupSanitizer|null       $markup             Markup sanitizer.
-	 * @param ContentRoleClassifier|null          $classifier         Content role classifier.
-	 * @param DocumentationCodeBlockDetector|null $documentation_code Documentation code detector.
+	 * @param SettingsRepository                         $settings           Settings repository.
+	 * @param HtmlToBlockContentConverter                $plain_converter    Legacy plain block converter.
+	 * @param LayoutPresetRegistry|null                  $presets            Preset registry.
+	 * @param HtmlBlockFactory|null                      $blocks             Block factory.
+	 * @param HtmlBlockMarkupSanitizer|null              $markup             Markup sanitizer.
+	 * @param ContentRoleClassifier|null                 $classifier         Content role classifier.
+	 * @param DocumentationCodeBlockDetector|null        $documentation_code Documentation code detector.
+	 * @param HtmlStandaloneImageCollectionDetector|null $image_collections  Standalone image collection detector.
 	 */
 	public function __construct(
 		SettingsRepository $settings,
@@ -92,7 +102,8 @@ final class LayoutConversionService {
 		?HtmlBlockFactory $blocks = null,
 		?HtmlBlockMarkupSanitizer $markup = null,
 		?ContentRoleClassifier $classifier = null,
-		?DocumentationCodeBlockDetector $documentation_code = null
+		?DocumentationCodeBlockDetector $documentation_code = null,
+		?HtmlStandaloneImageCollectionDetector $image_collections = null
 	) {
 		$this->settings           = $settings;
 		$this->plain_converter    = $plain_converter;
@@ -101,6 +112,7 @@ final class LayoutConversionService {
 		$this->markup             = $markup ?? new HtmlBlockMarkupSanitizer();
 		$this->classifier         = $classifier ?? new ContentRoleClassifier();
 		$this->documentation_code = $documentation_code ?? new DocumentationCodeBlockDetector();
+		$this->image_collections  = $image_collections ?? new HtmlStandaloneImageCollectionDetector();
 	}
 
 	/**
@@ -277,6 +289,10 @@ final class LayoutConversionService {
 	 * @return array<int,array<string,mixed>>
 	 */
 	private function childrenToBlocks( DOMElement $element, LayoutBlueprint $preset ): array {
+		if ( $preset->shouldRenderImageCollections() ) {
+			return $this->visualStoryChildrenToBlocks( $element, $preset );
+		}
+
 		if ( LayoutPresetRegistry::PRESET_DOCUMENTATION === $preset->getId() && $preset->shouldRenderCodeBlocks() ) {
 			return $this->documentationChildrenToBlocks( $element, $preset );
 		}
@@ -288,6 +304,56 @@ final class LayoutConversionService {
 		}
 
 		return $blocks;
+	}
+
+	/**
+	 * Convert flattened children with explicit Visual Story collection behavior.
+	 *
+	 * @param DOMElement      $element Container element.
+	 * @param LayoutBlueprint $preset  Layout preset.
+	 * @return array<int,array<string,mixed>>
+	 */
+	private function visualStoryChildrenToBlocks( DOMElement $element, LayoutBlueprint $preset ): array {
+		$blocks = array();
+
+		foreach ( $this->image_collections->groupNodes( $this->contentNodes( $element ) ) as $item ) {
+			if ( $item instanceof HtmlStandaloneImageCollection ) {
+				$blocks[] = $this->blocks->galleryBlock( $item );
+				continue;
+			}
+
+			$blocks = array_merge( $blocks, $this->nodeToBlocks( $item, $preset ) );
+		}
+
+		return $blocks;
+	}
+
+	/**
+	 * Flatten structural wrappers without changing the existing node semantics.
+	 *
+	 * @param DOMNode $node DOM node.
+	 * @return array<int,DOMNode>
+	 */
+	private function contentNodes( DOMNode $node ): array {
+		if ( $node instanceof DOMText ) {
+			return array( $node );
+		}
+
+		if ( ! $node instanceof DOMElement ) {
+			return array();
+		}
+
+		if ( ! in_array( strtolower( $node->tagName ), array( 'body', 'div', 'section', 'article', 'main' ), true ) ) {
+			return array( $node );
+		}
+
+		$nodes = array();
+
+		foreach ( $node->childNodes as $child ) {
+			$nodes = array_merge( $nodes, $this->contentNodes( $child ) );
+		}
+
+		return $nodes;
 	}
 
 	/**

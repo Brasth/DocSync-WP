@@ -1,7 +1,7 @@
 # Architecture Decision: Internal 1.1.4 Validation
 
 **Date:** 2026-07-12  
-**Status:** Agreed
+**Status:** Publication deferred
 
 ## Problem
 
@@ -85,3 +85,31 @@ Any approved gallery must reuse the existing preset registry and source payloads
 ## Unresolved Questions
 
 - Who owns the five layout-selection task sessions after 1.1.4?
+
+## 2026-07-12 Release Evidence And Deferral
+
+### Exact-SHA validation
+
+- Release branch: `release/1.1.4`
+- Validated commit: `cb9ab9800b92e085c61b8bd42be1c485d93e7a4e`
+- Validation workflow: [Validate Release Commit #29182033696](https://github.com/Brasth/DocSync-WP/actions/runs/29182033696)
+- Generated ZIP SHA-256: `d86333c5bccafb81a110eb931687166acf3f18b09a633334dfe73671eb12e1d6`
+- CI validation passed exact-SHA metadata, PHP 8.1 checks, fixture suites, frontend checks, official readme validation, ZIP validation, clean-install smoke, and provenance upload.
+
+### Accepted deferral
+
+The internal staging matrix has not been run against the validated commit. Specifically, normal and oversized Google Docs, image-heavy imports, editor and legacy Elementor conversion, OAuth and authorization recovery, owner transfer, background-sync recovery, unchanged-source skips, fingerprint behavior, and upgrade safety remain unrecorded.
+
+`1.1.4` must remain untagged and unpublished until these scenarios are completed and recorded. This deferral does not authorize bypassing the release gates in this decision or `docs/deployment-guide.md`.
+
+### Historical 1.1.2 reconciliation
+
+- Historical release commit: `b29956b4d2bca729a0c3ed3e7dbe64eb6b86fc57` (merged PR #64).
+- The commit contains matching 1.1.2 plugin, package, and `readme.txt` version metadata. Its Build Snapshot ZIP and CodeQL workflows passed.
+- Annotated tag `1.1.2` now points to that commit.
+- GitHub Release: [1.1.2](https://github.com/Brasth/DocSync-WP/releases/tag/1.1.2)
+- Release ZIP SHA-256: `ed092e2f522b4f749e5f97e55945546782ed28e7ffc4d5dfc682d012584d8d84`
+- [Build Release ZIP (Tag) #29182385895](https://github.com/Brasth/DocSync-WP/actions/runs/29182385895) passed.
+- [Deploy to WordPress.org SVN #29182385903](https://github.com/Brasth/DocSync-WP/actions/runs/29182385903) passed.
+- WordPress.org now lists 1.1.2 as the current stable version. A subsequent 1.1.3 deployment attempt completed without changing the listing because the deployment action will not republish an existing version.
+- The owner accepted 1.1.2 as the current stable version. Do not publish deferred 1.1.4 solely to correct this history issue.

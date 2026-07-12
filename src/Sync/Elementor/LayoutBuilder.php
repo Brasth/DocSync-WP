@@ -15,9 +15,10 @@ defined( 'ABSPATH' ) || exit;
  * Builds the outer Elementor layout structure.
  */
 final class LayoutBuilder {
-	public const GROUP_STYLE_DEFAULT = 'default';
-	public const GROUP_STYLE_FEATURE = 'feature';
-	public const GROUP_STYLE_HERO    = 'hero';
+	public const GROUP_STYLE_DEFAULT    = 'default';
+	public const GROUP_STYLE_FEATURE    = 'feature';
+	public const GROUP_STYLE_HERO       = 'hero';
+	public const GROUP_STYLE_IMAGE_GRID = 'image_grid';
 
 	/**
 	 * Compatibility checker.
@@ -76,6 +77,12 @@ final class LayoutBuilder {
 			function ( array $widgets, int $index ) use ( $post_id, $group_styles ): array {
 				$style = $group_styles[ $index ] ?? self::GROUP_STYLE_DEFAULT;
 
+				if ( self::GROUP_STYLE_IMAGE_GRID === $style ) {
+					return $this->compatibility->postUsesContainers( $post_id )
+						? $this->imageGridContainer( $widgets )
+						: $this->imageGridSection( $widgets );
+				}
+
 				if ( $this->compatibility->postUsesContainers( $post_id ) ) {
 					return $this->container( $widgets, $style );
 				}
@@ -84,6 +91,94 @@ final class LayoutBuilder {
 			},
 			$widget_groups,
 			array_keys( $widget_groups )
+		);
+	}
+
+	/**
+	 * Create a responsive flex grid of ordinary Elementor Image widgets.
+	 *
+	 * @param array<int,array<string,mixed>> $widgets Image widgets.
+	 * @return array<string,mixed>
+	 */
+	private function imageGridContainer( array $widgets ): array {
+		$items = array_map(
+			function ( array $widget ): array {
+				return array(
+					'id'       => $this->ids->generate(),
+					'elType'   => 'container',
+					'isInner'  => false,
+					'settings' => array(
+						'content_width'  => 'full',
+						'flex_direction' => 'column',
+						'width'          => $this->size( 32, '%' ),
+						'width_tablet'   => $this->size( 48, '%' ),
+						'width_mobile'   => $this->size( 100, '%' ),
+					),
+					'elements' => array( $widget ),
+				);
+			},
+			$widgets
+		);
+
+		return array(
+			'id'       => $this->ids->generate(),
+			'elType'   => 'container',
+			'isInner'  => false,
+			'settings' => array(
+				'content_width'  => 'boxed',
+				'boxed_width'    => $this->size( 960, 'px' ),
+				'flex_direction' => 'row',
+				'flex_wrap'      => 'wrap',
+				'gap'            => $this->size( 16, 'px' ),
+				'padding'        => $this->edge( 48, 24, 48, 24 ),
+				'padding_tablet' => $this->edge( 40, 22, 40, 22 ),
+				'padding_mobile' => $this->edge( 32, 18, 32, 18 ),
+				'html_tag'       => 'section',
+			),
+			'elements' => $items,
+		);
+	}
+
+	/**
+	 * Create a legacy section whose image columns preserve editability.
+	 *
+	 * Elementor's legacy columns stack on mobile; responsive container grids
+	 * use explicit tablet widths where the control is available.
+	 *
+	 * @param array<int,array<string,mixed>> $widgets Image widgets.
+	 * @return array<string,mixed>
+	 */
+	private function imageGridSection( array $widgets ): array {
+		$width   = max( 1, (int) floor( 100 / max( 1, count( $widgets ) ) ) );
+		$columns = array_map(
+			function ( array $widget ) use ( $width ): array {
+				return array(
+					'id'       => $this->ids->generate(),
+					'elType'   => 'column',
+					'isInner'  => false,
+					'settings' => array(
+						'_column_size' => $width,
+						'_inline_size' => null,
+					),
+					'elements' => array( $widget ),
+				);
+			},
+			$widgets
+		);
+
+		return array(
+			'id'       => $this->ids->generate(),
+			'elType'   => 'section',
+			'isInner'  => false,
+			'settings' => array(
+				'layout'         => 'boxed',
+				'content_width'  => $this->size( 960, 'px' ),
+				'padding'        => $this->edge( 48, 24, 48, 24 ),
+				'padding_tablet' => $this->edge( 40, 22, 40, 22 ),
+				'padding_mobile' => $this->edge( 32, 18, 32, 18 ),
+				'html_tag'       => 'section',
+			),
+			'elements' => $columns,
 		);
 	}
 

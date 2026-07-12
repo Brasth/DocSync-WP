@@ -44,6 +44,13 @@ final class LayoutBlueprint {
 	private string $version;
 
 	/**
+	 * Whether eligible standalone images should render as collections.
+	 *
+	 * @var bool
+	 */
+	private bool $render_image_collections;
+
+	/**
 	 * Whether H1 content headings should become H2 blocks.
 	 *
 	 * @var bool
@@ -74,6 +81,7 @@ final class LayoutBlueprint {
 	 * @param bool   $render_code_blocks        Whether code blocks should use core/code.
 	 * @param bool   $render_callouts           Whether callouts should use quote blocks.
 	 * @param string $version                   Conversion behavior version.
+	 * @param bool   $render_image_collections  Whether standalone image collections should render as galleries.
 	 */
 	public function __construct(
 		string $id,
@@ -82,7 +90,8 @@ final class LayoutBlueprint {
 		bool $demote_top_level_headings,
 		bool $render_code_blocks,
 		bool $render_callouts,
-		string $version = '1'
+		string $version = '1',
+		bool $render_image_collections = false
 	) {
 		$this->id                        = $id;
 		$this->label                     = $label;
@@ -91,6 +100,7 @@ final class LayoutBlueprint {
 		$this->render_code_blocks        = $render_code_blocks;
 		$this->render_callouts           = $render_callouts;
 		$this->version                   = $version;
+		$this->render_image_collections  = $render_image_collections;
 	}
 
 	/**
@@ -136,6 +146,13 @@ final class LayoutBlueprint {
 	}
 
 	/**
+	 * Whether eligible standalone images should render as collections.
+	 */
+	public function shouldRenderImageCollections(): bool {
+		return $this->render_image_collections;
+	}
+
+	/**
 	 * Get stable data used to fingerprint converted output policy.
 	 *
 	 * @return array<string,mixed>
@@ -147,6 +164,7 @@ final class LayoutBlueprint {
 			'demote_top_level_headings' => $this->demote_top_level_headings,
 			'render_code_blocks'        => $this->render_code_blocks,
 			'render_callouts'           => $this->render_callouts,
+			'render_image_collections'  => $this->render_image_collections,
 		);
 	}
 }

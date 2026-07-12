@@ -16,6 +16,8 @@ use DOMText;
 use DocSyncWP\Sync\Elementor\LayoutBuilder;
 use DocSyncWP\Sync\Elementor\WidgetFactory;
 use DocSyncWP\Sync\HtmlStandaloneImage;
+use DocSyncWP\Sync\HtmlStandaloneImageCollection;
+use DocSyncWP\Sync\HtmlStandaloneImageCollectionDetector;
 use DocSyncWP\Sync\HtmlStandaloneImageDetector;
 use WP_Error;
 
@@ -54,23 +56,33 @@ final class ElementorPresetConversionService {
 	private HtmlStandaloneImageDetector $standalone_images;
 
 	/**
+	 * Standalone image collection detector.
+	 *
+	 * @var HtmlStandaloneImageCollectionDetector
+	 */
+	private HtmlStandaloneImageCollectionDetector $image_collections;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param WidgetFactory|null               $widgets           Widget factory.
-	 * @param LayoutBuilder|null               $layout            Layout builder.
-	 * @param ElementorPresetRegistry|null     $presets           Preset registry.
-	 * @param HtmlStandaloneImageDetector|null $standalone_images Standalone image detector.
+	 * @param WidgetFactory|null                         $widgets           Widget factory.
+	 * @param LayoutBuilder|null                         $layout            Layout builder.
+	 * @param ElementorPresetRegistry|null               $presets           Preset registry.
+	 * @param HtmlStandaloneImageDetector|null           $standalone_images Standalone image detector.
+	 * @param HtmlStandaloneImageCollectionDetector|null $image_collections  Standalone image collection detector.
 	 */
 	public function __construct(
 		?WidgetFactory $widgets = null,
 		?LayoutBuilder $layout = null,
 		?ElementorPresetRegistry $presets = null,
-		?HtmlStandaloneImageDetector $standalone_images = null
+		?HtmlStandaloneImageDetector $standalone_images = null,
+		?HtmlStandaloneImageCollectionDetector $image_collections = null
 	) {
 		$this->widgets           = $widgets ?? new WidgetFactory();
 		$this->layout            = $layout ?? new LayoutBuilder();
 		$this->presets           = $presets ?? new ElementorPresetRegistry();
 		$this->standalone_images = $standalone_images ?? new HtmlStandaloneImageDetector();
+		$this->image_collections = $image_collections ?? new HtmlStandaloneImageCollectionDetector( $this->standalone_images );
 	}
 
 	/**
@@ -168,9 +180,11 @@ final class ElementorPresetConversionService {
 		}
 
 		$nodes      = $this->contentNodes( $body );
-		$group_data = 'hero_page' === $preset->getLayout()
+		$group_data = $preset->shouldRenderImageCollections()
+			? $this->visualStoryWidgetGroupData( $nodes )
+			: ( 'hero_page' === $preset->getLayout()
 			? $this->heroWidgetGroupData( $nodes )
-			: $this->featureWidgetGroupData( $nodes );
+			: $this->featureWidgetGroupData( $nodes ) );
 
 		return $this->encodeLayout( $group_data['groups'], $post_id, $group_data['styles'] );
 	}
@@ -244,6 +258,57 @@ final class ElementorPresetConversionService {
 		return array(
 			'groups' => $groups,
 			'styles' => array_fill( 0, count( $groups ), LayoutBuilder::GROUP_STYLE_FEATURE ),
+		);
+	}
+
+	/**
+	 * Build source-ordered feature groups and explicit image grids.
+	 *
+	 * @param array<int,DOMNode> $nodes Content nodes.
+	 * @return array{groups:array<int,array<int,array<string,mixed>>>,styles:array<int,string>}
+	 */
+	private function visualStoryWidgetGroupData( array $nodes ): array {
+		$groups  = array();
+		$styles  = array();
+		$current = array();
+
+		$flush = static function () use ( &$groups, &$styles, &$current ): void {
+			if ( array() !== $current ) {
+				$groups[] = $current;
+				$styles[] = LayoutBuilder::GROUP_STYLE_FEATURE;
+				$current  = array();
+			}
+		};
+
+		foreach ( $this->image_collections->groupNodes( $nodes ) as $item ) {
+			if ( $item instanceof HtmlStandaloneImageCollection ) {
+				$flush();
+				$groups[] = array_map(
+					fn ( HtmlStandaloneImage $image ): array => $this->widgets->imageFromStandalone( $image, WidgetFactory::STYLE_VISUAL_STORY ),
+					$item->getImages()
+				);
+				$styles[] = LayoutBuilder::GROUP_STYLE_IMAGE_GRID;
+				continue;
+			}
+
+			$widgets = $this->nodeToWidgets( $item, WidgetFactory::STYLE_FEATURE );
+
+			if ( array() === $widgets ) {
+				continue;
+			}
+
+			if ( $this->isHeading( $item ) && array() !== $current ) {
+				$flush();
+			}
+
+			$current = array_merge( $current, $widgets );
+		}
+
+		$flush();
+
+		return array(
+			'groups' => $groups,
+			'styles' => $styles,
 		);
 	}
 

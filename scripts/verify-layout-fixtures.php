@@ -208,7 +208,20 @@ if ( ! function_exists( 'serialize_blocks' ) ) {
 			? ''
 			: ' ' . (string) wp_json_encode( $block['attrs'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
 
-		return '<!-- wp:' . $name . $attrs . ' -->' . (string) ( $block['innerHTML'] ?? '' ) . '<!-- /wp:' . $name . ' -->';
+		$content = '';
+		$index   = 0;
+
+		foreach ( $block['innerContent'] ?? array( $block['innerHTML'] ?? '' ) as $piece ) {
+			if ( null === $piece ) {
+				$content .= serialize_block( $block['innerBlocks'][ $index ] );
+				++$index;
+				continue;
+			}
+
+			$content .= (string) $piece;
+		}
+
+		return '<!-- wp:' . $name . $attrs . ' -->' . $content . '<!-- /wp:' . $name . ' -->';
 	}
 }
 
