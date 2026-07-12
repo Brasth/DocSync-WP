@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace DocSyncWP;
 
+defined( 'ABSPATH' ) || exit;
+
 use DocSyncWP\Admin\AdminPage;
 use DocSyncWP\Admin\PostListActions;
 use DocSyncWP\Admin\PostSyncMetaBox;

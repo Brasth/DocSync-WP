@@ -164,9 +164,9 @@ final class RestPermissions {
 	/**
 	 * Require a logged-in WordPress user.
 	 *
-	 * @return true|WP_Error
+	 * @return bool|WP_Error
 	 */
-	private static function requireLoggedIn(): true|WP_Error {
+	private static function requireLoggedIn(): bool|WP_Error {
 		if ( is_user_logged_in() ) {
 			return true;
 		}

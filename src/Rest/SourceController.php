@@ -868,9 +868,9 @@ final class SourceController {
 	 * @param array<int,string>   $allowed_keys Allowed payload keys.
 	 * @param string              $error_code   Error code.
 	 * @param string              $message      Error message.
-	 * @return true|WP_Error
+	 * @return bool|WP_Error
 	 */
-	private function rejectUnknownFields( array $params, array $allowed_keys, string $error_code, string $message ): true|WP_Error {
+	private function rejectUnknownFields( array $params, array $allowed_keys, string $error_code, string $message ): bool|WP_Error {
 		$unknown_keys = array_diff( array_keys( $params ), $allowed_keys );
 
 		if ( array() === $unknown_keys ) {
@@ -1182,9 +1182,9 @@ final class SourceController {
 	 * Convert abandoned background sync state into an actionable error.
 	 *
 	 * @param int $post_id Post ID.
-	 * @return true|WP_Error
+	 * @return bool|WP_Error
 	 */
-	private function recoverStaleSync( int $post_id ): true|WP_Error {
+	private function recoverStaleSync( int $post_id ): bool|WP_Error {
 		$source = $this->source_repository->getSource( $post_id );
 
 		if ( null === $source || SyncService::STATUS_SYNCING !== (string) $source['sync_status'] ) {
@@ -1261,9 +1261,9 @@ final class SourceController {
 	 *
 	 * @param int $post_id Post ID.
 	 * @param int $user_id User ID.
-	 * @return true|WP_Error
+	 * @return bool|WP_Error
 	 */
-	private function validateEditablePost( int $post_id, int $user_id ): true|WP_Error {
+	private function validateEditablePost( int $post_id, int $user_id ): bool|WP_Error {
 		$post = get_post( $post_id );
 
 		if ( ! $post instanceof WP_Post ) {
@@ -1298,9 +1298,9 @@ final class SourceController {
 	 *
 	 * @param string $post_type Post type.
 	 * @param int    $user_id   User ID.
-	 * @return true|WP_Error
+	 * @return bool|WP_Error
 	 */
-	private function validateEditablePostType( string $post_type, int $user_id ): true|WP_Error {
+	private function validateEditablePostType( string $post_type, int $user_id ): bool|WP_Error {
 		if ( ! $this->source_repository->isPostTypeEnabled( $post_type ) ) {
 			return new WP_Error(
 				'docsync_wp_post_type_disabled',
@@ -1325,9 +1325,9 @@ final class SourceController {
 	 *
 	 * @param string $post_type Post type.
 	 * @param int    $user_id   User ID.
-	 * @return true|WP_Error
+	 * @return bool|WP_Error
 	 */
-	private function validateCreatablePostType( string $post_type, int $user_id ): true|WP_Error {
+	private function validateCreatablePostType( string $post_type, int $user_id ): bool|WP_Error {
 		if ( ! $this->source_repository->isPostTypeEnabled( $post_type ) ) {
 			return new WP_Error(
 				'docsync_wp_post_type_disabled',

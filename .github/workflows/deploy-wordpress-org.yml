@@ -101,6 +101,14 @@ jobs:
       - name: Build frontend assets
         run: pnpm build
 
+      - name: Build installable ZIP for dry-run validation
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run == true }}
+        id: package
+        run: |
+          set -euo pipefail
+          ./scripts/build-zip.sh "${RUNNER_TEMP}"
+          echo "zip_path=${RUNNER_TEMP}/${PLUGIN_SLUG}-v${version}.zip" >> "${GITHUB_OUTPUT}"
+
       - name: Deploy to WordPress.org
         if: ${{ github.event_name == 'release' || inputs.dry_run == false }}
         uses: 10up/action-wordpress-plugin-deploy@2.3.0
@@ -113,46 +121,4 @@ jobs:
 
       - name: Validate deployable artifact (dry run)
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run == true }}
-        run: |
-          set -euo pipefail
-          echo "Dry run: validating deployable artifact for version ${version}"
-
-          if [ ! -f "brasth-document-sync-for-google-docs.php" ]; then
-            echo "Missing plugin main file."
-            exit 1
-          fi
-
-          if [ ! -f "vendor/autoload.php" ]; then
-            echo "Missing vendor/autoload.php."
-            exit 1
-          fi
-
-          REQUIRED_BUILD_MANIFESTS=(
-            manifest.setup.json
-            manifest.sources.json
-            manifest.logs.json
-            manifest.post-sync.json
-            manifest.doc-source-modal.json
-            manifest.drive-browser.json
-          )
-          for manifest in "${REQUIRED_BUILD_MANIFESTS[@]}"; do
-            if [ ! -f "build/${manifest}" ]; then
-              echo "Missing build/${manifest}."
-              exit 1
-            fi
-          done
-
-          if [ ! -f "readme.txt" ]; then
-            echo "Missing readme.txt."
-            exit 1
-          fi
-
-          FORBIDDEN_PATHS=(.git .github .claude .agents .codex node_modules .pnpm-store docs plans tests coverage assets)
-          for forbidden_path in "${FORBIDDEN_PATHS[@]}"; do
-            if [ -e "${forbidden_path}" ]; then
-              echo "Deployable artifact must not contain ${forbidden_path}."
-              exit 1
-            fi
-          done
-
-          echo "Dry-run validation passed. Nothing was committed to SVN."
+        run: bash scripts/validate-release-zip.sh "${{ steps.package.outputs.zip_path }}"

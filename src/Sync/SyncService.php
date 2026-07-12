@@ -924,9 +924,9 @@ final class SyncService {
 	 *
 	 * @param int                 $post_id Post ID.
 	 * @param array<string,mixed> $source  Source captured by this sync.
-	 * @return true|WP_Error
+	 * @return bool|WP_Error
 	 */
-	private function assertCurrentSource( int $post_id, array $source ): true|WP_Error {
+	private function assertCurrentSource( int $post_id, array $source ): bool|WP_Error {
 		$latest_source = $this->source_repository->getSource( $post_id );
 
 		if ( $this->isSameSource( $latest_source, $source ) ) {
@@ -1110,7 +1110,7 @@ final class SyncService {
 		$use_elementor    = null !== $this->elementor_decider && $this->elementor_decider->shouldUseElementor( $post_id );
 		$elementor_preset = $use_elementor ? $this->elementor_preset_converter->resolvePresetForSource( $source ) : '';
 
-		return function ( string $html, int $rendered, int $total ) use ( $post_id, &$source, &$last_hash, $use_elementor, $elementor_preset ): true|WP_Error {
+		return function ( string $html, int $rendered, int $total ) use ( $post_id, &$source, &$last_hash, $use_elementor, $elementor_preset ): bool|WP_Error {
 			$sanitized_html = wp_kses_post( $html );
 			$partial_hash   = hash( 'sha256', $sanitized_html );
 
@@ -1213,9 +1213,9 @@ final class SyncService {
 	 * Ensure Drive metadata allows download/export.
 	 *
 	 * @param array<string,mixed> $metadata Drive metadata.
-	 * @return true|WP_Error
+	 * @return bool|WP_Error
 	 */
-	private function assertMetadataCanDownload( array $metadata ): true|WP_Error {
+	private function assertMetadataCanDownload( array $metadata ): bool|WP_Error {
 		$compatibility = isset( $metadata['syncCompatibility'] ) && is_array( $metadata['syncCompatibility'] )
 			? $metadata['syncCompatibility']
 			: array();

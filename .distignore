@@ -2,11 +2,16 @@
 /.github
 /.gitignore
 /.distignore
+/.dockerignore
+.DS_Store
 /.editorconfig
 /.code-review-graph
 /.claude
 /.agents
 /.codex
+/.devcontainer
+/.opencode
+/AGENTS.md
 /assets
 /eslint.config.js
 /node_modules
@@ -19,6 +24,7 @@
 /coverage
 /phpcs.xml.dist
 /cloudflare
+/scripts
 *.zip
 *.log
 client_secret*.json

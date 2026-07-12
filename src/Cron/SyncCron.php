@@ -124,9 +124,9 @@ final class SyncCron {
 	 * @param int  $post_id Post ID.
 	 * @param int  $user_id User ID whose Google token should run the sync.
 	 * @param bool $spawn  Whether to spawn WP-Cron immediately.
-	 * @return true|WP_Error
+	 * @return bool|WP_Error
 	 */
-	public static function scheduleSourceSync( int $post_id, int $user_id, bool $spawn = true ): true|WP_Error {
+	public static function scheduleSourceSync( int $post_id, int $user_id, bool $spawn = true ): bool|WP_Error {
 		$post_id = absint( $post_id );
 		$user_id = absint( $user_id );
 

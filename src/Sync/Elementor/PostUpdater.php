@@ -40,9 +40,9 @@ final class PostUpdater {
 	 *
 	 * @param int    $post_id Post ID.
 	 * @param string $json    Elementor JSON data.
-	 * @return true|WP_Error
+	 * @return bool|WP_Error
 	 */
-	public function update( int $post_id, string $json ): true|WP_Error {
+	public function update( int $post_id, string $json ): bool|WP_Error {
 		if ( '' === trim( $json ) ) {
 			return new WP_Error(
 				'docsync_wp_empty_elementor_data',

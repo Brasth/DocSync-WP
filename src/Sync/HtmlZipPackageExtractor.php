@@ -9,9 +9,6 @@ declare(strict_types=1);
 
 namespace DocSyncWP\Sync;
 
-use FilesystemIterator;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
 use WP_Error;
 use ZipArchive;
 
@@ -95,20 +92,15 @@ final class HtmlZipPackageExtractor {
 			return;
 		}
 
-		$iterator = new RecursiveIteratorIterator(
-			new RecursiveDirectoryIterator( $directory, FilesystemIterator::SKIP_DOTS ),
-			RecursiveIteratorIterator::CHILD_FIRST
-		);
-
-		foreach ( $iterator as $file ) {
-			if ( $file->isDir() ) {
-				rmdir( $file->getPathname() );
-			} else {
-				unlink( $file->getPathname() );
-			}
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
 		}
 
-		rmdir( $directory );
+		global $wp_filesystem;
+
+		if ( WP_Filesystem() && $wp_filesystem instanceof \WP_Filesystem_Base ) {
+			$wp_filesystem->delete( $directory, true, 'd' );
+		}
 	}
 
 	/**
@@ -116,9 +108,9 @@ final class HtmlZipPackageExtractor {
 	 *
 	 * @param string $zip_path ZIP path.
 	 * @param string $temp_dir Temp directory.
-	 * @return true|WP_Error
+	 * @return bool|WP_Error
 	 */
-	private function extractZip( string $zip_path, string $temp_dir ): true|WP_Error {
+	private function extractZip( string $zip_path, string $temp_dir ): bool|WP_Error {
 		$zip = new ZipArchive();
 
 		if ( true !== $zip->open( $zip_path ) ) {
@@ -154,9 +146,9 @@ final class HtmlZipPackageExtractor {
 	 * Ensure ZIP entries cannot escape the temp directory.
 	 *
 	 * @param ZipArchive $zip ZIP archive.
-	 * @return true|WP_Error
+	 * @return bool|WP_Error
 	 */
-	private function validateZipPaths( ZipArchive $zip ): true|WP_Error {
+	private function validateZipPaths( ZipArchive $zip ): bool|WP_Error {
 		$file_count = count( $zip );
 
 		for ( $index = 0; $index < $file_count; $index++ ) {

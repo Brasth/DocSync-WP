@@ -20,7 +20,7 @@ Each release must pass the existing validation pipeline (`pnpm lint`, `pnpm type
 
 ## Current State
 
-- Version 1.1.3 is the current release metadata, covering the merged usability polish and role-aware admin workspace work.
+- Version 1.1.3 is the current release metadata, covering the merged usability polish and role-aware admin workspace work. The next release is a hardening-only 1.1.4; no new product capability is approved until its operational and release gates pass.
 - Core sync engine is stable: Google export, media import, Gutenberg block conversion, Elementor JSON conversion, background sync, and sync logging.
 - The plugin supports one-way sync from Google Docs to WordPress posts, pages, and enabled public custom post types.
 - Setup now separates administrator-owned site configuration from personal Google access; capability-qualified operators continue activation in Sources without receiving settings secrets. Activation is an accessible successfully completed source, not account readiness.
@@ -57,23 +57,42 @@ Each release must pass the existing validation pipeline (`pnpm lint`, `pnpm type
 | **1.1.2** | Released/current metadata | 2 Elementor presets (`Elementor Hero Page`, `Elementor Feature Block`) | Elementor users get layouts too |
 | **1.1.3** | Now | Elementor usability polish plus role-aware activation workspace, direct first-source flow, safe workspace bootstrap, source health ordering, and explicit owner transfer | Users reach a safely synced draft, then operate from Sources with the right responsibility and recovery context |
 
-### 1.2.x line — Layout foundation: UI
+### 1.1.x line — Release hardening
 
 | Version | Target Date | Scope | User-visible value |
 |---|---|---|---|
-| **1.2.0** | +18 weeks | Wizard step 3 in `DocSourceModal` with preset gallery | End users pick a layout when linking a Doc |
-| **1.2.1** | +20 weeks | Accessibility pass and bug fixes on the wizard | Stable, accessible wizard |
-| **1.2.2** | +22 weeks | Read-only preview endpoint and preview UI inside the wizard | Users see output before syncing |
-| **1.2.3** | +24 weeks | Preset selector polish and usage hints based on 1.1.x feedback | Layout choice is clearer during repeat sync work |
+| **1.1.4** | Next, after internal validation | Feature freeze; staging and internal validation; fixes for proven regressions; release-pipeline enforcement; PHP 8.1, Plugin Check, readme validation, clean-install ZIP smoke coverage | A dependable sync workflow and safer updates |
+
+**Mandatory 1.1.4 release gates:**
+
+- validate normal and large-document sync, media import, Gutenberg presets, Elementor presets and legacy Elementor paths, scheduled-sync recovery, owner transfer, role isolation, OAuth callback/token recovery, REST nonce/capability failures, and unchanged-source skips on staging;
+- run the full validation suite on the release path, including PHP 8.1 support, Plugin Check, official `readme.txt` validation, and a clean ZIP install smoke test;
+- complete documented internal staging validation using real Google accounts, representative documents, and representative cron configurations; 1.1.4 publishes publicly after these gates pass;
+- reconcile the published artifact, Git tag, and WordPress.org/SVN history for 1.1.2 before publishing another release;
+- ship only fixes proven by validation or beta feedback. No gallery, preview, bulk import, new telemetry, schema changes, or new background-job behavior.
+
+### 1.2.x line — Layout foundation: UI (conditional)
+
+| Version | Target Date | Scope | User-visible value |
+|---|---|---|---|
+| **1.2.0** | After 1.1.4 evidence gate | Accessible preset gallery in the existing source modal; reuse existing preset registry and source payloads | End users understand layout choices when linking a Doc |
+| **1.2.1** | Follow-up only if needed | Accessibility fixes and copy refinement from beta evidence | Stable, accessible layout selection |
+| **1.2.2** | Deferred; explicit preview go/no-go required | Read-only preview only if gallery evidence proves it is needed | Users see output before syncing |
+| **1.2.3** | After preview decision | Preset selector polish and usage hints based on observed workflow friction | Layout choice is clearer during repeat sync work |
+
+`1.2.0` is not a new wizard. The existing modal already resolves source, output type, and preset. The gallery must be frontend-only over the current preset registry: no REST routes, post meta, Google API calls, WP-Cron work, or global block pattern registration. It must preserve site-default Gutenberg selection, legacy Elementor conversion, owner-transfer confirmation, and all existing source flows.
+
+Preview is not assumed. It may proceed only when real-user evidence shows the gallery cannot make preset choices intelligible, and only when it is a bounded non-mutating path with conversion parity, rate limits, capability checks, cache/invalidation rules, timeouts, cleanup, and no document-content retention.
 
 ### 1.3.x line — Agency scale: bulk import
 
 | Version | Target Date | Scope | User-visible value |
 |---|---|---|---|
-| **1.3.0** | +26 weeks | Bulk Drive folder import, free tier limited to 20 Docs per import | Agencies import an archive in one click |
-| **1.3.1** | +28 weeks | Error recovery and bug fixes for bulk imports | Reliable bulk import |
-| **1.3.2** | +30 weeks | Bulk import progress UI and history log | Users can track and retry |
-| **1.3.3** | +32 weeks | Import templates: save folder + preset combinations for reuse | Repeatable client workflows |
+| **1.3.0** | After bulk-operability proof | Bulk Drive folder import with durable jobs, recovery, progress/history, quota-aware retries, and documented real-server-cron requirement; free/Pro boundary decided before public scope | Agencies import an archive safely |
+| **1.3.1** | Production findings | Fixes and operational tuning for proven bulk-import failures | Reliable bulk import |
+| **1.3.2** | After stable import operation | Import templates: save folder + preset combinations for reuse | Repeatable client workflows |
+
+Bulk import cannot rely on traffic-driven WP-Cron alone. Before 1.3.0, prove durable/resumable job state, per-document idempotency, global and per-owner concurrency limits, quota-aware exponential backoff, partial-failure recovery, cancellation, cleanup, and operator-visible queue/progress/error state. Validate the performance target against representative normal, image-heavy, fallback, permission, and rate-limit cases with real server cron.
 
 ### 1.4.x line — Pro tier launch
 
@@ -123,9 +142,9 @@ Each release must pass the existing validation pipeline (`pnpm lint`, `pnpm type
 
 | Horizon | Versions | Focus | Key Deliverables |
 |---|---|---|---|
-| **Now** | 1.1.3 | Publishable output and role-aware activation | Explicit output choice, native image blocks, direct first source, safe editor workspace, health-first Sources |
-| **Next** | 1.2.0 - 1.2.3 | Layout UI expansion | Preset usage logging, wizard gallery, preview, preset selector polish |
-| **Later** | 1.3.0 - 1.4.3 | Agency scale and monetization | Bulk import, Pro tier, custom preset builder |
+| **Now** | 1.1.4 | Release hardening and field validation | Proven sync reliability, enforced release gates, staging/beta evidence |
+| **Next** | Conditional 1.2.0 | Layout selection clarity | Bounded accessible preset gallery if evidence shows current selector friction |
+| **Later** | 1.2.2 - 1.4.3 | Preview, agency scale, and monetization | Preview only with parity/operability proof; bulk import only with durable-job and commercial gates |
 | **Future** | 1.5.0 - 2.2.0 | Writer discovery, smart sync, expansion | Add-on, AI, managed OAuth, Notion, team workflows |
 
 ## Success Metrics by Version
@@ -139,7 +158,8 @@ Each release must pass the existing validation pipeline (`pnpm lint`, `pnpm type
 | 1.1.1 | Layout reliability fixture suite | 100% on tracked Clean Article, Documentation, Plain Blocks, and source override fixtures |
 | 1.1.2 | 4 total publishable presets pass golden tests | 100% on Gutenberg and Elementor fixtures |
 | 1.1.3 | Publishable output and first-source activation | 0 developer edits for fixture set; explicit output choice visible; first successful draft reachable directly; role-safe workspace contract verified |
-| 1.2.0 | Wizard step completion rate | 80% of new drafts |
+| 1.1.4 | Release and sync reliability | Zero P0/P1 internal-validation defects; all mandatory release gates pass; documented internal results reviewed |
+| 1.2.0 | Layout-selection clarity | At least 70-80% of beta users select an intended preset unaided; no added Google or cron work |
 | 1.3.0 | Bulk import 50 Docs | 0 failures, <5 min |
 | 1.4.0 | Pro license activations | 10 paid customers |
 | 1.5.0 | Google Workspace Marketplace approval | Listed |
@@ -153,17 +173,18 @@ Each release must pass the existing validation pipeline (`pnpm lint`, `pnpm type
 
 To sustain this cadence, the following must be in place. See `docs/deployment-guide.md` for the full release procedure.
 
+- [ ] Reconcile GitHub, WordPress.org/SVN, and changelog history for every published version, including 1.1.2.
 - [ ] `changelog/` directory where every PR adds a markdown file.
 - [ ] GitHub release-drafter workflow that aggregates changelog files into `readme.txt` and release notes.
-- [ ] CI pipeline runs Plugin Check, readme.txt validator, and PHP compatibility checks.
+- [ ] CI pipeline runs Plugin Check, readme.txt validator, PHP 8.1 compatibility, clean-install ZIP smoke tests, and the existing PHP/JS fixture suites before a release is published.
 - [ ] Beta channel using GitHub pre-releases, with 5-10 agency volunteers testing each 1.x.0 release.
 - [ ] Automated ZIP build and release asset upload on GitHub Release publish.
 - [ ] WordPress.org SVN tagging script or workflow.
 
 ## Open Decisions
 
-1. **Primary niche:** Elementor agencies vs. news publishers. Validate before 1.3.0 case studies.
-2. **Pricing model:** per-site vs. unlimited-agency vs. usage-based. Decide before 1.4.0.
+1. **Primary niche:** Elementor agencies vs. news publishers. Validate with the 1.1.4 beta before 1.2.0 scope and before 1.3.0 case studies.
+2. **Pricing model:** per-site vs. unlimited-agency vs. usage-based. Decide before defining a public bulk-import limit or writing any Pro feature gate.
 3. **Managed OAuth commitment:** build in-house vs. partner with an existing OAuth provider. Decide before 1.7.0.
 4. **AI provider:** Google Gemini vs. OpenAI vs. local heuristics only. Decide before 1.6.0.
 5. **Global block pattern registration:** opt-in per preset or site-wide setting. Decide before 1.6.x.
@@ -172,7 +193,11 @@ To sustain this cadence, the following must be in place. See `docs/deployment-gu
 
 | Risk | Impact | Mitigation |
 |---|---|---|
+| Recent feature velocity masks release regressions | High | Feature-freeze 1.1.4; enforce staging, beta, clean-install, and release-path checks before another feature release |
+| Assumed preset-selector friction is not the real activation blocker | Medium | Validate OAuth, sync reliability, and real-user task completion before approving a gallery or preview |
 | Release cadence creates regression fatigue | Medium | Each minor release has a dedicated beta period; patch releases are limited in scope |
+| Preview diverges from actual sync or exposes Doc content | High | Defer until a non-mutating, parity-tested, capability-safe conversion boundary exists |
+| Bulk import overloads WP-Cron, quotas, or media processing | High | Require durable jobs, real server cron, throttling, idempotency, recovery, and observability before public release |
 | Preset heuristics misclassify content | Medium | Default no-preset path remains unchanged; per-post override is easy |
 | Elementor Pro widget drift | Medium | Hide Pro-only presets on sites without Pro; validate against latest Elementor in QA |
 | Google Workspace Marketplace rejection | Medium | Start review early; follow UI/UX and OAuth scope guidelines strictly |

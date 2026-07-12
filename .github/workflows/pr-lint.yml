@@ -22,6 +22,7 @@ jobs:
       fail-fast: false
       matrix:
         php-version:
+          - "8.1"
           - "8.2"
           - "8.3"
 
@@ -66,8 +67,14 @@ jobs:
       - name: Verify Elementor fixtures
         run: composer test:elementor-fixtures
 
-      - name: Run PHPCompatibility for PHP 8.3
-        run: vendor/bin/phpcs --standard=PHPCompatibilityWP --runtime-set testVersion 8.3- --report=summary brasth-document-sync-for-google-docs.php src uninstall.php
+      - name: Verify large-document fallback fixtures
+        run: composer test:large-doc-fallback-fixtures
+
+      - name: Verify telemetry settings fixtures
+        run: composer test:telemetry-settings
+
+      - name: Run PHPCompatibility for PHP 8.1
+        run: vendor/bin/phpcs --standard=PHPCompatibilityWP --runtime-set testVersion 8.1- --report=summary brasth-document-sync-for-google-docs.php src uninstall.php
 
       - name: Validate WordPress.org readme metadata
         run: |

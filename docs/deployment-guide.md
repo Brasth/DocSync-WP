@@ -1,6 +1,6 @@
 # DocSync-WP Deployment and Release Guide
 
-Last updated: 2026-07-10
+Last updated: 2026-07-12
 
 This guide describes how to release DocSync-WP on WordPress.org and GitHub. It supports the release cadence defined in `docs/project-roadmap.md`:
 
@@ -28,6 +28,10 @@ Before tagging a release, verify all of the following:
   - `composer.json` version (if present)
   - `package.json` version
 - [ ] Changelog entry added to `readme.txt`.
+- [ ] A release commit contains the final version and changelog. Do not modify it after validation.
+- [ ] Run **Validate Release Commit** manually with that commit's full lowercase 40-character SHA.
+- [ ] The workflow passes all PHP 8.1 checks, fixtures, frontend checks, official readme validation, ZIP checks, clean ZIP install/runtime smoke, and Plugin Check.
+- [ ] Record the successful workflow URL, validated SHA, and uploaded artifact checksum.
 - [ ] `pnpm lint` passes.
 - [ ] `pnpm typecheck` passes.
 - [ ] `pnpm build` produces a clean `build/` directory.
@@ -75,6 +79,8 @@ Each minor and major release must go through a beta period:
 
 Patch releases do not require a beta period but should be tested on a staging site before tagging.
 
+For 1.1.4, the agreed internal validation matrix replaces an external beta. Record its results in `plans/reports/architecture-decision-20260712-internal-release-validation.md` before tagging.
+
 ## Local WordPress Runtime
 
 The repository includes a disposable devcontainer runtime for release smoke tests before staging:
@@ -90,30 +96,26 @@ Use it for smoke checks only. Do not bake OAuth credentials into the image and d
 
 ## WordPress.org Release Steps
 
-1. **Prepare the release branch** from the target branch, e.g., `release/1.1.0`.
-2. **Run the release checklist** (see above).
-3. **Update `readme.txt`** with the stable tag and changelog.
-4. **Create a GitHub Release** with the tag, e.g., `1.1.0`. The `Build Release ZIP` workflow will run automatically and attach the installable ZIP.
-5. **Download the release ZIP** and verify it contains the expected files.
-6. **Upload to WordPress.org SVN**:
-   - Update `trunk/` with the release files.
-   - Copy `trunk/` to `tags/1.1.0/`.
-   - Update `readme.txt` stable tag to `1.1.0`.
-   - Commit to SVN.
-7. **Smoke test** the plugin from WordPress.org on a clean install within 24 hours.
+1. **Prepare the release branch** from the target branch, e.g., `release/1.1.4`.
+2. **Create and push the final release commit** with matching plugin header, `DOCSYNC_WP_VERSION`, `readme.txt` stable tag, and changelog entry.
+3. **Run Validate Release Commit** from Actions with that exact full commit SHA. Review the workflow's ZIP, checksum, and commit-provenance artifacts.
+4. **Run the internal staging matrix** recorded in `plans/reports/architecture-decision-20260712-internal-release-validation.md` and record the evidence against the same commit.
+5. **Create the annotated tag on the validated SHA and publish the GitHub Release immediately.** Do not use a draft release and do not retag a different commit. This immediately triggers ZIP attachment and WordPress.org deployment.
+6. **Confirm release automation** finishes successfully: the ZIP is attached to GitHub and the WordPress.org SVN deployment completes.
+7. **Smoke test** the WordPress.org installation on a clean site within 24 hours.
 8. **Announce** the release in the changelog, blog post, newsletter, and social channels as appropriate for the release size.
+
+Post-publication workflows cannot prevent an already published release. The manual pre-tag validation is therefore mandatory. Restrict release branch pushes and release-tag creation to maintainers who follow this sequence.
 
 ## Patch Release Steps
 
 Patch releases follow a lighter path:
 
 1. **Cherry-pick fixes** to a release branch or use the current release branch.
-2. **Update version strings** to `1.0.x`.
-3. **Add changelog entry** to `readme.txt`.
-4. **Run CI checks**.
-5. **Tag and release** on GitHub; the ZIP workflow attaches the artifact.
-6. **Upload to SVN** `trunk/` and `tags/1.0.x/`.
-7. **No beta required**, but a 24-hour staging smoke test is recommended.
+2. **Create and push the final version and changelog commit**.
+3. **Run Validate Release Commit** against the exact commit SHA.
+4. **Tag that validated SHA and publish immediately**; the ZIP and WordPress.org deployment workflows run automatically.
+5. **Confirm automation succeeds** and run a 24-hour staging smoke test.
 
 ## Rollback Procedure
 

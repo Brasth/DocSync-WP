@@ -40,9 +40,9 @@ final class DocsApiHtmlBuildProgress {
 	 * @param string        $html           Accumulated HTML.
 	 * @param int           $rendered       Rendered element count.
 	 * @param int           $total          Total renderable elements.
-	 * @return true|WP_Error
+	 * @return bool|WP_Error
 	 */
-	public static function flushPartialHtml( ?callable $flush_callback, string $html, int $rendered, int $total ): true|WP_Error {
+	public static function flushPartialHtml( ?callable $flush_callback, string $html, int $rendered, int $total ): bool|WP_Error {
 		if ( null === $flush_callback || ( 0 !== $rendered % 20 && $rendered < $total ) ) {
 			return true;
 		}

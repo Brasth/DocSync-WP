@@ -1,0 +1,168 @@
+name: Validate Release Commit
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: "Full 40-character commit SHA to validate before tagging"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  release-validate:
+    name: Validate Exact Release Commit
+    runs-on: ubuntu-latest
+    env:
+      PLUGIN_SLUG: brasth-document-sync-for-google-docs
+      RELEASE_SHA: ${{ inputs.commit_sha }}
+
+    steps:
+      - name: Validate requested commit SHA
+        run: |
+          set -euo pipefail
+          if ! [[ "${RELEASE_SHA}" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "commit_sha must be a full 40-character lowercase commit SHA."
+            exit 1
+          fi
+
+      - name: Checkout requested commit
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.commit_sha }}
+          fetch-depth: 1
+
+      - name: Confirm checked-out commit
+        run: |
+          set -euo pipefail
+          ACTUAL_SHA="$(git rev-parse HEAD)"
+          if [ "${ACTUAL_SHA}" != "${RELEASE_SHA}" ]; then
+            echo "Checked-out SHA ${ACTUAL_SHA} does not match requested SHA ${RELEASE_SHA}."
+            exit 1
+          fi
+          echo "Validated release SHA: ${ACTUAL_SHA}"
+
+      - name: Validate release metadata
+        run: |
+          set -euo pipefail
+          PLUGIN_HEADER_VERSION="$(
+            awk -F':' '/^[[:space:]]*\*[[:space:]]*Version:/ {gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2; exit}' brasth-document-sync-for-google-docs.php
+          )"
+          PLUGIN_CONST_VERSION="$(
+            sed -nE "s/^define\([[:space:]]*'DOCSYNC_WP_VERSION',[[:space:]]*'([^']+)'.*\);$/\1/p" brasth-document-sync-for-google-docs.php | head -n 1
+          )"
+          README_STABLE_TAG="$(
+            awk -F':' '/^Stable tag:/ {gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2; exit}' readme.txt
+          )"
+
+          if [ -z "${PLUGIN_HEADER_VERSION}" ] || [ -z "${PLUGIN_CONST_VERSION}" ] || [ -z "${README_STABLE_TAG}" ]; then
+            echo "Could not parse plugin version metadata from brasth-document-sync-for-google-docs.php and readme.txt."
+            exit 1
+          fi
+
+          if ! [[ "${PLUGIN_HEADER_VERSION}" =~ ^[0-9]+[.][0-9]+[.][0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+            echo "Plugin version must be semantic: ${PLUGIN_HEADER_VERSION}."
+            exit 1
+          fi
+
+          if [ "${PLUGIN_HEADER_VERSION}" != "${PLUGIN_CONST_VERSION}" ] || [ "${PLUGIN_HEADER_VERSION}" != "${README_STABLE_TAG}" ]; then
+            echo "Plugin header, DOCSYNC_WP_VERSION, and readme.txt Stable tag must match."
+            exit 1
+          fi
+
+          if ! grep -Fq "= ${PLUGIN_HEADER_VERSION} =" readme.txt; then
+            echo "readme.txt is missing a changelog entry for ${PLUGIN_HEADER_VERSION}."
+            exit 1
+          fi
+
+          TAGS_LINE="$(awk -F':' '/^Tags:/ {print $2; exit}' readme.txt)"
+          TAG_COUNT="$(awk -v tags="${TAGS_LINE}" 'BEGIN {gsub(/^[[:space:]]+|[[:space:]]+$/, "", tags); if (tags == "") {print 0; exit} print split(tags, parts, /,[[:space:]]*/)}')"
+          if [ "${TAG_COUNT}" -gt 5 ]; then
+            echo "readme.txt must list no more than 5 WordPress.org tags. Found ${TAG_COUNT}."
+            exit 1
+          fi
+
+          if ! grep -Fq "== Source And Build Instructions ==" readme.txt; then
+            echo "readme.txt must document source and build instructions for bundled assets."
+            exit 1
+          fi
+
+      - name: Setup PHP 8.1
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.1"
+          coverage: none
+          tools: composer:v2
+
+      - name: Install PHP development dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Validate PHP release checks
+        run: |
+          composer validate --no-check-publish
+          composer audit
+          composer lint
+          composer test:layout-fixtures
+          composer test:elementor-fixtures
+          composer test:large-doc-fallback-fixtures
+          composer test:telemetry-settings
+          vendor/bin/phpcs --standard=PHPCompatibilityWP --runtime-set testVersion 8.1- --report=summary brasth-document-sync-for-google-docs.php src uninstall.php
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: pnpm
+
+      - name: Install Node dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate frontend release checks
+        run: |
+          pnpm audit
+          pnpm lint
+          pnpm typecheck
+          pnpm --dir cloudflare/telemetry-worker lint
+          pnpm --dir cloudflare/telemetry-worker test
+          pnpm build
+
+      - name: Validate WordPress.org readme
+        run: bash scripts/validate-wordpress-readme.sh readme.txt
+
+      - name: Install production PHP dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+      - name: Build installable ZIP
+        id: package
+        run: |
+          set -euo pipefail
+          ./scripts/build-zip.sh "${RUNNER_TEMP}"
+          ZIP_PATH="${RUNNER_TEMP}/${PLUGIN_SLUG}-v$(awk -F':' '/^[[:space:]]*\*[[:space:]]*Version:/ {gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2; exit}' "${PLUGIN_SLUG}.php").zip"
+          echo "zip_path=${ZIP_PATH}" >> "${GITHUB_OUTPUT}"
+
+      - name: Validate ZIP contents
+        run: bash scripts/validate-release-zip.sh "${{ steps.package.outputs.zip_path }}"
+
+      - name: Install and smoke-test the generated ZIP
+        run: bash scripts/verify-clean-zip-install.sh "${{ steps.package.outputs.zip_path }}"
+
+      - name: Record validated artifact provenance
+        run: |
+          set -euo pipefail
+          sha256sum "${{ steps.package.outputs.zip_path }}" | tee "${RUNNER_TEMP}/release-artifact.sha256"
+          printf 'commit_sha=%s\n' "${RELEASE_SHA}" | tee "${RUNNER_TEMP}/release-commit.txt"
+
+      - name: Upload validated release artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ env.PLUGIN_SLUG }}-pre-tag-${{ env.RELEASE_SHA }}
+          path: |
+            ${{ steps.package.outputs.zip_path }}
+            ${{ runner.temp }}/release-artifact.sha256
+            ${{ runner.temp }}/release-commit.txt
+          if-no-files-found: error
