@@ -88,6 +88,43 @@ if ( ! wp_mkdir_p( $cleanup_dir . "/nested" ) || false === file_put_contents( $c
 }
 
 $extractor = new \DocSyncWP\Sync\HtmlZipPackageExtractor();
+$fixture_html = "<!doctype html><html><body><p>DocSync ZIP extraction smoke.</p></body></html>";
+$fixture_zip_path = wp_tempnam( "docsync-release-extract-" );
+$fixture_zip = new \ZipArchive();
+
+if ( ! is_string( $fixture_zip_path ) || true !== $fixture_zip->open( $fixture_zip_path, \ZipArchive::CREATE | \ZipArchive::OVERWRITE ) ) {
+  fwrite( STDERR, "Could not create HTML ZIP extraction fixture.\n" );
+  exit( 1 );
+}
+
+$fixture_zip->addFromString( "nested/index.html", $fixture_html );
+$fixture_zip->close();
+$fixture_zip_bytes = file_get_contents( $fixture_zip_path );
+unlink( $fixture_zip_path );
+
+if ( ! is_string( $fixture_zip_bytes ) ) {
+  fwrite( STDERR, "Could not read HTML ZIP extraction fixture.\n" );
+  exit( 1 );
+}
+
+$extracted = $extractor->extract( $fixture_zip_bytes );
+
+if ( is_wp_error( $extracted ) ) {
+  fwrite( STDERR, "HTML ZIP extraction failed: " . $extracted->get_error_message() . "\n" );
+  exit( 1 );
+}
+
+if ( $fixture_html !== $extracted["html"] || ! is_file( $extracted["html_path"] ) ) {
+  fwrite( STDERR, "HTML ZIP extraction returned unexpected content.\n" );
+  exit( 1 );
+}
+
+$extractor->deleteDirectory( $extracted["temp_dir"] );
+
+if ( file_exists( $extracted["temp_dir"] ) ) {
+  fwrite( STDERR, "HTML ZIP extraction directory was not deleted.\n" );
+  exit( 1 );
+}
 $extractor->deleteDirectory( $cleanup_dir );
 
 if ( file_exists( $cleanup_dir ) ) {
