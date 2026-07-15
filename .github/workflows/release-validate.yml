@@ -122,9 +122,11 @@ jobs:
       - name: Install Node dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Audit frontend dependencies
+        run: pnpm dlx pnpm@11.13.0 --config.pm-on-fail=ignore audit
+
       - name: Validate frontend release checks
         run: |
-          pnpm audit
           pnpm lint
           pnpm typecheck
           pnpm --dir cloudflare/telemetry-worker lint
