@@ -128,5 +128,8 @@ jobs:
       - name: Run telemetry Worker tests
         run: pnpm --dir cloudflare/telemetry-worker lint && pnpm --dir cloudflare/telemetry-worker test
 
+      - name: Run feedback Worker tests
+        run: pnpm --dir cloudflare/feedback-worker lint && pnpm --dir cloudflare/feedback-worker test
+
       - name: Build frontend assets
         run: pnpm build

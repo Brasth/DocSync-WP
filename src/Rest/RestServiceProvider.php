@@ -60,6 +60,13 @@ final class RestServiceProvider {
 	private SyncLogController $sync_log_controller;
 
 	/**
+	 * Feedback controller.
+	 *
+	 * @var FeedbackController
+	 */
+	private FeedbackController $feedback_controller;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param SettingsController  $settings_controller  Settings controller.
@@ -68,6 +75,7 @@ final class RestServiceProvider {
 	 * @param DocumentController  $document_controller  Document controller.
 	 * @param SourceController    $source_controller    Source controller.
 	 * @param SyncLogController   $sync_log_controller  Sync log controller.
+	 * @param FeedbackController  $feedback_controller  Feedback controller.
 	 */
 	public function __construct(
 		SettingsController $settings_controller,
@@ -75,7 +83,8 @@ final class RestServiceProvider {
 		OAuthController $oauth_controller,
 		DocumentController $document_controller,
 		SourceController $source_controller,
-		SyncLogController $sync_log_controller
+		SyncLogController $sync_log_controller,
+		FeedbackController $feedback_controller
 	) {
 		$this->settings_controller  = $settings_controller;
 		$this->workspace_controller = $workspace_controller;
@@ -83,6 +92,7 @@ final class RestServiceProvider {
 		$this->document_controller  = $document_controller;
 		$this->source_controller    = $source_controller;
 		$this->sync_log_controller  = $sync_log_controller;
+		$this->feedback_controller  = $feedback_controller;
 	}
 
 	/**
@@ -102,5 +112,6 @@ final class RestServiceProvider {
 		$this->document_controller->registerRoutes( self::NAMESPACE );
 		$this->source_controller->registerRoutes( self::NAMESPACE );
 		$this->sync_log_controller->registerRoutes( self::NAMESPACE );
+		$this->feedback_controller->registerRoutes( self::NAMESPACE );
 	}
 }

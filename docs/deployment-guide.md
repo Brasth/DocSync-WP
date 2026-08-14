@@ -157,6 +157,21 @@ Deployment checklist:
 
 Before publishing a WordPress.org release that includes telemetry, verify the privacy policy at `https://docsyncwp.com/privacy-policy` describes the telemetry endpoint, opt-in/default-off behavior, payload, non-storage of IP/user-agent/request headers, and 90-day retention.
 
+## GitHub Feedback Worker
+
+The feedback ticket service is a separate Cloudflare Worker under `cloudflare/feedback-worker/`; it is excluded from installable plugin ZIPs.
+
+Deployment checklist:
+
+- Create a Cloudflare Worker route/custom domain such as `feedback.brasth.com`.
+- Create a fine-grained GitHub token restricted to `Brasth/DocSync-WP` with Issues read/write only.
+- Run `wrangler secret put GITHUB_TOKEN`; never commit the token.
+- Run `wrangler secret put WORKER_SHARED_SECRET` and configure the same value as `DOCSYNC_WP_FEEDBACK_WORKER_SECRET` in the production site's `wp-config.php`.
+- Deploy with `wrangler deploy` from `cloudflare/feedback-worker/`.
+- Confirm `GET /health` returns `{ "ok": true }` and a valid authenticated admin submission returns an issue URL.
+- Set `DOCSYNC_WP_FEEDBACK_ENDPOINT` in `wp-config.php` if the Worker does not use the default `https://feedback.brasth.com/v1/issues` endpoint.
+- Confirm the public issue disclosure is present in the feedback dialog and privacy policy.
+
 ## Related Documents
 
 - `docs/project-roadmap.md` — phased release plan and feature schedule

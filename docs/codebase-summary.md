@@ -1,10 +1,10 @@
 # Brasth Document Sync Codebase Summary
 
-Last updated: 2026-07-11
+Last updated: 2026-07-12
 
 ## Snapshot
 
-Brasth Document Sync for Google Docs is a WordPress plugin for one-way Google Docs -> WordPress sync. This checkout includes Google OAuth, document inspection, post/page linking and sync, list-table actions, role-aware Setup/Sources/Logs admin pages, a least-privilege workspace bootstrap route, first-source activation, health-first source operations, HTML ZIP media import, Gutenberg block conversion, diagnostic sync events, WP-Cron scheduling, optional anonymous active-install telemetry, and first-pass WordPress.org release packaging.
+Brasth Document Sync for Google Docs is a WordPress plugin for one-way Google Docs -> WordPress sync. This checkout includes Google OAuth, document inspection, post/page linking and sync, list-table actions, role-aware Setup/Sources/Logs admin pages, a shared authenticated feedback form for public GitHub issues, a least-privilege workspace bootstrap route, first-source activation, health-first source operations, HTML ZIP media import, Gutenberg block conversion, diagnostic sync events, WP-Cron scheduling, optional anonymous active-install telemetry, and first-pass WordPress.org release packaging.
 
 Summary reflects the current source tree after the Radix plus WordPress-native admin frontend refactor, Drive modal polish, OAuth JSON import, admin UI fixes, Gutenberg sync conversion, layout preset foundation, Elementor preset release, 1.1.3 Elementor usability polish, standalone image block fixes, layout reliability fixture coverage, background sync progress, large-doc fallback, stale sync recovery, bounded sync logging, privacy disclosure, optional telemetry, screen-specific admin asset split, and local WordPress devcontainer setup.
 
@@ -26,6 +26,7 @@ Summary reflects the current source tree after the Radix plus WordPress-native a
 - `build/` - Vite output used by WordPress admin screens
 - `assets/` - WordPress.org listing banner and icon assets
 - `cloudflare/telemetry-worker/` - isolated Cloudflare Worker package for optional anonymous active-install telemetry; excluded from installable WordPress ZIPs
+- `cloudflare/feedback-worker/` - isolated Cloudflare Worker package for GitHub issue relay; GitHub token stays in Wrangler secrets and the package is excluded from installable WordPress ZIPs
 
 ## Primary Runtime Flow
 
@@ -61,6 +62,8 @@ Summary reflects the current source tree after the Radix plus WordPress-native a
 - `src/Cron/SyncCron.php` - scheduled sync registration and batch execution.
 - `src/Telemetry/TelemetryService.php` - optional anonymous weekly check-in payload and endpoint filter.
 - `src/Telemetry/TelemetryCron.php` - opt-in weekly telemetry schedule and cleanup hook.
+- `src/Feedback/FeedbackService.php` - validated Worker relay that never calls GitHub directly.
+- `src/Rest/FeedbackController.php` - authenticated feedback payload validation and route handler.
 - `src/Rest/*Controller.php` - admin REST surface.
 - `src/Rest/RestPermissions.php` - shared REST login, nonce, and settings permission checks.
 
@@ -76,6 +79,7 @@ Summary reflects the current source tree after the Radix plus WordPress-native a
 - `resources/js/admin/features/sources/` - filterable linked source table and bulk sync action.
 - `resources/js/admin/features/activation/` - pure capability-aware advisor plus first-source progress, success, and recovery presentation shared by Setup and Sources.
 - `resources/js/admin/features/sync-logs/` - diagnostic event table, filters, and pagination.
+- `resources/js/admin/features/feedback/` - public-issue disclosure, feedback dialog, validation, and submission state.
 - `resources/js/admin/shared/ui/` - small WordPress-backed sync UI atoms such as buttons, notices, skeletons, loading states, empty states, and status pills.
 - `resources/js/admin/components/` - thin compatibility re-exports for older local imports.
 
@@ -92,7 +96,7 @@ Summary reflects the current source tree after the Radix plus WordPress-native a
 - Composer, PHPCS, PHP syntax linting, pnpm, and Node dependencies are available in this checkout environment.
 - The devcontainer provides WordPress, MySQL, Composer, WP-CLI, Node 24, pnpm 9.15.0, plugin activation, and runtime route verification at `http://localhost:8890`.
 - Runtime route verification includes `GET /workspace` registration.
-- Current local validation uses `composer validate --no-check-publish`, `composer lint`, `composer test:layout-fixtures`, `composer test:elementor-fixtures`, `composer test:large-doc-fallback-fixtures`, `composer test:telemetry-settings`, `vendor/bin/phpcs -i`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, and the telemetry Worker package tests.
+- Current local validation uses `composer validate --no-check-publish`, `composer lint`, `composer test:layout-fixtures`, `composer test:elementor-fixtures`, `composer test:large-doc-fallback-fixtures`, `composer test:telemetry-settings`, `vendor/bin/phpcs -i`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, and the telemetry and feedback Worker package tests.
 
 ## Upcoming Work
 

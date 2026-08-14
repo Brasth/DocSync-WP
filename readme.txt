@@ -31,6 +31,7 @@ Features include:
 * Gutenberg block markup for common headings, paragraphs, lists, tables, code, callouts, and images.
 * Documentation preset heuristics for semantic code, fenced code, Google Docs styled code-like paragraphs, and explicit Note/Tip/Warning/Important/Caution callouts.
 * Uninstall cleanup for settings, encrypted user tokens, and scheduled events.
+* Optional admin feedback form that creates a public GitHub issue without storing a GitHub token in the plugin.
 
 = External Services =
 
@@ -57,6 +58,8 @@ Brasth Document Sync also includes optional anonymous active-install telemetry. 
 When enabled, the plugin sends one weekly POST request to `https://telemetry.brasth.com/v1/check-in`. This Brasth telemetry service is used to count active opted-in installs and understand version compatibility. The request contains only an anonymous site hash generated from a random install ID, the plugin slug, plugin version, WordPress version, PHP version, and telemetry consent version. It does not contain Google data, site URL, user email, post data, document IDs, document metadata, document content, or imported media.
 
 The telemetry service stores the fields listed above in Cloudflare D1, does not store IP addresses, user agents, request URLs, or request headers, and deletes rows that have not checked in for more than 90 days. Privacy Policy: https://docsyncwp.com/privacy-policy
+
+Authorized users can optionally submit feedback from the admin area. The plugin sends the feedback type, title, and details to the configured Brasth feedback Worker, which creates a public issue in `https://github.com/Brasth/DocSync-WP`. The plugin also sends plugin, WordPress, and PHP versions for troubleshooting. It does not send the site URL, user identity, Google data, document content, or credentials. Reports are rate-limited to 5 per user and 20 per IP per hour using short-lived WordPress transients. Do not include secrets, private URLs, or customer data in feedback. The GitHub token is stored only as a Cloudflare Worker secret.
 
 == Installation ==
 
@@ -108,6 +111,8 @@ During document browsing and sync, Brasth Document Sync communicates with Google
 
 Optional anonymous Brasth telemetry is off by default. When enabled by a site administrator, the plugin sends one weekly active-install check-in containing only an anonymous site hash and plugin/WordPress/PHP versions. No Google data, site URL, user email, document IDs, content, or imported media are sent to Brasth telemetry.
 
+Feedback reports are optional and become public GitHub issues. Do not include secrets, private URLs, customer data, Google document data, or other sensitive information. The plugin does not send the WordPress site URL or user identity with feedback.
+
 Uninstall removes plugin settings, encrypted user Google tokens, and scheduled cron events. Linked post metadata is retained by default; define `DOCSYNC_WP_FULL_UNINSTALL` or return true from the `docsync_wp_full_uninstall` filter to remove Brasth Document Sync post metadata. Synced posts and imported media are not deleted automatically.
 
 == Source And Build Instructions ==
@@ -134,6 +139,7 @@ The build uses Vite and writes screen-specific manifests for Setup, Sources, Log
 
 = 1.1.4 =
 
+* Added the authenticated admin feedback form and Cloudflare Worker relay for creating public GitHub issues without shipping a GitHub token.
 * Hardened release validation with exact-commit provenance, PHP 8.1 compatibility checks, official readme validation, release ZIP inspection, and clean-install runtime smoke coverage.
 * Fixed background sync scheduling and source-state handling found during internal release hardening.
 * Improved HTML ZIP extraction cleanup and sync lock behavior to protect reliable retries.

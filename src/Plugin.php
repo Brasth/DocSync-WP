@@ -18,10 +18,13 @@ use DocSyncWP\Assets\AssetRegistry;
 use DocSyncWP\Auth\GoogleOAuthService;
 use DocSyncWP\Auth\TokenStore;
 use DocSyncWP\Cron\SyncCron;
+use DocSyncWP\Feedback\FeedbackRateLimiter;
+use DocSyncWP\Feedback\FeedbackService;
 use DocSyncWP\Google\DocumentIdParser;
 use DocSyncWP\Google\DocsClient;
 use DocSyncWP\Google\DriveClient;
 use DocSyncWP\Rest\DocumentController;
+use DocSyncWP\Rest\FeedbackController;
 use DocSyncWP\Rest\OAuthController;
 use DocSyncWP\Rest\RestServiceProvider;
 use DocSyncWP\Rest\SettingsController;
@@ -236,7 +239,8 @@ final class Plugin {
 					$layout_presets,
 					$elementor_presets
 				),
-				new SyncLogController( $source_repository )
+				new SyncLogController( $source_repository ),
+				new FeedbackController( new FeedbackService(), new FeedbackRateLimiter() )
 			),
 			new PostSyncMetaBox( $source_repository, $settings, $sync_service->getElementorDecider() ),
 			new PostListActions( $source_repository, $sync_service->getElementorDecider() ),

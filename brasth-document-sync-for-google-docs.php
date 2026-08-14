@@ -135,6 +135,8 @@ Imported Google Docs images are stored in the WordPress Media Library. Synced po
 
 Optional anonymous Brasth telemetry is off by default. When a site administrator enables usage diagnostics, Brasth Document Sync sends one weekly check-in to https://telemetry.brasth.com/v1/check-in with an anonymous site hash generated from a random install ID, plugin slug, plugin version, WordPress version, PHP version, and telemetry consent version. It does not send Google data, site URL, user email, post data, document IDs, document metadata, document content, or imported media. Brasth telemetry stores only those check-in fields, does not store IP addresses, user agents, request URLs, or request headers, and deletes rows that have not checked in for more than 90 days. Privacy Policy: https://docsyncwp.com/privacy-policy.
 
+Authorized users can also submit optional feedback from the admin area. Feedback title, type, and details are sent through the configured Brasth feedback Worker and published as a public GitHub issue in Brasth/DocSync-WP. Do not include secrets, private URLs, customer data, Google document data, or other sensitive information in a report. The plugin does not send the WordPress site URL or user identity with feedback.
+
 Google provides the OAuth, Drive, and Docs services used by this plugin. Google Privacy Policy: https://policies.google.com/privacy. Google API Services User Data Policy: https://developers.google.com/terms/api-services-user-data-policy. Google APIs Terms of Service: https://developers.google.com/terms.',
 				'brasth-document-sync-for-google-docs'
 			)
