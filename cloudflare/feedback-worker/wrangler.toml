@@ -1,0 +1,11 @@
+name = "brasth-document-sync-feedback"
+main = "src/index.js"
+compatibility_date = "2026-07-12"
+
+[vars]
+GITHUB_OWNER = "Brasth"
+GITHUB_REPOSITORY = "DocSync-WP"
+
+# Store credentials outside the repository:
+# wrangler secret put GITHUB_TOKEN
+# wrangler secret put WORKER_SHARED_SECRET

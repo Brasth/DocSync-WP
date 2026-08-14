@@ -32,6 +32,139 @@
     gap: 16px;
   }
 
+  .docsync-wp-admin-shell__footer {
+    align-items: center;
+    color: var(--docsync-text-secondary);
+    display: flex;
+    font-size: 12px;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 14px;
+  }
+
+  .docsync-wp-feedback-dialog {
+    --docsync-blue: #165dcc;
+    --docsync-card-border: #cfded9;
+    --docsync-card-radius: 8px;
+    --docsync-error: #b42318;
+    --docsync-error-bg: #f8d7da;
+    --docsync-focus-ring: #00b8c8;
+    --docsync-radius-sm: 6px;
+    --docsync-shadow-dialog: 0 24px 64px rgba(15, 23, 42, 0.22);
+    --docsync-surface: #fff;
+    --docsync-surface-subtle: #f6f7f7;
+    --docsync-text-primary: #17202a;
+    --docsync-text-secondary: #646970;
+
+    background: var(--docsync-surface);
+    border: 1px solid var(--docsync-card-border);
+    border-radius: var(--docsync-card-radius);
+    box-shadow: var(--docsync-shadow-dialog);
+    color: var(--docsync-text-primary);
+    left: 50%;
+    max-width: min(560px, calc(100vw - 32px));
+    overflow: hidden;
+    position: fixed;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    z-index: 100001;
+  }
+
+  .docsync-wp-feedback-dialog__overlay {
+    background: rgba(10, 18, 25, 0.52);
+    bottom: 0;
+    left: 0;
+    position: fixed;
+    right: 0;
+    top: 0;
+    z-index: 100000;
+  }
+
+  .docsync-wp-feedback-dialog__body {
+    padding: 20px 20px 16px;
+  }
+
+  .docsync-wp-feedback-dialog__body h2 {
+    font-size: 19px;
+    line-height: 1.25;
+    margin: 0 0 8px;
+  }
+
+  .docsync-wp-feedback-dialog__body > p {
+    color: var(--docsync-text-secondary);
+    margin: 0;
+  }
+
+  .docsync-wp-feedback-dialog__fields {
+    display: grid;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .docsync-wp-feedback-dialog__fields label {
+    display: grid;
+    gap: 5px;
+  }
+
+  .docsync-wp-feedback-dialog__fields label > span {
+    color: var(--docsync-text-primary);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .docsync-wp-feedback-dialog__fields input,
+  .docsync-wp-feedback-dialog__fields select,
+  .docsync-wp-feedback-dialog__fields textarea {
+    border: 1px solid var(--docsync-border);
+    border-radius: var(--docsync-radius-sm);
+    box-sizing: border-box;
+    color: var(--docsync-text-primary);
+    font: inherit;
+    padding: 8px 9px;
+    width: 100%;
+  }
+
+  .docsync-wp-feedback-dialog__fields textarea {
+    min-height: 140px;
+    resize: vertical;
+  }
+
+  .docsync-wp-feedback-dialog__fields input:focus,
+  .docsync-wp-feedback-dialog__fields select:focus,
+  .docsync-wp-feedback-dialog__fields textarea:focus {
+    border-color: var(--docsync-focus-ring);
+    box-shadow: 0 0 0 1px var(--docsync-focus-ring);
+    outline: none;
+  }
+
+  .docsync-wp-feedback-dialog__error {
+    background: var(--docsync-error-bg);
+    border-left: 3px solid var(--docsync-error);
+    color: var(--docsync-error);
+    margin: 14px 0 0;
+    padding: 8px 10px;
+  }
+
+  .docsync-wp-feedback-dialog__success {
+    margin-top: 16px !important;
+  }
+
+  .docsync-wp-feedback-dialog__success a {
+    color: var(--docsync-blue);
+    font-weight: 700;
+  }
+
+  .docsync-wp-feedback-dialog__footer {
+    align-items: center;
+    background: var(--docsync-surface-subtle);
+    border-top: 1px solid var(--docsync-card-border);
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    padding: 14px 20px;
+  }
+
   .docsync-wp-masthead {
     align-items: center;
     background: var(--docsync-surface);

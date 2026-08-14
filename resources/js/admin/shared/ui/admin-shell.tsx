@@ -1,8 +1,10 @@
-import { createElement } from '@wordpress/element';
+import { createElement, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import type { ReactNode } from 'react';
 
 import { getAdminConfig } from '../../config';
+import { FeedbackDialog } from '../../features/feedback/feedback-dialog';
+import { AdminButton } from './admin-button';
 import { AdminNotice, type AdminNoticeState } from './admin-notice';
 
 type AdminShellStatus = {
@@ -31,6 +33,7 @@ export const AdminShell = ({
   version
 }: Props): JSX.Element => {
   const config = getAdminConfig();
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const markUrl = config.pluginUrl ? `${trimTrailingSlash(config.pluginUrl)}/resources/images/brasth-mark.png` : '';
   const shellClassName = ['docsync-wp-admin-shell', className].filter(Boolean).join(' ');
   const statusClassName = [
@@ -74,7 +77,15 @@ export const AdminShell = ({
         <div className="docsync-wp-admin-shell__content">
           {children}
         </div>
+
+        <footer className="docsync-wp-admin-shell__footer">
+          <span>{__('Found a problem or have an idea?', 'brasth-document-sync-for-google-docs')}</span>
+          <AdminButton onClick={() => setFeedbackOpen(true)} size="small">
+            {__('Send feedback', 'brasth-document-sync-for-google-docs')}
+          </AdminButton>
+        </footer>
       </div>
+      <FeedbackDialog onOpenChange={setFeedbackOpen} open={feedbackOpen} />
     </main>
   );
 };

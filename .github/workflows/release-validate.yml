@@ -129,6 +129,8 @@ jobs:
           pnpm typecheck
           pnpm --dir cloudflare/telemetry-worker lint
           pnpm --dir cloudflare/telemetry-worker test
+          pnpm --dir cloudflare/feedback-worker lint
+          pnpm --dir cloudflare/feedback-worker test
           pnpm build
 
       - name: Validate WordPress.org readme

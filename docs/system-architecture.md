@@ -9,6 +9,7 @@ Brasth Document Sync for Google Docs is a WordPress plugin with four admin surfa
 - `Brasth Document Sync > Setup` for administrator-only site configuration and administrator activation
 - `Brasth Document Sync > Sources` for capability-safe activation continuation and linked source operations
 - `Brasth Document Sync > Logs` for bounded sync diagnostics
+- shared admin feedback dialog for public GitHub issue submission
 - post/page edit meta boxes and list-table actions
 - REST API and sync services shared by all surfaces
 
@@ -49,6 +50,11 @@ flowchart LR
   Cron --> Sync
   Settings --> Telemetry["TelemetryService + TelemetryCron"]
   Telemetry --> Worker["Brasth telemetry Worker + D1"]
+  SetupApp --> Feedback["FeedbackController + FeedbackService"]
+  SourcesApp --> Feedback
+  LogsApp --> Feedback
+  Feedback --> FeedbackWorker["Cloudflare feedback Worker"]
+  FeedbackWorker --> Github["GitHub Issues API"]
 ```
 
 ## Core Surfaces
@@ -117,6 +123,12 @@ Responsibilities:
 The Google Doc source modal uses Radix UI Dialog and Tabs primitives for focus management, escape handling, and keyboard tab navigation. WordPress packages provide the runtime React provider, REST client, i18n, URL helpers, a11y announcements, and simple admin controls. The Drive browser panel is a lazy IIFE bundle loaded only when the modal browse mode opens.
 
 The post sync UI imports `resources/css/post-sync-entry.css` for initial controls. Source modal CSS and Drive browser CSS are separate lazy assets exposed through `window.DocSyncWPAdmin`.
+
+### Feedback Ticket Submission
+
+The shared `AdminShell` renders a feedback dialog on Setup, Sources, and Logs. `POST /feedback` uses the normal REST nonce and `RestPermissions::canUseAuthenticatedRest()`, validates a bounded type/title/details payload, applies short-lived limits of five reports per user and twenty per IP per hour, and sends only non-sensitive WordPress/PHP/plugin version context to `FeedbackService`. The service relays to the Cloudflare Worker with `wp_remote_post()`; it never calls GitHub and never stores a GitHub credential.
+
+The separate `cloudflare/feedback-worker/` deployment owns the GitHub fine-grained token as the `GITHUB_TOKEN` Wrangler secret, optionally checks `WORKER_SHARED_SECRET`, validates the request again, and creates an issue only in the configured `Brasth/DocSync-WP` repository. It returns only the issue number and URL, while hiding raw GitHub errors. Worker source is excluded from installable plugin ZIPs.
 
 ## Frontend Architecture
 

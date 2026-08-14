@@ -104,8 +104,29 @@ Brasth Document Sync uses WP-Cron for scheduled sync and manual background sync.
 - Google OAuth client secrets and user tokens are encrypted with WordPress salts. Rotating those salts invalidates stored Brasth Document Sync credentials and tokens, so users must reconnect Google accounts afterward.
 - Clearing the saved site OAuth configuration is administrator-only. It removes the client credentials, invalidates in-flight OAuth state, deletes locally stored Google connections for all plugin users, and unschedules sync jobs while retaining linked sources and WordPress content.
 - Optional anonymous active-install telemetry is default off. Setup includes a dismissible inline opt-in prompt plus the permanent Sync defaults checkbox. When enabled, telemetry sends one weekly install-level check-in to `https://telemetry.brasth.com/v1/check-in` through `src/Telemetry/`; the Cloudflare Worker lives under `cloudflare/telemetry-worker/` and is excluded from installable plugin ZIPs.
+- Admin users can open **Send feedback** from the shared admin shell. The authenticated WordPress REST route relays validated bug reports, feature requests, and questions to the Cloudflare feedback Worker, which creates public issues in `Brasth/DocSync-WP`. Reports are short-lived rate-limited to 5 per user and 20 per IP per hour. Do not include secrets or private data. The GitHub token exists only as the Worker secret `GITHUB_TOKEN`; configure the Worker separately under `cloudflare/feedback-worker/`.
 - Uninstall removes plugin settings, encrypted user Google tokens, and scheduled cron events. Linked post metadata is kept by default; define `DOCSYNC_WP_FULL_UNINSTALL` or return true from `docsync_wp_full_uninstall` to remove linked post meta. Synced posts are never deleted.
 - Inline PHPCS suppression comments are prohibited in plugin source. Use code changes first; if a WordPress standards exception is unavoidable, keep it narrow in `phpcs.xml.dist`.
+
+## Feedback Worker
+
+Deploy the Worker outside the plugin ZIP and store its GitHub credential as a Cloudflare secret:
+
+```sh
+cd cloudflare/feedback-worker
+wrangler secret put GITHUB_TOKEN
+wrangler secret put WORKER_SHARED_SECRET
+wrangler deploy
+```
+
+The Worker token should be a fine-grained token limited to `Brasth/DocSync-WP` with Issues read/write access only. The plugin uses `https://feedback.brasth.com/v1/issues` by default. Override it in `wp-config.php` when using another hostname:
+
+```php
+define( 'DOCSYNC_WP_FEEDBACK_ENDPOINT', 'https://feedback.example.com/v1/issues' );
+define( 'DOCSYNC_WP_FEEDBACK_WORKER_SECRET', 'the-same-worker-secret' );
+```
+
+`cloudflare/` is excluded by `.distignore`, so Worker source and secrets never enter the installable plugin package.
 
 ## Verification
 
