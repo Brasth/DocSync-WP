@@ -16,6 +16,12 @@ Brasth Document Sync for Google Docs helps editorial teams use Google Docs as th
 
 The plugin exports Google Docs as HTML ZIP packages, imports embedded images into the WordPress Media Library, rewrites image URLs, sanitizes the resulting HTML, and converts common document structures to Gutenberg block markup. If Google blocks a large HTML ZIP export, Brasth Document Sync retries through the Google Docs API fallback before changing post content.
 
+Documentation:
+
+* Site: https://docsyncwp.com/
+* Setup walkthrough: https://docsyncwp.com/how-it-works/
+* User guide: https://docsyncwp.com/user-guide/
+
 Features include:
 
 * Self-managed Google OAuth setup wizard with next-action guidance.
@@ -72,6 +78,8 @@ Authorized users can optionally submit feedback from the admin area. The plugin 
 7. Add the authorized redirect URI shown in the Brasth Document Sync setup wizard.
 8. In WordPress admin, open Brasth Document Sync and save the OAuth client ID and client secret.
 9. Connect a Google account, browse or paste a Google Doc, and link it to a WordPress post or page.
+
+The Google Cloud walkthrough is also written out at https://docsyncwp.com/how-it-works/.
 
 == Frequently Asked Questions ==
 

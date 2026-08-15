@@ -1,5 +1,7 @@
 # Brasth Document Sync for Google Docs
 
+Documentation: [docsyncwp.com](https://docsyncwp.com/) · [How it works](https://docsyncwp.com/how-it-works/) · [User guide](https://docsyncwp.com/user-guide/)
+
 Brasth Document Sync for Google Docs is a WordPress plugin for syncing Google Docs into WordPress posts, pages, and enabled public custom post types. It uses self-managed Google OAuth, a server-side Drive browser, HTML ZIP import with media sideloading, a Google Docs API fallback for oversized exports, background sync, and Gutenberg block output.
 
 ## Requirements
