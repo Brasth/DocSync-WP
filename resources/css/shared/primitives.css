@@ -378,7 +378,8 @@
   #docsync-wp-admin-root .docsync-wp-button,
   #docsync-wp-post-sync-root .docsync-wp-button,
   #docsync-wp-list-sync-root .docsync-wp-button,
-  .docsync-wp-confirm-dialog .docsync-wp-button {
+  .docsync-wp-confirm-dialog .docsync-wp-button,
+  .docsync-wp-feedback-dialog .docsync-wp-button {
     align-items: center;
     border-radius: var(--docsync-radius-sm);
     display: inline-flex;
@@ -400,7 +401,8 @@
   #docsync-wp-admin-root .docsync-wp-button:focus-visible,
   #docsync-wp-post-sync-root .docsync-wp-button:focus-visible,
   #docsync-wp-list-sync-root .docsync-wp-button:focus-visible,
-  .docsync-wp-confirm-dialog .docsync-wp-button:focus-visible {
+  .docsync-wp-confirm-dialog .docsync-wp-button:focus-visible,
+  .docsync-wp-feedback-dialog .docsync-wp-button:focus-visible {
     box-shadow: 0 0 0 2px var(--docsync-focus-ring);
     outline: none;
   }
@@ -408,21 +410,24 @@
   #docsync-wp-admin-root .docsync-wp-button:active:not(:disabled),
   #docsync-wp-post-sync-root .docsync-wp-button:active:not(:disabled),
   #docsync-wp-list-sync-root .docsync-wp-button:active:not(:disabled),
-  .docsync-wp-confirm-dialog .docsync-wp-button:active:not(:disabled) {
+  .docsync-wp-confirm-dialog .docsync-wp-button:active:not(:disabled),
+  .docsync-wp-feedback-dialog .docsync-wp-button:active:not(:disabled) {
     transform: scale(0.96);
   }
 
   #docsync-wp-admin-root .docsync-wp-button:disabled,
   #docsync-wp-post-sync-root .docsync-wp-button:disabled,
   #docsync-wp-list-sync-root .docsync-wp-button:disabled,
-  .docsync-wp-confirm-dialog .docsync-wp-button:disabled {
+  .docsync-wp-confirm-dialog .docsync-wp-button:disabled,
+  .docsync-wp-feedback-dialog .docsync-wp-button:disabled {
     cursor: not-allowed;
   }
 
   #docsync-wp-admin-root .docsync-wp-button--default,
   #docsync-wp-post-sync-root .docsync-wp-button--default,
   #docsync-wp-list-sync-root .docsync-wp-button--default,
-  .docsync-wp-confirm-dialog .docsync-wp-button--default {
+  .docsync-wp-confirm-dialog .docsync-wp-button--default,
+  .docsync-wp-feedback-dialog .docsync-wp-button--default {
     min-height: 36px;
     padding: 0 14px;
   }
@@ -430,7 +435,8 @@
   #docsync-wp-admin-root .docsync-wp-button--small,
   #docsync-wp-post-sync-root .docsync-wp-button--small,
   #docsync-wp-list-sync-root .docsync-wp-button--small,
-  .docsync-wp-confirm-dialog .docsync-wp-button--small {
+  .docsync-wp-confirm-dialog .docsync-wp-button--small,
+  .docsync-wp-feedback-dialog .docsync-wp-button--small {
     font-size: 12px;
     min-height: 32px;
     padding: 0 10px;
@@ -439,7 +445,8 @@
   #docsync-wp-admin-root .docsync-wp-button--icon,
   #docsync-wp-post-sync-root .docsync-wp-button--icon,
   #docsync-wp-list-sync-root .docsync-wp-button--icon,
-  .docsync-wp-confirm-dialog .docsync-wp-button--icon {
+  .docsync-wp-confirm-dialog .docsync-wp-button--icon,
+  .docsync-wp-feedback-dialog .docsync-wp-button--icon {
     min-height: 32px;
     min-width: 32px;
     padding: 0;
@@ -449,14 +456,16 @@
     #docsync-wp-admin-root .docsync-wp-button,
     #docsync-wp-post-sync-root .docsync-wp-button,
     #docsync-wp-list-sync-root .docsync-wp-button,
-    .docsync-wp-confirm-dialog .docsync-wp-button {
+    .docsync-wp-confirm-dialog .docsync-wp-button,
+    .docsync-wp-feedback-dialog .docsync-wp-button {
       transition: none;
     }
 
     #docsync-wp-admin-root .docsync-wp-button:active:not(:disabled),
     #docsync-wp-post-sync-root .docsync-wp-button:active:not(:disabled),
     #docsync-wp-list-sync-root .docsync-wp-button:active:not(:disabled),
-    .docsync-wp-confirm-dialog .docsync-wp-button:active:not(:disabled) {
+    .docsync-wp-confirm-dialog .docsync-wp-button:active:not(:disabled),
+    .docsync-wp-feedback-dialog .docsync-wp-button:active:not(:disabled) {
       transform: none;
     }
   }
@@ -740,27 +749,45 @@
 
 .docsync-wp-confirm-dialog .button-primary,
 .docsync-wp-confirm-dialog .button-primary:focus,
-.docsync-wp-confirm-dialog .button-primary:active {
+.docsync-wp-confirm-dialog .button-primary:active,
+.docsync-wp-feedback-dialog .button-primary,
+.docsync-wp-feedback-dialog .button-primary:focus,
+.docsync-wp-feedback-dialog .button-primary:active {
   background: var(--docsync-blue);
   border-color: var(--docsync-blue);
   color: var(--docsync-text-inverse);
 }
 
-.docsync-wp-confirm-dialog .button-primary:hover {
+.docsync-wp-confirm-dialog .button-primary:hover,
+.docsync-wp-feedback-dialog .button-primary:hover {
   background: var(--docsync-blue-hover);
   border-color: var(--docsync-blue-hover);
   color: var(--docsync-text-inverse);
 }
 
+.docsync-wp-confirm-dialog .button-primary:disabled,
+.docsync-wp-confirm-dialog .button-primary[disabled],
+.docsync-wp-feedback-dialog .button-primary:disabled,
+.docsync-wp-feedback-dialog .button-primary[disabled] {
+  background: var(--docsync-blue);
+  border-color: var(--docsync-blue);
+  color: var(--docsync-text-inverse);
+  opacity: 0.6;
+}
+
 .docsync-wp-confirm-dialog .button-secondary,
 .docsync-wp-confirm-dialog .button-secondary:focus,
-.docsync-wp-confirm-dialog .button-secondary:active {
+.docsync-wp-confirm-dialog .button-secondary:active,
+.docsync-wp-feedback-dialog .button-secondary,
+.docsync-wp-feedback-dialog .button-secondary:focus,
+.docsync-wp-feedback-dialog .button-secondary:active {
   background: var(--docsync-surface);
   border-color: var(--docsync-blue);
   color: var(--docsync-blue);
 }
 
-.docsync-wp-confirm-dialog .button-secondary:hover {
+.docsync-wp-confirm-dialog .button-secondary:hover,
+.docsync-wp-feedback-dialog .button-secondary:hover {
   background: var(--docsync-blue-soft);
   border-color: var(--docsync-blue);
   color: var(--docsync-blue);

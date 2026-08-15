@@ -102,6 +102,15 @@ Use this guide for Brasth Document Sync admin UI work. The product direction is 
 - List-table actions must keep a native WordPress footprint.
 - Toasts should be concise, semantic, and actionable.
 
+## Feedback Issue Dialog
+
+- Entry label is **Create issue**. Dialog title is **Create public GitHub issue**.
+- Lead with a public-publication warning callout, then disclose that plugin/WordPress/PHP versions are attached and that site URL/user identity are not.
+- Use field-level validation with `aria-invalid` / `aria-describedby`, character counters with tabular numerals, and type-specific detail placeholders.
+- Portaled dialog CSS must define its own token theme and include feedback dialog selectors in shared button/focus rules.
+- Constrain height with viewport-relative `max-height`, scroll the body, keep the footer reachable, and confirm before discarding a dirty draft.
+- Success shows the issue number, primary **View GitHub issue**, secondary **Done**.
+
 ## Motion And Accessibility
 
 - Use CSS-only micro-interactions, 150-250ms.
