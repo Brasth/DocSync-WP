@@ -11,13 +11,22 @@ import { DriveBrowserToolbar } from './drive-browser-toolbar';
 import { useDriveBrowser } from './use-drive-browser';
 
 export type DriveBrowserPanelProps = {
+  allowMultiSelect?: boolean;
   busy: boolean;
   selectedDocument: DocumentMetadata | null;
+  selectedDocuments?: DocumentMetadata[];
   onSelect: (document: DocumentMetadata | null) => void;
 };
 
-export const DriveBrowserPanel = ({ busy, selectedDocument, onSelect }: DriveBrowserPanelProps): JSX.Element => {
+export const DriveBrowserPanel = ({
+  allowMultiSelect = false,
+  busy,
+  selectedDocument,
+  selectedDocuments,
+  onSelect
+}: DriveBrowserPanelProps): JSX.Element => {
   const browser = useDriveBrowser({ onSelect });
+  const selected = selectedDocuments ?? (selectedDocument ? [selectedDocument] : []);
 
   return (
     <div className="docsync-wp-drive-browser">
@@ -89,13 +98,14 @@ export const DriveBrowserPanel = ({ busy, selectedDocument, onSelect }: DriveBro
 
       {browser.items.length > 0 ? (
         <DriveBrowserTable
+          allowMultiSelect={allowMultiSelect}
           busy={busy}
           hasMore={Boolean(browser.nextPageToken)}
           items={browser.items}
           loading={browser.loading}
           onActivate={browser.activateItem}
           onLoadMore={browser.loadNextPage}
-          selectedDocument={selectedDocument}
+          selectedDocuments={selected}
         />
       ) : null}
 

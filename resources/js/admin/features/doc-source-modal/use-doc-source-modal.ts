@@ -1,6 +1,6 @@
 import { speak } from '@wordpress/a11y';
 import { useEffect, useMemo, useState } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 import {
   createSource,
@@ -12,6 +12,7 @@ import {
 import { AdminApiError } from '../../api/client';
 import { getAdminConfig } from '../../config';
 import { type DocSourceOutputType, type DocSourceUiMode } from './doc-source-modal-options';
+import { documentsCanAttach, isAuthFailureCode, MAX_FOLDER_DRAFTS, uniqueDocuments } from './doc-source-selection';
 
 export type DocSourceTarget =
   | {
@@ -35,12 +36,15 @@ export const useDocSourceModal = ({ isOpen, target, onClose, onCompleted }: Args
   const [uiMode, setUiMode] = useState<DocSourceUiMode>('browse');
   const [documentInput, setDocumentInput] = useState('');
   const [metadata, setMetadata] = useState<DocumentMetadata | null>(null);
+  const [selectedDocuments, setSelectedDocuments] = useState<DocumentMetadata[]>([]);
+  const allowMultiSelect = target?.mode === 'new';
   const [layoutPreset, setLayoutPreset] = useState('');
   const [elementorPreset, setElementorPreset] = useState('');
   const [outputType, setOutputType] = useState<DocSourceOutputType>('blocks');
   const [outputTypeTouched, setOutputTypeTouched] = useState(false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [attachProgress, setAttachProgress] = useState('');
   const [ownershipTransferRequired, setOwnershipTransferRequired] = useState(false);
   const config = useMemo(() => getAdminConfig(), []);
   const canChooseElementor = Boolean(
@@ -54,12 +58,14 @@ export const useDocSourceModal = ({ isOpen, target, onClose, onCompleted }: Args
       setUiMode('browse');
       setDocumentInput('');
       setMetadata(null);
+      setSelectedDocuments([]);
       setLayoutPreset('');
       setElementorPreset('');
       setOutputType('blocks');
       setOutputTypeTouched(false);
       setError('');
       setBusy(false);
+      setAttachProgress('');
       setOwnershipTransferRequired(false);
     }
   }, [isOpen]);
@@ -91,9 +97,11 @@ export const useDocSourceModal = ({ isOpen, target, onClose, onCompleted }: Args
     try {
       const inspected = await inspectDocument(documentInput, uiMode);
       setMetadata(inspected);
+      setSelectedDocuments([inspected]);
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : __('Could not inspect this Google Doc.', 'brasth-document-sync-for-google-docs');
       setMetadata(null);
+      setSelectedDocuments([]);
       setError(message);
       speak(message, 'assertive');
     } finally {
@@ -104,6 +112,7 @@ export const useDocSourceModal = ({ isOpen, target, onClose, onCompleted }: Args
   const changeSourceMode = (mode: DocSourceUiMode) => {
     setUiMode(mode);
     setMetadata(null);
+    setSelectedDocuments([]);
     setError('');
 
     if (mode === 'browse') {
@@ -112,19 +121,58 @@ export const useDocSourceModal = ({ isOpen, target, onClose, onCompleted }: Args
   };
 
   const selectDocument = (document: DriveDocumentSummary | null) => {
-    setMetadata(document);
-    setDocumentInput(document?.webViewLink || document?.fileId || '');
+    if (!document) {
+      setSelectedDocuments([]);
+      setMetadata(null);
+      setDocumentInput('');
+      setError('');
+      return;
+    }
+
+    if (!allowMultiSelect) {
+      setSelectedDocuments([document]);
+      setMetadata(document);
+      setDocumentInput(document.webViewLink || document.fileId || '');
+      setError('');
+      return;
+    }
+
+    const exists = selectedDocuments.some((item) => item.fileId === document.fileId);
+
+    if (!exists && selectedDocuments.length >= MAX_FOLDER_DRAFTS) {
+      setError(
+        sprintf(
+          /* translators: %d: maximum number of Google Docs that can be imported at once. */
+          __('Select up to %d Google Docs at a time.', 'brasth-document-sync-for-google-docs'),
+          MAX_FOLDER_DRAFTS
+        )
+      );
+      return;
+    }
+
+    const next = exists
+      ? selectedDocuments.filter((item) => item.fileId !== document.fileId)
+      : [...selectedDocuments, document];
+    const last = next[next.length - 1] ?? null;
+
+    setSelectedDocuments(next);
+    setMetadata(last);
+    setDocumentInput(last?.webViewLink || last?.fileId || '');
     setError('');
   };
 
   const attach = async (transferOwnership = false) => {
-    if (!metadata || !target) {
+    const documents = uniqueDocuments(selectedDocuments.length > 0 ? selectedDocuments : metadata ? [metadata] : []);
+
+    if (documents.length === 0 || !target) {
       setError(__('Select or inspect a Google Doc before linking it.', 'brasth-document-sync-for-google-docs'));
       return;
     }
 
-    if (metadata.syncCompatibility?.canDownload === false) {
-      const message = metadata.syncCompatibility.warningMessage || __('Google says this Doc cannot be downloaded by the connected account.', 'brasth-document-sync-for-google-docs');
+    const blocked = documents.find((document) => document.syncCompatibility?.canDownload === false);
+
+    if (blocked) {
+      const message = blocked.syncCompatibility?.warningMessage || __('Google says this Doc cannot be downloaded by the connected account.', 'brasth-document-sync-for-google-docs');
       setError(message);
       speak(message, 'assertive');
       return;
@@ -132,55 +180,106 @@ export const useDocSourceModal = ({ isOpen, target, onClose, onCompleted }: Args
 
     setBusy(true);
     setError('');
+    setAttachProgress('');
+
+    const useElementorOutput = documents.length === 1 && canChooseElementor && outputType === 'elementor';
+    const useExplicitOutputChoice = canChooseElementor && (
+      target.mode === 'new'
+      || typeof target.elementorSync === 'boolean'
+      || outputTypeTouched
+    );
+    const preserveLegacyElementorPreset = Boolean(
+      useElementorOutput
+      && target.mode === 'existing'
+      && target.elementorPreset === null
+      && elementorPreset === ''
+    );
+    const failures: string[] = [];
+    let created = 0;
 
     try {
-      const useElementorOutput = canChooseElementor && outputType === 'elementor';
-      const useExplicitOutputChoice = canChooseElementor && (
-        target.mode === 'new'
-        || typeof target.elementorSync === 'boolean'
-        || outputTypeTouched
-      );
-      const preserveLegacyElementorPreset = Boolean(
-        useElementorOutput
-        && target.mode === 'existing'
-        && target.elementorPreset === null
-        && elementorPreset === ''
-      );
-      const result = await createSource({
-        fileId: metadata.fileId,
-        target: target.mode === 'existing'
-          ? { mode: 'existing', postId: target.postId }
-          : { mode: 'new', postType: target.postType },
-        exportFormat: config.defaultExportFormat || 'html_zip',
-        elementorSync: useExplicitOutputChoice ? useElementorOutput : undefined,
-        elementorPreset: useElementorOutput && !preserveLegacyElementorPreset ? elementorPreset : undefined,
-        syncMode: 'background',
-        layoutPreset: useElementorOutput ? undefined : layoutPreset,
-        transferOwnership: transferOwnership || undefined
-      });
+      for (const document of documents) {
+        setAttachProgress(
+          sprintf(
+            /* translators: 1: created count, 2: total selected docs. */
+            __('Created %1$d of %2$d…', 'brasth-document-sync-for-google-docs'),
+            created,
+            documents.length
+          )
+        );
 
-      setOwnershipTransferRequired(false);
-      onCompleted(result);
-      onClose();
-    } catch (caught) {
-      if (caught instanceof AdminApiError && caught.code === 'docsync_wp_source_owner_transfer_required') {
-        setOwnershipTransferRequired(true);
+        try {
+          const result = await createSource({
+            fileId: document.fileId,
+            target: target.mode === 'existing'
+              ? { mode: 'existing', postId: target.postId }
+              : { mode: 'new', postType: target.postType },
+            exportFormat: config.defaultExportFormat || 'html_zip',
+            elementorSync: useExplicitOutputChoice ? useElementorOutput : undefined,
+            elementorPreset: useElementorOutput && !preserveLegacyElementorPreset ? elementorPreset : undefined,
+            syncMode: 'background',
+            layoutPreset: useElementorOutput ? undefined : layoutPreset,
+            transferOwnership: transferOwnership || undefined
+          });
+
+          setOwnershipTransferRequired(false);
+          created += 1;
+          setAttachProgress(
+            sprintf(
+              /* translators: 1: created count, 2: total selected docs. */
+              __('Created %1$d of %2$d…', 'brasth-document-sync-for-google-docs'),
+              created,
+              documents.length
+            )
+          );
+          onCompleted(result);
+        } catch (caught) {
+          if (caught instanceof AdminApiError && caught.code === 'docsync_wp_source_owner_transfer_required') {
+            setOwnershipTransferRequired(true);
+            return;
+          }
+
+          if (caught instanceof AdminApiError && isAuthFailureCode(caught.code)) {
+            throw caught;
+          }
+
+          const message = caught instanceof Error ? caught.message : __('Could not link this Google Doc.', 'brasth-document-sync-for-google-docs');
+          failures.push(`${document.name}: ${message}`);
+        }
+      }
+
+      if (failures.length === documents.length) {
+        const message = failures[0] || __('Could not link this Google Doc.', 'brasth-document-sync-for-google-docs');
+        setError(message);
+        speak(message, 'assertive');
         return;
       }
 
+      if (failures.length > 0) {
+        const message = failures.join(' ');
+        setError(message);
+        speak(message, 'assertive');
+        return;
+      }
+
+      onClose();
+    } catch (caught) {
       const message = caught instanceof Error ? caught.message : __('Could not link this Google Doc.', 'brasth-document-sync-for-google-docs');
       setError(message);
       speak(message, 'assertive');
     } finally {
       setBusy(false);
+      setAttachProgress('');
     }
   };
 
   return {
+    allowMultiSelect: Boolean(allowMultiSelect),
     attach,
+    attachProgress,
     busy,
-    canAttach: Boolean(metadata && metadata.syncCompatibility?.canDownload !== false),
-    canChooseElementor,
+    canAttach: documentsCanAttach(selectedDocuments, metadata),
+    canChooseElementor: canChooseElementor && selectedDocuments.length <= 1,
     changeSourceMode,
     documentInput,
     elementorPreset,
@@ -191,6 +290,8 @@ export const useDocSourceModal = ({ isOpen, target, onClose, onCompleted }: Args
     outputType,
     ownershipTransferRequired,
     selectDocument,
+    selectedCount: uniqueDocuments(selectedDocuments).length,
+    selectedDocuments,
     setDocumentInput,
     setElementorPreset,
     setLayoutPreset,

@@ -171,6 +171,17 @@ if ( ! function_exists( 'sanitize_textarea_field' ) ) {
 	}
 }
 
+if ( ! function_exists( 'wp_strip_all_tags' ) ) {
+	/**
+	 * Strip HTML tags for fixture emptiness checks.
+	 *
+	 * @param string $text Text.
+	 */
+	function wp_strip_all_tags( string $text ): string {
+		return trim( strip_tags( $text ) );
+	}
+}
+
 if ( ! function_exists( 'wp_kses' ) ) {
 	/**
 	 * Fixture HTML is trusted; production sanitization is covered by WordPress.
@@ -208,7 +219,32 @@ if ( ! function_exists( 'serialize_blocks' ) ) {
 			? ''
 			: ' ' . (string) wp_json_encode( $block['attrs'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
 
-		return '<!-- wp:' . $name . $attrs . ' -->' . (string) ( $block['innerHTML'] ?? '' ) . '<!-- /wp:' . $name . ' -->';
+		$inner_content = $block['innerContent'] ?? null;
+		$inner_blocks  = isset( $block['innerBlocks'] ) && is_array( $block['innerBlocks'] ) ? $block['innerBlocks'] : array();
+		$body          = '';
+
+		if ( is_array( $inner_content ) ) {
+			$child_index = 0;
+
+			foreach ( $inner_content as $chunk ) {
+				if ( null === $chunk ) {
+					$child = $inner_blocks[ $child_index ] ?? null;
+					++$child_index;
+
+					if ( is_array( $child ) ) {
+						$body .= serialize_block( $child );
+					}
+
+					continue;
+				}
+
+				$body .= (string) $chunk;
+			}
+		} else {
+			$body = (string) ( $block['innerHTML'] ?? '' );
+		}
+
+		return '<!-- wp:' . $name . $attrs . ' -->' . $body . '<!-- /wp:' . $name . ' -->';
 	}
 }
 
