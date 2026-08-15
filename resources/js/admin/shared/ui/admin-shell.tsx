@@ -81,7 +81,7 @@ export const AdminShell = ({
         <footer className="docsync-wp-admin-shell__footer">
           <span>{__('Found a problem or have an idea?', 'brasth-document-sync-for-google-docs')}</span>
           <AdminButton onClick={() => setFeedbackOpen(true)} size="small">
-            {__('Send feedback', 'brasth-document-sync-for-google-docs')}
+            {__('Create issue', 'brasth-document-sync-for-google-docs')}
           </AdminButton>
         </footer>
       </div>
