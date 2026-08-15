@@ -5,8 +5,10 @@ import type { DocumentMetadata } from '../../api';
 import { getAdminConfig } from '../../config';
 
 export type DriveBrowserPanelProps = {
+  allowMultiSelect?: boolean;
   busy: boolean;
   selectedDocument: DocumentMetadata | null;
+  selectedDocuments?: DocumentMetadata[];
   onSelect: (document: DocumentMetadata | null) => void;
 };
 

@@ -6,10 +6,11 @@ import { SkeletonTableRows } from '../../shared/ui/skeleton';
 import { driveItemTypeLabel, formatDriveModifiedTime } from './drive-browser-utils';
 
 type Props = {
+  allowMultiSelect?: boolean;
   busy: boolean;
   items: DriveItemSummary[];
   loading: boolean;
-  selectedDocument: DocumentMetadata | null;
+  selectedDocuments: DocumentMetadata[];
   hasMore: boolean;
   onActivate: (item: DriveItemSummary) => Promise<void>;
   onLoadMore: () => Promise<void>;
@@ -44,7 +45,7 @@ export const DriveBrowserTableSkeleton = (): JSX.Element => {
   );
 };
 
-export const DriveBrowserTable = ({ busy, items, loading, selectedDocument, hasMore, onActivate, onLoadMore }: Props): JSX.Element => {
+export const DriveBrowserTable = ({ allowMultiSelect = false, busy, items, loading, selectedDocuments, hasMore, onActivate, onLoadMore }: Props): JSX.Element => {
   const scrollRoot = useRef<HTMLDivElement | null>(null);
   const sentinel = useRef<HTMLDivElement | null>(null);
 
@@ -76,7 +77,7 @@ export const DriveBrowserTable = ({ busy, items, loading, selectedDocument, hasM
         <DriveBrowserTableHeader />
         <tbody>
           {items.map((item) => {
-            const selected = item.itemType === 'document' && selectedDocument?.fileId === item.fileId;
+            const selected = item.itemType === 'document' && selectedDocuments.some((document) => document.fileId === item.fileId);
             const compatibility = item.syncCompatibility;
             const disabled = busy || loading || (item.itemType === 'document' && !item.selectable);
             const rowClass = [
@@ -92,7 +93,14 @@ export const DriveBrowserTable = ({ busy, items, loading, selectedDocument, hasM
                     <button
                       aria-label={item.itemType === 'folder'
                         ? sprintf(__('Open folder %s', 'brasth-document-sync-for-google-docs'), item.name)
-                        : sprintf(__('Select Google Doc %s', 'brasth-document-sync-for-google-docs'), item.name)}
+                        : allowMultiSelect
+                          ? sprintf(
+                            selected
+                              ? __('Remove Google Doc %s from selection', 'brasth-document-sync-for-google-docs')
+                              : __('Add Google Doc %s to selection', 'brasth-document-sync-for-google-docs'),
+                            item.name
+                          )
+                          : sprintf(__('Select Google Doc %s', 'brasth-document-sync-for-google-docs'), item.name)}
                       aria-pressed={item.itemType === 'document' ? selected : undefined}
                       className="docsync-wp-drive-browser__row-button"
                       disabled={disabled}

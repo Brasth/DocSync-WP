@@ -107,9 +107,11 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
             {uiMode === 'browse' ? (
               DriveBrowserPanel ? (
                 <DriveBrowserPanel
+                  allowMultiSelect={modal.allowMultiSelect}
                   busy={modal.busy}
                   onSelect={modal.selectDocument}
                   selectedDocument={modal.metadata}
+                  selectedDocuments={modal.selectedDocuments}
                 />
               ) : (
                 <LoadingState className="docsync-wp-drive-browser__state" variant="skeleton">
@@ -135,12 +137,28 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
               } : null}
             />
 
-            {modal.metadata ? (
+            {modal.selectedCount > 0 || modal.metadata ? (
               <div className="docsync-wp-doc-preview" aria-label={__('Selected Google Doc', 'brasth-document-sync-for-google-docs')}>
                 <div className="docsync-wp-doc-preview__summary">
-                  <span className="docsync-wp-doc-preview__label">{__('Selected Google Doc', 'brasth-document-sync-for-google-docs')}</span>
-                  <strong>{modal.metadata.name}</strong>
-                  <span>{modal.metadata.webViewLink || modal.metadata.fileId}</span>
+                  <span className="docsync-wp-doc-preview__label">
+                    {modal.selectedCount > 1
+                      ? sprintf(
+                        /* translators: %d: number of selected Google Docs. */
+                        __('Selected Google Docs (%d)', 'brasth-document-sync-for-google-docs'),
+                        modal.selectedCount
+                      )
+                      : __('Selected Google Doc', 'brasth-document-sync-for-google-docs')}
+                  </span>
+                  <strong>
+                    {modal.selectedCount > 1
+                      ? modal.selectedDocuments.map((document) => document.name).join(', ')
+                      : modal.metadata?.name}
+                  </strong>
+                  <span>
+                    {modal.selectedCount > 1
+                      ? __('New Google Docs become WordPress drafts. You publish.', 'brasth-document-sync-for-google-docs')
+                      : modal.metadata?.webViewLink || modal.metadata?.fileId}
+                  </span>
                 </div>
                 <div className="docsync-wp-doc-preview__options">
                   {modal.canChooseElementor ? (
@@ -176,10 +194,14 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
           </div>
 
           <div className="docsync-wp-modal__footer">
-            {!modal.canAttach ? (
+            {modal.attachProgress ? (
+              <span className="docsync-wp-modal__footer-hint">{modal.attachProgress}</span>
+            ) : !modal.canAttach ? (
               <span className="docsync-wp-modal__footer-hint">
                 {uiMode === 'browse'
-                  ? __('Choose an accessible Google Doc to continue.', 'brasth-document-sync-for-google-docs')
+                  ? modal.allowMultiSelect
+                    ? __('Choose one or more accessible Google Docs in this folder.', 'brasth-document-sync-for-google-docs')
+                    : __('Choose an accessible Google Doc to continue.', 'brasth-document-sync-for-google-docs')
                   : __('Inspect a Google Doc before linking it.', 'brasth-document-sync-for-google-docs')}
               </span>
             ) : null}
@@ -200,7 +222,15 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
               onClick={() => modal.attach()}
               variant="primary"
             >
-              {target.mode === 'new' ? __('Create synced draft', 'brasth-document-sync-for-google-docs') : __('Link source', 'brasth-document-sync-for-google-docs')}
+              {target.mode === 'new'
+                ? modal.selectedCount > 1
+                  ? sprintf(
+                    /* translators: %d: number of drafts to create. */
+                    __('Create %d drafts', 'brasth-document-sync-for-google-docs'),
+                    modal.selectedCount
+                  )
+                  : __('Create synced draft', 'brasth-document-sync-for-google-docs')
+                : __('Link source', 'brasth-document-sync-for-google-docs')}
             </AdminButton>
           </div>
         </Dialog.Content>
