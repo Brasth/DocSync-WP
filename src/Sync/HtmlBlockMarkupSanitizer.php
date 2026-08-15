@@ -28,6 +28,15 @@ final class HtmlBlockMarkupSanitizer {
 	}
 
 	/**
+	 * Clean an inline HTML string for list-item content.
+	 *
+	 * @param string $html HTML fragment.
+	 */
+	public function cleanInlineHtmlString( string $html ): string {
+		return $this->cleanHtml( $html, $this->inlineTags() );
+	}
+
+	/**
 	 * Clean a full inline element for paragraph fallback.
 	 *
 	 * @param DOMElement $element HTML element.

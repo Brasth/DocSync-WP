@@ -32,14 +32,23 @@ final class HtmlBlockFactory {
 	private HtmlStandaloneImageDetector $standalone_images;
 
 	/**
+	 * List block builder.
+	 *
+	 * @var HtmlListBlockBuilder
+	 */
+	private HtmlListBlockBuilder $lists;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param HtmlBlockMarkupSanitizer|null    $markup            Markup sanitizer.
 	 * @param HtmlStandaloneImageDetector|null $standalone_images Standalone image detector.
+	 * @param HtmlListBlockBuilder|null        $lists             List block builder.
 	 */
-	public function __construct( ?HtmlBlockMarkupSanitizer $markup = null, ?HtmlStandaloneImageDetector $standalone_images = null ) {
+	public function __construct( ?HtmlBlockMarkupSanitizer $markup = null, ?HtmlStandaloneImageDetector $standalone_images = null, ?HtmlListBlockBuilder $lists = null ) {
 		$this->markup            = $markup ?? new HtmlBlockMarkupSanitizer();
 		$this->standalone_images = $standalone_images ?? new HtmlStandaloneImageDetector();
+		$this->lists             = $lists ?? new HtmlListBlockBuilder( $this->markup );
 	}
 
 	/**
@@ -73,12 +82,7 @@ final class HtmlBlockFactory {
 		}
 
 		return match ( $tag ) {
-			'ul' => $this->block( 'core/list', array(), '<ul>' . $this->markup->cleanListInnerHtml( $element ) . '</ul>' ),
-			'ol' => $this->block(
-				'core/list',
-				array( 'ordered' => true ),
-				'<ol>' . $this->markup->cleanListInnerHtml( $element ) . '</ol>'
-			),
+			'ul', 'ol' => $this->lists->fromElement( $element ),
 			'table' => $this->block(
 				'core/table',
 				array(),
