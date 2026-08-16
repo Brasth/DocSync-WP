@@ -181,9 +181,19 @@ final class FolderWatchService {
 	 * @return array<string,mixed>|WP_Error
 	 */
 	public function create( int $user_id, array $input ): array|WP_Error {
-		$folder_id = isset( $input['folderId'] ) ? sanitize_text_field( (string) $input['folderId'] ) : '';
-		$drive_id  = isset( $input['driveId'] ) ? sanitize_text_field( (string) $input['driveId'] ) : '';
-		$folder_id = '' === $folder_id ? 'root' : $folder_id;
+		$folder_id   = isset( $input['folderId'] ) ? sanitize_text_field( (string) $input['folderId'] ) : '';
+		$drive_id    = isset( $input['driveId'] ) ? sanitize_text_field( (string) $input['driveId'] ) : '';
+		$folder_id   = '' === $folder_id ? 'root' : $folder_id;
+		$post_type   = sanitize_key( (string) ( $input['postType'] ?? 'post' ) );
+		$post_status = $this->sanitizePostStatus( $input['postStatus'] ?? 'draft' );
+
+		if ( 'publish' === $post_status && ! $this->sources->userCanPublishSyncedPost( $post_type, $user_id ) ) {
+			return new WP_Error(
+				'docsync_wp_cannot_publish_post',
+				__( 'You do not have permission to publish synced posts for this post type.', 'brasth-document-sync-for-google-docs' ),
+				array( 'status' => 403 )
+			);
+		}
 
 		if ( $this->isRootFolder( $folder_id, $drive_id ) && true !== ( $input['confirmRoot'] ?? false ) ) {
 			return new WP_Error(
@@ -375,7 +385,7 @@ final class FolderWatchService {
 			);
 		}
 
-		$this->runScan( (string) $watch['id'] );
+		$this->runScan( (string) $watch['id'], true );
 		$saved = $this->watches->get( (string) $watch['id'] );
 
 		return $this->formatWatch( is_array( $saved ) ? $saved : $watch );
@@ -450,7 +460,7 @@ final class FolderWatchService {
 		$this->watches->save( $watch );
 		$this->lock->release( $watch_id );
 
-		if ( array() !== (array) ( $watch['pendingFileIds'] ?? array() ) && 'paused' !== (string) ( $watch['status'] ?? '' ) ) {
+		if ( 'importing' === (string) ( $watch['status'] ?? '' ) && array() !== (array) ( $watch['pendingFileIds'] ?? array() ) ) {
 			$this->scheduleImport( $watch_id );
 		}
 	}
@@ -458,16 +468,17 @@ final class FolderWatchService {
 	/**
 	 * Scan one watch for new Docs.
 	 *
-	 * @param string $watch_id Watch ID.
+	 * @param string $watch_id         Watch ID.
+	 * @param bool   $ignore_interval  Whether to skip the recurring-interval guard.
 	 */
-	public function runScan( string $watch_id ): void {
+	public function runScan( string $watch_id, bool $ignore_interval = false ): void {
 		$watch = $this->watches->get( sanitize_key( $watch_id ) );
 
 		if ( null === $watch || 'paused' === (string) ( $watch['status'] ?? '' ) ) {
 			return;
 		}
 
-		if ( 'off' === $this->effectiveInterval( $watch ) ) {
+		if ( ! $ignore_interval && 'off' === $this->effectiveInterval( $watch ) ) {
 			return;
 		}
 
@@ -657,15 +668,21 @@ final class FolderWatchService {
 	private function syncWatchSchedule( array $watch ): void {
 		$watch_id = sanitize_key( (string) ( $watch['id'] ?? '' ) );
 		$interval = $this->effectiveInterval( $watch );
-
-		$this->unscheduleHook( self::SCAN_HOOK, array( $watch_id ) );
+		$args     = array( $watch_id );
 
 		if ( '' === $watch_id || 'off' === $interval || 'paused' === (string) ( $watch['status'] ?? '' ) ) {
+			$this->unscheduleHook( self::SCAN_HOOK, $args );
 			return;
 		}
 
-		if ( false === wp_next_scheduled( self::SCAN_HOOK, array( $watch_id ) ) ) {
-			wp_schedule_event( time() + MINUTE_IN_SECONDS, $interval, self::SCAN_HOOK, array( $watch_id ) );
+		$current_schedule = wp_get_schedule( self::SCAN_HOOK, $args );
+
+		if ( false !== $current_schedule && $current_schedule !== $interval ) {
+			$this->unscheduleHook( self::SCAN_HOOK, $args );
+		}
+
+		if ( false === wp_next_scheduled( self::SCAN_HOOK, $args ) ) {
+			wp_schedule_event( time() + MINUTE_IN_SECONDS, $interval, self::SCAN_HOOK, $args );
 		}
 	}
 

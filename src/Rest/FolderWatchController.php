@@ -245,6 +245,16 @@ final class FolderWatchController {
 			);
 		}
 
+		$post_status = sanitize_key( (string) ( $params['postStatus'] ?? 'draft' ) );
+
+		if ( 'publish' === $post_status && ! $this->sources->userCanPublishSyncedPost( $post_type, $user_id ) ) {
+			return new WP_Error(
+				'docsync_wp_cannot_publish_post',
+				__( 'You do not have permission to publish synced posts for this post type.', 'brasth-document-sync-for-google-docs' ),
+				array( 'status' => 403 )
+			);
+		}
+
 		$layout = $this->sanitizeLayoutPreset( $params['layoutPreset'] ?? '' );
 
 		if ( is_wp_error( $layout ) ) {

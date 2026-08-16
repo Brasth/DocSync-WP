@@ -1327,6 +1327,32 @@ final class SourceRepository {
 	}
 
 	/**
+	 * Whether a user can publish a synced post of the given type.
+	 *
+	 * @param string $post_type Post type.
+	 * @param int    $user_id   User ID.
+	 */
+	public function userCanPublishSyncedPost( string $post_type, int $user_id ): bool {
+		if ( ! $this->userCanCreateSyncedPost( $post_type, $user_id ) ) {
+			return false;
+		}
+
+		$post_type_object = get_post_type_object( $post_type );
+
+		if ( ! $post_type_object instanceof WP_Post_Type ) {
+			return false;
+		}
+
+		$capability = $post_type_object->cap->publish_posts ?? 'publish_posts';
+
+		if ( 'do_not_allow' === $capability ) {
+			return false;
+		}
+
+		return user_can( $user_id, $capability );
+	}
+
+	/**
 	 * Whether a user can edit posts of the given type.
 	 *
 	 * @param string $post_type Post type.
