@@ -126,6 +126,9 @@ export const SetupApp = (): JSX.Element => {
         isOpen={app.sourceModalOpen}
         onClose={app.closeSourceModal}
         onCompleted={app.handleSourceCreated}
+        onFolderWatchCreated={() => {
+          void app.refresh();
+        }}
         target={app.sourceModalOpen && app.workspace?.creatablePostTypes[0] ? { mode: 'new', postType: app.workspace.creatablePostTypes[0] } : null}
       />
     </AdminShell>

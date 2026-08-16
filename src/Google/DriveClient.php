@@ -84,6 +84,59 @@ final class DriveClient {
 	}
 
 	/**
+	 * Get a Drive folder or Google Doc as a browser item.
+	 *
+	 * @param int    $user_id User ID.
+	 * @param string $file_id Drive file ID or `root`.
+	 * @return array<string,mixed>|WP_Error
+	 */
+	public function getDriveItem( int $user_id, string $file_id ): array|WP_Error {
+		$file_id = trim( $file_id );
+
+		if ( '' === $file_id || 'root' === $file_id ) {
+			return array(
+				'fileId'      => 'root',
+				'name'        => __( 'My Drive', 'brasth-document-sync-for-google-docs' ),
+				'mimeType'    => self::FOLDER_MIME_TYPE,
+				'itemType'    => 'folder',
+				'webViewLink' => '',
+				'selectable'  => false,
+			);
+		}
+
+		$response = $this->requestJson(
+			$user_id,
+			add_query_arg(
+				array(
+					'fields'            => 'id,name,mimeType,modifiedTime,version,webViewLink,iconLink,size,quotaBytesUsed,capabilities/canDownload',
+					'supportsAllDrives' => 'true',
+				),
+				self::API_BASE_URL . '/files/' . rawurlencode( $file_id )
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		if ( ! $this->hasDriveItemFields( $response ) ) {
+			return $this->badGoogleResponseError();
+		}
+
+		$item = $this->formatDriveItemResponse( $response );
+
+		if ( ! in_array( $item['mimeType'], array( self::FOLDER_MIME_TYPE, self::GOOGLE_DOC_MIME_TYPE ), true ) ) {
+			return new WP_Error(
+				'docsync_wp_unsupported_drive_item',
+				__( 'Brasth Document Sync can only open Google Drive folders and Google Docs.', 'brasth-document-sync-for-google-docs' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		return $item;
+	}
+
+	/**
 	 * List shared drives visible to the connected Google account.
 	 *
 	 * @param int    $user_id    User ID.

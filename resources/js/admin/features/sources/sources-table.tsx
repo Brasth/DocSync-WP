@@ -229,7 +229,7 @@ export const SourcesTable = ({
                     ) : (
                       canCreateSource ? (
                         <AdminButton disabled={busy} onClick={onCreateSource} variant="primary">
-                          {__('Choose Google Doc', 'brasth-document-sync-for-google-docs')}
+                          {__('Choose source', 'brasth-document-sync-for-google-docs')}
                         </AdminButton>
                       ) : undefined
                     )}

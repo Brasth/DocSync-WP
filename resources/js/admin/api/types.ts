@@ -29,6 +29,13 @@ export type WorkspaceSourceSummary = {
   truncated: boolean;
 };
 
+export type WorkspaceFolderWatchSummary = {
+  importing: number;
+  watching: number;
+  attention: number;
+  truncated: boolean;
+};
+
 export type WorkspaceResponse = {
   canManageSettings: boolean;
   siteConnectionReady: boolean;
@@ -43,6 +50,7 @@ export type WorkspaceResponse = {
   elementorAvailable: boolean;
   availableElementorLayoutPresets: AvailableLayoutPreset[];
   sourceSummary: WorkspaceSourceSummary;
+  folderWatches?: WorkspaceFolderWatchSummary;
 };
 
 export type GoogleAccount = {
@@ -87,6 +95,7 @@ export type DriveItemSummary = {
   iconLink?: string;
   version?: string;
   selectable: boolean;
+  folderPath?: string;
   syncCompatibility?: SyncCompatibility;
 };
 
@@ -161,6 +170,49 @@ export type SourceRecord = {
   syncStartedAt: string;
   syncUpdatedAt: string;
   syncErrorCode: string;
+  folderWatchId?: string | null;
+};
+
+export type FolderWatchStatus = 'importing' | 'watching' | 'paused' | 'error';
+
+export type FolderWatchFailedItem = {
+  fileId: string;
+  name: string;
+  code: string;
+  message: string;
+};
+
+export type FolderWatchRecord = {
+  id: string;
+  folderId: string;
+  driveId: string;
+  folderName: string;
+  webViewLink: string;
+  includeSubfolders: boolean;
+  postType: string;
+  postStatus: 'draft' | 'publish' | string;
+  syncInterval: 'site' | 'off' | 'hourly' | 'twicedaily' | 'daily' | string;
+  layoutPreset: string;
+  elementorSync: boolean;
+  elementorPreset: string;
+  status: FolderWatchStatus | string;
+  pendingCount: number;
+  importedCount: number;
+  totalCount: number;
+  overflow: boolean;
+  failed: FolderWatchFailedItem[];
+  lastScanAt: string;
+  lastError: string;
+  createdAt: string;
+};
+
+export type FolderDocumentInventory = {
+  documents: DriveItemSummary[];
+  folderId: string;
+  driveId: string;
+  overflow: boolean;
+  includeSubfolders: boolean;
+  scannedFolderCount: number;
 };
 
 export type SyncResult = {

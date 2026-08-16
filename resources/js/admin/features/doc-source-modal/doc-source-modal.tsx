@@ -13,7 +13,10 @@ import { ensureLazyStyle, useLazyDriveBrowserPanel } from './lazy-drive-browser-
 import { AdvancedSourcePanel } from './advanced-source-panel';
 import { OutputTypeChoice } from './output-type-choice';
 import { SourceModeTabs } from './source-mode-tabs';
+import { FolderWatchConfirmPanel } from './folder-watch-confirm-panel';
+import { SourceIntentCards } from './source-intent-cards';
 import { type DocSourceTarget, useDocSourceModal } from './use-doc-source-modal';
+import { useFolderWatchFlow } from './use-folder-watch-flow';
 
 export type { DocSourceTarget } from './use-doc-source-modal';
 
@@ -22,12 +25,22 @@ type Props = {
   target: DocSourceTarget | null;
   onClose: () => void;
   onCompleted: (result: SyncResult) => void;
+  onFolderWatchCreated?: (watchId: string) => void;
 };
 
 const trimTrailingSlash = (value: string): string => value.replace(/\/$/, '');
 
-export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props): JSX.Element | null => {
+export const DocSourceModal = ({ isOpen, target, onClose, onCompleted, onFolderWatchCreated }: Props): JSX.Element | null => {
   const modal = useDocSourceModal({ isOpen, target, onClose, onCompleted });
+  const canUseFolderIntent = target?.mode === 'new';
+  const folderFlow = useFolderWatchFlow({
+    canChooseElementor: modal.canChooseElementor,
+    isOpen,
+    postType: target?.mode === 'new' ? target.postType : 'post',
+    onWatchCreated: (watch) => onFolderWatchCreated?.(watch.id)
+  });
+  const folderMode = canUseFolderIntent && folderFlow.intent === 'folder';
+  const showFolderConfirm = folderMode && folderFlow.inventory !== null;
   const uiMode = modal.uiMode;
   const compatibility = modal.metadata?.syncCompatibility;
   const driveBrowser = useLazyDriveBrowserPanel(isOpen && uiMode === 'browse');
@@ -82,7 +95,7 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
               <div className="docsync-wp-modal__title">
                 <span>{__('Brasth Document Sync', 'brasth-document-sync-for-google-docs')}</span>
                 <Dialog.Title asChild>
-                  <h2>{__('Link Google Doc', 'brasth-document-sync-for-google-docs')}</h2>
+                  <h2>{__('Choose source', 'brasth-document-sync-for-google-docs')}</h2>
                 </Dialog.Title>
                 <Dialog.Description asChild>
                   <p>{__('Google Docs is source of truth. Sync overwrites WordPress content.', 'brasth-document-sync-for-google-docs')}</p>
@@ -104,11 +117,20 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
           </div>
 
           <div className="docsync-wp-modal__body">
+            {canUseFolderIntent && uiMode === 'browse' ? (
+              <SourceIntentCards
+                disabled={modal.busy || folderFlow.busy || Boolean(folderFlow.watch)}
+                onChange={folderFlow.setIntent}
+                value={folderFlow.intent}
+              />
+            ) : null}
             {uiMode === 'browse' ? (
               DriveBrowserPanel ? (
                 <DriveBrowserPanel
-                  allowMultiSelect={modal.allowMultiSelect}
-                  busy={modal.busy}
+                  allowMultiSelect={modal.allowMultiSelect && !folderMode}
+                  busy={modal.busy || folderFlow.busy}
+                  folderMode={folderMode}
+                  onLocationChange={folderFlow.setLocation}
                   onSelect={modal.selectDocument}
                   selectedDocument={modal.metadata}
                   selectedDocuments={modal.selectedDocuments}
@@ -128,7 +150,32 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
               />
             ) : null}
 
+            {showFolderConfirm && folderFlow.inventory && folderFlow.location ? (
+              <FolderWatchConfirmPanel
+                busy={modal.busy || folderFlow.busy}
+                canChooseElementor={modal.canChooseElementor}
+                excludedFileIds={folderFlow.excludedFileIds}
+                folderName={folderFlow.location.folderName}
+                includeSubfolders={folderFlow.includeSubfolders}
+                inventory={folderFlow.inventory}
+                interval={folderFlow.syncInterval}
+                layoutPreset={folderFlow.layoutPreset}
+                outputType={folderFlow.outputType}
+                postStatus={folderFlow.postStatus}
+                postType={target.mode === 'new' ? target.postType : 'post'}
+                watch={folderFlow.watch}
+                onExcludeToggle={folderFlow.toggleExcluded}
+                onIncludeSubfoldersChange={folderFlow.changeIncludeSubfolders}
+                onIntervalChange={folderFlow.setSyncInterval}
+                onLayoutPresetChange={folderFlow.setLayoutPreset}
+                onOutputTypeChange={folderFlow.setOutputType}
+                onPostStatusChange={folderFlow.setPostStatus}
+                onRetryFailed={folderFlow.watch ? folderFlow.retryFailed : undefined}
+              />
+            ) : null}
+
             <AdminNotice className="inline" notice={modal.error ? { type: 'error', message: modal.error } : null} />
+            <AdminNotice className="inline" notice={folderFlow.error ? { type: 'error', message: folderFlow.error } : null} />
             <AdminNotice
               className="inline"
               notice={compatibility?.warningMessage ? {
@@ -137,7 +184,7 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
               } : null}
             />
 
-            {modal.selectedCount > 0 || modal.metadata ? (
+            {!folderMode && (modal.selectedCount > 0 || modal.metadata) ? (
               <div className="docsync-wp-doc-preview" aria-label={__('Selected Google Doc', 'brasth-document-sync-for-google-docs')}>
                 <div className="docsync-wp-doc-preview__summary">
                   <span className="docsync-wp-doc-preview__label">
@@ -194,9 +241,19 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
           </div>
 
           <div className="docsync-wp-modal__footer">
-            {modal.attachProgress ? (
+            {folderMode && folderFlow.location?.isRoot && !folderFlow.watch ? (
+              <label className="docsync-wp-modal__footer-hint">
+                <input
+                  checked={folderFlow.confirmRoot}
+                  disabled={modal.busy || folderFlow.busy}
+                  onChange={(event) => folderFlow.setConfirmRoot(event.currentTarget.checked)}
+                  type="checkbox"
+                />
+                {__('I want to watch the top of this Drive (first 50 Docs).', 'brasth-document-sync-for-google-docs')}
+              </label>
+            ) : modal.attachProgress ? (
               <span className="docsync-wp-modal__footer-hint">{modal.attachProgress}</span>
-            ) : !modal.canAttach ? (
+            ) : !folderMode && !modal.canAttach ? (
               <span className="docsync-wp-modal__footer-hint">
                 {uiMode === 'browse'
                   ? modal.allowMultiSelect
@@ -206,7 +263,7 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
               </span>
             ) : null}
             <Dialog.Close asChild>
-              <AdminButton disabled={modal.busy}>{__('Cancel', 'brasth-document-sync-for-google-docs')}</AdminButton>
+              <AdminButton disabled={modal.busy || folderFlow.busy}>{__('Cancel', 'brasth-document-sync-for-google-docs')}</AdminButton>
             </Dialog.Close>
             {uiMode !== 'browse' ? (
               <AdminButton
@@ -217,21 +274,46 @@ export const DocSourceModal = ({ isOpen, target, onClose, onCompleted }: Props):
                 {__('Inspect', 'brasth-document-sync-for-google-docs')}
               </AdminButton>
             ) : null}
-            <AdminButton
-              disabled={modal.busy || !modal.canAttach}
-              onClick={() => modal.attach()}
-              variant="primary"
-            >
-              {target.mode === 'new'
-                ? modal.selectedCount > 1
-                  ? sprintf(
-                    /* translators: %d: number of drafts to create. */
-                    __('Create %d drafts', 'brasth-document-sync-for-google-docs'),
-                    modal.selectedCount
-                  )
-                  : __('Create synced draft', 'brasth-document-sync-for-google-docs')
-                : __('Link source', 'brasth-document-sync-for-google-docs')}
-            </AdminButton>
+            {folderMode && !folderFlow.inventory ? (
+              <AdminButton
+                disabled={modal.busy || folderFlow.busy || !folderFlow.location || (folderFlow.location.isRoot && !folderFlow.confirmRoot)}
+                onClick={() => void folderFlow.loadInventory()}
+                variant="primary"
+              >
+                {__('Use this folder', 'brasth-document-sync-for-google-docs')}
+              </AdminButton>
+            ) : null}
+            {folderMode && folderFlow.inventory && !folderFlow.watch ? (
+              <AdminButton
+                disabled={modal.busy || folderFlow.busy || (folderFlow.location?.isRoot && !folderFlow.confirmRoot)}
+                onClick={() => void folderFlow.startWatch()}
+                variant="primary"
+              >
+                {__('Start folder sync', 'brasth-document-sync-for-google-docs')}
+              </AdminButton>
+            ) : null}
+            {folderMode && folderFlow.watch ? (
+              <AdminButton onClick={onClose} variant="primary">
+                {__('View in Sources', 'brasth-document-sync-for-google-docs')}
+              </AdminButton>
+            ) : null}
+            {!folderMode ? (
+              <AdminButton
+                disabled={modal.busy || !modal.canAttach}
+                onClick={() => modal.attach()}
+                variant="primary"
+              >
+                {target.mode === 'new'
+                  ? modal.selectedCount > 1
+                    ? sprintf(
+                      /* translators: %d: number of drafts to create. */
+                      __('Create %d drafts', 'brasth-document-sync-for-google-docs'),
+                      modal.selectedCount
+                    )
+                    : __('Create synced draft', 'brasth-document-sync-for-google-docs')
+                  : __('Link source', 'brasth-document-sync-for-google-docs')}
+              </AdminButton>
+            ) : null}
           </div>
         </Dialog.Content>
       </Dialog.Portal>

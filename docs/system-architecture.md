@@ -166,6 +166,8 @@ Implemented routes:
 - `GET /oauth/google/callback`
 - `GET /drive/shared-drives` with `page_token` and `page_size` filters
 - `GET /drive/items` with `folder_id`, `drive_id`, `search`, `page_token`, and `page_size` filters
+- `GET /drive/folders/{folderId}/documents` with `drive_id` and `include_subfolders` for a full folder inventory
+- `GET/POST /folders`, `GET/DELETE /folders/{id}`, and `POST /folders/{id}/scan|pause|resume|retry` for Drive folder watches
 - `GET /documents` with `search`, `page_token`, and `page_size` filters
 - `POST /documents/inspect`
 - `GET /sources` with `search`, `post_type`, `status`, `page`, and `per_page` filters

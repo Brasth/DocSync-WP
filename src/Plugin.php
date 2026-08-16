@@ -23,8 +23,10 @@ use DocSyncWP\Feedback\FeedbackService;
 use DocSyncWP\Google\DocumentIdParser;
 use DocSyncWP\Google\DocsClient;
 use DocSyncWP\Google\DriveClient;
+use DocSyncWP\Google\DriveFolderInventory;
 use DocSyncWP\Rest\DocumentController;
 use DocSyncWP\Rest\FeedbackController;
+use DocSyncWP\Rest\FolderWatchController;
 use DocSyncWP\Rest\OAuthController;
 use DocSyncWP\Rest\RestServiceProvider;
 use DocSyncWP\Rest\SettingsController;
@@ -53,6 +55,8 @@ use DocSyncWP\Sync\HtmlZipPackageExtractor;
 use DocSyncWP\Sync\Layout\LayoutConversionService;
 use DocSyncWP\Sync\Layout\LayoutPresetRegistry;
 use DocSyncWP\Sync\MediaAssetImporter;
+use DocSyncWP\Sync\FolderWatchRepository;
+use DocSyncWP\Sync\FolderWatchService;
 use DocSyncWP\Sync\SourceRepository;
 use DocSyncWP\Sync\SyncLock;
 use DocSyncWP\Sync\SyncService;
@@ -129,6 +133,13 @@ final class Plugin {
 	private SourceRepository $source_repository;
 
 	/**
+	 * Folder watch service.
+	 *
+	 * @var FolderWatchService
+	 */
+	private FolderWatchService $folder_watch_service;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param AdminPage           $admin_page        Admin page service.
@@ -138,8 +149,9 @@ final class Plugin {
 	 * @param PostListActions     $post_list_actions Post list table actions service.
 	 * @param SyncCron            $sync_cron         Sync cron service.
 	 * @param TelemetryCron       $telemetry_cron    Telemetry cron service.
-	 * @param TokenStore          $token_store       Token store service.
-	 * @param SourceRepository    $source_repository Source repository service.
+	 * @param TokenStore          $token_store          Token store service.
+	 * @param SourceRepository    $source_repository    Source repository service.
+	 * @param FolderWatchService  $folder_watch_service Folder watch service.
 	 */
 	public function __construct(
 		AdminPage $admin_page,
@@ -150,17 +162,19 @@ final class Plugin {
 		SyncCron $sync_cron,
 		TelemetryCron $telemetry_cron,
 		TokenStore $token_store,
-		SourceRepository $source_repository
+		SourceRepository $source_repository,
+		FolderWatchService $folder_watch_service
 	) {
-		$this->admin_page         = $admin_page;
-		$this->assets             = $assets;
-		$this->rest               = $rest;
-		$this->post_sync_meta_box = $post_sync_meta_box;
-		$this->post_list_actions  = $post_list_actions;
-		$this->sync_cron          = $sync_cron;
-		$this->telemetry_cron     = $telemetry_cron;
-		$this->token_store        = $token_store;
-		$this->source_repository  = $source_repository;
+		$this->admin_page           = $admin_page;
+		$this->assets               = $assets;
+		$this->rest                 = $rest;
+		$this->post_sync_meta_box   = $post_sync_meta_box;
+		$this->post_list_actions    = $post_list_actions;
+		$this->sync_cron            = $sync_cron;
+		$this->telemetry_cron       = $telemetry_cron;
+		$this->token_store          = $token_store;
+		$this->source_repository    = $source_repository;
+		$this->folder_watch_service = $folder_watch_service;
 	}
 
 	/**
@@ -177,6 +191,8 @@ final class Plugin {
 		$telemetry_service           = new TelemetryService( $settings );
 		$drive_client                = new DriveClient( $google_oauth );
 		$docs_client                 = new DocsClient( $google_oauth );
+		$folder_inventory            = new DriveFolderInventory( $drive_client );
+		$folder_watch_repository     = new FolderWatchRepository();
 		$document_id_parser          = new DocumentIdParser();
 		$media_assets                = new MediaAssetImporter();
 		$elementor_checker           = new CompatibilityChecker();
@@ -215,6 +231,14 @@ final class Plugin {
 			$elementor_updater,
 			$elementor_presets_converter
 		);
+		$folder_watch_service        = new FolderWatchService(
+			$folder_watch_repository,
+			$folder_inventory,
+			$drive_client,
+			$source_repository,
+			$sync_service,
+			$settings
+		);
 
 		$plugin = new self(
 			new AdminPage( $settings, $source_repository ),
@@ -226,7 +250,7 @@ final class Plugin {
 			),
 			new RestServiceProvider(
 				new SettingsController( $settings, $token_store ),
-				new WorkspaceController( $settings, $source_repository, $elementor_checker ),
+				new WorkspaceController( $settings, $source_repository, $elementor_checker, $folder_watch_service ),
 				new OAuthController( $google_oauth, $token_store ),
 				new DocumentController(
 					$document_id_parser,
@@ -240,14 +264,22 @@ final class Plugin {
 					$elementor_presets
 				),
 				new SyncLogController( $source_repository ),
-				new FeedbackController( new FeedbackService(), new FeedbackRateLimiter() )
+				new FeedbackController( new FeedbackService(), new FeedbackRateLimiter() ),
+				new FolderWatchController(
+					$folder_watch_service,
+					$folder_inventory,
+					$source_repository,
+					$layout_presets,
+					$elementor_presets
+				)
 			),
 			new PostSyncMetaBox( $source_repository, $settings, $sync_service->getElementorDecider() ),
 			new PostListActions( $source_repository, $sync_service->getElementorDecider() ),
 			new SyncCron( $settings, $source_repository, $sync_service ),
 			new TelemetryCron( $settings, $telemetry_service ),
 			$token_store,
-			$source_repository
+			$source_repository,
+			$folder_watch_service
 		);
 
 		$plugin->register();
@@ -270,6 +302,7 @@ final class Plugin {
 		$this->post_sync_meta_box->register();
 		$this->post_list_actions->register();
 		$this->sync_cron->register();
+		$this->folder_watch_service->register();
 		$this->telemetry_cron->register();
 		$this->rest->register();
 	}

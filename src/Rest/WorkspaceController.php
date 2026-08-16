@@ -11,6 +11,7 @@ namespace DocSyncWP\Rest;
 
 use DocSyncWP\Settings\SettingsRepository;
 use DocSyncWP\Sync\Elementor\CompatibilityChecker;
+use DocSyncWP\Sync\FolderWatchService;
 use DocSyncWP\Sync\SourceRepository;
 use WP_Post_Type;
 use WP_REST_Response;
@@ -44,20 +45,30 @@ final class WorkspaceController {
 	private CompatibilityChecker $elementor;
 
 	/**
+	 * Folder watch service.
+	 *
+	 * @var FolderWatchService
+	 */
+	private FolderWatchService $folder_watches;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param SettingsRepository   $settings  Settings repository.
 	 * @param SourceRepository     $sources   Source repository.
-	 * @param CompatibilityChecker $elementor Elementor compatibility checker.
+	 * @param CompatibilityChecker $elementor      Elementor compatibility checker.
+	 * @param FolderWatchService   $folder_watches Folder watch service.
 	 */
 	public function __construct(
 		SettingsRepository $settings,
 		SourceRepository $sources,
-		CompatibilityChecker $elementor
+		CompatibilityChecker $elementor,
+		FolderWatchService $folder_watches
 	) {
-		$this->settings  = $settings;
-		$this->sources   = $sources;
-		$this->elementor = $elementor;
+		$this->settings       = $settings;
+		$this->sources        = $sources;
+		$this->elementor      = $elementor;
+		$this->folder_watches = $folder_watches;
 	}
 
 	/**
@@ -131,6 +142,7 @@ final class WorkspaceController {
 				'elementorAvailable'              => $this->elementor->isElementorActive(),
 				'availableElementorLayoutPresets' => $this->settings->getAvailableElementorLayoutPresets(),
 				'sourceSummary'                   => $this->formatSourceSummary( $user_id ),
+				'folderWatches'                   => $this->folder_watches->summarizeForUser( $user_id ),
 			)
 		);
 	}

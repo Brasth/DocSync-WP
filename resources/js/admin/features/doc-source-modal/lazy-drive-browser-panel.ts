@@ -3,12 +3,15 @@ import { __ } from '@wordpress/i18n';
 
 import type { DocumentMetadata } from '../../api';
 import { getAdminConfig } from '../../config';
+import type { FolderBrowserLocation } from '../drive-browser/drive-browser-panel';
 
 export type DriveBrowserPanelProps = {
   allowMultiSelect?: boolean;
   busy: boolean;
+  folderMode?: boolean;
   selectedDocument: DocumentMetadata | null;
   selectedDocuments?: DocumentMetadata[];
+  onLocationChange?: (location: FolderBrowserLocation) => void;
   onSelect: (document: DocumentMetadata | null) => void;
 };
 

@@ -58,6 +58,9 @@ jobs:
             fi
           done
 
+      - name: Parse-check PHP sources
+        run: find brasth-document-sync-for-google-docs.php uninstall.php src -name '*.php' -print0 | xargs -0 -n1 php -l
+
       - name: Run PHPCS
         run: composer lint
 
