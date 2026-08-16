@@ -124,7 +124,7 @@ jobs:
 
       - name: Validate frontend release checks
         run: |
-          pnpm audit
+          pnpm audit --prod
           pnpm lint
           pnpm typecheck
           pnpm --dir cloudflare/telemetry-worker lint

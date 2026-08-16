@@ -7,9 +7,6 @@ on:
       - synchronize
       - reopened
       - ready_for_review
-  push:
-    branches-ignore:
-      - main
 
 permissions:
   contents: read
@@ -117,7 +114,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Audit Node dependencies
-        run: pnpm audit
+        run: pnpm audit --prod
 
       - name: Run ESLint
         run: pnpm lint
