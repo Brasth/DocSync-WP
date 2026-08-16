@@ -1,5 +1,5 @@
 import { request } from './client';
-import type { WorkspaceResponse, WorkspaceSourceSummary } from './types';
+import type { WorkspaceFolderWatchSummary, WorkspaceResponse, WorkspaceSourceSummary } from './types';
 
 const normalizeCount = (value: unknown): number => {
   return typeof value === 'number' && Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
@@ -11,6 +11,15 @@ const normalizeSourceSummary = (summary: WorkspaceSourceSummary | undefined): Wo
   syncing: normalizeCount(summary?.syncing),
   healthy: normalizeCount(summary?.healthy),
   activated: summary?.activated === true,
+  truncated: summary?.truncated === true
+});
+
+const normalizeFolderWatchSummary = (
+  summary: WorkspaceFolderWatchSummary | undefined
+): WorkspaceFolderWatchSummary => ({
+  importing: normalizeCount(summary?.importing),
+  watching: normalizeCount(summary?.watching),
+  attention: normalizeCount(summary?.attention),
   truncated: summary?.truncated === true
 });
 
@@ -33,7 +42,8 @@ const normalizeWorkspaceResponse = (response: WorkspaceResponse): WorkspaceRespo
   availableElementorLayoutPresets: Array.isArray(response.availableElementorLayoutPresets)
     ? response.availableElementorLayoutPresets
     : [],
-  sourceSummary: normalizeSourceSummary(response.sourceSummary)
+  sourceSummary: normalizeSourceSummary(response.sourceSummary),
+  folderWatches: normalizeFolderWatchSummary(response.folderWatches)
 });
 
 export const getWorkspace = async (): Promise<WorkspaceResponse> => {

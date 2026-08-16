@@ -78,7 +78,7 @@ export const ActivationGuidance = ({ account, busy, onConnect, onCreateSource, s
       case 'reconnect_google':
         return <AdminButton disabled={busy} onClick={onConnect} variant="primary">{__('Reconnect Google', 'brasth-document-sync-for-google-docs')}</AdminButton>;
       case 'create_source':
-        return <AdminButton disabled={busy || workspace.creatablePostTypes.length === 0} onClick={onCreateSource} variant="primary">{__('Choose Google Doc', 'brasth-document-sync-for-google-docs')}</AdminButton>;
+        return <AdminButton disabled={busy || workspace.creatablePostTypes.length === 0} onClick={onCreateSource} variant="primary">{__('Choose source', 'brasth-document-sync-for-google-docs')}</AdminButton>;
       case 'view_sources':
       case 'review_attention':
         return <a className="button button-primary" href={sourcesUrl}>{advisor.action === 'review_attention' ? __('Review sources', 'brasth-document-sync-for-google-docs') : __('View Sources', 'brasth-document-sync-for-google-docs')}</a>;

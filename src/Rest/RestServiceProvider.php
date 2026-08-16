@@ -67,15 +67,23 @@ final class RestServiceProvider {
 	private FeedbackController $feedback_controller;
 
 	/**
+	 * Folder watch controller.
+	 *
+	 * @var FolderWatchController
+	 */
+	private FolderWatchController $folder_watch_controller;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param SettingsController  $settings_controller  Settings controller.
-	 * @param WorkspaceController $workspace_controller Operational workspace controller.
-	 * @param OAuthController     $oauth_controller     OAuth controller.
-	 * @param DocumentController  $document_controller  Document controller.
-	 * @param SourceController    $source_controller    Source controller.
-	 * @param SyncLogController   $sync_log_controller  Sync log controller.
-	 * @param FeedbackController  $feedback_controller  Feedback controller.
+	 * @param SettingsController    $settings_controller  Settings controller.
+	 * @param WorkspaceController   $workspace_controller Operational workspace controller.
+	 * @param OAuthController       $oauth_controller     OAuth controller.
+	 * @param DocumentController    $document_controller  Document controller.
+	 * @param SourceController      $source_controller    Source controller.
+	 * @param SyncLogController     $sync_log_controller  Sync log controller.
+	 * @param FeedbackController    $feedback_controller     Feedback controller.
+	 * @param FolderWatchController $folder_watch_controller Folder watch controller.
 	 */
 	public function __construct(
 		SettingsController $settings_controller,
@@ -84,15 +92,17 @@ final class RestServiceProvider {
 		DocumentController $document_controller,
 		SourceController $source_controller,
 		SyncLogController $sync_log_controller,
-		FeedbackController $feedback_controller
+		FeedbackController $feedback_controller,
+		FolderWatchController $folder_watch_controller
 	) {
-		$this->settings_controller  = $settings_controller;
-		$this->workspace_controller = $workspace_controller;
-		$this->oauth_controller     = $oauth_controller;
-		$this->document_controller  = $document_controller;
-		$this->source_controller    = $source_controller;
-		$this->sync_log_controller  = $sync_log_controller;
-		$this->feedback_controller  = $feedback_controller;
+		$this->settings_controller     = $settings_controller;
+		$this->workspace_controller    = $workspace_controller;
+		$this->oauth_controller        = $oauth_controller;
+		$this->document_controller     = $document_controller;
+		$this->source_controller       = $source_controller;
+		$this->sync_log_controller     = $sync_log_controller;
+		$this->feedback_controller     = $feedback_controller;
+		$this->folder_watch_controller = $folder_watch_controller;
 	}
 
 	/**
@@ -113,5 +123,6 @@ final class RestServiceProvider {
 		$this->source_controller->registerRoutes( self::NAMESPACE );
 		$this->sync_log_controller->registerRoutes( self::NAMESPACE );
 		$this->feedback_controller->registerRoutes( self::NAMESPACE );
+		$this->folder_watch_controller->registerRoutes( self::NAMESPACE );
 	}
 }

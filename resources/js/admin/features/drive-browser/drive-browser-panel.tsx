@@ -1,4 +1,4 @@
-import { createElement } from '@wordpress/element';
+import { createElement, useEffect } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 
 import type { DocumentMetadata } from '../../api';
@@ -10,11 +10,20 @@ import { DriveBrowserTable, DriveBrowserTableSkeleton } from './drive-browser-ta
 import { DriveBrowserToolbar } from './drive-browser-toolbar';
 import { useDriveBrowser } from './use-drive-browser';
 
+export type FolderBrowserLocation = {
+  driveId: string;
+  folderId: string;
+  folderName: string;
+  isRoot: boolean;
+};
+
 export type DriveBrowserPanelProps = {
   allowMultiSelect?: boolean;
   busy: boolean;
+  folderMode?: boolean;
   selectedDocument: DocumentMetadata | null;
   selectedDocuments?: DocumentMetadata[];
+  onLocationChange?: (location: FolderBrowserLocation) => void;
   onSelect: (document: DocumentMetadata | null) => void;
 };
 
@@ -23,10 +32,25 @@ export const DriveBrowserPanel = ({
   busy,
   selectedDocument,
   selectedDocuments,
+  onLocationChange,
   onSelect
 }: DriveBrowserPanelProps): JSX.Element => {
   const browser = useDriveBrowser({ onSelect });
   const selected = selectedDocuments ?? (selectedDocument ? [selectedDocument] : []);
+
+  useEffect(() => {
+    if (!onLocationChange) {
+      return;
+    }
+
+    const isRoot = browser.folderId === 'root' || (browser.driveId !== '' && browser.folderId === browser.driveId);
+    onLocationChange({
+      driveId: browser.driveId,
+      folderId: browser.folderId,
+      folderName: browser.currentFolderName,
+      isRoot
+    });
+  }, [browser.currentFolderName, browser.driveId, browser.folderId, onLocationChange]);
 
   return (
     <div className="docsync-wp-drive-browser">

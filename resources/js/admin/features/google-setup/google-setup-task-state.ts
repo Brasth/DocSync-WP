@@ -114,7 +114,7 @@ export const buildGoogleSetupNextAction = ({
     description: canCreateSource
       ? __('Choose an accessible Google Doc and create a WordPress draft without leaving Setup.', 'brasth-document-sync-for-google-docs')
       : __('No enabled WordPress target is available for this user. Adjust post-type permissions before creating a source.', 'brasth-document-sync-for-google-docs'),
-    label: __('Choose Google Doc', 'brasth-document-sync-for-google-docs'),
+    label: __('Choose source', 'brasth-document-sync-for-google-docs'),
     disabled: busy || !canCreateSource,
     onClick: async () => onCreateSource()
   };

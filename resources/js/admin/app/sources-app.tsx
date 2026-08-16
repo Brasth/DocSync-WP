@@ -2,6 +2,7 @@ import { createElement, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 import { BackgroundSyncPoller } from '../features/post-sync/background-sync-poller';
+import { SourcesFolderWatches } from '../features/sources/sources-folder-watches';
 import { SourcesTable, SourcesTableSkeleton } from '../features/sources/sources-table';
 import { SourceHealthSummary } from '../features/sources/source-health-summary';
 import { ActivationGuidance } from '../features/activation/activation-guidance';
@@ -59,6 +60,14 @@ export const SourcesApp = (): JSX.Element => {
               workspace={app.workspace}
             />
             <SourceHealthSummary summary={app.workspace.sourceSummary} />
+            <SourcesFolderWatches
+              busy={app.busy}
+              onPause={app.onPauseFolderWatch}
+              onRemove={app.onRemoveFolderWatch}
+              onResume={app.onResumeFolderWatch}
+              onScan={app.onScanFolderWatch}
+              watches={app.folderWatches}
+            />
             {app.activationSource ? (
               <ActivationResult busy={app.busy} onRetry={app.retryActivationSource} source={app.activationSource} />
             ) : null}
@@ -81,6 +90,9 @@ export const SourcesApp = (): JSX.Element => {
             isOpen={app.sourceModalOpen}
             onClose={app.closeSourceModal}
             onCompleted={app.handleSourceCreated}
+            onFolderWatchCreated={() => {
+              void app.refresh();
+            }}
             target={app.sourceModalOpen && app.workspace.creatablePostTypes[0] ? { mode: 'new', postType: app.workspace.creatablePostTypes[0] } : null}
           />
         </div>

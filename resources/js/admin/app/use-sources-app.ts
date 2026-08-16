@@ -3,12 +3,18 @@ import { useMemo, useRef, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 
 import {
+  deleteFolderWatch,
   getGoogleAccount,
   getGoogleAuthUrl,
   getWorkspace,
+  listFolderWatches,
   listSources,
+  pauseFolderWatch,
+  resumeFolderWatch,
+  scanFolderWatch,
   syncAllSources,
   syncSource,
+  type FolderWatchRecord,
   type GoogleAccount,
   type SourceRecord,
   type SyncResult,
@@ -52,6 +58,7 @@ export const useSourcesApp = () => {
   const [workspace, setWorkspace] = useState<WorkspaceResponse | null>(null);
   const [account, setAccount] = useState<GoogleAccount>(emptyAccount);
   const [sources, setSources] = useState<SourceRecord[]>([]);
+  const [folderWatches, setFolderWatches] = useState<FolderWatchRecord[]>([]);
   const [sourcePage, setSourcePage] = useState(1);
   const [sourceFilters, setSourceFilters] = useState<SourceListFilters>(readSourceFiltersFromUrl);
   const [hasMoreSources, setHasMoreSources] = useState(false);
@@ -67,7 +74,7 @@ export const useSourcesApp = () => {
 
   const refreshSources = async (filters = sourceFiltersRef.current, page = 1, append = false) => {
     const generation = ++requestGeneration.current;
-    let responses: [WorkspaceResponse, GoogleAccount, Awaited<ReturnType<typeof listSources>>];
+    let responses: [WorkspaceResponse, GoogleAccount, Awaited<ReturnType<typeof listSources>>, Awaited<ReturnType<typeof listFolderWatches>>];
 
     try {
       responses = await Promise.all([
@@ -77,7 +84,8 @@ export const useSourcesApp = () => {
           ...filters,
           page,
           perPage: sourcePageSize
-        })
+        }),
+        listFolderWatches()
       ]);
     } catch (caught) {
       if (generation !== requestGeneration.current) {
@@ -91,10 +99,11 @@ export const useSourcesApp = () => {
       return false;
     }
 
-    const [workspaceResponse, accountResponse, sourcesResponse] = responses;
+    const [workspaceResponse, accountResponse, sourcesResponse, foldersResponse] = responses;
 
     setWorkspace(workspaceResponse);
     setAccount(accountResponse);
+    setFolderWatches(foldersResponse.folders);
     sourceFiltersRef.current = filters;
     setSourceFilters(filters);
     setSources((current) => append ? [...current, ...sourcesResponse.sources] : sourcesResponse.sources);
@@ -239,6 +248,13 @@ export const useSourcesApp = () => {
     restoreModalFocus.current = true;
   };
 
+  const runFolderWatchAction = async (action: () => Promise<unknown>) => {
+    await runAction(async () => {
+      await action();
+      await refresh();
+    });
+  };
+
   return {
     account,
     activationSource,
@@ -247,10 +263,15 @@ export const useSourcesApp = () => {
     connectGoogle,
     closeSourceModal,
     config,
+    folderWatches,
     hasMoreSources,
     handleSourceCreated,
     loadMoreSources,
     notice,
+    onPauseFolderWatch: (watchId: string) => runFolderWatchAction(() => pauseFolderWatch(watchId)),
+    onRemoveFolderWatch: (watchId: string) => runFolderWatchAction(() => deleteFolderWatch(watchId)),
+    onResumeFolderWatch: (watchId: string) => runFolderWatchAction(() => resumeFolderWatch(watchId)),
+    onScanFolderWatch: (watchId: string) => runFolderWatchAction(() => scanFolderWatch(watchId)),
     openSourceModal,
     refresh,
     retryActivationSource,

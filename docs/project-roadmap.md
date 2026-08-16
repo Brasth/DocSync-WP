@@ -61,7 +61,7 @@ Each release must pass the existing validation pipeline (`pnpm lint`, `pnpm type
 
 | Version | Target Date | Scope | User-visible value |
 |---|---|---|---|
-| **1.1.4** | Next, after internal validation | Feature freeze; staging and internal validation; fixes for proven regressions; release-pipeline enforcement; PHP 8.1, Plugin Check, readme validation, clean-install ZIP smoke coverage | A dependable sync workflow and safer updates |
+| **1.1.4** | Next | PHP 8.1 activate fix plus Drive folder automation (watch a folder, inventory Docs, optional subfolders, draft/publish policy, per-folder schedule). Release-pipeline `php -l` on PHP 8.1. | Operators choose a Doc or a Drive folder; PHP 8.1 sites can activate |
 
 **Mandatory 1.1.4 release gates:**
 

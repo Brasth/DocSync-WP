@@ -261,6 +261,8 @@ final class SyncService {
 	 * @param bool|null $elementor_sync   Whether to sync this post as an Elementor layout. Null defaults to false for new drafts.
 	 * @param string    $layout_preset    Optional Gutenberg layout preset override.
 	 * @param string    $elementor_preset Optional Elementor layout preset.
+	 * @param string    $post_status      New post status. Draft or publish.
+	 * @param string    $folder_watch_id  Optional parent folder watch.
 	 * @return array<string,mixed>|WP_Error
 	 */
 	public function createDraftFromSource(
@@ -271,7 +273,9 @@ final class SyncService {
 		bool $sync_immediately = true,
 		?bool $elementor_sync = null,
 		string $layout_preset = '',
-		string $elementor_preset = ''
+		string $elementor_preset = '',
+		string $post_status = 'draft',
+		string $folder_watch_id = ''
 	): array|WP_Error {
 		$export_format = $this->sanitizeExportFormat( $export_format );
 
@@ -297,12 +301,14 @@ final class SyncService {
 			$elementor_preset = ElementorPresetRegistry::DEFAULT_PRESET;
 		}
 
+		$post_status = in_array( $post_status, array( 'draft', 'publish' ), true ) ? $post_status : 'draft';
+
 		$post_id = wp_insert_post(
 			wp_slash(
 				array(
 					'post_author'  => $user_id,
 					'post_content' => '',
-					'post_status'  => 'draft',
+					'post_status'  => $post_status,
 					'post_title'   => $metadata['name'],
 					'post_type'    => $post_type,
 				)
@@ -339,6 +345,7 @@ final class SyncService {
 					'sync_started_at'    => '',
 					'sync_updated_at'    => '',
 					'sync_error_code'    => '',
+					'folder_watch_id'    => $folder_watch_id,
 				)
 			)
 		);

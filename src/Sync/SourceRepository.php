@@ -46,6 +46,7 @@ final class SourceRepository {
 	public const META_ELEMENTOR_PRESET = '_docsync_wp_elementor_preset';
 	public const META_LAYOUT_PRESET    = '_docsync_wp_layout_preset';
 	public const META_LAYOUT_HASH      = '_docsync_wp_last_layout_fingerprint';
+	public const META_FOLDER_WATCH_ID  = '_docsync_wp_folder_watch_id';
 
 	private const EXPORT_FORMAT_HTML_ZIP = 'html_zip';
 	private const STATUS_SYNCING         = 'syncing';
@@ -139,6 +140,7 @@ final class SourceRepository {
 			'sync_started_at'      => $this->getStringMeta( $post_id, self::META_SYNC_STARTED ),
 			'sync_updated_at'      => $this->getStringMeta( $post_id, self::META_SYNC_UPDATED ),
 			'sync_error_code'      => $this->getStringMeta( $post_id, self::META_SYNC_ERR_CODE ),
+			'folder_watch_id'      => $this->getStringMeta( $post_id, self::META_FOLDER_WATCH_ID ),
 		);
 	}
 
@@ -213,6 +215,16 @@ final class SourceRepository {
 		update_post_meta( $post_id, self::META_SYNC_STARTED, isset( $source['sync_started_at'] ) ? sanitize_text_field( (string) $source['sync_started_at'] ) : '' );
 		update_post_meta( $post_id, self::META_SYNC_UPDATED, isset( $source['sync_updated_at'] ) ? sanitize_text_field( (string) $source['sync_updated_at'] ) : '' );
 		update_post_meta( $post_id, self::META_SYNC_ERR_CODE, isset( $source['sync_error_code'] ) ? sanitize_key( (string) $source['sync_error_code'] ) : '' );
+
+		if ( array_key_exists( 'folder_watch_id', $source ) ) {
+			$folder_watch_id = sanitize_key( (string) $source['folder_watch_id'] );
+
+			if ( '' === $folder_watch_id ) {
+				delete_post_meta( $post_id, self::META_FOLDER_WATCH_ID );
+			} else {
+				update_post_meta( $post_id, self::META_FOLDER_WATCH_ID, $folder_watch_id );
+			}
+		}
 
 		return true;
 	}
@@ -896,7 +908,49 @@ final class SourceRepository {
 			'syncStartedAt'         => $source['sync_started_at'],
 			'syncUpdatedAt'         => $source['sync_updated_at'],
 			'syncErrorCode'         => $source['sync_error_code'],
+			'folderWatchId'         => '' !== $source['folder_watch_id'] ? $source['folder_watch_id'] : null,
 		);
+	}
+
+	/**
+	 * Find a linked post for a Google file ID.
+	 *
+	 * @param string $file_id Google Drive file ID.
+	 */
+	public function findPostIdByGoogleFileId( string $file_id ): ?int {
+		$file_id = sanitize_text_field( $file_id );
+
+		if ( '' === $file_id ) {
+			return null;
+		}
+
+		$post_types = $this->getEnabledPostTypes();
+
+		if ( array() === $post_types ) {
+			return null;
+		}
+
+		$query = new WP_Query(
+			array(
+				'fields'                 => 'ids',
+				'meta_query'             => array(
+					array(
+						'key'   => self::META_FILE_ID,
+						'value' => $file_id,
+					),
+				),
+				'no_found_rows'          => true,
+				'post_status'            => 'any',
+				'post_type'              => $post_types,
+				'posts_per_page'         => 1,
+				'update_post_meta_cache' => false,
+				'update_post_term_cache' => false,
+			)
+		);
+
+		$post_id = isset( $query->posts[0] ) ? absint( $query->posts[0] ) : 0;
+
+		return $post_id > 0 ? $post_id : null;
 	}
 
 	/**
@@ -1264,6 +1318,32 @@ final class SourceRepository {
 		}
 
 		$capability = $post_type_object->cap->create_posts ?? $post_type_object->cap->edit_posts ?? 'edit_posts';
+
+		if ( 'do_not_allow' === $capability ) {
+			return false;
+		}
+
+		return user_can( $user_id, $capability );
+	}
+
+	/**
+	 * Whether a user can publish a synced post of the given type.
+	 *
+	 * @param string $post_type Post type.
+	 * @param int    $user_id   User ID.
+	 */
+	public function userCanPublishSyncedPost( string $post_type, int $user_id ): bool {
+		if ( ! $this->userCanCreateSyncedPost( $post_type, $user_id ) ) {
+			return false;
+		}
+
+		$post_type_object = get_post_type_object( $post_type );
+
+		if ( ! $post_type_object instanceof WP_Post_Type ) {
+			return false;
+		}
+
+		$capability = $post_type_object->cap->publish_posts ?? 'publish_posts';
 
 		if ( 'do_not_allow' === $capability ) {
 			return false;
