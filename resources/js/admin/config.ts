@@ -45,7 +45,7 @@ const fallbackConfig: DocSyncWPAdminConfig = {
   restUrl: '',
   nonce: '',
   pluginUrl: '',
-  version: '1.1.3',
+  version: '1.1.5',
   currentUserId: 0,
   clientId: '',
   connectionMode: 'self_managed',

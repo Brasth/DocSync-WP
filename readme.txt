@@ -4,7 +4,7 @@ Tags: google-docs, google-drive, content-sync, editorial-workflow, blocks
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 1.1.4
+Stable tag: 1.1.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -145,13 +145,16 @@ The build uses Vite and writes screen-specific manifests for Setup, Sources, Log
 
 == Changelog ==
 
+= 1.1.5 =
+
+* Added Drive folder automation with optional subfolder scanning, draft or publish policy, and per-folder scheduling.
+* Added multi-select Google Docs draft creation and fixed nested Gutenberg list-item output.
+* Added an authenticated admin feedback form with a Cloudflare Worker relay for public GitHub issue creation.
+* Fixed a PHP 8.1 fatal on plugin activation caused by true union return types.
+
 = 1.1.4 =
 
-* Added Drive folder automation: watch a Google Drive folder, inventory its Google Docs, create drafts, and pick up new Docs on the folder schedule.
-* Added folder-level Include subfolders, draft or publish policy, and per-folder schedule override.
-* Added the authenticated admin feedback form and Cloudflare Worker relay for creating public GitHub issues without shipping a GitHub token.
 * Hardened release validation with exact-commit provenance, PHP 8.1 compatibility checks, official readme validation, release ZIP inspection, and clean-install runtime smoke coverage.
-* Fixed a PHP 8.1 fatal on plugin activation caused by true union return types.
 * Fixed background sync scheduling and source-state handling found during internal release hardening.
 * Improved HTML ZIP extraction cleanup and sync lock behavior to protect reliable retries.
 
