@@ -1,0 +1,30 @@
+{
+  "name": "Brasth Document Sync (WordPress)",
+  "user": "ubuntu",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "."
+  },
+  "install": "./.cursor/scripts/install.sh",
+  "start": "./.cursor/scripts/start.sh",
+  "terminals": [
+    {
+      "name": "wordpress",
+      "command": "cd /var/www/html && wp server --host=0.0.0.0 --port=8890",
+      "description": "WordPress dev site (PHP built-in server) at http://localhost:8890"
+    },
+    {
+      "name": "cron",
+      "command": "cd /var/www/html && while true; do wp cron event run --due-now --quiet || true; sleep 5; done",
+      "description": "WP-CLI cron worker: runs due WordPress events for background sync"
+    },
+    {
+      "name": "vite",
+      "command": "cd /workspace && pnpm dev",
+      "description": "Vite watch build for the plugin admin app (setup bundle)"
+    }
+  ],
+  "ports": [
+    { "name": "WordPress", "port": 8890 }
+  ]
+}
