@@ -44,6 +44,7 @@ export const FolderWatchEditForm = ({ busy, draft, postType, onChange }: Props):
           <option value="hourly">{intervalLabel('hourly')}</option>
           <option value="twicedaily">{intervalLabel('twicedaily')}</option>
           <option value="daily">{intervalLabel('daily')}</option>
+          <option value="weekly">{intervalLabel('weekly')}</option>
         </select>
       </label>
       <label className="docsync-wp-field docsync-wp-field--compact">

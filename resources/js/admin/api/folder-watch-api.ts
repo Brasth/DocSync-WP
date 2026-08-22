@@ -10,7 +10,7 @@ export type CreateFolderWatchPayload = {
   confirmRoot?: boolean;
   postType: string;
   postStatus?: 'draft' | 'publish';
-  syncInterval?: 'site' | 'off' | 'hourly' | 'twicedaily' | 'daily';
+  syncInterval?: 'site' | 'off' | 'hourly' | 'twicedaily' | 'daily' | 'weekly';
   layoutPreset?: string;
   elementorSync?: boolean;
   elementorPreset?: string;
@@ -18,7 +18,7 @@ export type CreateFolderWatchPayload = {
 };
 
 export type UpdateFolderWatchPayload = {
-  syncInterval?: 'site' | 'off' | 'hourly' | 'twicedaily' | 'daily';
+  syncInterval?: 'site' | 'off' | 'hourly' | 'twicedaily' | 'daily' | 'weekly';
   postStatus?: 'draft' | 'publish';
   layoutPreset?: string;
   elementorSync?: boolean;

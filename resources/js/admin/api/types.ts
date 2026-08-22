@@ -197,7 +197,7 @@ export type FolderWatchRecord = {
   includeSubfolders: boolean;
   postType: string;
   postStatus: 'draft' | 'publish' | string;
-  syncInterval: 'site' | 'off' | 'hourly' | 'twicedaily' | 'daily' | string;
+  syncInterval: 'site' | 'off' | 'hourly' | 'twicedaily' | 'daily' | 'weekly' | string;
   layoutPreset: string;
   elementorSync: boolean;
   elementorPreset: string;

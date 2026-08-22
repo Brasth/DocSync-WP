@@ -310,15 +310,29 @@ final class FolderWatchService {
 			$watch['elementorPreset'] = sanitize_key( (string) $input['elementorPreset'] );
 		}
 
-		$needs_reconcile = array_key_exists( 'includeSubfolders', $input )
-			|| array_key_exists( 'excludedFileIds', $input );
+		$needs_reconcile = false;
 
 		if ( array_key_exists( 'includeSubfolders', $input ) ) {
-			$watch['includeSubfolders'] = ! empty( $input['includeSubfolders'] );
+			$include_subfolders         = ! empty( $input['includeSubfolders'] );
+			$current_include_subfolders = ! empty( $watch['includeSubfolders'] );
+
+			if ( $include_subfolders !== $current_include_subfolders ) {
+				$watch['includeSubfolders'] = $include_subfolders;
+				$needs_reconcile            = true;
+			}
 		}
 
 		if ( array_key_exists( 'excludedFileIds', $input ) ) {
-			$watch['excludedFileIds'] = $this->sanitizeIdList( $input['excludedFileIds'] );
+			$excluded_file_ids = $this->sanitizeIdList( $input['excludedFileIds'] );
+			$current_excluded  = $this->sanitizeIdList( $watch['excludedFileIds'] ?? array() );
+
+			sort( $excluded_file_ids );
+			sort( $current_excluded );
+
+			if ( $excluded_file_ids !== $current_excluded ) {
+				$watch['excludedFileIds'] = $excluded_file_ids;
+				$needs_reconcile          = true;
+			}
 		}
 
 		if ( $needs_reconcile ) {
@@ -928,7 +942,7 @@ final class FolderWatchService {
 			$interval = isset( $settings['sync_interval'] ) ? sanitize_key( (string) $settings['sync_interval'] ) : 'off';
 		}
 
-		return in_array( $interval, array( 'off', 'hourly', 'twicedaily', 'daily' ), true ) ? $interval : 'off';
+		return in_array( $interval, array( 'off', 'hourly', 'twicedaily', 'daily', 'weekly' ), true ) ? $interval : 'off';
 	}
 
 	/**
@@ -950,7 +964,7 @@ final class FolderWatchService {
 	private function sanitizeWatchInterval( mixed $interval ): string {
 		$interval = sanitize_key( (string) $interval );
 
-		return in_array( $interval, array( 'site', 'off', 'hourly', 'twicedaily', 'daily' ), true ) ? $interval : 'site';
+		return in_array( $interval, array( 'site', 'off', 'hourly', 'twicedaily', 'daily', 'weekly' ), true ) ? $interval : 'site';
 	}
 
 	/**
