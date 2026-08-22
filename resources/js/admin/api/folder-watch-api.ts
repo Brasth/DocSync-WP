@@ -29,11 +29,12 @@ export type UpdateFolderWatchPayload = {
 
 export const listFolderDocuments = (
   folderId: string,
-  filters: { driveId?: string; includeSubfolders?: boolean } = {}
+  filters: { driveId?: string; includeSubfolders?: boolean; watchId?: string } = {}
 ): Promise<FolderDocumentInventory> => {
   return request<FolderDocumentInventory>(addQueryArgs(`drive/folders/${encodeURIComponent(folderId)}/documents`, {
     drive_id: filters.driveId || undefined,
-    include_subfolders: filters.includeSubfolders ? true : undefined
+    include_subfolders: filters.includeSubfolders ? true : undefined,
+    watch_id: filters.watchId || undefined
   }));
 };
 

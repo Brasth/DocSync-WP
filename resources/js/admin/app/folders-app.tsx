@@ -70,7 +70,7 @@ export const FoldersApp = (): JSX.Element => {
                 }}
                 onResume={app.onResume}
                 onRetry={app.onRetry}
-                onSave={app.onUpdate}
+                onSave={app.saveWatch}
                 onScan={app.onScan}
                 watch={activeWatch}
               />

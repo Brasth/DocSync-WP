@@ -16,6 +16,7 @@ defined( 'ABSPATH' ) || exit;
  */
 final class CronHeartbeat {
 	public const OPTION_NAME = 'docsync_wp_last_cron_run_at';
+	public const BASELINE_OPTION_NAME = 'docsync_wp_cron_monitoring_since';
 
 	private const MIN_STALL_SECONDS = 2 * HOUR_IN_SECONDS;
 
@@ -54,15 +55,38 @@ final class CronHeartbeat {
 
 		$stalled = false;
 
-		if ( $last > 0 && $short > 0 ) {
+		if ( $short > 0 ) {
 			$threshold = max( self::MIN_STALL_SECONDS, 2 * $short );
-			$stalled   = ( $now - $last ) > $threshold;
+
+			if ( $last > 0 ) {
+				$stalled = ( $now - $last ) > $threshold;
+			} else {
+				$baseline = $this->monitoringBaseline( $now );
+				$stalled  = ( $now - $baseline ) > $threshold;
+			}
 		}
 
 		return array(
 			'lastRunAt' => $last > 0 ? gmdate( 'c', $last ) : '',
 			'stalled'   => $stalled,
 		);
+	}
+
+	/**
+	 * Timestamp when cron monitoring started for active schedules.
+	 *
+	 * @param int $now Unix timestamp.
+	 */
+	private function monitoringBaseline( int $now ): int {
+		$stored = absint( get_option( self::BASELINE_OPTION_NAME, 0 ) );
+
+		if ( $stored > 0 ) {
+			return $stored;
+		}
+
+		update_option( self::BASELINE_OPTION_NAME, $now, false );
+
+		return $now;
 	}
 
 	/**

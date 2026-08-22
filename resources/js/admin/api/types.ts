@@ -190,6 +190,7 @@ export type FolderWatchFailedItem = {
 
 export type FolderWatchRecord = {
   id: string;
+  ownerUserId?: number;
   folderId: string;
   driveId: string;
   folderName: string;

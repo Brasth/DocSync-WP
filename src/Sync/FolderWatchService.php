@@ -465,19 +465,17 @@ final class FolderWatchService {
 			return $watch;
 		}
 
-		$failed_ids = array();
+		$retry_ids = $this->retryableFailedFileIds( $watch );
 
-		foreach ( (array) ( $watch['failed'] ?? array() ) as $failed ) {
-			if ( is_array( $failed ) && isset( $failed['fileId'] ) ) {
-				$failed_ids[] = sanitize_text_field( (string) $failed['fileId'] );
-			}
+		if ( is_wp_error( $retry_ids ) ) {
+			return $retry_ids;
 		}
 
 		$pending = array_values(
 			array_unique(
 				array_merge(
 					array_values( (array) ( $watch['pendingFileIds'] ?? array() ) ),
-					array_filter( $failed_ids )
+					$retry_ids
 				)
 			)
 		);
@@ -547,6 +545,7 @@ final class FolderWatchService {
 
 		return array(
 			'id'                => (string) ( $watch['id'] ?? '' ),
+			'ownerUserId'       => absint( $watch['ownerUserId'] ?? 0 ),
 			'folderId'          => (string) ( $watch['folderId'] ?? '' ),
 			'driveId'           => (string) ( $watch['driveId'] ?? '' ),
 			'folderName'        => (string) ( $watch['folderName'] ?? '' ),
@@ -623,7 +622,9 @@ final class FolderWatchService {
 			return;
 		}
 
-		( new CronHeartbeat() )->mark();
+		if ( ! $ignore_interval ) {
+			( new CronHeartbeat() )->mark();
+		}
 
 		$runner = new FolderWatchRunner(
 			$this->inventory,
@@ -741,13 +742,18 @@ final class FolderWatchService {
 			}
 		}
 
+		$excluded = $this->sanitizeIdList( $watch['excludedFileIds'] ?? array() );
+
 		$watch['pendingFileIds'] = ( new FolderWatchReconciler() )->reconcilePending(
 			(array) ( $watch['pendingFileIds'] ?? array() ),
-			(array) ( $watch['excludedFileIds'] ?? array() ),
+			$excluded,
 			$in_scope,
 			$linked
 		);
 		$watch['overflow']       = ! empty( $listing['overflow'] );
+		$watch['totalCount']     = $this->selectedInventoryCount( $in_scope, $excluded );
+		$watch['importedCount']  = min( absint( $watch['importedCount'] ?? 0 ), $watch['totalCount'] );
+		$watch['failed']         = $this->filterFailedEntries( (array) ( $watch['failed'] ?? array() ), $in_scope, $excluded );
 
 		$status = (string) ( $watch['status'] ?? '' );
 
@@ -765,6 +771,127 @@ final class FolderWatchService {
 	 * @param array<int,string>              $excluded  Excluded IDs.
 	 * @return array<int,string>
 	 */
+	/**
+	 * Failed file IDs that are still in scope and not excluded.
+	 *
+	 * @param array<string,mixed> $watch Watch record.
+	 * @return array<int,string>|WP_Error
+	 */
+	private function retryableFailedFileIds( array $watch ): array|WP_Error {
+		$in_scope = $this->resolveInScopeFileIds( $watch );
+
+		if ( is_wp_error( $in_scope ) ) {
+			return $in_scope;
+		}
+
+		$excluded    = $this->sanitizeIdList( $watch['excludedFileIds'] ?? array() );
+		$retry_ids   = array();
+		$excluded_set = array_fill_keys( $excluded, true );
+		$in_scope_set = array_fill_keys( $in_scope, true );
+
+		foreach ( (array) ( $watch['failed'] ?? array() ) as $failed ) {
+			if ( ! is_array( $failed ) || ! isset( $failed['fileId'] ) ) {
+				continue;
+			}
+
+			$file_id = sanitize_text_field( (string) $failed['fileId'] );
+
+			if ( '' === $file_id || isset( $excluded_set[ $file_id ] ) || ! isset( $in_scope_set[ $file_id ] ) ) {
+				continue;
+			}
+
+			$retry_ids[] = $file_id;
+		}
+
+		return array_values( array_unique( $retry_ids ) );
+	}
+
+	/**
+	 * List selectable file IDs currently in the watched folder tree.
+	 *
+	 * @param array<string,mixed> $watch Watch record.
+	 * @return array<int,string>|WP_Error
+	 */
+	private function resolveInScopeFileIds( array $watch ): array|WP_Error {
+		$listing = $this->inventory->listDocuments(
+			absint( $watch['ownerUserId'] ?? 0 ),
+			(string) ( $watch['folderId'] ?? 'root' ),
+			(string) ( $watch['driveId'] ?? '' ),
+			! empty( $watch['includeSubfolders'] )
+		);
+
+		if ( is_wp_error( $listing ) ) {
+			return $listing;
+		}
+
+		$in_scope = array();
+
+		foreach ( (array) ( $listing['documents'] ?? array() ) as $document ) {
+			if ( ! is_array( $document ) ) {
+				continue;
+			}
+
+			$file_id = isset( $document['fileId'] ) ? sanitize_text_field( (string) $document['fileId'] ) : '';
+
+			if ( '' === $file_id || false === ( $document['selectable'] ?? true ) ) {
+				continue;
+			}
+
+			$in_scope[] = $file_id;
+		}
+
+		return array_values( array_unique( $in_scope ) );
+	}
+
+	/**
+	 * Count Docs in scope that are not excluded.
+	 *
+	 * @param array<int,string> $in_scope_file_ids In-scope file IDs.
+	 * @param array<int,string> $excluded          Excluded file IDs.
+	 */
+	private function selectedInventoryCount( array $in_scope_file_ids, array $excluded ): int {
+		$excluded_set = array_fill_keys( $excluded, true );
+		$count        = 0;
+
+		foreach ( $in_scope_file_ids as $file_id ) {
+			if ( ! isset( $excluded_set[ $file_id ] ) ) {
+				++$count;
+			}
+		}
+
+		return $count;
+	}
+
+	/**
+	 * Drop failed entries that are excluded or no longer in scope.
+	 *
+	 * @param array<int,mixed>  $failed    Failed entries.
+	 * @param array<int,string> $in_scope  In-scope file IDs.
+	 * @param array<int,string> $excluded  Excluded file IDs.
+	 * @return array<int,array<string,mixed>>
+	 */
+	private function filterFailedEntries( array $failed, array $in_scope, array $excluded ): array {
+		$excluded_set = array_fill_keys( $excluded, true );
+		$in_scope_set = array_fill_keys( $in_scope, true );
+		$remaining    = array();
+
+		foreach ( $failed as $entry ) {
+			if ( ! is_array( $entry ) || ! isset( $entry['fileId'] ) ) {
+				continue;
+			}
+
+			$file_id = sanitize_text_field( (string) $entry['fileId'] );
+
+			if ( '' === $file_id || isset( $excluded_set[ $file_id ] ) || ! isset( $in_scope_set[ $file_id ] ) ) {
+				continue;
+			}
+
+			$remaining[] = $entry;
+		}
+
+		return $remaining;
+	}
+
 	private function collectPendingFileIds( array $documents, array $excluded ): array {
 		$pending = array();
 

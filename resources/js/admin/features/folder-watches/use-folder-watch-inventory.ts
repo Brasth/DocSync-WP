@@ -28,7 +28,8 @@ export const useFolderWatchInventory = (
 
     void listFolderDocuments(watch.folderId, {
       driveId: watch.driveId || undefined,
-      includeSubfolders: resolvedIncludeSubfolders
+      includeSubfolders: resolvedIncludeSubfolders,
+      watchId: watch.id
     })
       .then((response) => {
         if (!cancelled) {

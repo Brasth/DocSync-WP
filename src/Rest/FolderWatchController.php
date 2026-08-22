@@ -186,8 +186,26 @@ final class FolderWatchController {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function listFolderDocuments( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$user_id           = get_current_user_id();
+		$inventory_user_id = $user_id;
+		$watch_id          = sanitize_text_field( (string) $request->get_param( 'watch_id' ) );
+
+		if ( '' !== $watch_id ) {
+			$watch = $this->folder_watches->getForUser( $watch_id, $user_id );
+
+			if ( is_wp_error( $watch ) ) {
+				return $watch;
+			}
+
+			$owner_user_id = absint( $watch['ownerUserId'] ?? 0 );
+
+			if ( $owner_user_id > 0 ) {
+				$inventory_user_id = $owner_user_id;
+			}
+		}
+
 		$listing = $this->inventory->listDocuments(
-			get_current_user_id(),
+			$inventory_user_id,
 			sanitize_text_field( (string) $request->get_param( 'folderId' ) ),
 			sanitize_text_field( (string) $request->get_param( 'drive_id' ) ),
 			rest_sanitize_boolean( $request->get_param( 'include_subfolders' ) )

@@ -97,6 +97,24 @@ export const useFolderWatches = () => {
     });
   };
 
+  const saveWatch = async (watchId: string, payload: UpdateFolderWatchPayload): Promise<FolderWatchRecord> => {
+    setBusy(true);
+    setNotice(null);
+
+    try {
+      const next = await updateFolderWatch(watchId, payload);
+      setWatches((current) => mergeWatch(current, next));
+      return next;
+    } catch (caught) {
+      const message = caught instanceof Error ? caught.message : __('Action failed.', 'brasth-document-sync-for-google-docs');
+      setNotice({ type: 'error', message });
+      speak(message, 'assertive');
+      throw caught;
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return {
     account,
     busy,
@@ -112,6 +130,7 @@ export const useFolderWatches = () => {
     onRetry: (watchId: string) => applyWatch(() => retryFolderWatch(watchId)),
     onScan: (watchId: string) => applyWatch(() => scanFolderWatch(watchId)),
     onUpdate: (watchId: string, payload: UpdateFolderWatchPayload) => applyWatch(() => updateFolderWatch(watchId, payload)),
+    saveWatch,
     openSourceModal: () => setSourceModalOpen(true),
     closeSourceModal: () => setSourceModalOpen(false),
     refresh,

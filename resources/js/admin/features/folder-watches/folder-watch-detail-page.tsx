@@ -20,7 +20,7 @@ type Props = {
   onRemove: (watchId: string) => Promise<void>;
   onResume: (watchId: string) => Promise<void>;
   onRetry: (watchId: string) => Promise<void>;
-  onSave: (watchId: string, payload: UpdateFolderWatchPayload) => Promise<void>;
+  onSave: (watchId: string, payload: UpdateFolderWatchPayload) => Promise<FolderWatchRecord>;
   onScan: (watchId: string) => Promise<void>;
 };
 
@@ -44,7 +44,17 @@ export const FolderWatchDetailPage = ({
   useEffect(() => {
     setDraft(draftFromWatch(watch));
     setExcludedFileIds(watch.excludedFileIds ?? []);
-  }, [watch]);
+  }, [watch.id]);
+
+  const handleSave = async () => {
+    try {
+      const updated = await onSave(watch.id, buildUpdatePayload(watch, draft, excludedFileIds));
+      setDraft(draftFromWatch(updated));
+      setExcludedFileIds(updated.excludedFileIds ?? []);
+    } catch {
+      // Keep unsaved edits when persistence fails.
+    }
+  };
 
   return (
     <div className="docsync-wp-folder-watch-detail-page">
@@ -126,7 +136,7 @@ export const FolderWatchDetailPage = ({
             <AdminButton disabled={busy} onClick={onBack}>{__('Cancel', 'brasth-document-sync-for-google-docs')}</AdminButton>
             <AdminButton
               disabled={busy}
-              onClick={() => void onSave(watch.id, buildUpdatePayload(watch, draft, excludedFileIds))}
+              onClick={() => void handleSave()}
               variant="primary"
             >
               {__('Save changes', 'brasth-document-sync-for-google-docs')}

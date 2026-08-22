@@ -93,9 +93,13 @@ function docsync_wp_assert_same( mixed $expected, mixed $actual, string $message
 $heartbeat = new DocSyncWP\Cron\CronHeartbeat();
 $now       = 1_700_000_000;
 
-$empty = $heartbeat->snapshot( array( 'hourly' ), $now );
-docsync_wp_assert_same( '', $empty['lastRunAt'], 'Unused heartbeat lastRunAt' );
-docsync_wp_assert_same( false, $empty['stalled'], 'Unused heartbeat is not stalled' );
+$fresh_baseline = $heartbeat->snapshot( array( 'hourly' ), $now );
+docsync_wp_assert_same( '', $fresh_baseline['lastRunAt'], 'Unused heartbeat lastRunAt' );
+docsync_wp_assert_same( false, $fresh_baseline['stalled'], 'Fresh monitoring baseline is not stalled yet' );
+
+$GLOBALS['docsync_wp_test_options'][ DocSyncWP\Cron\CronHeartbeat::BASELINE_OPTION_NAME ] = $now - ( 3 * HOUR_IN_SECONDS );
+$never_ran = $heartbeat->snapshot( array( 'hourly' ), $now );
+docsync_wp_assert_same( true, $never_ran['stalled'], 'No heartbeat stalls after monitoring threshold' );
 
 $heartbeat->mark( $now - ( 3 * HOUR_IN_SECONDS ) );
 $hourly_stall = $heartbeat->snapshot( array( 'hourly' ), $now );
