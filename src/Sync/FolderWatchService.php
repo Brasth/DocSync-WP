@@ -765,13 +765,6 @@ final class FolderWatchService {
 	}
 
 	/**
-	 * Pending file IDs that are not excluded and not already linked.
-	 *
-	 * @param array<int,array<string,mixed>> $documents Inventory Docs.
-	 * @param array<int,string>              $excluded  Excluded IDs.
-	 * @return array<int,string>
-	 */
-	/**
 	 * Failed file IDs that are still in scope and not excluded.
 	 *
 	 * @param array<string,mixed> $watch Watch record.
@@ -784,8 +777,8 @@ final class FolderWatchService {
 			return $in_scope;
 		}
 
-		$excluded    = $this->sanitizeIdList( $watch['excludedFileIds'] ?? array() );
-		$retry_ids   = array();
+		$excluded     = $this->sanitizeIdList( $watch['excludedFileIds'] ?? array() );
+		$retry_ids    = array();
 		$excluded_set = array_fill_keys( $excluded, true );
 		$in_scope_set = array_fill_keys( $in_scope, true );
 
@@ -892,6 +885,13 @@ final class FolderWatchService {
 		return $remaining;
 	}
 
+	/**
+	 * Pending file IDs that are not excluded and not already linked.
+	 *
+	 * @param array<int,array<string,mixed>> $documents Inventory Docs.
+	 * @param array<int,string>              $excluded  Excluded IDs.
+	 * @return array<int,string>
+	 */
 	private function collectPendingFileIds( array $documents, array $excluded ): array {
 		$pending = array();
 

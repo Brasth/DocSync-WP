@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
  * Shared last-run stamp written by source and folder-watch ticks.
  */
 final class CronHeartbeat {
-	public const OPTION_NAME = 'docsync_wp_last_cron_run_at';
+	public const OPTION_NAME          = 'docsync_wp_last_cron_run_at';
 	public const BASELINE_OPTION_NAME = 'docsync_wp_cron_monitoring_since';
 
 	private const MIN_STALL_SECONDS = 2 * HOUR_IN_SECONDS;
