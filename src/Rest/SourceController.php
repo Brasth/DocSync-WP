@@ -177,7 +177,7 @@ final class SourceController {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function listSources( WP_REST_Request $request ): WP_REST_Response|WP_Error {
-		$user_id   = get_current_user_id();
+		$user_id         = get_current_user_id();
 		$post_type       = sanitize_key( (string) $request->get_param( 'post_type' ) );
 		$search          = sanitize_text_field( (string) $request->get_param( 'search' ) );
 		$status          = sanitize_key( (string) $request->get_param( 'status' ) );

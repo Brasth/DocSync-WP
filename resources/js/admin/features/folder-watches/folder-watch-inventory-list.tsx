@@ -1,4 +1,4 @@
-import { createElement } from '@wordpress/element';
+import { createElement, Fragment } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 
 import type { FolderDocumentInventory, FolderWatchFailedItem } from '../../api';

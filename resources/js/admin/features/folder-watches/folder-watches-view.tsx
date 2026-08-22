@@ -1,7 +1,7 @@
 import { createElement } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
-import type { FolderWatchRecord, UpdateFolderWatchPayload, WorkspaceResponse } from '../../api';
+import type { FolderWatchRecord, WorkspaceResponse } from '../../api';
 import { AdminButton } from '../../shared/ui/admin-button';
 import { CronHealthBanner } from '../../shared/ui/cron-health-banner';
 import { FolderWatchTable } from './folder-watch-table';

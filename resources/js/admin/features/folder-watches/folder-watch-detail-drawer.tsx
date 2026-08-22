@@ -1,5 +1,5 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import { createElement, useEffect, useState } from '@wordpress/element';
+import { createElement, Fragment, useEffect, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 import { listFolderDocuments, type FolderDocumentInventory, type FolderWatchRecord, type UpdateFolderWatchPayload } from '../../api';
