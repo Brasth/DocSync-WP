@@ -339,27 +339,34 @@
   }
 
   .docsync-wp-masthead__copy {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
     min-width: 0;
   }
 
-  .docsync-wp-masthead__copy p,
-  .docsync-wp-masthead__copy h1,
-  .docsync-wp-masthead__copy span {
+  #docsync-wp-admin-root .docsync-wp-masthead__copy p,
+  #docsync-wp-admin-root .docsync-wp-masthead__copy h1,
+  #docsync-wp-admin-root .docsync-wp-masthead__copy span {
     margin: 0;
+    padding: 0;
   }
 
   .docsync-wp-masthead__copy p {
     color: var(--docsync-teal);
     font-size: 11px;
     font-weight: 700;
+    line-height: 1.2;
   }
 
+  #docsync-wp-admin-root .docsync-wp-masthead__copy h1,
   .docsync-wp-masthead__copy h1 {
     color: var(--docsync-text-primary);
     font-size: 22px;
+    font-weight: 600;
     letter-spacing: 0;
-    line-height: 1.2;
-    margin-top: 1px;
+    line-height: 1.15;
+    margin-top: 0;
     text-wrap: balance;
   }
 
@@ -367,7 +374,8 @@
     color: var(--docsync-text-secondary);
     display: block;
     font-size: 12px;
-    margin-top: 3px;
+    line-height: 1.2;
+    margin-top: 2px;
   }
 
   .docsync-wp-masthead__status {
