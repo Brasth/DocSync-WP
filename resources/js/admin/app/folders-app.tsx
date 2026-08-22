@@ -1,17 +1,20 @@
-import { createElement, useEffect, useState } from '@wordpress/element';
+import { createElement, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 import { DocSourceModal } from '../features/doc-source-modal/doc-source-modal';
-import { FolderWatchDetailDrawer } from '../features/folder-watches/folder-watch-detail-drawer';
+import { FolderWatchDetailPage } from '../features/folder-watches/folder-watch-detail-page';
 import { FolderWatchesView } from '../features/folder-watches/folder-watches-view';
+import { useFolderWatchRoute } from '../features/folder-watches/use-folder-watch-route';
 import { useFolderWatches } from '../features/folder-watches/use-folder-watches';
-import type { FolderWatchRecord } from '../api';
 import { AdminShell } from '../shared/ui/admin-shell';
 import { SourcesTableSkeleton } from '../features/sources/sources-table';
 
 export const FoldersApp = (): JSX.Element => {
   const app = useFolderWatches();
-  const [editing, setEditing] = useState<FolderWatchRecord | null>(null);
+  const route = useFolderWatchRoute();
+  const activeWatch = route.watchId
+    ? app.watches.find((watch) => watch.id === route.watchId) ?? null
+    : null;
 
   useEffect(() => {
     app.refresh().catch((caught) => {
@@ -21,6 +24,22 @@ export const FoldersApp = (): JSX.Element => {
     });
   }, []);
 
+  useEffect(() => {
+    if (!route.watchId || app.watches.length === 0 || activeWatch) {
+      return;
+    }
+
+    app.setNotice({
+      type: 'error',
+      message: __('That folder watch could not be found.', 'brasth-document-sync-for-google-docs')
+    });
+    route.closeWatch();
+  }, [activeWatch, app.watches.length, route.watchId]);
+
+  const title = activeWatch
+    ? activeWatch.folderName
+    : __('Drive Folders', 'brasth-document-sync-for-google-docs');
+
   return (
     <AdminShell
       notice={app.notice}
@@ -28,7 +47,7 @@ export const FoldersApp = (): JSX.Element => {
         label: app.watches.length === 1 ? __('folder watch', 'brasth-document-sync-for-google-docs') : __('folder watches', 'brasth-document-sync-for-google-docs'),
         value: app.watches.length
       }}
-      title={__('Drive Folders', 'brasth-document-sync-for-google-docs')}
+      title={title}
       version={app.config.version}
     >
       {!app.workspace ? (
@@ -40,28 +59,35 @@ export const FoldersApp = (): JSX.Element => {
       ) : (
         <div className="docsync-wp-admin-grid docsync-wp-admin-grid--single">
           <div className="docsync-wp-admin-grid__main">
-            <FolderWatchesView
-              busy={app.busy}
-              onCreateWatch={app.openSourceModal}
-              onEdit={setEditing}
-              onPause={app.onPause}
-              onRemove={app.onRemove}
-              onResume={app.onResume}
-              onScan={app.onScan}
-              watches={app.watches}
-              workspace={app.workspace}
-            />
+            {route.watchId && activeWatch ? (
+              <FolderWatchDetailPage
+                busy={app.busy}
+                onBack={route.closeWatch}
+                onPause={app.onPause}
+                onRemove={async (watchId) => {
+                  await app.onRemove(watchId);
+                  route.closeWatch();
+                }}
+                onResume={app.onResume}
+                onRetry={app.onRetry}
+                onSave={app.onUpdate}
+                onScan={app.onScan}
+                watch={activeWatch}
+              />
+            ) : (
+              <FolderWatchesView
+                busy={app.busy}
+                onCreateWatch={app.openSourceModal}
+                onEdit={(watch) => route.openWatch(watch.id)}
+                onPause={app.onPause}
+                onRemove={app.onRemove}
+                onResume={app.onResume}
+                onScan={app.onScan}
+                watches={app.watches}
+                workspace={app.workspace}
+              />
+            )}
           </div>
-          <FolderWatchDetailDrawer
-            busy={app.busy}
-            onClose={() => setEditing(null)}
-            onRetry={app.onRetry}
-            onSave={async (watchId, payload) => {
-              await app.onUpdate(watchId, payload);
-              setEditing(null);
-            }}
-            watch={editing}
-          />
           <DocSourceModal
             initialIntent="folder"
             isOpen={app.sourceModalOpen}
