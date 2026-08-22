@@ -1,13 +1,10 @@
 <?php
-/**
- * Configure DocSync WP site OAuth credentials from a Google client JSON file.
- *
- * Usage: wp eval-file configure-oauth-from-json.php /path/to/client.json
- *
- * @package DocSyncWP
- */
+// Configure DocSync WP site OAuth credentials from a Google client JSON file.
 
-declare(strict_types=1);
+use DocSyncWP\Security\EncryptionService;
+use DocSyncWP\Settings\SettingsRepository;
+use DocSyncWP\Sync\Elementor\Preset\ElementorPresetRegistry;
+use DocSyncWP\Sync\Layout\LayoutPresetRegistry;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit( 1 );
@@ -41,11 +38,6 @@ if ( '' === $client_id || '' === $client_secret ) {
 	fwrite( STDERR, "OAuth JSON is missing client_id or client_secret.\n" );
 	exit( 1 );
 }
-
-use DocSyncWP\Security\EncryptionService;
-use DocSyncWP\Settings\SettingsRepository;
-use DocSyncWP\Sync\Elementor\Preset\ElementorPresetRegistry;
-use DocSyncWP\Sync\Layout\LayoutPresetRegistry;
 
 $settings = new SettingsRepository(
 	new EncryptionService(),
