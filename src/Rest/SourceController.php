@@ -177,10 +177,11 @@ final class SourceController {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function listSources( WP_REST_Request $request ): WP_REST_Response|WP_Error {
-		$user_id   = get_current_user_id();
-		$post_type = sanitize_key( (string) $request->get_param( 'post_type' ) );
-		$search    = sanitize_text_field( (string) $request->get_param( 'search' ) );
-		$status    = sanitize_key( (string) $request->get_param( 'status' ) );
+		$user_id         = get_current_user_id();
+		$post_type       = sanitize_key( (string) $request->get_param( 'post_type' ) );
+		$search          = sanitize_text_field( (string) $request->get_param( 'search' ) );
+		$status          = sanitize_key( (string) $request->get_param( 'status' ) );
+		$folder_watch_id = sanitize_key( (string) $request->get_param( 'folder_watch_id' ) );
 
 		if ( '' !== $status && ! in_array( $status, $this->sourceStatuses(), true ) ) {
 			return new WP_Error(
@@ -212,7 +213,7 @@ final class SourceController {
 		$per_page = $this->clampPositiveInt( $request->get_param( 'per_page' ), self::MAX_PAGE_SIZE, self::MAX_PAGE_SIZE );
 		$page     = $this->clampPositiveInt( $request->get_param( 'page' ), 1, PHP_INT_MAX );
 
-		return rest_ensure_response( $this->source_repository->listSourcesPage( $post_types, $user_id, $per_page, $page, $search, $status ) );
+		return rest_ensure_response( $this->source_repository->listSourcesPage( $post_types, $user_id, $per_page, $page, $search, $status, $folder_watch_id ) );
 	}
 
 	/**

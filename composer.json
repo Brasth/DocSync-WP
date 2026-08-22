@@ -22,6 +22,7 @@
   "scripts": {
     "lint": "phpcs",
     "lint:fix": "phpcbf",
+    "test:folder-watch-update": "php scripts/verify-folder-watch-update.php",
     "test:elementor-fixtures": "php scripts/verify-elementor-fixtures.php",
     "test:large-doc-fallback-fixtures": "php scripts/verify-large-doc-fallback-fixtures.php",
     "test:layout-fixtures": "php scripts/verify-layout-fixtures.php",

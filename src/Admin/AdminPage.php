@@ -23,6 +23,8 @@ final class AdminPage {
 
 	public const SOURCES_MENU_SLUG = 'brasth-document-sync-for-google-docs-sources';
 
+	public const FOLDERS_MENU_SLUG = 'brasth-document-sync-for-google-docs-folders';
+
 	public const LOGS_MENU_SLUG = 'brasth-document-sync-for-google-docs-logs';
 
 	public const HOOK_SUFFIX = 'toplevel_page_brasth-document-sync-for-google-docs';
@@ -119,6 +121,15 @@ final class AdminPage {
 
 		add_submenu_page(
 			$parent_slug,
+			esc_html__( 'Brasth Document Sync Drive Folders', 'brasth-document-sync-for-google-docs' ),
+			esc_html__( 'Drive Folders', 'brasth-document-sync-for-google-docs' ),
+			$use_capability,
+			self::FOLDERS_MENU_SLUG,
+			array( $this, 'renderFolders' )
+		);
+
+		add_submenu_page(
+			$parent_slug,
 			esc_html__( 'Brasth Document Sync Logs', 'brasth-document-sync-for-google-docs' ),
 			esc_html__( 'Logs', 'brasth-document-sync-for-google-docs' ),
 			$use_capability,
@@ -142,6 +153,13 @@ final class AdminPage {
 	}
 
 	/**
+	 * Render the Drive Folders React mount point.
+	 */
+	public function renderFolders(): void {
+		$this->renderMount( 'folders' );
+	}
+
+	/**
 	 * Render the Logs React mount point.
 	 */
 	public function renderLogs(): void {
@@ -157,6 +175,10 @@ final class AdminPage {
 		$allowed = 'setup' === $view
 			? current_user_can( 'manage_options' )
 			: RestPermissions::currentUserCanUseDocSync();
+
+		if ( ! in_array( $view, array( 'setup', 'sources', 'folders', 'logs' ), true ) ) {
+			$view = 'sources';
+		}
 
 		if ( ! $allowed ) {
 			wp_die(

@@ -13,11 +13,13 @@ export type SourceListFilters = {
   search: string;
   postType: string;
   status: string;
+  folderWatchId: string;
 };
 
 type Props = {
   sources: SourceRecord[];
   availablePostTypes: AvailablePostType[];
+  folderWatchNames?: Record<string, string>;
   filters: SourceListFilters;
   hasMore: boolean;
   busy: boolean;
@@ -114,6 +116,7 @@ export const SourcesTableSkeleton = (): JSX.Element => {
 export const SourcesTable = ({
   sources,
   availablePostTypes,
+  folderWatchNames = {},
   filters,
   hasMore,
   busy,
@@ -128,7 +131,7 @@ export const SourcesTable = ({
   const [search, setSearch] = useState(filters.search);
   const [postType, setPostType] = useState(filters.postType);
   const [status, setStatus] = useState(filters.status);
-  const hasActiveFilters = Boolean(filters.search || filters.postType || filters.status);
+  const hasActiveFilters = Boolean(filters.search || filters.postType || filters.status || filters.folderWatchId);
 
   useEffect(() => {
     setSearch(filters.search);
@@ -140,7 +143,8 @@ export const SourcesTable = ({
     await onFiltersChange({
       search: search.trim(),
       postType,
-      status
+      status,
+      folderWatchId: filters.folderWatchId
     });
   };
 
@@ -148,8 +152,12 @@ export const SourcesTable = ({
     setSearch('');
     setPostType('');
     setStatus('');
-    await onFiltersChange({ search: '', postType: '', status: '' });
+    await onFiltersChange({ search: '', postType: '', status: '', folderWatchId: '' });
   };
+
+  const folderWatchLabel = filters.folderWatchId
+    ? folderWatchNames[filters.folderWatchId] || filters.folderWatchId
+    : '';
 
   return (
     <section className="docsync-wp-card docsync-wp-card--wide">
@@ -204,6 +212,21 @@ export const SourcesTable = ({
         </div>
       </form>
 
+      {filters.folderWatchId ? (
+        <p className="docsync-wp-source-folder-filter">
+          <span className="docsync-wp-folder-watch-chip">
+            {sprintf(
+              /* translators: %s: folder name. */
+              __('From folder: %s', 'brasth-document-sync-for-google-docs'),
+              folderWatchLabel
+            )}
+          </span>
+          <AdminButton disabled={busy} onClick={() => void onFiltersChange({ ...filters, folderWatchId: '' })} size="small" variant="link">
+            {__('Clear folder filter', 'brasth-document-sync-for-google-docs')}
+          </AdminButton>
+        </p>
+      ) : null}
+
       <div className="docsync-wp-table-scroll">
         <table aria-busy={busy && sources.length === 0} className="docsync-wp-data-table docsync-wp-sources-table">
           <thead>
@@ -256,6 +279,15 @@ export const SourcesTable = ({
                     <div className="docsync-wp-source-target__meta">
                       {source.postType ? <span className="docsync-wp-row-tag">{source.postType}</span> : null}
                       {source.postStatus ? <span className="docsync-wp-row-tag">{source.postStatus}</span> : null}
+                      {source.folderWatchId ? (
+                        <span className="docsync-wp-folder-watch-chip">
+                          {sprintf(
+                            /* translators: %s: folder name. */
+                            __('From folder: %s', 'brasth-document-sync-for-google-docs'),
+                            folderWatchNames[source.folderWatchId] || source.folderWatchId
+                          )}
+                        </span>
+                      ) : null}
                     </div>
                   </div>
                 </td>

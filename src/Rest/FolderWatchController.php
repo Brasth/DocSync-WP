@@ -126,6 +126,11 @@ final class FolderWatchController {
 					'permission_callback' => array( RestPermissions::class, 'canUseAuthenticatedRest' ),
 				),
 				array(
+					'methods'             => WP_REST_Server::EDITABLE,
+					'callback'            => array( $this, 'updateWatch' ),
+					'permission_callback' => array( RestPermissions::class, 'canUseAuthenticatedRest' ),
+				),
+				array(
 					'methods'             => WP_REST_Server::DELETABLE,
 					'callback'            => array( $this, 'deleteWatch' ),
 					'permission_callback' => array( RestPermissions::class, 'canUseAuthenticatedRest' ),
@@ -181,8 +186,26 @@ final class FolderWatchController {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function listFolderDocuments( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$user_id           = get_current_user_id();
+		$inventory_user_id = $user_id;
+		$watch_id          = sanitize_text_field( (string) $request->get_param( 'watch_id' ) );
+
+		if ( '' !== $watch_id ) {
+			$watch = $this->folder_watches->getForUser( $watch_id, $user_id );
+
+			if ( is_wp_error( $watch ) ) {
+				return $watch;
+			}
+
+			$owner_user_id = absint( $watch['ownerUserId'] ?? 0 );
+
+			if ( $owner_user_id > 0 ) {
+				$inventory_user_id = $owner_user_id;
+			}
+		}
+
 		$listing = $this->inventory->listDocuments(
-			get_current_user_id(),
+			$inventory_user_id,
 			sanitize_text_field( (string) $request->get_param( 'folderId' ) ),
 			sanitize_text_field( (string) $request->get_param( 'drive_id' ) ),
 			rest_sanitize_boolean( $request->get_param( 'include_subfolders' ) )
@@ -294,6 +317,61 @@ final class FolderWatchController {
 		);
 
 		return is_wp_error( $watch ) ? $watch : rest_ensure_response( $watch );
+	}
+
+	/**
+	 * Update editable watch fields.
+	 *
+	 * Owner-or-admin access is enforced inside FolderWatchService::update().
+	 *
+	 * @param WP_REST_Request $request REST request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function updateWatch( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$params = $this->getRequestParams(
+			$request,
+			array(
+				'syncInterval',
+				'postStatus',
+				'layoutPreset',
+				'elementorSync',
+				'elementorPreset',
+				'includeSubfolders',
+				'excludedFileIds',
+			)
+		);
+
+		if ( is_wp_error( $params ) ) {
+			return $params;
+		}
+
+		if ( isset( $params['layoutPreset'] ) ) {
+			$layout = $this->sanitizeLayoutPreset( $params['layoutPreset'] );
+
+			if ( is_wp_error( $layout ) ) {
+				return $layout;
+			}
+
+			$params['layoutPreset'] = $layout;
+		}
+
+		if ( isset( $params['elementorPreset'] ) ) {
+			$elementor_preset = $this->sanitizeElementorPreset( $params['elementorPreset'] );
+
+			if ( is_wp_error( $elementor_preset ) ) {
+				return $elementor_preset;
+			}
+
+			$params['elementorPreset'] = $elementor_preset;
+		}
+
+		$updated = $this->folder_watches->update(
+			sanitize_key( (string) $request->get_param( 'id' ) ),
+			get_current_user_id(),
+			$params
+		);
+
+		return is_wp_error( $updated ) ? $updated : rest_ensure_response( $updated );
 	}
 
 	/**

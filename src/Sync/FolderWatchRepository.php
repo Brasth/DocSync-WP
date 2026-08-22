@@ -113,7 +113,24 @@ final class FolderWatchRepository {
 			$watches[] = $watch;
 		}
 
-		return update_option( self::OPTION_NAME, array_values( $watches ), false );
+		$payload = array_values( $watches );
+		$stored  = get_option( self::OPTION_NAME, array() );
+
+		if ( is_array( $stored ) && $this->watchesEqual( $stored, $payload ) ) {
+			return true;
+		}
+
+		return update_option( self::OPTION_NAME, $payload, false );
+	}
+
+	/**
+	 * Whether two stored watch lists are identical.
+	 *
+	 * @param array<int,mixed> $left  Left list.
+	 * @param array<int,mixed> $right Right list.
+	 */
+	private function watchesEqual( array $left, array $right ): bool {
+		return wp_json_encode( $left ) === wp_json_encode( $right );
 	}
 
 	/**

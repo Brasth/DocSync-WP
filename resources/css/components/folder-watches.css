@@ -1,0 +1,291 @@
+.docsync-wp-cron-health {
+  background: var(--docsync-surface);
+  border-left: 4px solid var(--docsync-warning, #dba617);
+  border-radius: var(--docsync-radius-md);
+  box-shadow: var(--docsync-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.06));
+  margin: 0 0 16px;
+  padding: 14px 16px;
+}
+
+.docsync-wp-cron-health p {
+  margin: 8px 0 0;
+}
+
+.docsync-wp-folder-watches-page__toolbar {
+  margin: 0 0 16px;
+}
+
+.docsync-wp-folder-watches-page__filters {
+  margin: 0 0 16px;
+}
+
+.docsync-wp-folder-watches-page__search {
+  min-width: min(320px, 100%);
+}
+
+.docsync-wp-folder-watch-table-wrap {
+  overflow-x: auto;
+}
+
+.docsync-wp-folder-watch-table__folder-col {
+  left: 0;
+  min-width: 220px;
+  position: sticky;
+  z-index: 1;
+}
+
+.docsync-wp-folder-watch-table thead .docsync-wp-folder-watch-table__folder-col {
+  background: var(--docsync-surface, #fff);
+}
+
+.docsync-wp-folder-watch-table tbody .docsync-wp-folder-watch-table__folder-col {
+  background: inherit;
+}
+
+.docsync-wp-folder-watch-table__sync {
+  display: inline-block;
+  max-width: 220px;
+  white-space: normal;
+}
+
+.docsync-wp-folder-watch-table__actions-col {
+  min-width: 220px;
+}
+
+.docsync-wp-folder-watch-row-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.docsync-wp-row-actions-menu {
+  position: relative;
+}
+
+.docsync-wp-row-actions-menu__trigger {
+  cursor: pointer;
+  list-style: none;
+  min-width: 36px;
+  text-align: center;
+}
+
+.docsync-wp-row-actions-menu__trigger::-webkit-details-marker {
+  display: none;
+}
+
+.docsync-wp-row-actions-menu__panel {
+  background: var(--docsync-surface, #fff);
+  border: 1px solid var(--docsync-border, #dcdcde);
+  border-radius: var(--docsync-radius-md);
+  box-shadow: var(--docsync-shadow-card, 0 8px 24px rgba(15, 23, 42, 0.12));
+  display: grid;
+  gap: 6px;
+  min-width: 160px;
+  padding: 8px;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 2;
+}
+
+.docsync-wp-folder-watch-detail-page {
+  display: grid;
+  gap: 16px;
+}
+
+.docsync-wp-folder-watch-detail-page__toolbar {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.docsync-wp-folder-watch-detail-page__quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.docsync-wp-folder-watch-detail-page__header {
+  align-items: flex-start;
+  background: var(--docsync-surface, #fff);
+  border: 1px solid var(--docsync-border, #dcdcde);
+  border-radius: var(--docsync-radius-md);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: space-between;
+  padding: 20px;
+}
+
+.docsync-wp-folder-watch-detail-page__eyebrow {
+  color: var(--docsync-text-muted);
+  font-size: 12px;
+  margin: 0 0 4px;
+  text-transform: uppercase;
+}
+
+.docsync-wp-folder-watch-detail-page__title {
+  font-size: 24px;
+  line-height: 1.2;
+  margin: 0 0 8px;
+}
+
+.docsync-wp-folder-watch-detail-page__meta {
+  align-items: center;
+  color: var(--docsync-text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.docsync-wp-folder-watch-detail-page__status {
+  display: grid;
+  gap: 8px;
+  justify-items: end;
+  max-width: 320px;
+}
+
+.docsync-wp-folder-watch-detail-page__grid {
+  align-items: start;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+}
+
+.docsync-wp-folder-watch-detail-page__settings {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+}
+
+.docsync-wp-folder-watch-detail-page__settings h2,
+.docsync-wp-folder-watch-inventory-panel h2 {
+  font-size: 16px;
+  margin: 0;
+}
+
+.docsync-wp-folder-watch-detail-page__save {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.docsync-wp-folder-watch-form,
+.docsync-wp-folder-watch-inventory {
+  display: grid;
+  gap: 12px;
+}
+
+.docsync-wp-folder-watch-form__hint {
+  color: var(--docsync-text-muted);
+  margin: 0 0 8px;
+}
+
+.docsync-wp-folder-watch-inventory-panel {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+}
+
+.docsync-wp-folder-watch-inventory-panel__summary {
+  color: var(--docsync-text-muted);
+  margin: 4px 0 0;
+}
+
+.docsync-wp-folder-watch-inventory-panel__bulk {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.docsync-wp-folder-watch-inventory-panel__toolbar {
+  display: grid;
+  gap: 12px;
+}
+
+.docsync-wp-folder-watch-inventory-panel__search {
+  width: 100%;
+}
+
+.docsync-wp-folder-watch-inventory-panel__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.docsync-wp-folder-watch-inventory-panel__filters button {
+  background: var(--docsync-subtle-surface, #f6f7f7);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 4px 10px;
+}
+
+.docsync-wp-folder-watch-inventory-panel__filters button.is-active {
+  background: var(--docsync-chip-bg, #eef2ff);
+  border-color: var(--docsync-border, #dcdcde);
+}
+
+.docsync-wp-folder-watch-inventory-panel__list-wrap {
+  max-height: min(60vh, 560px);
+  overflow: auto;
+}
+
+.docsync-wp-folder-watch-inventory-panel__list {
+  margin: 0;
+}
+
+.docsync-wp-folder-watch-inventory-panel__meta {
+  color: var(--docsync-text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.docsync-wp-folder-watch-inventory-panel__state {
+  color: var(--docsync-text-muted);
+  margin: 0;
+}
+
+.docsync-wp-folder-watch-inventory-panel__error p {
+  margin: 0;
+}
+
+.docsync-wp-folder-watch-failed ul {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+}
+
+.docsync-wp-folder-watch-failed li {
+  display: grid;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+
+.docsync-wp-folder-watch-chip {
+  background: var(--docsync-chip-bg, #eef2ff);
+  border-radius: 999px;
+  color: var(--docsync-text, #1e293b);
+  display: inline-flex;
+  font-size: 12px;
+  padding: 2px 8px;
+  text-decoration: none;
+}
+
+@media (max-width: 960px) {
+  .docsync-wp-folder-watch-detail-page__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .docsync-wp-folder-watch-detail-page__status {
+    justify-items: start;
+    max-width: none;
+  }
+}

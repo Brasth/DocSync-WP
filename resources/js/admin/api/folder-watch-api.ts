@@ -10,20 +10,31 @@ export type CreateFolderWatchPayload = {
   confirmRoot?: boolean;
   postType: string;
   postStatus?: 'draft' | 'publish';
-  syncInterval?: 'site' | 'off' | 'hourly' | 'twicedaily' | 'daily';
+  syncInterval?: 'site' | 'off' | 'hourly' | 'twicedaily' | 'daily' | 'weekly';
   layoutPreset?: string;
   elementorSync?: boolean;
   elementorPreset?: string;
   excludeFileIds?: string[];
 };
 
+export type UpdateFolderWatchPayload = {
+  syncInterval?: 'site' | 'off' | 'hourly' | 'twicedaily' | 'daily' | 'weekly';
+  postStatus?: 'draft' | 'publish';
+  layoutPreset?: string;
+  elementorSync?: boolean;
+  elementorPreset?: string;
+  includeSubfolders?: boolean;
+  excludedFileIds?: string[];
+};
+
 export const listFolderDocuments = (
   folderId: string,
-  filters: { driveId?: string; includeSubfolders?: boolean } = {}
+  filters: { driveId?: string; includeSubfolders?: boolean; watchId?: string } = {}
 ): Promise<FolderDocumentInventory> => {
   return request<FolderDocumentInventory>(addQueryArgs(`drive/folders/${encodeURIComponent(folderId)}/documents`, {
     drive_id: filters.driveId || undefined,
-    include_subfolders: filters.includeSubfolders ? true : undefined
+    include_subfolders: filters.includeSubfolders ? true : undefined,
+    watch_id: filters.watchId || undefined
   }));
 };
 
@@ -40,6 +51,13 @@ export const createFolderWatch = (payload: CreateFolderWatchPayload): Promise<Fo
 
 export const getFolderWatch = (watchId: string): Promise<FolderWatchRecord> => {
   return request<FolderWatchRecord>(`folders/${watchId}`);
+};
+
+export const updateFolderWatch = (watchId: string, payload: UpdateFolderWatchPayload): Promise<FolderWatchRecord> => {
+  return request<FolderWatchRecord>(`folders/${watchId}`, {
+    method: 'PATCH',
+    data: payload
+  });
 };
 
 export const scanFolderWatch = (watchId: string): Promise<FolderWatchRecord> => {

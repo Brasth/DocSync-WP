@@ -9,6 +9,7 @@ import { ActivationGuidance } from '../features/activation/activation-guidance';
 import { ActivationResult } from '../features/activation/activation-result';
 import { DocSourceModal } from '../features/doc-source-modal/doc-source-modal';
 import { AdminShell } from '../shared/ui/admin-shell';
+import { CronHealthBanner } from '../shared/ui/cron-health-banner';
 import { useSourcesApp } from './use-sources-app';
 
 export const SourcesApp = (): JSX.Element => {
@@ -59,15 +60,9 @@ export const SourcesApp = (): JSX.Element => {
               setupUrl="admin.php?page=brasth-document-sync-for-google-docs"
               workspace={app.workspace}
             />
+            <CronHealthBanner health={app.workspace.cronHealth} />
             <SourceHealthSummary summary={app.workspace.sourceSummary} />
-            <SourcesFolderWatches
-              busy={app.busy}
-              onPause={app.onPauseFolderWatch}
-              onRemove={app.onRemoveFolderWatch}
-              onResume={app.onResumeFolderWatch}
-              onScan={app.onScanFolderWatch}
-              watches={app.folderWatches}
-            />
+            <SourcesFolderWatches watches={app.folderWatches} />
             {app.activationSource ? (
               <ActivationResult busy={app.busy} onRetry={app.retryActivationSource} source={app.activationSource} />
             ) : null}
@@ -75,6 +70,7 @@ export const SourcesApp = (): JSX.Element => {
               availablePostTypes={app.workspace.availablePostTypes.filter((postType) => app.workspace?.enabledPostTypes.includes(postType.name))}
               busy={app.busy}
               canCreateSource={app.workspace.siteConnectionReady && app.account.connected && app.account.hasRequiredScope && app.workspace.creatablePostTypes.length > 0}
+              folderWatchNames={Object.fromEntries(app.folderWatches.map((watch) => [watch.id, watch.folderName]))}
               filters={app.sourceFilters}
               hasMore={app.hasMoreSources}
               onFiltersChange={app.applySourceFilters}

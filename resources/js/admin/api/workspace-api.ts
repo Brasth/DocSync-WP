@@ -1,5 +1,5 @@
 import { request } from './client';
-import type { WorkspaceFolderWatchSummary, WorkspaceResponse, WorkspaceSourceSummary } from './types';
+import type { WorkspaceCronHealth, WorkspaceFolderWatchSummary, WorkspaceResponse, WorkspaceSourceSummary } from './types';
 
 const normalizeCount = (value: unknown): number => {
   return typeof value === 'number' && Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
@@ -23,6 +23,11 @@ const normalizeFolderWatchSummary = (
   truncated: summary?.truncated === true
 });
 
+const normalizeCronHealth = (health: WorkspaceCronHealth | undefined): WorkspaceCronHealth => ({
+  lastRunAt: typeof health?.lastRunAt === 'string' ? health.lastRunAt : '',
+  stalled: health?.stalled === true
+});
+
 const normalizeWorkspaceResponse = (response: WorkspaceResponse): WorkspaceResponse => ({
   canManageSettings: response.canManageSettings === true,
   siteConnectionReady: response.siteConnectionReady === true,
@@ -43,7 +48,8 @@ const normalizeWorkspaceResponse = (response: WorkspaceResponse): WorkspaceRespo
     ? response.availableElementorLayoutPresets
     : [],
   sourceSummary: normalizeSourceSummary(response.sourceSummary),
-  folderWatches: normalizeFolderWatchSummary(response.folderWatches)
+  folderWatches: normalizeFolderWatchSummary(response.folderWatches),
+  cronHealth: normalizeCronHealth(response.cronHealth)
 });
 
 export const getWorkspace = async (): Promise<WorkspaceResponse> => {

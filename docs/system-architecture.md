@@ -132,7 +132,7 @@ The separate `cloudflare/feedback-worker/` deployment owns the GitHub fine-grain
 
 ## Frontend Architecture
 
-- Vite builds screen-specific Setup, Sources, Logs, post-sync, source-modal-style, and Drive-browser entries from `resources/js/admin/entries/`.
+- Vite builds screen-specific Setup, Sources, Drive Folders, Logs, post-sync, source-modal-style, and Drive-browser entries from `resources/js/admin/entries/`.
 - REST access is split under `resources/js/admin/api/`, including a normalized `workspace-api.ts` boundary; `apiFetch` comes from `@wordpress/api-fetch` and query strings use `@wordpress/url`.
 - Stateful workflows live in feature hooks, including Drive browser, source modal, first-source activation, setup/Sources admin, and post-sync actions. `features/activation/activation-advisor.ts` is a pure mapper over server-authoritative workspace and current-account facts; it persists no wizard state.
 - Shared UI atoms under `resources/js/admin/shared/ui/` wrap WordPress components where useful while preserving existing sync CSS classes.
@@ -156,7 +156,7 @@ REST namespace: `brasth-document-sync-for-google-docs/v1`
 
 Implemented routes:
 
-- `GET /workspace`, returning `canManageSettings`, site connection readiness, capability-filtered available/enabled/creatable post types, safe publishing defaults/preset labels, Elementor availability, and an accessible-source summary
+- `GET /workspace`, returning `canManageSettings`, site connection readiness, capability-filtered available/enabled/creatable post types, safe publishing defaults/preset labels, Elementor availability, an accessible-source summary, and `cronHealth` (`lastRunAt`, `stalled`)
 - `GET /settings`, including `defaultLayoutPreset`, `availableLayoutPresets`, `availableElementorLayoutPresets`, `telemetryEnabled`, and `telemetryPromptDismissed`
 - `POST /settings`, including `defaultLayoutPreset`, optional `telemetryEnabled`, and optional `telemetryPromptDismissed`
 - `DELETE /settings/oauth-configuration`, clearing the site OAuth client, all stored plugin Google tokens, and sync schedules while retaining sources and WordPress content
@@ -167,7 +167,7 @@ Implemented routes:
 - `GET /drive/shared-drives` with `page_token` and `page_size` filters
 - `GET /drive/items` with `folder_id`, `drive_id`, `search`, `page_token`, and `page_size` filters
 - `GET /drive/folders/{folderId}/documents` with `drive_id` and `include_subfolders` for a full folder inventory
-- `GET/POST /folders`, `GET/DELETE /folders/{id}`, and `POST /folders/{id}/scan|pause|resume|retry` for Drive folder watches
+- `GET/POST /folders`, `GET/PATCH/DELETE /folders/{id}`, and `POST /folders/{id}/scan|pause|resume|retry` for Drive folder watches
 - `GET /documents` with `search`, `page_token`, and `page_size` filters
 - `POST /documents/inspect`
 - `GET /sources` with `search`, `post_type`, `status`, `page`, and `per_page` filters

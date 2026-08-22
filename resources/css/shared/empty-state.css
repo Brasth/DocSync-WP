@@ -31,7 +31,8 @@
     stroke: var(--docsync-blue, #2563eb);
   }
 
-  .docsync-wp-empty-state__accent--drive {
+  .docsync-wp-empty-state__accent--drive,
+  .docsync-wp-empty-state__accent--folders {
     stroke: var(--docsync-warning, #8a4b00);
   }
 

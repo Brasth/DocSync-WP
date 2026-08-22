@@ -153,6 +153,7 @@ export const FolderWatchConfirmPanel = ({
             <option value="hourly">{__('Hourly', 'brasth-document-sync-for-google-docs')}</option>
             <option value="twicedaily">{__('Twice daily', 'brasth-document-sync-for-google-docs')}</option>
             <option value="daily">{__('Daily', 'brasth-document-sync-for-google-docs')}</option>
+            <option value="weekly">{__('Weekly', 'brasth-document-sync-for-google-docs')}</option>
           </select>
         </label>
         {canChooseElementor ? (

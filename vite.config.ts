@@ -5,6 +5,7 @@ import { defineConfig } from 'vite';
 const entryByMode: Record<string, string> = {
   setup: 'resources/js/admin/entries/setup-entry.tsx',
   sources: 'resources/js/admin/entries/sources-entry.tsx',
+  folders: 'resources/js/admin/entries/folders-entry.tsx',
   logs: 'resources/js/admin/entries/logs-entry.tsx',
   'post-sync': 'resources/js/admin/entries/post-sync-entry.tsx',
   'doc-source-modal': 'resources/js/admin/entries/doc-source-modal-entry.ts',
@@ -14,6 +15,7 @@ const entryByMode: Record<string, string> = {
 const entryNameByMode: Record<string, string> = {
   setup: 'setup',
   sources: 'sources',
+  folders: 'folders',
   logs: 'logs',
   'post-sync': 'postSync',
   'doc-source-modal': 'docSourceModal',

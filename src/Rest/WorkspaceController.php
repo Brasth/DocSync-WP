@@ -143,6 +143,7 @@ final class WorkspaceController {
 				'availableElementorLayoutPresets' => $this->settings->getAvailableElementorLayoutPresets(),
 				'sourceSummary'                   => $this->formatSourceSummary( $user_id ),
 				'folderWatches'                   => $this->folder_watches->summarizeForUser( $user_id ),
+				'cronHealth'                      => $this->folder_watches->cronHealth(),
 			)
 		);
 	}

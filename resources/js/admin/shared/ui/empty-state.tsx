@@ -1,7 +1,7 @@
 import { createElement, Fragment } from '@wordpress/element';
 import type { ReactNode } from 'react';
 
-type EmptyStateVariant = 'setup' | 'sources' | 'logs' | 'drive' | 'sync';
+type EmptyStateVariant = 'setup' | 'sources' | 'logs' | 'drive' | 'sync' | 'folders';
 
 type Props = {
   action?: ReactNode;

@@ -69,7 +69,7 @@ Summary reflects the current source tree after the Radix plus WordPress-native a
 
 ## Key Frontend Modules
 
-- `resources/js/admin/entries/` - Vite entrypoints for Setup, Sources, Logs, post-sync, source modal styles, and Drive browser.
+- `resources/js/admin/entries/` - Vite entrypoints for Setup, Sources, Drive Folders, Logs, post-sync, source modal styles, and Drive browser.
 - `resources/js/admin/app/` - screen-specific Setup and Sources shells plus app state hooks.
 - `resources/js/admin/api/` - REST client, typed API modules, and shared wire types.
 - `resources/js/admin/features/drive-browser/` - Google Drive browser hook, toolbar, breadcrumb, table, and panel.
