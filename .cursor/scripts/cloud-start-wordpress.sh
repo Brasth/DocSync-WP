@@ -72,8 +72,12 @@ EOF
 }
 
 ensure_wordpress() {
+  # /opt is root-owned on Cloud Agent images. Create the site tree as root,
+  # then hand it to the runtime user so WP-CLI can write without sudo.
+  sudo mkdir -p "${wp_root}/wp-content/plugins"
+  sudo chown -R "$(id -u)":"$(id -g)" "${wp_root}"
+
   if [[ ! -f "${wp_root}/wp-load.php" ]]; then
-    mkdir -p "${wp_root}"
     wp core download --path="${wp_root}" --quiet
     wp config create \
       --path="${wp_root}" \
@@ -88,7 +92,7 @@ ensure_wordpress() {
   mkdir -p "${wp_root}/wp-content/plugins"
   ln -sfn "${repo_root}" "${wp_root}/wp-content/plugins/${plugin_slug}"
 
-  sudo tee "${wp_root}/.htaccess" >/dev/null <<'EOF'
+  tee "${wp_root}/.htaccess" >/dev/null <<'EOF'
 # BEGIN WordPress
 <IfModule mod_rewrite.c>
 RewriteEngine On
