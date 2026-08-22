@@ -25,6 +25,60 @@ const draftFromWatch = (watch: FolderWatchRecord): FolderWatchEditDraft => ({
   elementorPreset: watch.elementorPreset
 });
 
+const arraysEqual = (left: string[], right: string[]): boolean => {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  const sortedLeft = [...left].sort();
+  const sortedRight = [...right].sort();
+
+  return sortedLeft.every((value, index) => value === sortedRight[index]);
+};
+
+const buildUpdatePayload = (
+  watch: FolderWatchRecord,
+  draft: FolderWatchEditDraft,
+  excludedFileIds: string[]
+): UpdateFolderWatchPayload => {
+  const payload: UpdateFolderWatchPayload = {};
+
+  if (draft.syncInterval !== watch.syncInterval) {
+    payload.syncInterval = draft.syncInterval as UpdateFolderWatchPayload['syncInterval'];
+  }
+
+  const postStatus = draft.postStatus;
+  const watchPostStatus = watch.postStatus === 'publish' ? 'publish' : 'draft';
+
+  if (postStatus !== watchPostStatus) {
+    payload.postStatus = postStatus;
+  }
+
+  if (draft.includeSubfolders !== watch.includeSubfolders) {
+    payload.includeSubfolders = draft.includeSubfolders;
+  }
+
+  if (draft.layoutPreset !== watch.layoutPreset) {
+    payload.layoutPreset = draft.layoutPreset;
+  }
+
+  if (draft.elementorSync !== watch.elementorSync) {
+    payload.elementorSync = draft.elementorSync;
+  }
+
+  if (draft.elementorPreset !== watch.elementorPreset) {
+    payload.elementorPreset = draft.elementorPreset;
+  }
+
+  const originalExcluded = watch.excludedFileIds ?? [];
+
+  if (!arraysEqual(excludedFileIds, originalExcluded)) {
+    payload.excludedFileIds = excludedFileIds;
+  }
+
+  return payload;
+};
+
 export const FolderWatchDetailDrawer = ({ busy, watch, onClose, onRetry, onSave }: Props): JSX.Element => {
   const [draft, setDraft] = useState<FolderWatchEditDraft | null>(watch ? draftFromWatch(watch) : null);
   const [excludedFileIds, setExcludedFileIds] = useState<string[]>(watch?.excludedFileIds ?? []);
@@ -99,15 +153,7 @@ export const FolderWatchDetailDrawer = ({ busy, watch, onClose, onRetry, onSave 
                 <AdminButton disabled={busy} onClick={onClose}>{__('Cancel', 'brasth-document-sync-for-google-docs')}</AdminButton>
                 <AdminButton
                   disabled={busy}
-                  onClick={() => void onSave(watch.id, {
-                    syncInterval: draft.syncInterval as UpdateFolderWatchPayload['syncInterval'],
-                    postStatus: draft.postStatus,
-                    includeSubfolders: draft.includeSubfolders,
-                    layoutPreset: draft.layoutPreset,
-                    elementorSync: draft.elementorSync,
-                    elementorPreset: draft.elementorPreset,
-                    excludedFileIds
-                  })}
+                  onClick={() => void onSave(watch.id, buildUpdatePayload(watch, draft, excludedFileIds))}
                   variant="primary"
                 >
                   {__('Save changes', 'brasth-document-sync-for-google-docs')}
