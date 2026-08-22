@@ -1,6 +1,6 @@
 # DocSync-WP Development Roadmap
 
-Last updated: 2026-07-11
+Last updated: 2026-08-22
 
 ## Strategic Direction
 
@@ -188,6 +188,7 @@ To sustain this cadence, the following must be in place. See `docs/deployment-gu
 3. **Managed OAuth commitment:** build in-house vs. partner with an existing OAuth provider. Decide before 1.7.0.
 4. **AI provider:** Google Gemini vs. OpenAI vs. local heuristics only. Decide before 1.6.0.
 5. **Global block pattern registration:** opt-in per preset or site-wide setting. Decide before 1.6.x.
+6. **Operator automation workspace vs preset gallery:** folder watch is create-only and schedules are site-wide. Proposed increment in `docs/superpowers/specs/2026-08-22-operator-automation-workspace-design.md` would give Sources per-folder and per-Doc controls after 1.1.4, before 1.3.0 bulk import. Decide whether that displaces conditional 1.2.0 gallery work.
 
 ## Risks
 
@@ -210,6 +211,8 @@ To sustain this cadence, the following must be in place. See `docs/deployment-gu
 - `docs/project-overview-pdr.md` — product scope and current completion criteria
 - `docs/system-architecture.md` — current architecture and sync flow, including the future Layout Preset layer
 - `docs/codebase-summary.md` — current module inventory and upcoming work
+- `docs/superpowers/specs/2026-08-22-operator-automation-workspace-design.md` — proposed Sources workspace for per-folder and per-Doc schedules
+- `plans/260822-operator-automation-workspace/plan.md` — implementation phases for that increment
 - `plans/reports/research-20260622-layout-wizard-references.md` — prior art for layout presets
 - `plans/reports/research-20260622-growth-strategy-references.md` — competitive and go-to-market research
 - `plans/reports/research-20260622-competitive-strategy-references.md` — how to beat competitors and reach users
