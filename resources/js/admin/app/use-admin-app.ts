@@ -23,7 +23,7 @@ import { useSourceSyncProgress } from './use-source-sync-progress';
 
 const emptyAccount: GoogleAccount = { connected: false, hasRequiredScope: false };
 const sourcePageSize = 100;
-const defaultSourceFilters: SourceListFilters = { search: '', postType: '', status: '' };
+const defaultSourceFilters: SourceListFilters = { search: '', postType: '', status: '', folderWatchId: '' };
 
 export type AdminView = 'setup' | 'sources';
 

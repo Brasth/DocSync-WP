@@ -1,0 +1,75 @@
+.docsync-wp-cron-health {
+  background: var(--docsync-surface);
+  border-left: 4px solid var(--docsync-warning, #dba617);
+  border-radius: var(--docsync-radius-md);
+  box-shadow: var(--docsync-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.06));
+  margin: 0 0 16px;
+  padding: 14px 16px;
+}
+
+.docsync-wp-cron-health p {
+  margin: 8px 0 0;
+}
+
+.docsync-wp-folder-watches-page__toolbar {
+  margin: 0 0 16px;
+}
+
+.docsync-wp-folder-watch-drawer {
+  background: var(--docsync-surface, #fff);
+  border-radius: var(--docsync-radius-md);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18);
+  left: auto;
+  max-height: 100vh;
+  overflow: auto;
+  padding: 24px;
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: min(480px, 100vw);
+  z-index: 100000;
+}
+
+.docsync-wp-folder-watch-drawer h3 {
+  margin: 20px 0 8px;
+}
+
+.docsync-wp-folder-watch-form,
+.docsync-wp-folder-watch-inventory {
+  display: grid;
+  gap: 12px;
+}
+
+.docsync-wp-folder-watch-form__hint {
+  color: var(--docsync-text-muted);
+  margin: 0 0 8px;
+}
+
+.docsync-wp-folder-watch-failed ul {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+}
+
+.docsync-wp-folder-watch-failed li {
+  display: grid;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+
+.docsync-wp-folder-watch-drawer__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.docsync-wp-folder-watch-chip {
+  background: var(--docsync-chip-bg, #eef2ff);
+  border-radius: 999px;
+  color: var(--docsync-text, #1e293b);
+  display: inline-flex;
+  font-size: 12px;
+  padding: 2px 8px;
+  text-decoration: none;
+}

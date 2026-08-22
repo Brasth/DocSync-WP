@@ -36,6 +36,11 @@ export type WorkspaceFolderWatchSummary = {
   truncated: boolean;
 };
 
+export type WorkspaceCronHealth = {
+  lastRunAt: string;
+  stalled: boolean;
+};
+
 export type WorkspaceResponse = {
   canManageSettings: boolean;
   siteConnectionReady: boolean;
@@ -51,6 +56,7 @@ export type WorkspaceResponse = {
   availableElementorLayoutPresets: AvailableLayoutPreset[];
   sourceSummary: WorkspaceSourceSummary;
   folderWatches?: WorkspaceFolderWatchSummary;
+  cronHealth?: WorkspaceCronHealth;
 };
 
 export type GoogleAccount = {
@@ -195,13 +201,17 @@ export type FolderWatchRecord = {
   layoutPreset: string;
   elementorSync: boolean;
   elementorPreset: string;
+  effectiveInterval?: string;
   status: FolderWatchStatus | string;
   pendingCount: number;
   importedCount: number;
   totalCount: number;
   overflow: boolean;
   failed: FolderWatchFailedItem[];
+  excludedFileIds?: string[];
   lastScanAt: string;
+  nextScanAt?: string;
+  ownerDisplayName?: string;
   lastError: string;
   createdAt: string;
 };
@@ -244,6 +254,7 @@ export type SourceFilters = {
   search?: string;
   postType?: string;
   status?: string;
+  folderWatchId?: string;
   page?: number;
   perPage?: number;
 };

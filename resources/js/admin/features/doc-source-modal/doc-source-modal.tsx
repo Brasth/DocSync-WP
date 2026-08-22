@@ -21,6 +21,7 @@ import { useFolderWatchFlow } from './use-folder-watch-flow';
 export type { DocSourceTarget } from './use-doc-source-modal';
 
 type Props = {
+  initialIntent?: 'document' | 'folder';
   isOpen: boolean;
   target: DocSourceTarget | null;
   onClose: () => void;
@@ -30,11 +31,12 @@ type Props = {
 
 const trimTrailingSlash = (value: string): string => value.replace(/\/$/, '');
 
-export const DocSourceModal = ({ isOpen, target, onClose, onCompleted, onFolderWatchCreated }: Props): JSX.Element | null => {
+export const DocSourceModal = ({ initialIntent = 'document', isOpen, target, onClose, onCompleted, onFolderWatchCreated }: Props): JSX.Element | null => {
   const modal = useDocSourceModal({ isOpen, target, onClose, onCompleted });
   const canUseFolderIntent = target?.mode === 'new';
   const folderFlow = useFolderWatchFlow({
     canChooseElementor: modal.canChooseElementor,
+    initialIntent,
     isOpen,
     postType: target?.mode === 'new' ? target.postType : 'post',
     onWatchCreated: (watch) => onFolderWatchCreated?.(watch.id)

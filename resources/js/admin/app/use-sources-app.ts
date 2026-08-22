@@ -3,15 +3,11 @@ import { useMemo, useRef, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 
 import {
-  deleteFolderWatch,
   getGoogleAccount,
   getGoogleAuthUrl,
   getWorkspace,
   listFolderWatches,
   listSources,
-  pauseFolderWatch,
-  resumeFolderWatch,
-  scanFolderWatch,
   syncAllSources,
   syncSource,
   type FolderWatchRecord,
@@ -34,13 +30,14 @@ const readSourceFiltersFromUrl = (): SourceListFilters => {
   return {
     search: params.get('search') || '',
     postType: params.get('post_type') || '',
-    status: params.get('status') || ''
+    status: params.get('status') || '',
+    folderWatchId: params.get('folder_watch_id') || ''
   };
 };
 
 const writeSourceFiltersToUrl = (filters: SourceListFilters) => {
   const url = new URL(window.location.href);
-  const values = { search: filters.search, post_type: filters.postType, status: filters.status };
+  const values = { search: filters.search, post_type: filters.postType, status: filters.status, folder_watch_id: filters.folderWatchId };
 
   Object.entries(values).forEach(([key, value]) => {
     if (value) {
@@ -248,13 +245,6 @@ export const useSourcesApp = () => {
     restoreModalFocus.current = true;
   };
 
-  const runFolderWatchAction = async (action: () => Promise<unknown>) => {
-    await runAction(async () => {
-      await action();
-      await refresh();
-    });
-  };
-
   return {
     account,
     activationSource,
@@ -268,10 +258,6 @@ export const useSourcesApp = () => {
     handleSourceCreated,
     loadMoreSources,
     notice,
-    onPauseFolderWatch: (watchId: string) => runFolderWatchAction(() => pauseFolderWatch(watchId)),
-    onRemoveFolderWatch: (watchId: string) => runFolderWatchAction(() => deleteFolderWatch(watchId)),
-    onResumeFolderWatch: (watchId: string) => runFolderWatchAction(() => resumeFolderWatch(watchId)),
-    onScanFolderWatch: (watchId: string) => runFolderWatchAction(() => scanFolderWatch(watchId)),
     openSourceModal,
     refresh,
     retryActivationSource,

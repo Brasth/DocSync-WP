@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite build --watch --mode setup",
-    "build": "vite build --mode setup && vite build --mode sources && vite build --mode logs && vite build --mode post-sync && vite build --mode doc-source-modal && vite build --mode drive-browser",
+    "build": "vite build --mode setup && vite build --mode sources && vite build --mode folders && vite build --mode logs && vite build --mode post-sync && vite build --mode doc-source-modal && vite build --mode drive-browser",
     "i18n": "pnpm i18n:pot && pnpm i18n:json",
     "i18n:json": "node scripts/make-js-translations.mjs",
     "i18n:pot": "node scripts/make-pot.mjs",

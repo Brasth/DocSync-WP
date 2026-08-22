@@ -23,13 +23,14 @@ export type FolderLocation = {
 
 type Args = {
   canChooseElementor: boolean;
+  initialIntent?: SourceIntent;
   isOpen: boolean;
   postType: string;
   onWatchCreated?: (watch: FolderWatchRecord) => void;
 };
 
-export const useFolderWatchFlow = ({ canChooseElementor, isOpen, postType, onWatchCreated }: Args) => {
-  const [intent, setIntent] = useState<SourceIntent>('document');
+export const useFolderWatchFlow = ({ canChooseElementor, initialIntent = 'document', isOpen, postType, onWatchCreated }: Args) => {
+  const [intent, setIntent] = useState<SourceIntent>(initialIntent);
   const [location, setLocation] = useState<FolderLocation | null>(null);
   const [includeSubfolders, setIncludeSubfolders] = useState(false);
   const [confirmRoot, setConfirmRoot] = useState(false);
@@ -45,7 +46,7 @@ export const useFolderWatchFlow = ({ canChooseElementor, isOpen, postType, onWat
 
   useEffect(() => {
     if (!isOpen) {
-      setIntent('document');
+      setIntent(initialIntent);
       setLocation(null);
       setIncludeSubfolders(false);
       setConfirmRoot(false);
@@ -59,7 +60,7 @@ export const useFolderWatchFlow = ({ canChooseElementor, isOpen, postType, onWat
       setOutputType('blocks');
       setLayoutPreset('');
     }
-  }, [isOpen]);
+  }, [initialIntent, isOpen]);
 
   useEffect(() => {
     if (!watch || watch.status !== 'importing') {

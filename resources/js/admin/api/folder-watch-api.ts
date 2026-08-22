@@ -17,6 +17,16 @@ export type CreateFolderWatchPayload = {
   excludeFileIds?: string[];
 };
 
+export type UpdateFolderWatchPayload = {
+  syncInterval?: 'site' | 'off' | 'hourly' | 'twicedaily' | 'daily';
+  postStatus?: 'draft' | 'publish';
+  layoutPreset?: string;
+  elementorSync?: boolean;
+  elementorPreset?: string;
+  includeSubfolders?: boolean;
+  excludedFileIds?: string[];
+};
+
 export const listFolderDocuments = (
   folderId: string,
   filters: { driveId?: string; includeSubfolders?: boolean } = {}
@@ -40,6 +50,13 @@ export const createFolderWatch = (payload: CreateFolderWatchPayload): Promise<Fo
 
 export const getFolderWatch = (watchId: string): Promise<FolderWatchRecord> => {
   return request<FolderWatchRecord>(`folders/${watchId}`);
+};
+
+export const updateFolderWatch = (watchId: string, payload: UpdateFolderWatchPayload): Promise<FolderWatchRecord> => {
+  return request<FolderWatchRecord>(`folders/${watchId}`, {
+    method: 'PATCH',
+    data: payload
+  });
 };
 
 export const scanFolderWatch = (watchId: string): Promise<FolderWatchRecord> => {

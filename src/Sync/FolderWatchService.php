@@ -9,11 +9,13 @@ declare(strict_types=1);
 
 namespace DocSyncWP\Sync;
 
+use DocSyncWP\Cron\CronHeartbeat;
 use DocSyncWP\Google\DriveClient;
 use DocSyncWP\Google\DriveFolderInventory;
 use DocSyncWP\Rest\RestPermissions;
 use DocSyncWP\Settings\SettingsRepository;
 use WP_Error;
+use WP_User;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -263,6 +265,122 @@ final class FolderWatchService {
 	}
 
 	/**
+	 * Update editable watch fields without recreating the watch.
+	 *
+	 * @param string              $watch_id Watch ID.
+	 * @param int                 $user_id  User ID.
+	 * @param array<string,mixed> $input    Whitelisted fields.
+	 * @return array<string,mixed>|WP_Error
+	 */
+	public function update( string $watch_id, int $user_id, array $input ): array|WP_Error {
+		$watch = $this->requireWatch( $watch_id, $user_id );
+
+		if ( is_wp_error( $watch ) ) {
+			return $watch;
+		}
+
+		if ( isset( $input['postStatus'] ) ) {
+			$post_status = $this->sanitizePostStatus( $input['postStatus'] );
+			$post_type   = sanitize_key( (string) ( $watch['postType'] ?? 'post' ) );
+
+			if ( 'publish' === $post_status && ! $this->sources->userCanPublishSyncedPost( $post_type, $user_id ) ) {
+				return new WP_Error(
+					'docsync_wp_cannot_publish_post',
+					__( 'You do not have permission to publish synced posts for this post type.', 'brasth-document-sync-for-google-docs' ),
+					array( 'status' => 403 )
+				);
+			}
+
+			$watch['postStatus'] = $post_status;
+		}
+
+		if ( isset( $input['syncInterval'] ) ) {
+			$watch['syncInterval'] = $this->sanitizeWatchInterval( $input['syncInterval'] );
+		}
+
+		if ( isset( $input['layoutPreset'] ) ) {
+			$watch['layoutPreset'] = sanitize_key( (string) $input['layoutPreset'] );
+		}
+
+		if ( array_key_exists( 'elementorSync', $input ) ) {
+			$watch['elementorSync'] = ! empty( $input['elementorSync'] );
+		}
+
+		if ( isset( $input['elementorPreset'] ) ) {
+			$watch['elementorPreset'] = sanitize_key( (string) $input['elementorPreset'] );
+		}
+
+		$needs_reconcile = array_key_exists( 'includeSubfolders', $input )
+			|| array_key_exists( 'excludedFileIds', $input );
+
+		if ( array_key_exists( 'includeSubfolders', $input ) ) {
+			$watch['includeSubfolders'] = ! empty( $input['includeSubfolders'] );
+		}
+
+		if ( array_key_exists( 'excludedFileIds', $input ) ) {
+			$watch['excludedFileIds'] = $this->sanitizeIdList( $input['excludedFileIds'] );
+		}
+
+		if ( $needs_reconcile ) {
+			$reconciled = $this->reconcileWatchInventory( $watch );
+
+			if ( is_wp_error( $reconciled ) ) {
+				return $reconciled;
+			}
+
+			$watch = $reconciled;
+		}
+
+		if ( ! $this->watches->save( $watch ) ) {
+			return new WP_Error(
+				'docsync_wp_folder_watch_not_saved',
+				__( 'Brasth Document Sync could not save this folder watch.', 'brasth-document-sync-for-google-docs' ),
+				array( 'status' => 500 )
+			);
+		}
+
+		$saved = $this->watches->get( (string) $watch['id'] );
+		$watch = is_array( $saved ) ? $saved : $watch;
+
+		$this->syncWatchSchedule( $watch );
+
+		if ( array() !== (array) ( $watch['pendingFileIds'] ?? array() ) && 'paused' !== (string) ( $watch['status'] ?? '' ) ) {
+			$this->scheduleImport( (string) $watch['id'] );
+		}
+
+		return $this->formatWatch( $watch );
+	}
+
+	/**
+	 * Safe cron-health snapshot for the workspace route.
+	 *
+	 * @return array{lastRunAt:string,stalled:bool}
+	 */
+	public function cronHealth(): array {
+		$intervals = array();
+		$settings  = $this->settings->get();
+		$site      = isset( $settings['sync_interval'] ) ? sanitize_key( (string) $settings['sync_interval'] ) : 'off';
+
+		if ( in_array( $site, array( 'hourly', 'twicedaily', 'daily', 'weekly' ), true ) ) {
+			$intervals[] = $site;
+		}
+
+		foreach ( $this->watches->all() as $watch ) {
+			if ( 'paused' === (string) ( $watch['status'] ?? '' ) ) {
+				continue;
+			}
+
+			$interval = $this->effectiveInterval( $watch );
+
+			if ( 'off' !== $interval ) {
+				$intervals[] = $interval;
+			}
+		}
+
+		return ( new CronHeartbeat() )->snapshot( $intervals );
+	}
+
+	/**
 	 * Pause a watch and drop its cron events.
 	 *
 	 * @param string $watch_id Watch ID.
@@ -408,6 +526,11 @@ final class FolderWatchService {
 	 * @return array<string,mixed>
 	 */
 	public function formatWatch( array $watch ): array {
+		$watch_id   = sanitize_key( (string) ( $watch['id'] ?? '' ) );
+		$next_scan  = '' === $watch_id ? false : wp_next_scheduled( self::SCAN_HOOK, array( $watch_id ) );
+		$owner      = get_userdata( absint( $watch['ownerUserId'] ?? 0 ) );
+		$owner_name = $owner instanceof WP_User ? (string) $owner->display_name : '';
+
 		return array(
 			'id'                => (string) ( $watch['id'] ?? '' ),
 			'folderId'          => (string) ( $watch['folderId'] ?? '' ),
@@ -418,6 +541,7 @@ final class FolderWatchService {
 			'postType'          => (string) ( $watch['postType'] ?? 'post' ),
 			'postStatus'        => (string) ( $watch['postStatus'] ?? 'draft' ),
 			'syncInterval'      => (string) ( $watch['syncInterval'] ?? 'site' ),
+			'effectiveInterval' => $this->effectiveInterval( $watch ),
 			'layoutPreset'      => (string) ( $watch['layoutPreset'] ?? '' ),
 			'elementorSync'     => ! empty( $watch['elementorSync'] ),
 			'elementorPreset'   => (string) ( $watch['elementorPreset'] ?? '' ),
@@ -427,7 +551,10 @@ final class FolderWatchService {
 			'totalCount'        => absint( $watch['totalCount'] ?? 0 ),
 			'overflow'          => ! empty( $watch['overflow'] ),
 			'failed'            => array_values( (array) ( $watch['failed'] ?? array() ) ),
+			'excludedFileIds'   => array_values( (array) ( $watch['excludedFileIds'] ?? array() ) ),
 			'lastScanAt'        => (string) ( $watch['lastScanAt'] ?? '' ),
+			'nextScanAt'        => false === $next_scan ? '' : gmdate( 'c', (int) $next_scan ),
+			'ownerDisplayName'  => $owner_name,
 			'lastError'         => (string) ( $watch['lastError'] ?? '' ),
 			'createdAt'         => (string) ( $watch['createdAt'] ?? '' ),
 		);
@@ -481,6 +608,8 @@ final class FolderWatchService {
 		if ( ! $ignore_interval && 'off' === $this->effectiveInterval( $watch ) ) {
 			return;
 		}
+
+		( new CronHeartbeat() )->mark();
 
 		$runner = new FolderWatchRunner(
 			$this->inventory,
@@ -557,6 +686,62 @@ final class FolderWatchService {
 			'lastError'         => '',
 			'createdAt'         => gmdate( 'c' ),
 		);
+	}
+
+	/**
+	 * Re-inventory a watch and rebuild pending IDs after an edit.
+	 *
+	 * @param array<string,mixed> $watch Watch record.
+	 * @return array<string,mixed>|WP_Error
+	 */
+	private function reconcileWatchInventory( array $watch ): array|WP_Error {
+		$listing = $this->inventory->listDocuments(
+			absint( $watch['ownerUserId'] ?? 0 ),
+			(string) ( $watch['folderId'] ?? 'root' ),
+			(string) ( $watch['driveId'] ?? '' ),
+			! empty( $watch['includeSubfolders'] )
+		);
+
+		if ( is_wp_error( $listing ) ) {
+			return $listing;
+		}
+
+		$in_scope = array();
+		$linked   = array();
+
+		foreach ( (array) ( $listing['documents'] ?? array() ) as $document ) {
+			if ( ! is_array( $document ) ) {
+				continue;
+			}
+
+			$file_id = isset( $document['fileId'] ) ? sanitize_text_field( (string) $document['fileId'] ) : '';
+
+			if ( '' === $file_id || false === ( $document['selectable'] ?? true ) ) {
+				continue;
+			}
+
+			$in_scope[] = $file_id;
+
+			if ( null !== $this->sources->findPostIdByGoogleFileId( $file_id ) ) {
+				$linked[] = $file_id;
+			}
+		}
+
+		$watch['pendingFileIds'] = ( new FolderWatchReconciler() )->reconcilePending(
+			(array) ( $watch['pendingFileIds'] ?? array() ),
+			(array) ( $watch['excludedFileIds'] ?? array() ),
+			$in_scope,
+			$linked
+		);
+		$watch['overflow']       = ! empty( $listing['overflow'] );
+
+		$status = (string) ( $watch['status'] ?? '' );
+
+		if ( ! in_array( $status, array( 'paused', 'error' ), true ) ) {
+			$watch['status'] = array() === (array) $watch['pendingFileIds'] ? 'watching' : 'importing';
+		}
+
+		return $watch;
 	}
 
 	/**

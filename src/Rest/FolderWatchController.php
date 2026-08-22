@@ -126,6 +126,11 @@ final class FolderWatchController {
 					'permission_callback' => array( RestPermissions::class, 'canUseAuthenticatedRest' ),
 				),
 				array(
+					'methods'             => WP_REST_Server::EDITABLE,
+					'callback'            => array( $this, 'updateWatch' ),
+					'permission_callback' => array( RestPermissions::class, 'canUseAuthenticatedRest' ),
+				),
+				array(
 					'methods'             => WP_REST_Server::DELETABLE,
 					'callback'            => array( $this, 'deleteWatch' ),
 					'permission_callback' => array( RestPermissions::class, 'canUseAuthenticatedRest' ),
@@ -294,6 +299,61 @@ final class FolderWatchController {
 		);
 
 		return is_wp_error( $watch ) ? $watch : rest_ensure_response( $watch );
+	}
+
+	/**
+	 * Update editable watch fields.
+	 *
+	 * Owner-or-admin access is enforced inside FolderWatchService::update().
+	 *
+	 * @param WP_REST_Request $request REST request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function updateWatch( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$params = $this->getRequestParams(
+			$request,
+			array(
+				'syncInterval',
+				'postStatus',
+				'layoutPreset',
+				'elementorSync',
+				'elementorPreset',
+				'includeSubfolders',
+				'excludedFileIds',
+			)
+		);
+
+		if ( is_wp_error( $params ) ) {
+			return $params;
+		}
+
+		if ( isset( $params['layoutPreset'] ) ) {
+			$layout = $this->sanitizeLayoutPreset( $params['layoutPreset'] );
+
+			if ( is_wp_error( $layout ) ) {
+				return $layout;
+			}
+
+			$params['layoutPreset'] = $layout;
+		}
+
+		if ( isset( $params['elementorPreset'] ) ) {
+			$elementor_preset = $this->sanitizeElementorPreset( $params['elementorPreset'] );
+
+			if ( is_wp_error( $elementor_preset ) ) {
+				return $elementor_preset;
+			}
+
+			$params['elementorPreset'] = $elementor_preset;
+		}
+
+		$updated = $this->folder_watches->update(
+			sanitize_key( (string) $request->get_param( 'id' ) ),
+			get_current_user_id(),
+			$params
+		);
+
+		return is_wp_error( $updated ) ? $updated : rest_ensure_response( $updated );
 	}
 
 	/**

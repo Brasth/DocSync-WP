@@ -439,11 +439,12 @@ final class SourceRepository {
 	 * @param int               $user_id    User ID.
 	 * @param int               $limit      Maximum rows to return.
 	 * @param int               $page       Page number.
-	 * @param string            $search Search term.
-	 * @param string            $status Sync status.
+	 * @param string            $search          Search term.
+	 * @param string            $status          Sync status.
+	 * @param string            $folder_watch_id Optional folder watch ID.
 	 * @return array{sources:array<int,array<string,mixed>>,has_more:bool,page:int,per_page:int}
 	 */
-	public function listSourcesPage( array $post_types, int $user_id, int $limit = 100, int $page = 1, string $search = '', string $status = '' ): array {
+	public function listSourcesPage( array $post_types, int $user_id, int $limit = 100, int $page = 1, string $search = '', string $status = '', string $folder_watch_id = '' ): array {
 		$post_types = array_values(
 			array_filter(
 				array_map( 'sanitize_key', $post_types ),
@@ -454,10 +455,11 @@ final class SourceRepository {
 			)
 		);
 
-		$limit  = max( 1, min( 100, $limit ) );
-		$page   = max( 1, $page );
-		$search = trim( sanitize_text_field( $search ) );
-		$status = sanitize_key( $status );
+		$limit           = max( 1, min( 100, $limit ) );
+		$page            = max( 1, $page );
+		$search          = trim( sanitize_text_field( $search ) );
+		$status          = sanitize_key( $status );
+		$folder_watch_id = sanitize_key( $folder_watch_id );
 
 		if ( array() === $post_types ) {
 			return array(
@@ -495,6 +497,14 @@ final class SourceRepository {
 			$meta_query['sync_status'] = array(
 				'key'     => self::META_SYNC_STATUS,
 				'value'   => $status,
+				'compare' => '=',
+			);
+		}
+
+		if ( '' !== $folder_watch_id ) {
+			$meta_query['folder_watch'] = array(
+				'key'     => self::META_FOLDER_WATCH_ID,
+				'value'   => $folder_watch_id,
 				'compare' => '=',
 			);
 		}

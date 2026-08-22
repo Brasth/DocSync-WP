@@ -21,18 +21,21 @@ defined( 'ABSPATH' ) || exit;
 final class AssetRegistry {
 	private const SETUP_ENTRY               = 'resources/js/admin/entries/setup-entry.tsx';
 	private const SOURCES_ENTRY             = 'resources/js/admin/entries/sources-entry.tsx';
+	private const FOLDERS_ENTRY             = 'resources/js/admin/entries/folders-entry.tsx';
 	private const LOGS_ENTRY                = 'resources/js/admin/entries/logs-entry.tsx';
 	private const POST_SYNC_ENTRY           = 'resources/js/admin/entries/post-sync-entry.tsx';
 	private const DOC_SOURCE_MODAL_ENTRY    = 'resources/js/admin/entries/doc-source-modal-entry.ts';
 	private const DRIVE_BROWSER_ENTRY       = 'resources/js/admin/entries/drive-browser-entry.tsx';
 	private const SETUP_MANIFEST            = 'manifest.setup.json';
 	private const SOURCES_MANIFEST          = 'manifest.sources.json';
+	private const FOLDERS_MANIFEST          = 'manifest.folders.json';
 	private const LOGS_MANIFEST             = 'manifest.logs.json';
 	private const POST_SYNC_MANIFEST        = 'manifest.post-sync.json';
 	private const DOC_SOURCE_MODAL_MANIFEST = 'manifest.doc-source-modal.json';
 	private const DRIVE_BROWSER_MANIFEST    = 'manifest.drive-browser.json';
 	private const SETUP_HANDLE              = 'docsync-wp-setup';
 	private const SOURCES_HANDLE            = 'docsync-wp-sources';
+	private const FOLDERS_HANDLE            = 'docsync-wp-folders';
 	private const LOGS_HANDLE               = 'docsync-wp-logs';
 	private const POST_SYNC_HANDLE          = 'docsync-wp-post-sync';
 	private const POST_SYNC_HOOKS           = array( 'post.php', 'post-new.php', 'edit.php' );
@@ -270,6 +273,15 @@ final class AssetRegistry {
 				'manifest' => self::SOURCES_MANIFEST,
 				'handle'   => self::SOURCES_HANDLE,
 				'label'    => 'Brasth Document Sync sources',
+			);
+		}
+
+		if ( AdminPage::FOLDERS_MENU_SLUG === $plugin_page ) {
+			return array(
+				'entry'    => self::FOLDERS_ENTRY,
+				'manifest' => self::FOLDERS_MANIFEST,
+				'handle'   => self::FOLDERS_HANDLE,
+				'label'    => 'Brasth Document Sync Drive Folders',
 			);
 		}
 

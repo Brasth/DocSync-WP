@@ -28,7 +28,8 @@ export const listSources = (filters: SourceFilters = {}): Promise<SourcesRespons
     per_page: filters.perPage ?? 100,
     post_type: filters.postType || undefined,
     search: filters.search || undefined,
-    status: filters.status || undefined
+    status: filters.status || undefined,
+    folder_watch_id: filters.folderWatchId || undefined
   }));
 };
 

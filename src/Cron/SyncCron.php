@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace DocSyncWP\Cron;
 
+use DocSyncWP\Cron\CronHeartbeat;
 use DocSyncWP\Settings\SettingsRepository;
 use DocSyncWP\Sync\SourceRepository;
 use DocSyncWP\Sync\SyncService;
@@ -98,6 +99,8 @@ final class SyncCron {
 		if ( ! $this->settings->hasRequiredOAuthConfiguration() ) {
 			return;
 		}
+
+		( new CronHeartbeat() )->mark();
 
 		$post_ids = $this->getLinkedPostIds();
 

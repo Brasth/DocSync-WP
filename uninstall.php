@@ -19,6 +19,7 @@ if ( file_exists( $docsync_wp_autoload ) ) {
 
 delete_option( 'docsync_wp_settings' );
 delete_option( 'docsync_wp_folder_watches' );
+delete_option( 'docsync_wp_last_cron_run_at' );
 delete_metadata( 'user', 0, '_docsync_wp_google_token', '', true );
 
 if ( class_exists( DocSyncWP\Cron\SyncCron::class ) ) {
