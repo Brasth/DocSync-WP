@@ -5,10 +5,9 @@ repo_root="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "${repo_root}"
 
 if ! command -v composer >/dev/null 2>&1; then
-  sudo apt-get update -qq
-  sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    php-cli php-mysql php-xml php-mbstring php-curl php-zip php-gd php-intl \
-    mariadb-server apache2 libapache2-mod-php wp-cli
+  sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq
+  sudo DEBIAN_FRONTEND=noninteractive apt-get install -y php-cli php-curl unzip curl
+  curl -fsSL https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 fi
 
 composer install --no-interaction --prefer-dist

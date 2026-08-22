@@ -7,11 +7,17 @@ repo_root="$(cd "$(dirname "$0")/../.." && pwd)"
 site_url="${WP_HOME:-http://localhost:8890}"
 
 ensure_packages() {
-  if ! command -v wp >/dev/null 2>&1; then
+  if ! command -v php >/dev/null 2>&1; then
     sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq
     sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
       php-cli php-mysql php-xml php-mbstring php-curl php-zip php-gd php-intl \
-      mariadb-server apache2 libapache2-mod-php wp-cli curl
+      mariadb-server apache2 libapache2-mod-php curl
+  fi
+
+  if ! command -v wp >/dev/null 2>&1; then
+    curl -fsSL -o /tmp/wp-cli.phar https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+    chmod +x /tmp/wp-cli.phar
+    sudo mv /tmp/wp-cli.phar /usr/local/bin/wp
   fi
 }
 
