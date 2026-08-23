@@ -219,6 +219,28 @@ export const PostMetaBoxApp = ({ postId, postType, initialSource, elementorAvail
                 value={actions.source.layoutPreset ?? ''}
               />
             )}
+            <label className="docsync-wp-field docsync-wp-field--compact">
+              <span>{__('Re-sync schedule', 'brasth-document-sync-for-google-docs')}</span>
+              <select
+                disabled={actions.busy || isSyncing}
+                onChange={(event) => void actions.updateSyncInterval(event.currentTarget.value)}
+                value={actions.source.syncInterval || ''}
+              >
+                <option value="">{__('Use folder or site schedule', 'brasth-document-sync-for-google-docs')}</option>
+                <option value="off">{__('Off', 'brasth-document-sync-for-google-docs')}</option>
+                <option value="hourly">{__('Hourly', 'brasth-document-sync-for-google-docs')}</option>
+                <option value="twicedaily">{__('Twice daily', 'brasth-document-sync-for-google-docs')}</option>
+                <option value="daily">{__('Daily', 'brasth-document-sync-for-google-docs')}</option>
+                <option value="weekly">{__('Weekly', 'brasth-document-sync-for-google-docs')}</option>
+              </select>
+            </label>
+            <p>
+              {sprintf(
+                __('Effective: %s. Next re-sync %s.', 'brasth-document-sync-for-google-docs'),
+                actions.source.effectiveInterval || __('off', 'brasth-document-sync-for-google-docs'),
+                actions.source.nextSyncAt || __('not scheduled', 'brasth-document-sync-for-google-docs')
+              )}
+            </p>
           </section>
         ) : null}
       </div>

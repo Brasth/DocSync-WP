@@ -79,20 +79,30 @@ final class SourceRepository {
 	private ElementorPresetRegistry $elementor_presets;
 
 	/**
+	 * Schedule resolver.
+	 *
+	 * @var SourceScheduleResolver|null
+	 */
+	private ?SourceScheduleResolver $schedule;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param SettingsRepository           $settings          Settings repository.
 	 * @param LayoutPresetRegistry|null    $layout_presets    Layout preset registry.
 	 * @param ElementorPresetRegistry|null $elementor_presets Elementor preset registry.
+	 * @param SourceScheduleResolver|null  $schedule          Schedule resolver.
 	 */
 	public function __construct(
 		SettingsRepository $settings,
 		?LayoutPresetRegistry $layout_presets = null,
-		?ElementorPresetRegistry $elementor_presets = null
+		?ElementorPresetRegistry $elementor_presets = null,
+		?SourceScheduleResolver $schedule = null
 	) {
 		$this->settings          = $settings;
 		$this->layout_presets    = $layout_presets ?? new LayoutPresetRegistry();
 		$this->elementor_presets = $elementor_presets ?? new ElementorPresetRegistry();
+		$this->schedule          = $schedule;
 	}
 
 	/**
@@ -201,6 +211,19 @@ final class SourceRepository {
 				delete_post_meta( $post_id, self::META_SYNC_INTERVAL );
 			} else {
 				update_post_meta( $post_id, self::META_SYNC_INTERVAL, $sync_interval );
+			}
+
+			if ( $this->schedule instanceof SourceScheduleResolver ) {
+				$fresh = $this->getSource( $post_id );
+
+				if ( null !== $fresh ) {
+					$effective = $this->schedule->resolveInterval( $fresh );
+					update_post_meta(
+						$post_id,
+						self::META_NEXT_SYNC,
+						SourceScheduleResolver::nextSyncAt( current_time( 'mysql', true ), $effective )
+					);
+				}
 			}
 		}
 		update_post_meta( $post_id, self::META_LAYOUT_PRESET, $this->sanitizeLayoutPreset( $source['layout_preset'] ?? '' ) );
@@ -949,6 +972,11 @@ final class SourceRepository {
 			'syncUpdatedAt'         => $source['sync_updated_at'],
 			'syncErrorCode'         => $source['sync_error_code'],
 			'folderWatchId'         => '' !== $source['folder_watch_id'] ? $source['folder_watch_id'] : null,
+			'syncInterval'          => (string) ( $source['sync_interval'] ?? '' ),
+			'effectiveInterval'     => $this->schedule instanceof SourceScheduleResolver
+				? $this->schedule->resolveInterval( $source )
+				: (string) ( $source['sync_interval'] ?? '' ),
+			'nextSyncAt'            => (string) ( $source['next_sync_at'] ?? '' ),
 		);
 	}
 

@@ -188,14 +188,14 @@ final class Plugin {
 		$elementor_presets           = new ElementorPresetRegistry();
 		$settings                    = new SettingsRepository( $encryption, $layout_presets, $elementor_presets );
 		$token_store                 = new TokenStore( $encryption );
-		$source_repository           = new SourceRepository( $settings, $layout_presets, $elementor_presets );
+		$folder_watch_repository     = new FolderWatchRepository();
+		$schedule_resolver           = new SourceScheduleResolver( $settings, $folder_watch_repository );
+		$source_repository           = new SourceRepository( $settings, $layout_presets, $elementor_presets, $schedule_resolver );
 		$google_oauth                = new GoogleOAuthService( $settings, $token_store );
 		$telemetry_service           = new TelemetryService( $settings );
 		$drive_client                = new DriveClient( $google_oauth );
 		$docs_client                 = new DocsClient( $google_oauth );
 		$folder_inventory            = new DriveFolderInventory( $drive_client );
-		$folder_watch_repository     = new FolderWatchRepository();
-		$schedule_resolver           = new SourceScheduleResolver( $settings, $folder_watch_repository );
 		$document_id_parser          = new DocumentIdParser();
 		$media_assets                = new MediaAssetImporter();
 		$elementor_checker           = new CompatibilityChecker();
