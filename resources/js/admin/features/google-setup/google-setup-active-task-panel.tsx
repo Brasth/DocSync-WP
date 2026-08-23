@@ -2,6 +2,7 @@ import { createElement, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 import type { GoogleAccount } from '../../api';
+import type { AvailablePostType } from '../../config';
 import { AdminButton } from '../../shared/ui/admin-button';
 import { ConfirmDialog } from '../../shared/ui/confirm-dialog';
 import { GoogleSetupTestResult } from './google-setup-test-result';
@@ -20,33 +21,41 @@ type Props = {
   hasClientSecret: boolean;
   hasSavedOAuthConfiguration: boolean;
   hasUnsavedChanges: boolean;
+  availablePostTypes?: AvailablePostType[];
+  creatablePostTypes?: string[];
   nextAction: GoogleSetupNextActionConfig;
   redirectUri: string;
+  showTargetPicker?: boolean;
+  targetPostType?: string;
   testChecks: SetupCheck[] | null;
   onClearOAuthConfiguration: () => Promise<boolean>;
   onClientIdChange: (clientId: string) => void;
   onClientSecretChange: (clientSecret: string) => void;
   onCopyValue: (value: string, label: string) => void;
   onImported: (credentials: OAuthClientJsonCredentials) => void;
+  onTargetPostTypeChange?: (postType: string) => void;
   onTestSetup: () => void;
 };
 
-const renderPrimaryAction = (nextAction: GoogleSetupNextActionConfig): JSX.Element => {
-  if (nextAction.href) {
+const renderActionButton = (
+  label: string,
+  options: { disabled?: boolean; href?: string; onClick?: () => void | Promise<void>; variant: 'primary' | 'secondary' }
+): JSX.Element => {
+  if (options.href) {
     return (
       <a
-        aria-disabled={nextAction.disabled ? 'true' : undefined}
-        className="button button-primary docsync-wp-button docsync-wp-button--default"
-        href={nextAction.href}
+        aria-disabled={options.disabled ? 'true' : undefined}
+        className={`button ${options.variant === 'primary' ? 'button-primary' : 'button-secondary'} docsync-wp-button docsync-wp-button--default`}
+        href={options.href}
       >
-        {nextAction.label}
+        {label}
       </a>
     );
   }
 
   return (
-    <AdminButton disabled={Boolean(nextAction.disabled)} onClick={nextAction.onClick} variant="primary">
-      {nextAction.label}
+    <AdminButton disabled={Boolean(options.disabled)} onClick={options.onClick} variant={options.variant}>
+      {label}
     </AdminButton>
   );
 };
@@ -54,21 +63,26 @@ const renderPrimaryAction = (nextAction: GoogleSetupNextActionConfig): JSX.Eleme
 export const GoogleSetupActiveTaskPanel = ({
   account,
   activeTask,
+  availablePostTypes = [],
   busy,
   clientId,
   clientSecret,
   copyMessage,
+  creatablePostTypes = [],
   hasClientSecret,
   hasSavedOAuthConfiguration,
   hasUnsavedChanges,
   nextAction,
   redirectUri,
+  showTargetPicker = false,
+  targetPostType = '',
   testChecks,
   onClearOAuthConfiguration,
   onClientIdChange,
   onClientSecretChange,
   onCopyValue,
   onImported,
+  onTargetPostTypeChange,
   onTestSetup
 }: Props): JSX.Element => {
   const [clearOAuthOpen, setClearOAuthOpen] = useState(false);
@@ -156,8 +170,20 @@ export const GoogleSetupActiveTaskPanel = ({
 
     return (
       <div className="docsync-wp-setup-task-message">
-        <strong>{__('Setup ready for source selection.', 'brasth-document-sync-for-google-docs')}</strong>
-        <p>{__('Open the Posts list, choose Add Sync Doc, select a Google Doc, and create the first synced draft.', 'brasth-document-sync-for-google-docs')}</p>
+        <strong>{__('Setup ready for client folder automation.', 'brasth-document-sync-for-google-docs')}</strong>
+        <p>{__('Watch a client folder to create drafts from every Google Doc, or choose one Doc for a single source.', 'brasth-document-sync-for-google-docs')}</p>
+        {showTargetPicker && creatablePostTypes.length > 0 ? (
+          <label className="docsync-wp-field docsync-wp-field--compact">
+            <span>{__('WordPress target type', 'brasth-document-sync-for-google-docs')}</span>
+            <select onChange={(event) => onTargetPostTypeChange?.(event.currentTarget.value)} value={targetPostType}>
+              {creatablePostTypes.map((postType) => (
+                <option key={postType} value={postType}>
+                  {availablePostTypes.find((item) => item.name === postType)?.label || postType}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
       </div>
     );
   };
@@ -173,7 +199,18 @@ export const GoogleSetupActiveTaskPanel = ({
       {renderBody()}
 
       <div className="docsync-wp-setup-task-actions">
-        {renderPrimaryAction(nextAction)}
+        {renderActionButton(nextAction.label, {
+          disabled: nextAction.disabled,
+          href: nextAction.href,
+          onClick: nextAction.onClick,
+          variant: 'primary'
+        })}
+        {nextAction.secondaryLabel ? renderActionButton(nextAction.secondaryLabel, {
+          disabled: nextAction.disabled,
+          href: nextAction.secondaryHref,
+          onClick: nextAction.onSecondaryClick,
+          variant: 'secondary'
+        }) : null}
         <AdminButton disabled={busy} onClick={onTestSetup}>
           {__('Test setup', 'brasth-document-sync-for-google-docs')}
         </AdminButton>

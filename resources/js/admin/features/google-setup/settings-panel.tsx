@@ -2,6 +2,7 @@ import { createElement, useEffect, useMemo, useState } from '@wordpress/element'
 import { __, sprintf } from '@wordpress/i18n';
 
 import type { GoogleAccount, SettingsResponse } from '../../api';
+import type { AvailablePostType } from '../../config';
 import { GoogleSetupActiveTaskPanel } from './google-setup-active-task-panel';
 import { GoogleSetupProgressRail } from './google-setup-progress-rail';
 import type { OAuthClientJsonCredentials } from './oauth-client-json';
@@ -20,29 +21,39 @@ type Props = {
   account: GoogleAccount;
   settings: SettingsResponse;
   busy: boolean;
+  availablePostTypes?: AvailablePostType[];
   canCreateSource?: boolean;
+  creatablePostTypes?: string[];
   activated?: boolean;
   /** focus = first-run single column; ready = maintenance layout with quieter rail. */
   layoutMode?: SettingsPanelLayoutMode;
   redirectUri: string;
   onClearOAuthConfiguration: () => Promise<boolean>;
   onConnect: () => Promise<void>;
-  onCreateSource?: () => void;
+  onCreateSource?: (intent?: 'folder' | 'document') => void;
   onSave: (settings: Partial<SettingsResponse> & { clientSecret?: string }) => Promise<boolean>;
+  onTargetPostTypeChange?: (postType: string) => void;
+  showTargetPicker?: boolean;
+  targetPostType?: string;
 };
 
 export const SettingsPanel = ({
   account,
   settings,
   busy,
+  availablePostTypes = [],
   canCreateSource = true,
+  creatablePostTypes = [],
   activated = false,
   layoutMode = 'focus',
   redirectUri,
   onClearOAuthConfiguration,
   onConnect,
   onCreateSource = () => undefined,
-  onSave
+  onSave,
+  onTargetPostTypeChange,
+  showTargetPicker = false,
+  targetPostType = ''
 }: Props): JSX.Element => {
   const [clientId, setClientId] = useState(settings.clientId);
   const [clientSecret, setClientSecret] = useState('');
@@ -139,7 +150,9 @@ export const SettingsPanel = ({
       <GoogleSetupActiveTaskPanel
         account={account}
         activeTask={activeTask}
+        availablePostTypes={availablePostTypes}
         busy={busy}
+        creatablePostTypes={creatablePostTypes}
         clientId={clientId}
         clientSecret={clientSecret}
         copyMessage={copyMessage}
@@ -152,8 +165,11 @@ export const SettingsPanel = ({
         onClientSecretChange={setClientSecret}
         onCopyValue={copyValue}
         onImported={importCredentials}
+        onTargetPostTypeChange={onTargetPostTypeChange}
         onTestSetup={testSetup}
         redirectUri={redirectUri}
+        showTargetPicker={showTargetPicker}
+        targetPostType={targetPostType}
         testChecks={testChecks}
       />
     </section>

@@ -106,6 +106,10 @@
     margin-top: 4px;
   }
 
+  .docsync-wp-setup-task-message .docsync-wp-field {
+    margin-top: 12px;
+  }
+
   .docsync-wp-setup-task-actions {
     align-items: center;
     border-top: 1px solid var(--docsync-card-border);

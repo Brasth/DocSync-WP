@@ -17,7 +17,7 @@ type NextActionArgs = {
   hasCredentialChanges: boolean;
   settings: SettingsResponse;
   onConnect: () => Promise<void>;
-  onCreateSource: () => void;
+  onCreateSource: (intent?: 'folder' | 'document') => void;
   onSaveCredentials: () => Promise<void>;
 };
 
@@ -103,20 +103,24 @@ export const buildGoogleSetupNextAction = ({
   if (activated) {
     return {
       title: __('Publishing workspace active', 'brasth-document-sync-for-google-docs'),
-      description: __('At least one source has completed successfully. Use Sources for daily publishing work.', 'brasth-document-sync-for-google-docs'),
+      description: __('At least one source or client folder has completed successfully. Use Sources and Drive Folders for daily work.', 'brasth-document-sync-for-google-docs'),
       label: __('View Sources', 'brasth-document-sync-for-google-docs'),
-      href: 'admin.php?page=brasth-document-sync-for-google-docs-sources'
+      href: 'admin.php?page=brasth-document-sync-for-google-docs-sources',
+      secondaryLabel: __('Manage Drive Folders', 'brasth-document-sync-for-google-docs'),
+      secondaryHref: 'admin.php?page=brasth-document-sync-for-google-docs-folders'
     };
   }
 
   return {
-    title: __('Create first synced draft', 'brasth-document-sync-for-google-docs'),
+    title: __('Start client folder automation', 'brasth-document-sync-for-google-docs'),
     description: canCreateSource
-      ? __('Choose an accessible Google Doc and create a WordPress draft without leaving Setup.', 'brasth-document-sync-for-google-docs')
+      ? __('Watch a Drive folder to create drafts from every Google Doc. One-off Docs stay available.', 'brasth-document-sync-for-google-docs')
       : __('No enabled WordPress target is available for this user. Adjust post-type permissions before creating a source.', 'brasth-document-sync-for-google-docs'),
-    label: __('Choose source', 'brasth-document-sync-for-google-docs'),
+    label: __('Watch a client folder', 'brasth-document-sync-for-google-docs'),
     disabled: busy || !canCreateSource,
-    onClick: async () => onCreateSource()
+    onClick: async () => onCreateSource('folder'),
+    secondaryLabel: __('Choose one Google Doc', 'brasth-document-sync-for-google-docs'),
+    onSecondaryClick: () => onCreateSource('document')
   };
 };
 
@@ -150,9 +154,9 @@ export const buildGoogleSetupChecklistItems = ({
     id: 'first-draft',
     label: __('First publishing source', 'brasth-document-sync-for-google-docs'),
     description: activated
-      ? __('Publishing responsibility complete: a source synced successfully.', 'brasth-document-sync-for-google-docs')
+      ? __('Publishing responsibility complete: folder automation or a source is active.', 'brasth-document-sync-for-google-docs')
       : canCreateDraft
-      ? __('Publishing responsibility: choose a Google Doc.', 'brasth-document-sync-for-google-docs')
+      ? __('Publishing responsibility: watch a client folder or choose one Google Doc.', 'brasth-document-sync-for-google-docs')
       : __('Publishing responsibility unlocks after Google is connected.', 'brasth-document-sync-for-google-docs'),
     state: activated ? 'complete' : firstSyncStepState
   }
