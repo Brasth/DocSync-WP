@@ -18,7 +18,7 @@ export const SourcesFolderWatches = ({ watches }: Props): JSX.Element | null => 
     <section className="docsync-wp-folder-watches" aria-label={__('Folder watches', 'brasth-document-sync-for-google-docs')}>
       <header className="docsync-wp-folder-watches__header">
         <h3>{__('Drive folders', 'brasth-document-sync-for-google-docs')}</h3>
-        <a href={foldersScreenUrl}>{__('Manage folder watches', 'brasth-document-sync-for-google-docs')}</a>
+        <a href={foldersScreenUrl}>{__('Manage client folders', 'brasth-document-sync-for-google-docs')}</a>
       </header>
       <ul className="docsync-wp-folder-watches__list">
         {watches.map((watch) => (
