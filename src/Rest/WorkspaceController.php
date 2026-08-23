@@ -156,13 +156,14 @@ final class WorkspaceController {
 	 */
 	private function formatSourceSummary( int $user_id ): array {
 		$summary = $this->sources->getAccessibleSourceSummary( $user_id );
+		$folder  = $this->folder_watches->summarizeForUser( $user_id );
 
 		return array(
 			'total'     => $summary['total'],
 			'attention' => $summary['attention'],
 			'syncing'   => $summary['syncing'],
 			'healthy'   => $summary['healthy'],
-			'activated' => $summary['activated'],
+			'activated' => $summary['activated'] || $folder['imported'] >= 1,
 			'truncated' => $summary['truncated'],
 		);
 	}

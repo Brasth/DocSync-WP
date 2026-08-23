@@ -20,6 +20,7 @@ const normalizeFolderWatchSummary = (
   importing: normalizeCount(summary?.importing),
   watching: normalizeCount(summary?.watching),
   attention: normalizeCount(summary?.attention),
+  imported: normalizeCount(summary?.imported),
   truncated: summary?.truncated === true
 });
 

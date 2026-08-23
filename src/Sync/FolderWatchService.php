@@ -158,15 +158,17 @@ final class FolderWatchService {
 	 * Safe workspace counts for the current user.
 	 *
 	 * @param int $user_id User ID.
-	 * @return array{importing:int,watching:int,attention:int,truncated:bool}
+	 * @return array{importing:int,watching:int,attention:int,imported:int,truncated:bool}
 	 */
 	public function summarizeForUser( int $user_id ): array {
 		$importing = 0;
 		$watching  = 0;
 		$attention = 0;
+		$imported  = 0;
 
 		foreach ( $this->listForUser( $user_id ) as $watch ) {
-			$status = (string) ( $watch['status'] ?? '' );
+			$status    = (string) ( $watch['status'] ?? '' );
+			$imported += absint( $watch['importedCount'] ?? 0 );
 
 			if ( 'importing' === $status ) {
 				++$importing;
@@ -181,6 +183,7 @@ final class FolderWatchService {
 			'importing' => $importing,
 			'watching'  => $watching,
 			'attention' => $attention,
+			'imported'  => $imported,
 			'truncated' => false,
 		);
 	}
