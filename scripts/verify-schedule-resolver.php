@@ -84,4 +84,22 @@ docsync_wp_assert_same( '2026-08-24 00:00:00', $resolver::nextSyncAt( '2026-08-2
 docsync_wp_assert_same( '2026-08-24 12:00:00', $resolver::nextSyncAt( '2026-08-23 12:00:00', 'daily' ), 'Daily next due' );
 docsync_wp_assert_same( '2026-08-30 12:00:00', $resolver::nextSyncAt( '2026-08-23 12:00:00', 'weekly' ), 'Weekly next due' );
 
+$repository = file_get_contents( __DIR__ . '/../src/Sync/SourceRepository.php' );
+
+if ( ! is_string( $repository ) || ! str_contains( $repository, 'META_NEXT_SYNC' ) || ! str_contains( $repository, 'listPostIdsForFolderWatch' ) ) {
+	docsync_wp_fail( 'SourceRepository must persist next_sync_at and list folder-watch members' );
+}
+
+$cron = file_get_contents( __DIR__ . '/../src/Cron/SyncCron.php' );
+
+if ( ! is_string( $cron ) || ! str_contains( $cron, 'CONTINUE_HOOK' ) || ! str_contains( $cron, 'docsync_wp_sync_sources_continue' ) ) {
+	docsync_wp_fail( 'SyncCron must drain due sources with a continuation hook' );
+}
+
+$service = file_get_contents( __DIR__ . '/../src/Sync/FolderWatchService.php' );
+
+if ( ! is_string( $service ) || ! str_contains( $service, 'function recomputeMemberSchedules(' ) ) {
+	docsync_wp_fail( 'FolderWatchService must recompute member schedules' );
+}
+
 echo "Source schedule resolver passed." . PHP_EOL;

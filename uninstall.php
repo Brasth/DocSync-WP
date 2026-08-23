@@ -20,6 +20,8 @@ if ( file_exists( $docsync_wp_autoload ) ) {
 delete_option( 'docsync_wp_settings' );
 delete_option( 'docsync_wp_folder_watches' );
 delete_option( 'docsync_wp_last_cron_run_at' );
+delete_option( 'docsync_wp_sync_continuations' );
+delete_option( 'docsync_wp_next_sync_backfill_done' );
 delete_metadata( 'user', 0, '_docsync_wp_google_token', '', true );
 
 if ( class_exists( DocSyncWP\Cron\SyncCron::class ) ) {
@@ -27,6 +29,13 @@ if ( class_exists( DocSyncWP\Cron\SyncCron::class ) ) {
 } else {
 	wp_clear_scheduled_hook( 'docsync_wp_sync_sources' );
 	wp_clear_scheduled_hook( 'docsync_wp_sync_source' );
+	wp_clear_scheduled_hook( 'docsync_wp_sync_sources_continue' );
+}
+
+if ( class_exists( DocSyncWP\Cron\ScheduleBackfill::class ) ) {
+	DocSyncWP\Cron\ScheduleBackfill::unschedule();
+} else {
+	wp_clear_scheduled_hook( 'docsync_wp_backfill_next_sync' );
 }
 
 if ( class_exists( DocSyncWP\Sync\FolderWatchService::class ) ) {
@@ -58,6 +67,8 @@ foreach (
 		'_docsync_wp_google_version',
 		'_docsync_wp_last_hash',
 		'_docsync_wp_last_synced_at',
+		'_docsync_wp_next_sync_at',
+		'_docsync_wp_sync_interval',
 		'_docsync_wp_last_sync_method',
 		'_docsync_wp_layout_preset',
 		'_docsync_wp_last_layout_fingerprint',

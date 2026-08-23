@@ -185,4 +185,8 @@ if ( ! is_string( $service ) || ! str_contains( $service, 'function update(' ) |
 	docsync_wp_fail( 'update() must reuse requireWatch owner-or-admin access' );
 }
 
+if ( ! str_contains( $service, 'function recomputeMemberSchedules(' ) ) {
+	docsync_wp_fail( 'Interval edits must recompute member next_sync_at' );
+}
+
 echo "Folder watch update helpers passed." . PHP_EOL;

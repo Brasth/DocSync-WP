@@ -30,6 +30,8 @@ final class SourceRepository {
 	public const META_VERSION          = '_docsync_wp_google_version';
 	public const META_LAST_HASH        = '_docsync_wp_last_hash';
 	public const META_LAST_SYNCED      = '_docsync_wp_last_synced_at';
+	public const META_NEXT_SYNC        = '_docsync_wp_next_sync_at';
+	public const META_SYNC_INTERVAL    = '_docsync_wp_sync_interval';
 	public const META_LAST_METHOD      = '_docsync_wp_last_sync_method';
 	public const META_OWNER_USER_ID    = '_docsync_wp_sync_owner_user_id';
 	public const META_EXPORT_FORMAT    = '_docsync_wp_export_format';
@@ -125,6 +127,8 @@ final class SourceRepository {
 			'google_version'       => $this->getStringMeta( $post_id, self::META_VERSION ),
 			'last_hash'            => $this->getStringMeta( $post_id, self::META_LAST_HASH ),
 			'last_synced_at'       => $this->getStringMeta( $post_id, self::META_LAST_SYNCED ),
+			'next_sync_at'         => $this->getStringMeta( $post_id, self::META_NEXT_SYNC ),
+			'sync_interval'        => $this->getStringMeta( $post_id, self::META_SYNC_INTERVAL ),
 			'last_sync_method'     => $this->getStringMeta( $post_id, self::META_LAST_METHOD ),
 			'layout_preset'        => $this->getLayoutPreset( $post_id ),
 			'last_layout_hash'     => $this->getStringMeta( $post_id, self::META_LAYOUT_HASH ),
@@ -187,7 +191,18 @@ final class SourceRepository {
 		update_post_meta( $post_id, self::META_VERSION, isset( $source['google_version'] ) ? sanitize_text_field( (string) $source['google_version'] ) : '' );
 		update_post_meta( $post_id, self::META_LAST_HASH, isset( $source['last_hash'] ) ? sanitize_text_field( (string) $source['last_hash'] ) : '' );
 		update_post_meta( $post_id, self::META_LAST_SYNCED, isset( $source['last_synced_at'] ) ? sanitize_text_field( (string) $source['last_synced_at'] ) : '' );
+		update_post_meta( $post_id, self::META_NEXT_SYNC, isset( $source['next_sync_at'] ) ? sanitize_text_field( (string) $source['next_sync_at'] ) : '' );
 		update_post_meta( $post_id, self::META_LAST_METHOD, $this->sanitizeLastSyncMethod( $source['last_sync_method'] ?? '' ) );
+
+		if ( array_key_exists( 'sync_interval', $source ) ) {
+			$sync_interval = sanitize_key( (string) $source['sync_interval'] );
+
+			if ( '' === $sync_interval || ! in_array( $sync_interval, SourceScheduleResolver::INTERVALS, true ) ) {
+				delete_post_meta( $post_id, self::META_SYNC_INTERVAL );
+			} else {
+				update_post_meta( $post_id, self::META_SYNC_INTERVAL, $sync_interval );
+			}
+		}
 		update_post_meta( $post_id, self::META_LAYOUT_PRESET, $this->sanitizeLayoutPreset( $source['layout_preset'] ?? '' ) );
 		update_post_meta( $post_id, self::META_LAYOUT_HASH, isset( $source['last_layout_hash'] ) ? sanitize_text_field( (string) $source['last_layout_hash'] ) : '' );
 		update_post_meta( $post_id, self::META_OWNER_USER_ID, isset( $source['sync_owner_user_id'] ) ? absint( $source['sync_owner_user_id'] ) : 0 );
@@ -829,11 +844,26 @@ final class SourceRepository {
 					'key'     => self::META_FILE_ID,
 					'compare' => 'EXISTS',
 				),
-				'last_synced' => array(
-					'key'     => self::META_LAST_SYNCED,
-					'value'   => sanitize_text_field( $before ),
-					'compare' => '<=',
-					'type'    => 'CHAR',
+				'due'         => array(
+					'relation' => 'OR',
+					array(
+						'relation' => 'AND',
+						array(
+							'key'     => self::META_NEXT_SYNC,
+							'value'   => sanitize_text_field( $before ),
+							'compare' => '<=',
+							'type'    => 'CHAR',
+						),
+						array(
+							'key'     => self::META_NEXT_SYNC,
+							'value'   => '',
+							'compare' => '!=',
+						),
+					),
+					array(
+						'key'     => self::META_NEXT_SYNC,
+						'compare' => 'NOT EXISTS',
+					),
 				),
 				'not_syncing' => array(
 					'relation' => 'OR',
@@ -850,8 +880,8 @@ final class SourceRepository {
 			),
 			'no_found_rows'          => true,
 			'orderby'                => array(
-				'last_synced' => 'ASC',
-				'modified'    => 'ASC',
+				'due'      => 'ASC',
+				'modified' => 'ASC',
 			),
 			'order'                  => 'ASC',
 			'post_status'            => 'any',
@@ -961,6 +991,83 @@ final class SourceRepository {
 		$post_id = isset( $query->posts[0] ) ? absint( $query->posts[0] ) : 0;
 
 		return $post_id > 0 ? $post_id : null;
+	}
+
+	/**
+	 * List linked posts that belong to a folder watch.
+	 *
+	 * @param string $watch_id  Watch ID.
+	 * @param int    $page      1-based page.
+	 * @param int    $per_page  Page size.
+	 * @return array<int,int>
+	 */
+	public function listPostIdsForFolderWatch( string $watch_id, int $page = 1, int $per_page = 100 ): array {
+		$watch_id   = sanitize_key( $watch_id );
+		$post_types = $this->getEnabledPostTypes();
+
+		if ( '' === $watch_id || array() === $post_types ) {
+			return array();
+		}
+
+		$query = new WP_Query(
+			array(
+				'fields'                 => 'ids',
+				'meta_query'             => array(
+					array(
+						'key'   => self::META_FOLDER_WATCH_ID,
+						'value' => $watch_id,
+					),
+				),
+				'no_found_rows'          => true,
+				'paged'                  => max( 1, $page ),
+				'post_status'            => 'any',
+				'post_type'              => $post_types,
+				'posts_per_page'         => max( 1, min( 100, $per_page ) ),
+				'update_post_meta_cache' => true,
+				'update_post_term_cache' => false,
+			)
+		);
+
+		return array_map( 'absint', $query->posts );
+	}
+
+	/**
+	 * List linked posts that still need next_sync_at backfill.
+	 *
+	 * @param int $limit Page size.
+	 * @return array<int,int>
+	 */
+	public function listPostIdsMissingNextSync( int $limit = 200 ): array {
+		$post_types = $this->getEnabledPostTypes();
+
+		if ( array() === $post_types ) {
+			return array();
+		}
+
+		$query = new WP_Query(
+			array(
+				'fields'                 => 'ids',
+				'meta_query'             => array(
+					'relation' => 'AND',
+					array(
+						'key'     => self::META_FILE_ID,
+						'compare' => 'EXISTS',
+					),
+					array(
+						'key'     => self::META_NEXT_SYNC,
+						'compare' => 'NOT EXISTS',
+					),
+				),
+				'no_found_rows'          => true,
+				'post_status'            => 'any',
+				'post_type'              => $post_types,
+				'posts_per_page'         => max( 1, min( 200, $limit ) ),
+				'update_post_meta_cache' => true,
+				'update_post_term_cache' => false,
+			)
+		);
+
+		return array_map( 'absint', $query->posts );
 	}
 
 	/**
@@ -1755,6 +1862,8 @@ final class SourceRepository {
 			self::META_VERSION,
 			self::META_LAST_HASH,
 			self::META_LAST_SYNCED,
+			self::META_NEXT_SYNC,
+			self::META_SYNC_INTERVAL,
 			self::META_LAST_METHOD,
 			self::META_LAYOUT_PRESET,
 			self::META_LAYOUT_HASH,

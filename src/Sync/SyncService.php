@@ -106,6 +106,13 @@ final class SyncService {
 	private ElementorPostUpdater $elementor_updater;
 
 	/**
+	 * Schedule resolver.
+	 *
+	 * @var SourceScheduleResolver|null
+	 */
+	private ?SourceScheduleResolver $schedule;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param SourceRepository                      $source_repository   Source repository.
@@ -118,6 +125,7 @@ final class SyncService {
 	 * @param ElementorDataConverter|null           $elementor_converter        Elementor data converter.
 	 * @param ElementorPostUpdater|null             $elementor_updater          Elementor post updater.
 	 * @param ElementorPresetConversionService|null $elementor_preset_converter Elementor preset converter.
+	 * @param SourceScheduleResolver|null           $schedule                   Schedule resolver.
 	 */
 	public function __construct(
 		SourceRepository $source_repository,
@@ -129,7 +137,8 @@ final class SyncService {
 		?ElementorSyncDecider $elementor_decider = null,
 		?ElementorDataConverter $elementor_converter = null,
 		?ElementorPostUpdater $elementor_updater = null,
-		?ElementorPresetConversionService $elementor_preset_converter = null
+		?ElementorPresetConversionService $elementor_preset_converter = null,
+		?SourceScheduleResolver $schedule = null
 	) {
 		$this->source_repository          = $source_repository;
 		$this->drive_client               = $drive_client;
@@ -141,6 +150,7 @@ final class SyncService {
 		$this->elementor_converter        = $elementor_converter ?? new ElementorDataConverter();
 		$this->elementor_updater          = $elementor_updater ?? new ElementorPostUpdater();
 		$this->elementor_preset_converter = $elementor_preset_converter ?? new ElementorPresetConversionService();
+		$this->schedule                   = $schedule;
 	}
 
 	/**
@@ -814,6 +824,17 @@ final class SyncService {
 			}
 
 			$next_source['sync_error_code'] = '';
+		}
+
+		if (
+			null !== $this->schedule
+			&& in_array( $status, array( self::STATUS_SYNCED, self::STATUS_SKIPPED, self::STATUS_ERROR ), true )
+		) {
+			$interval                    = $this->schedule->resolveInterval( $next_source );
+			$from                        = isset( $next_source['last_synced_at'] ) && '' !== (string) $next_source['last_synced_at']
+				? (string) $next_source['last_synced_at']
+				: $now;
+			$next_source['next_sync_at'] = SourceScheduleResolver::nextSyncAt( $from, $interval );
 		}
 
 		$saved = $this->source_repository->saveSource( $post_id, $next_source );
