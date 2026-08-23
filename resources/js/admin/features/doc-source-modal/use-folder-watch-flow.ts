@@ -131,7 +131,7 @@ export const useFolderWatchFlow = ({ canChooseElementor, initialIntent = 'docume
         confirmRoot: location.isRoot ? true : undefined,
         postType,
         postStatus,
-        syncInterval: syncInterval as 'site' | 'off' | 'hourly' | 'twicedaily' | 'daily',
+        syncInterval: syncInterval as 'site' | 'off' | 'hourly' | 'twicedaily' | 'daily' | 'weekly',
         layoutPreset: outputType === 'elementor' ? undefined : layoutPreset || undefined,
         elementorSync: canChooseElementor && outputType === 'elementor' ? true : undefined,
         elementorPreset: canChooseElementor && outputType === 'elementor' ? layoutPreset || undefined : undefined,

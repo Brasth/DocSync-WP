@@ -7,7 +7,7 @@ import { AdminNotice } from '../../shared/ui/admin-notice';
 import { ConfirmDialog } from '../../shared/ui/confirm-dialog';
 import { LayoutPresetSelector } from '../../shared/ui/layout-preset-selector';
 import { LoadingState } from '../../shared/ui/loading-state';
-import type { SyncResult } from '../../api';
+import type { FolderWatchRecord, SyncResult } from '../../api';
 import { getAdminConfig } from '../../config';
 import { ensureLazyStyle, useLazyDriveBrowserPanel } from './lazy-drive-browser-panel';
 import { AdvancedSourcePanel } from './advanced-source-panel';
@@ -26,7 +26,7 @@ type Props = {
   target: DocSourceTarget | null;
   onClose: () => void;
   onCompleted: (result: SyncResult) => void;
-  onFolderWatchCreated?: (watchId: string) => void;
+  onFolderWatchCreated?: (watch: FolderWatchRecord) => void;
 };
 
 const trimTrailingSlash = (value: string): string => value.replace(/\/$/, '');
@@ -39,7 +39,7 @@ export const DocSourceModal = ({ initialIntent = 'document', isOpen, target, onC
     initialIntent,
     isOpen,
     postType: target?.mode === 'new' ? target.postType : 'post',
-    onWatchCreated: (watch) => onFolderWatchCreated?.(watch.id)
+    onWatchCreated: (watch) => onFolderWatchCreated?.(watch)
   });
   const folderMode = canUseFolderIntent && folderFlow.intent === 'folder';
   const showFolderConfirm = folderMode && folderFlow.inventory !== null;
