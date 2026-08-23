@@ -94,7 +94,7 @@ final class ScheduleBackfill {
 				$source['next_sync_at'] = '';
 			} else {
 				$from                   = '' !== (string) $source['last_synced_at'] ? (string) $source['last_synced_at'] : $now;
-				$source['next_sync_at'] = $from;
+				$source['next_sync_at'] = SourceScheduleResolver::nextSyncAt( $from, $interval );
 			}
 
 			$this->sources->saveSource( $post_id, $source );

@@ -117,7 +117,7 @@ final class FolderWatchService {
 	 * Register cron hooks.
 	 */
 	public function register(): void {
-		add_action( 'update_option_docsync_wp_settings', array( $this, 'syncAllSchedules' ), 20, 0 );
+		add_action( 'update_option_docsync_wp_settings', array( $this, 'onSettingsUpdated' ), 20, 0 );
 		add_action( self::IMPORT_HOOK, array( $this, 'runImport' ), 10, 1 );
 		add_action( self::SCAN_HOOK, array( $this, 'runScan' ), 10, 1 );
 		add_action( 'init', array( $this, 'syncAllSchedules' ) );
@@ -664,10 +664,29 @@ final class FolderWatchService {
 
 	/**
 	 * Reconcile recurring scan events for every watch.
+	 *
+	 * Does not rewrite member next_sync_at. That belongs on create, interval
+	 * change, and site settings updates — not every init.
 	 */
 	public function syncAllSchedules(): void {
 		foreach ( $this->watches->all() as $watch ) {
 			$this->syncWatchSchedule( $watch );
+		}
+	}
+
+	/**
+	 * After site settings change, refresh scans and inherited member due times.
+	 */
+	public function onSettingsUpdated(): void {
+		$this->syncAllSchedules();
+		$this->recomputeAllMemberSchedules();
+	}
+
+	/**
+	 * Rewrite next_sync_at for members of every watch.
+	 */
+	public function recomputeAllMemberSchedules(): void {
+		foreach ( $this->watches->all() as $watch ) {
 			$this->recomputeMemberSchedules( (string) ( $watch['id'] ?? '' ) );
 		}
 	}

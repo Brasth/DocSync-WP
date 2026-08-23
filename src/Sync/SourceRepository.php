@@ -205,15 +205,17 @@ final class SourceRepository {
 		update_post_meta( $post_id, self::META_LAST_METHOD, $this->sanitizeLastSyncMethod( $source['last_sync_method'] ?? '' ) );
 
 		if ( array_key_exists( 'sync_interval', $source ) ) {
+			$previous      = $this->getStringMeta( $post_id, self::META_SYNC_INTERVAL );
 			$sync_interval = sanitize_key( (string) $source['sync_interval'] );
 
 			if ( '' === $sync_interval || ! in_array( $sync_interval, SourceScheduleResolver::INTERVALS, true ) ) {
+				$sync_interval = '';
 				delete_post_meta( $post_id, self::META_SYNC_INTERVAL );
 			} else {
 				update_post_meta( $post_id, self::META_SYNC_INTERVAL, $sync_interval );
 			}
 
-			if ( $this->schedule instanceof SourceScheduleResolver ) {
+			if ( $previous !== $sync_interval && $this->schedule instanceof SourceScheduleResolver ) {
 				$fresh = $this->getSource( $post_id );
 
 				if ( null !== $fresh ) {
@@ -862,33 +864,37 @@ final class SourceRepository {
 		$query_args = array(
 			'fields'                 => 'ids',
 			'meta_query'             => array(
-				'relation'    => 'AND',
-				'has_source'  => array(
+				'relation'     => 'AND',
+				'has_source'   => array(
 					'key'     => self::META_FILE_ID,
 					'compare' => 'EXISTS',
 				),
-				'due'         => array(
+				'due'          => array(
 					'relation' => 'OR',
-					array(
-						'relation' => 'AND',
-						array(
-							'key'     => self::META_NEXT_SYNC,
-							'value'   => sanitize_text_field( $before ),
-							'compare' => '<=',
-							'type'    => 'CHAR',
-						),
-						array(
-							'key'     => self::META_NEXT_SYNC,
-							'value'   => '',
-							'compare' => '!=',
-						),
+					'due_at'   => array(
+						'key'     => self::META_NEXT_SYNC,
+						'value'   => sanitize_text_field( $before ),
+						'compare' => '<=',
+						'type'    => 'CHAR',
 					),
 					array(
 						'key'     => self::META_NEXT_SYNC,
 						'compare' => 'NOT EXISTS',
 					),
 				),
-				'not_syncing' => array(
+				'has_schedule' => array(
+					'relation' => 'OR',
+					array(
+						'key'     => self::META_NEXT_SYNC,
+						'value'   => '',
+						'compare' => '!=',
+					),
+					array(
+						'key'     => self::META_NEXT_SYNC,
+						'compare' => 'NOT EXISTS',
+					),
+				),
+				'not_syncing'  => array(
 					'relation' => 'OR',
 					array(
 						'key'     => self::META_SYNC_STATUS,
@@ -903,7 +909,7 @@ final class SourceRepository {
 			),
 			'no_found_rows'          => true,
 			'orderby'                => array(
-				'due'      => 'ASC',
+				'due_at'   => 'ASC',
 				'modified' => 'ASC',
 			),
 			'order'                  => 'ASC',

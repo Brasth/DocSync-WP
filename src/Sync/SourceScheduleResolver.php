@@ -123,6 +123,65 @@ final class SourceScheduleResolver {
 	}
 
 	/**
+	 * Finest non-off interval from a list. Used to tick SyncCron.
+	 *
+	 * @param array<int,string> $intervals Candidate intervals.
+	 */
+	public static function finest( array $intervals ): string {
+		$rank      = array(
+			'hourly'     => 1,
+			'twicedaily' => 2,
+			'daily'      => 3,
+			'weekly'     => 4,
+		);
+		$best      = 'off';
+		$best_rank = PHP_INT_MAX;
+
+		foreach ( $intervals as $interval ) {
+			$clean = self::sanitizeInterval( (string) $interval );
+
+			if ( '' === $clean || 'off' === $clean || ! isset( $rank[ $clean ] ) ) {
+				continue;
+			}
+
+			if ( $rank[ $clean ] < $best_rank ) {
+				$best      = $clean;
+				$best_rank = $rank[ $clean ];
+			}
+		}
+
+		return $best;
+	}
+
+	/**
+	 * Finest active interval among the site setting and non-paused watches.
+	 */
+	public function finestActiveInterval(): string {
+		$settings = $this->settings->get();
+		$site     = isset( $settings['sync_interval'] ) ? sanitize_key( (string) $settings['sync_interval'] ) : 'off';
+		$found    = array();
+
+		if ( in_array( $site, self::INTERVALS, true ) && 'off' !== $site ) {
+			$found[] = $site;
+		}
+
+		foreach ( $this->watches->all() as $watch ) {
+			if ( 'paused' === (string) ( $watch['status'] ?? '' ) ) {
+				continue;
+			}
+
+			$watch_interval = (string) ( $watch['syncInterval'] ?? 'site' );
+			$resolved       = 'site' === $watch_interval ? $site : self::sanitizeInterval( $watch_interval );
+
+			if ( '' !== $resolved && 'off' !== $resolved ) {
+				$found[] = $resolved;
+			}
+		}
+
+		return self::finest( $found );
+	}
+
+	/**
 	 * Sanitize a known interval. Empty means inherit.
 	 *
 	 * @param string $interval Raw interval.

@@ -144,7 +144,7 @@ export const useSetupApp = () => {
   const handleActivationWatchStatus = (watch: FolderWatchRecord) => {
     setActivationWatch(watch);
 
-    if (watch.status !== 'importing') {
+    if (watch.status !== 'importing' || watch.importedCount >= 1) {
       void getWorkspace().then(setWorkspace).catch(() => undefined);
     }
   };

@@ -12,6 +12,7 @@ namespace DocSyncWP\Cron;
 use DocSyncWP\Cron\CronHeartbeat;
 use DocSyncWP\Settings\SettingsRepository;
 use DocSyncWP\Sync\SourceRepository;
+use DocSyncWP\Sync\SourceScheduleResolver;
 use DocSyncWP\Sync\SyncService;
 use WP_Error;
 
@@ -51,16 +52,30 @@ final class SyncCron {
 	private SyncService $sync_service;
 
 	/**
+	 * Schedule resolver.
+	 *
+	 * @var SourceScheduleResolver|null
+	 */
+	private ?SourceScheduleResolver $schedule;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param SettingsRepository $settings          Settings repository.
-	 * @param SourceRepository   $source_repository Source repository.
-	 * @param SyncService        $sync_service      Sync service.
+	 * @param SettingsRepository          $settings          Settings repository.
+	 * @param SourceRepository            $source_repository Source repository.
+	 * @param SyncService                 $sync_service      Sync service.
+	 * @param SourceScheduleResolver|null $schedule          Schedule resolver.
 	 */
-	public function __construct( SettingsRepository $settings, SourceRepository $source_repository, SyncService $sync_service ) {
+	public function __construct(
+		SettingsRepository $settings,
+		SourceRepository $source_repository,
+		SyncService $sync_service,
+		?SourceScheduleResolver $schedule = null
+	) {
 		$this->settings          = $settings;
 		$this->source_repository = $source_repository;
 		$this->sync_service      = $sync_service;
+		$this->schedule          = $schedule;
 	}
 
 	/**
@@ -346,9 +361,13 @@ final class SyncCron {
 	}
 
 	/**
-	 * Get configured interval.
+	 * Get the drain interval: finest among site and active folder watches.
 	 */
 	private function getInterval(): string {
+		if ( $this->schedule instanceof SourceScheduleResolver ) {
+			return $this->schedule->finestActiveInterval();
+		}
+
 		$settings = $this->settings->get();
 		$interval = isset( $settings['sync_interval'] ) ? sanitize_key( (string) $settings['sync_interval'] ) : 'off';
 
