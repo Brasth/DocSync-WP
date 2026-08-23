@@ -4,7 +4,7 @@ Tags: google-docs, google-drive, content-sync, editorial-workflow, blocks
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 1.1.4
+Stable tag: 1.1.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -144,6 +144,19 @@ The build uses Vite and writes screen-specific manifests for Setup, Sources, Log
 5. Synced draft editor with the Brasth Document Sync meta box.
 
 == Changelog ==
+
+= 1.1.5 =
+
+* Added a Drive Folders admin screen with a compact table, search and status filters, and row actions.
+* Replaced the narrow folder-watch drawer with a URL-backed full-page watch detail.
+* Added PATCH `/folders/:id` so operators can change schedule, post status, presets, subfolders, and excludes without recreating a watch.
+* Added a weekly folder schedule option. Schedule-only saves no longer require Google OAuth.
+* Added a cron-health heartbeat on the workspace and detect stalled cron before the first heartbeat.
+* Improved the inventory panel with search, include/exclude filters, bulk selection, and visible API errors.
+* Send only changed watch fields and skip unchanged reconcile work.
+* Preserve unsaved watch-detail edits during polling.
+* Treat a no-op `update_option` as success.
+* Drop out-of-scope docs from retry, skip heartbeat on Scan now, and load watch inventory with the watch owner's Google connection.
 
 = 1.1.4 =
 
