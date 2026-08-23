@@ -29,7 +29,7 @@ Target user shift: from "one operator links one Doc" to **agencies managing many
 
 ## Current state (verified in code)
 
-Already shipped: folder watches (`FolderWatchService` / `FolderWatchRunner` / `FolderWatchRepository`), created from the doc-source modal with subfolders (depth 3), creation-time excludes, post type/status, layout or Elementor preset, per-watch **scan** interval. Recurring `docsync_wp_scan_folder` discovers new Docs; `docsync_wp_import_folder` imports in batches of 5. Sources record `_docsync_wp_folder_watch_id`. REST: `GET|POST /folders`, `GET|DELETE /folders/:id`, `POST /folders/:id/{scan,pause,resume,retry}` — **no update route**. UI: one small list on Sources with Scan/Pause/Resume/Remove.
+Already shipped (1.1.5): folder watches plus Drive Folders management UI, `PATCH /folders/:id`, cron health, inventory reconcile. Recurring `docsync_wp_scan_folder` still only discovers new Docs; imported Docs re-sync on the site `SyncCron` interval. Honest member re-sync and folder-first Setup are in [260823](../260823-agency-automation-setup/plan.md).
 
 ### Gaps
 
@@ -49,10 +49,12 @@ Already shipped: folder watches (`FolderWatchService` / `FolderWatchRunner` / `F
 
 | Phase | Name | Status |
 |-------|------|--------|
-| 1 | [Drive Folders management UI + editable watches](./phase-01-drive-folders-management-ui.md) | Planned |
-| 2 | [Per-folder scheduling engine](./phase-02-per-folder-scheduling-engine.md) | Planned |
+| 1 | [Drive Folders management UI + editable watches](./phase-01-drive-folders-management-ui.md) | Shipped in 1.1.5 |
+| 2 | [Per-folder scheduling engine](./phase-02-per-folder-scheduling-engine.md) | Superseded — implement via [260823 agency automation setup](../260823-agency-automation-setup/plan.md) Phase 1 |
 | 3 | [CPT storage, incremental scans, lifecycle policy, raised caps](./phase-03-cpt-storage-incremental-scans-lifecycle.md) | Planned |
 | 4 | [Agency mapping, ownership transfer, failure digests](./phase-04-agency-mapping-ownership-notifications.md) | Planned |
+
+Next increment (2026-08-23): Setup is folder-first for agency operators, and Phase 2 schedules become honest. See [plans/260823-agency-automation-setup/plan.md](../260823-agency-automation-setup/plan.md).
 
 Sequencing: 1 → 2 as one release train (UI plus the engine that makes per-folder schedules honest). 3 → 4 as the next. Each phase is independently shippable.
 
