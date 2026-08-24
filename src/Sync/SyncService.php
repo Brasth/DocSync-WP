@@ -110,7 +110,7 @@ final class SyncService {
 	 *
 	 * @var SourceScheduleResolver|null
 	 */
-	private ?SourceScheduleResolver $schedule;
+	private ?SourceScheduleResolver $schedule = null;
 
 	/**
 	 * Constructor.
