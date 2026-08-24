@@ -9,6 +9,9 @@ declare(strict_types=1);
 
 namespace DocSyncWP\Sync;
 
+use FilesystemIterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 use WP_Error;
 use ZipArchive;
 
