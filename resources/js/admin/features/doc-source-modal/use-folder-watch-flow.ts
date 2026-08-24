@@ -109,6 +109,16 @@ export const useFolderWatchFlow = ({ canChooseElementor, initialIntent = 'docume
     ));
   };
 
+  const changeFolder = () => {
+    if (watch) {
+      return;
+    }
+
+    setInventory(null);
+    setExcludedFileIds([]);
+    setError('');
+  };
+
   const startWatch = async () => {
     if (!location) {
       setError(__('Open a Google Drive folder first.', 'brasth-document-sync-for-google-docs'));
@@ -172,6 +182,7 @@ export const useFolderWatchFlow = ({ canChooseElementor, initialIntent = 'docume
 
   return {
     busy,
+    changeFolder,
     changeIncludeSubfolders,
     confirmRoot,
     error,

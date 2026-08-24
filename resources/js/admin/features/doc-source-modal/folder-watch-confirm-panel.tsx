@@ -20,6 +20,7 @@ type Props = {
   postType: string;
   layoutPreset: string;
   watch: FolderWatchRecord | null;
+  onChangeFolder?: () => void;
   onExcludeToggle: (fileId: string) => void;
   onIncludeSubfoldersChange: (value: boolean) => void;
   onIntervalChange: (value: string) => void;
@@ -42,6 +43,10 @@ const intervalLabel = (interval: string): string => {
     return __('Daily', 'brasth-document-sync-for-google-docs');
   }
 
+  if (interval === 'weekly') {
+    return __('Weekly', 'brasth-document-sync-for-google-docs');
+  }
+
   if (interval === 'off') {
     return __('Off', 'brasth-document-sync-for-google-docs');
   }
@@ -62,6 +67,7 @@ export const FolderWatchConfirmPanel = ({
   postType,
   layoutPreset,
   watch,
+  onChangeFolder,
   onExcludeToggle,
   onIncludeSubfoldersChange,
   onIntervalChange,
@@ -77,7 +83,14 @@ export const FolderWatchConfirmPanel = ({
   return (
     <div className="docsync-wp-folder-confirm">
       <div className="docsync-wp-folder-confirm__intro">
-        <span className="docsync-wp-folder-confirm__label">{__('Folder inventory', 'brasth-document-sync-for-google-docs')}</span>
+        <div className="docsync-wp-folder-confirm__intro-head">
+          <span className="docsync-wp-folder-confirm__label">{__('Folder inventory', 'brasth-document-sync-for-google-docs')}</span>
+          {onChangeFolder ? (
+            <button className="button-link" disabled={busy} onClick={onChangeFolder} type="button">
+              {__('Change folder', 'brasth-document-sync-for-google-docs')}
+            </button>
+          ) : null}
+        </div>
         <strong className="docsync-wp-folder-confirm__title">{folderName}</strong>
         <p>
           {includeSubfolders
