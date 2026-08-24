@@ -14,6 +14,7 @@ use DocSyncWP\Google\DocumentIdParser;
 use DocSyncWP\Sync\Elementor\Preset\ElementorPresetRegistry;
 use DocSyncWP\Sync\Layout\LayoutPresetRegistry;
 use DocSyncWP\Sync\SourceRepository;
+use DocSyncWP\Sync\SourceScheduleResolver;
 use DocSyncWP\Sync\SyncService;
 use WP_Error;
 use WP_Post;
@@ -513,7 +514,7 @@ final class SourceController {
 
 		$params = $this->getOptionalRequestParams(
 			$request,
-			array( 'elementorSync', 'layoutPreset', 'elementorPreset' ),
+			array( 'elementorSync', 'layoutPreset', 'elementorPreset', 'syncInterval' ),
 			'docsync_wp_unknown_source_update_fields'
 		);
 
@@ -559,6 +560,17 @@ final class SourceController {
 
 			$update['elementor_preset'] = $elementor_preset;
 			$has_update                 = true;
+		}
+
+		if ( array_key_exists( 'syncInterval', $params ) ) {
+			$sync_interval = $this->getOptionalSyncInterval( $params );
+
+			if ( is_wp_error( $sync_interval ) ) {
+				return $sync_interval;
+			}
+
+			$update['sync_interval'] = $sync_interval;
+			$has_update              = true;
 		}
 
 		if ( ! $has_update ) {
@@ -985,6 +997,48 @@ final class SourceController {
 			__( 'Brasth Document Sync received an invalid boolean field.', 'brasth-document-sync-for-google-docs' ),
 			array( 'status' => 400 )
 		);
+	}
+
+	/**
+	 * Get and validate an optional per-source re-sync interval.
+	 *
+	 * @param array<string,mixed> $params Request params.
+	 * @return string|WP_Error Empty string means inherit folder or site schedule.
+	 */
+	private function getOptionalSyncInterval( array $params ): string|WP_Error {
+		if ( ! array_key_exists( 'syncInterval', $params ) ) {
+			return '';
+		}
+
+		$value = $params['syncInterval'];
+
+		if ( null === $value ) {
+			return '';
+		}
+
+		if ( ! is_scalar( $value ) ) {
+			return new WP_Error(
+				'docsync_wp_invalid_sync_interval',
+				__( 'Brasth Document Sync received an unsupported re-sync schedule.', 'brasth-document-sync-for-google-docs' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		$interval = sanitize_key( (string) $value );
+
+		if ( '' === $interval ) {
+			return '';
+		}
+
+		if ( ! in_array( $interval, SourceScheduleResolver::INTERVALS, true ) ) {
+			return new WP_Error(
+				'docsync_wp_invalid_sync_interval',
+				__( 'Brasth Document Sync received an unsupported re-sync schedule.', 'brasth-document-sync-for-google-docs' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		return $interval;
 	}
 
 	/**

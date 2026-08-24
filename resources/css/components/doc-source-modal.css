@@ -337,11 +337,37 @@
     text-wrap: pretty;
   }
 
+  .docsync-wp-modal__drive-browser[hidden] {
+    display: none !important;
+  }
+
   .docsync-wp-folder-confirm {
     background: var(--docsync-surface-subtle);
     border-radius: var(--docsync-radius-md);
-    margin-top: 16px;
+    display: grid;
+    gap: 12px;
+    margin-top: 0;
+    min-width: 0;
     padding: 16px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .docsync-wp-folder-confirm__intro-head {
+    align-items: baseline;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    justify-content: space-between;
+  }
+
+  .docsync-wp-folder-confirm__label {
+    color: var(--docsync-teal-text);
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
 
   .docsync-wp-folder-confirm__title {

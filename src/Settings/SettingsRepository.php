@@ -680,7 +680,7 @@ final class SettingsRepository {
 	 * @param string $sync_interval Sync interval.
 	 */
 	private function isValidSyncInterval( string $sync_interval ): bool {
-		return in_array( $sync_interval, array( 'off', 'hourly', 'twicedaily', 'daily' ), true );
+		return in_array( $sync_interval, array( 'off', 'hourly', 'twicedaily', 'daily', 'weekly' ), true );
 	}
 
 	/**

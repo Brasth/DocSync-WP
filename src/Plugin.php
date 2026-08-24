@@ -17,6 +17,7 @@ use DocSyncWP\Admin\PostSyncMetaBox;
 use DocSyncWP\Assets\AssetRegistry;
 use DocSyncWP\Auth\GoogleOAuthService;
 use DocSyncWP\Auth\TokenStore;
+use DocSyncWP\Cron\ScheduleBackfill;
 use DocSyncWP\Cron\SyncCron;
 use DocSyncWP\Feedback\FeedbackRateLimiter;
 use DocSyncWP\Feedback\FeedbackService;
@@ -57,6 +58,7 @@ use DocSyncWP\Sync\Layout\LayoutPresetRegistry;
 use DocSyncWP\Sync\MediaAssetImporter;
 use DocSyncWP\Sync\FolderWatchRepository;
 use DocSyncWP\Sync\FolderWatchService;
+use DocSyncWP\Sync\SourceScheduleResolver;
 use DocSyncWP\Sync\SourceRepository;
 use DocSyncWP\Sync\SyncLock;
 use DocSyncWP\Sync\SyncService;
@@ -186,13 +188,14 @@ final class Plugin {
 		$elementor_presets           = new ElementorPresetRegistry();
 		$settings                    = new SettingsRepository( $encryption, $layout_presets, $elementor_presets );
 		$token_store                 = new TokenStore( $encryption );
-		$source_repository           = new SourceRepository( $settings, $layout_presets, $elementor_presets );
+		$folder_watch_repository     = new FolderWatchRepository();
+		$schedule_resolver           = new SourceScheduleResolver( $settings, $folder_watch_repository );
+		$source_repository           = new SourceRepository( $settings, $layout_presets, $elementor_presets, $schedule_resolver );
 		$google_oauth                = new GoogleOAuthService( $settings, $token_store );
 		$telemetry_service           = new TelemetryService( $settings );
 		$drive_client                = new DriveClient( $google_oauth );
 		$docs_client                 = new DocsClient( $google_oauth );
 		$folder_inventory            = new DriveFolderInventory( $drive_client );
-		$folder_watch_repository     = new FolderWatchRepository();
 		$document_id_parser          = new DocumentIdParser();
 		$media_assets                = new MediaAssetImporter();
 		$elementor_checker           = new CompatibilityChecker();
@@ -229,7 +232,8 @@ final class Plugin {
 			$elementor_decider,
 			$elementor_data,
 			$elementor_updater,
-			$elementor_presets_converter
+			$elementor_presets_converter,
+			$schedule_resolver
 		);
 		$folder_watch_service        = new FolderWatchService(
 			$folder_watch_repository,
@@ -237,7 +241,8 @@ final class Plugin {
 			$drive_client,
 			$source_repository,
 			$sync_service,
-			$settings
+			$settings,
+			$schedule_resolver
 		);
 
 		$plugin = new self(
@@ -275,7 +280,7 @@ final class Plugin {
 			),
 			new PostSyncMetaBox( $source_repository, $settings, $sync_service->getElementorDecider() ),
 			new PostListActions( $source_repository, $sync_service->getElementorDecider() ),
-			new SyncCron( $settings, $source_repository, $sync_service ),
+			new SyncCron( $settings, $source_repository, $sync_service, $schedule_resolver ),
 			new TelemetryCron( $settings, $telemetry_service ),
 			$token_store,
 			$source_repository,
@@ -283,6 +288,7 @@ final class Plugin {
 		);
 
 		$plugin->register();
+		( new ScheduleBackfill( $source_repository, $schedule_resolver ) )->register();
 	}
 
 	/**

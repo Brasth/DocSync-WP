@@ -11,6 +11,7 @@ import {
   getWorkspace,
   saveSettings,
   syncSource,
+  type FolderWatchRecord,
   type GoogleAccount,
   type SettingsResponse,
   type SourceRecord,
@@ -29,6 +30,9 @@ export const useSetupApp = () => {
   const [account, setAccount] = useState<GoogleAccount>(emptyAccount);
   const [workspace, setWorkspace] = useState<WorkspaceResponse | null>(null);
   const [activationSource, setActivationSource] = useState<SourceRecord | null>(null);
+  const [activationWatch, setActivationWatch] = useState<FolderWatchRecord | null>(null);
+  const [sourceIntent, setSourceIntent] = useState<'folder' | 'document'>('folder');
+  const [targetPostType, setTargetPostType] = useState('');
   const [sourceModalOpen, setSourceModalOpen] = useState(false);
   const [notice, setNotice] = useState<AdminNoticeState | null>(null);
   const [busy, setBusy] = useState(false);
@@ -45,6 +49,10 @@ export const useSetupApp = () => {
     setSettings(settingsResponse);
     setAccount(accountResponse);
     setWorkspace(workspaceResponse);
+
+    if (!targetPostType && workspaceResponse.creatablePostTypes[0]) {
+      setTargetPostType(workspaceResponse.creatablePostTypes[0]);
+    }
   };
 
   const runAction = async (action: () => Promise<void>) => {
@@ -120,8 +128,24 @@ export const useSetupApp = () => {
 
   const handleSourceCreated = (result: SyncResult) => {
     if (result.source) {
+      setActivationWatch(null);
       setActivationSource(result.source);
       restoreModalFocus.current = !['synced', 'skipped', 'error'].includes(result.source.syncStatus);
+    }
+  };
+
+  const handleFolderWatchCreated = (watch: FolderWatchRecord) => {
+    setActivationSource(null);
+    setActivationWatch(watch);
+    restoreModalFocus.current = watch.status === 'importing';
+    void refresh();
+  };
+
+  const handleActivationWatchStatus = (watch: FolderWatchRecord) => {
+    setActivationWatch(watch);
+
+    if (watch.status !== 'importing' || watch.importedCount >= 1) {
+      void getWorkspace().then(setWorkspace).catch(() => undefined);
     }
   };
 
@@ -163,7 +187,8 @@ export const useSetupApp = () => {
     });
   };
 
-  const openSourceModal = () => {
+  const openSourceModal = (intent: 'folder' | 'document' = 'folder') => {
+    setSourceIntent(intent);
     sourceModalTrigger.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     restoreModalFocus.current = true;
     setSourceModalOpen(true);
@@ -182,6 +207,7 @@ export const useSetupApp = () => {
   return {
     account,
     activationSource,
+    activationWatch,
     busy,
     clearSavedOAuthConfiguration,
     config,
@@ -194,14 +220,19 @@ export const useSetupApp = () => {
     handleActivationSourceTerminal,
     handleActivationSourceTimeout,
     handleActivationPollingError,
+    handleActivationWatchStatus,
+    handleFolderWatchCreated,
     handleSourceCreated,
     persistSettings,
     retryActivationSource,
     redirectUri,
     refresh,
     runAction,
+    setTargetPostType,
     settings,
+    sourceIntent,
     sourceModalOpen,
+    targetPostType,
     workspace
   };
 };

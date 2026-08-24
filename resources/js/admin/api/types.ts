@@ -33,6 +33,7 @@ export type WorkspaceFolderWatchSummary = {
   importing: number;
   watching: number;
   attention: number;
+  imported: number;
   truncated: boolean;
 };
 
@@ -177,6 +178,9 @@ export type SourceRecord = {
   syncUpdatedAt: string;
   syncErrorCode: string;
   folderWatchId?: string | null;
+  syncInterval?: string;
+  effectiveInterval?: string;
+  nextSyncAt?: string;
 };
 
 export type FolderWatchStatus = 'importing' | 'watching' | 'paused' | 'error';

@@ -12,6 +12,7 @@ namespace DocSyncWP\Cron;
 use DocSyncWP\Cron\CronHeartbeat;
 use DocSyncWP\Settings\SettingsRepository;
 use DocSyncWP\Sync\SourceRepository;
+use DocSyncWP\Sync\SourceScheduleResolver;
 use DocSyncWP\Sync\SyncService;
 use WP_Error;
 
@@ -21,10 +22,13 @@ defined( 'ABSPATH' ) || exit;
  * Registers and executes the Brasth Document Sync cron job.
  */
 final class SyncCron {
-	public const HOOK        = 'docsync_wp_sync_sources';
-	public const SOURCE_HOOK = 'docsync_wp_sync_source';
+	public const HOOK          = 'docsync_wp_sync_sources';
+	public const SOURCE_HOOK   = 'docsync_wp_sync_source';
+	public const CONTINUE_HOOK = 'docsync_wp_sync_sources_continue';
 
-	private const BATCH_SIZE = 20;
+	private const BATCH_SIZE        = 20;
+	private const MAX_CONTINUATIONS = 20;
+	private const CONTINUE_OPTION   = 'docsync_wp_sync_continuations';
 
 	/**
 	 * Settings repository.
@@ -48,16 +52,30 @@ final class SyncCron {
 	private SyncService $sync_service;
 
 	/**
+	 * Schedule resolver.
+	 *
+	 * @var SourceScheduleResolver|null
+	 */
+	private ?SourceScheduleResolver $schedule;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param SettingsRepository $settings          Settings repository.
-	 * @param SourceRepository   $source_repository Source repository.
-	 * @param SyncService        $sync_service      Sync service.
+	 * @param SettingsRepository          $settings          Settings repository.
+	 * @param SourceRepository            $source_repository Source repository.
+	 * @param SyncService                 $sync_service      Sync service.
+	 * @param SourceScheduleResolver|null $schedule          Schedule resolver.
 	 */
-	public function __construct( SettingsRepository $settings, SourceRepository $source_repository, SyncService $sync_service ) {
+	public function __construct(
+		SettingsRepository $settings,
+		SourceRepository $source_repository,
+		SyncService $sync_service,
+		?SourceScheduleResolver $schedule = null
+	) {
 		$this->settings          = $settings;
 		$this->source_repository = $source_repository;
 		$this->sync_service      = $sync_service;
+		$this->schedule          = $schedule;
 	}
 
 	/**
@@ -67,6 +85,7 @@ final class SyncCron {
 		add_action( 'init', array( $this, 'syncSchedule' ) );
 		add_action( 'update_option_docsync_wp_settings', array( $this, 'syncSchedule' ), 10, 0 );
 		add_action( self::HOOK, array( $this, 'run' ) );
+		add_action( self::CONTINUE_HOOK, array( $this, 'runContinue' ) );
 		add_action( self::SOURCE_HOOK, array( $this, 'runSingle' ), 10, 2 );
 	}
 
@@ -100,6 +119,32 @@ final class SyncCron {
 			return;
 		}
 
+		update_option( self::CONTINUE_OPTION, 0, false );
+		$this->processDueBatch();
+	}
+
+	/**
+	 * Continue draining due sources after a full batch.
+	 */
+	public function runContinue(): void {
+		if ( ! $this->settings->hasRequiredOAuthConfiguration() ) {
+			return;
+		}
+
+		$count = absint( get_option( self::CONTINUE_OPTION, 0 ) ) + 1;
+		update_option( self::CONTINUE_OPTION, $count, false );
+
+		if ( $count > self::MAX_CONTINUATIONS ) {
+			return;
+		}
+
+		$this->processDueBatch();
+	}
+
+	/**
+	 * Sync one due batch and schedule a continuation when the batch is full.
+	 */
+	private function processDueBatch(): void {
 		( new CronHeartbeat() )->mark();
 
 		$post_ids = $this->getLinkedPostIds();
@@ -119,6 +164,22 @@ final class SyncCron {
 
 			$this->sync_service->syncPost( $post_id, $owner_user_id );
 		}
+
+		if ( count( $post_ids ) === self::BATCH_SIZE ) {
+			$this->scheduleContinuation();
+		}
+	}
+
+	/**
+	 * Queue one continuation tick when none is already pending.
+	 */
+	private function scheduleContinuation(): void {
+		if ( false !== wp_next_scheduled( self::CONTINUE_HOOK ) ) {
+			return;
+		}
+
+		wp_schedule_single_event( time() + 30, self::CONTINUE_HOOK );
+		self::spawnScheduledSyncs();
 	}
 
 	/**
@@ -283,6 +344,8 @@ final class SyncCron {
 	public static function unschedule(): void {
 		self::unscheduleRecurring();
 		wp_clear_scheduled_hook( self::SOURCE_HOOK );
+		wp_clear_scheduled_hook( self::CONTINUE_HOOK );
+		delete_option( self::CONTINUE_OPTION );
 	}
 
 	/**
@@ -298,13 +361,17 @@ final class SyncCron {
 	}
 
 	/**
-	 * Get configured interval.
+	 * Get the drain interval: finest among site and active folder watches.
 	 */
 	private function getInterval(): string {
+		if ( $this->schedule instanceof SourceScheduleResolver ) {
+			return $this->schedule->finestActiveInterval();
+		}
+
 		$settings = $this->settings->get();
 		$interval = isset( $settings['sync_interval'] ) ? sanitize_key( (string) $settings['sync_interval'] ) : 'off';
 
-		return in_array( $interval, array( 'off', 'hourly', 'twicedaily', 'daily' ), true ) ? $interval : 'off';
+		return in_array( $interval, array( 'off', 'hourly', 'twicedaily', 'daily', 'weekly' ), true ) ? $interval : 'off';
 	}
 
 	/**

@@ -48,7 +48,7 @@ export const FolderWatchTable = ({
       <EmptyState
         action={(
           <AdminButton disabled={busy} onClick={onCreateWatch} variant="primary">
-            {__('Watch your first Drive folder', 'brasth-document-sync-for-google-docs')}
+            {__('Watch a client folder', 'brasth-document-sync-for-google-docs')}
           </AdminButton>
         )}
         className="docsync-wp-table-empty-state"

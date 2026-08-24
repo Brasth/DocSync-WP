@@ -1,5 +1,5 @@
 import { createElement } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 import { getAdminConfig } from '../../config';
 import { LayoutPresetSelector } from '../../shared/ui/layout-preset-selector';
@@ -17,11 +17,12 @@ export type FolderWatchEditDraft = {
 type Props = {
   busy: boolean;
   draft: FolderWatchEditDraft;
+  nextScanAt?: string;
   postType: string;
   onChange: (draft: FolderWatchEditDraft) => void;
 };
 
-export const FolderWatchEditForm = ({ busy, draft, postType, onChange }: Props): JSX.Element => {
+export const FolderWatchEditForm = ({ busy, draft, nextScanAt = '', postType, onChange }: Props): JSX.Element => {
   const config = getAdminConfig();
   const canChooseElementor = config.elementorAvailable && config.elementorSyncEnabled;
 
@@ -46,6 +47,14 @@ export const FolderWatchEditForm = ({ busy, draft, postType, onChange }: Props):
           <option value="daily">{intervalLabel('daily')}</option>
           <option value="weekly">{intervalLabel('weekly')}</option>
         </select>
+        <small>
+          {nextScanAt
+            ? sprintf(
+              __('Member Docs re-sync on this same interval. Next scan: %s.', 'brasth-document-sync-for-google-docs'),
+              nextScanAt
+            )
+            : __('Member Docs re-sync on this same interval.', 'brasth-document-sync-for-google-docs')}
+        </small>
       </label>
       <label className="docsync-wp-field docsync-wp-field--compact">
         <span>{__('New posts', 'brasth-document-sync-for-google-docs')}</span>

@@ -1,15 +1,24 @@
 .docsync-wp-modal .docsync-wp-drive-browser {
-  flex: 0 1 auto;
+  flex: 0 0 auto;
   margin-bottom: 0;
+  min-height: auto;
+  overflow: hidden;
 }
 
 .docsync-wp-modal .docsync-wp-drive-browser__heading {
-  align-items: center;
-  justify-content: space-between;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: flex-start;
+}
+
+.docsync-wp-modal .docsync-wp-drive-browser__heading-title {
+  flex: 0 0 auto;
 }
 
 .docsync-wp-modal .docsync-wp-drive-browser__breadcrumb {
-  flex: 1 1 auto;
+  flex: none;
+  width: 100%;
 }
 
 .docsync-wp-modal .docsync-wp-drive-browser__breadcrumb ol {

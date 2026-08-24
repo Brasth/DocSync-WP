@@ -70,6 +70,13 @@ final class FolderWatchService {
 	private SettingsRepository $settings;
 
 	/**
+	 * Schedule resolver.
+	 *
+	 * @var SourceScheduleResolver|null
+	 */
+	private ?SourceScheduleResolver $schedule;
+
+	/**
 	 * Import lock.
 	 *
 	 * @var FolderWatchLock
@@ -79,12 +86,13 @@ final class FolderWatchService {
 	/**
 	 * Constructor.
 	 *
-	 * @param FolderWatchRepository $watches      Watch repository.
-	 * @param DriveFolderInventory  $inventory    Folder inventory.
-	 * @param DriveClient           $drive_client Drive client.
-	 * @param SourceRepository      $sources      Source repository.
-	 * @param SyncService           $sync_service Sync service.
-	 * @param SettingsRepository    $settings     Settings repository.
+	 * @param FolderWatchRepository       $watches      Watch repository.
+	 * @param DriveFolderInventory        $inventory    Folder inventory.
+	 * @param DriveClient                 $drive_client Drive client.
+	 * @param SourceRepository            $sources      Source repository.
+	 * @param SyncService                 $sync_service Sync service.
+	 * @param SettingsRepository          $settings     Settings repository.
+	 * @param SourceScheduleResolver|null $schedule     Schedule resolver.
 	 */
 	public function __construct(
 		FolderWatchRepository $watches,
@@ -92,7 +100,8 @@ final class FolderWatchService {
 		DriveClient $drive_client,
 		SourceRepository $sources,
 		SyncService $sync_service,
-		SettingsRepository $settings
+		SettingsRepository $settings,
+		?SourceScheduleResolver $schedule = null
 	) {
 		$this->watches      = $watches;
 		$this->inventory    = $inventory;
@@ -100,6 +109,7 @@ final class FolderWatchService {
 		$this->sources      = $sources;
 		$this->sync_service = $sync_service;
 		$this->settings     = $settings;
+		$this->schedule     = $schedule;
 		$this->lock         = new FolderWatchLock();
 	}
 
@@ -107,7 +117,7 @@ final class FolderWatchService {
 	 * Register cron hooks.
 	 */
 	public function register(): void {
-		add_action( 'update_option_docsync_wp_settings', array( $this, 'syncAllSchedules' ), 20, 0 );
+		add_action( 'update_option_docsync_wp_settings', array( $this, 'onSettingsUpdated' ), 20, 0 );
 		add_action( self::IMPORT_HOOK, array( $this, 'runImport' ), 10, 1 );
 		add_action( self::SCAN_HOOK, array( $this, 'runScan' ), 10, 1 );
 		add_action( 'init', array( $this, 'syncAllSchedules' ) );
@@ -148,15 +158,17 @@ final class FolderWatchService {
 	 * Safe workspace counts for the current user.
 	 *
 	 * @param int $user_id User ID.
-	 * @return array{importing:int,watching:int,attention:int,truncated:bool}
+	 * @return array{importing:int,watching:int,attention:int,imported:int,truncated:bool}
 	 */
 	public function summarizeForUser( int $user_id ): array {
 		$importing = 0;
 		$watching  = 0;
 		$attention = 0;
+		$imported  = 0;
 
 		foreach ( $this->listForUser( $user_id ) as $watch ) {
-			$status = (string) ( $watch['status'] ?? '' );
+			$status    = (string) ( $watch['status'] ?? '' );
+			$imported += absint( $watch['importedCount'] ?? 0 );
 
 			if ( 'importing' === $status ) {
 				++$importing;
@@ -171,6 +183,7 @@ final class FolderWatchService {
 			'importing' => $importing,
 			'watching'  => $watching,
 			'attention' => $attention,
+			'imported'  => $imported,
 			'truncated' => false,
 		);
 	}
@@ -257,6 +270,7 @@ final class FolderWatchService {
 		}
 
 		$this->syncWatchSchedule( $watch );
+		$this->recomputeMemberSchedules( (string) $watch['id'] );
 		$this->scheduleImport( (string) $watch['id'] );
 
 		$saved = $this->watches->get( (string) $watch['id'] );
@@ -294,8 +308,13 @@ final class FolderWatchService {
 			$watch['postStatus'] = $post_status;
 		}
 
+		$interval_changed = false;
+
 		if ( isset( $input['syncInterval'] ) ) {
-			$watch['syncInterval'] = $this->sanitizeWatchInterval( $input['syncInterval'] );
+			$current_interval      = (string) ( $watch['syncInterval'] ?? 'site' );
+			$next_interval         = $this->sanitizeWatchInterval( $input['syncInterval'] );
+			$interval_changed      = $current_interval !== $next_interval;
+			$watch['syncInterval'] = $next_interval;
 		}
 
 		if ( isset( $input['layoutPreset'] ) ) {
@@ -357,6 +376,10 @@ final class FolderWatchService {
 		$watch = is_array( $saved ) ? $saved : $watch;
 
 		$this->syncWatchSchedule( $watch );
+
+		if ( $interval_changed ) {
+			$this->recomputeMemberSchedules( (string) $watch['id'] );
+		}
 
 		if ( array() !== (array) ( $watch['pendingFileIds'] ?? array() ) && 'paused' !== (string) ( $watch['status'] ?? '' ) ) {
 			$this->scheduleImport( (string) $watch['id'] );
@@ -641,11 +664,65 @@ final class FolderWatchService {
 
 	/**
 	 * Reconcile recurring scan events for every watch.
+	 *
+	 * Does not rewrite member next_sync_at. That belongs on create, interval
+	 * change, and site settings updates — not every init.
 	 */
 	public function syncAllSchedules(): void {
 		foreach ( $this->watches->all() as $watch ) {
 			$this->syncWatchSchedule( $watch );
 		}
+	}
+
+	/**
+	 * After site settings change, refresh scans and inherited member due times.
+	 */
+	public function onSettingsUpdated(): void {
+		$this->syncAllSchedules();
+		$this->recomputeAllMemberSchedules();
+	}
+
+	/**
+	 * Rewrite next_sync_at for members of every watch.
+	 */
+	public function recomputeAllMemberSchedules(): void {
+		foreach ( $this->watches->all() as $watch ) {
+			$this->recomputeMemberSchedules( (string) ( $watch['id'] ?? '' ) );
+		}
+	}
+
+	/**
+	 * Rewrite next_sync_at for every member source of a watch.
+	 *
+	 * @param string $watch_id Watch ID.
+	 */
+	public function recomputeMemberSchedules( string $watch_id ): void {
+		if ( null === $this->schedule ) {
+			return;
+		}
+
+		$watch_id = sanitize_key( $watch_id );
+		$page     = 1;
+		$now      = current_time( 'mysql', true );
+
+		do {
+			$post_ids = $this->sources->listPostIdsForFolderWatch( $watch_id, $page, 100 );
+
+			foreach ( $post_ids as $post_id ) {
+				$source = $this->sources->getSource( $post_id );
+
+				if ( null === $source ) {
+					continue;
+				}
+
+				$interval               = $this->schedule->resolveInterval( $source );
+				$source['next_sync_at'] = SourceScheduleResolver::nextSyncAt( $now, $interval );
+				$this->sources->saveSource( $post_id, $source );
+			}
+
+			$found = count( $post_ids );
+			++$page;
+		} while ( 100 === $found );
 	}
 
 	/**

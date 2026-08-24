@@ -131,7 +131,7 @@ export const FolderWatchDetailPage = ({
       <div className="docsync-wp-folder-watch-detail-page__grid">
         <section className="docsync-wp-card docsync-wp-folder-watch-detail-page__settings">
           <h2>{__('Watch settings', 'brasth-document-sync-for-google-docs')}</h2>
-          <FolderWatchEditForm busy={busy} draft={draft} onChange={setDraft} postType={watch.postType} />
+          <FolderWatchEditForm busy={busy} draft={draft} nextScanAt={watch.nextScanAt} onChange={setDraft} postType={watch.postType} />
           <div className="docsync-wp-folder-watch-detail-page__save">
             <AdminButton disabled={busy} onClick={onBack}>{__('Cancel', 'brasth-document-sync-for-google-docs')}</AdminButton>
             <AdminButton

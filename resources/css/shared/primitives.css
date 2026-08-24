@@ -575,8 +575,14 @@
     margin-bottom: 12px;
   }
 
-  .docsync-wp-folder-watches__header h3 {
+  .docsync-wp-folder-watches__header h3,
+  .docsync-wp-folder-watches__header p {
     margin: 0;
+  }
+
+  .docsync-wp-folder-watches__header p {
+    color: var(--docsync-text-secondary);
+    margin-top: 4px;
   }
 
   .docsync-wp-folder-watches__list {

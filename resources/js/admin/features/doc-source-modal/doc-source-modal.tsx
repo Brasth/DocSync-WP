@@ -7,7 +7,7 @@ import { AdminNotice } from '../../shared/ui/admin-notice';
 import { ConfirmDialog } from '../../shared/ui/confirm-dialog';
 import { LayoutPresetSelector } from '../../shared/ui/layout-preset-selector';
 import { LoadingState } from '../../shared/ui/loading-state';
-import type { SyncResult } from '../../api';
+import type { FolderWatchRecord, SyncResult } from '../../api';
 import { getAdminConfig } from '../../config';
 import { ensureLazyStyle, useLazyDriveBrowserPanel } from './lazy-drive-browser-panel';
 import { AdvancedSourcePanel } from './advanced-source-panel';
@@ -15,6 +15,7 @@ import { OutputTypeChoice } from './output-type-choice';
 import { SourceModeTabs } from './source-mode-tabs';
 import { FolderWatchConfirmPanel } from './folder-watch-confirm-panel';
 import { SourceIntentCards } from './source-intent-cards';
+import { shouldShowDriveBrowser } from './folder-watch-modal-visibility';
 import { type DocSourceTarget, useDocSourceModal } from './use-doc-source-modal';
 import { useFolderWatchFlow } from './use-folder-watch-flow';
 
@@ -26,7 +27,7 @@ type Props = {
   target: DocSourceTarget | null;
   onClose: () => void;
   onCompleted: (result: SyncResult) => void;
-  onFolderWatchCreated?: (watchId: string) => void;
+  onFolderWatchCreated?: (watch: FolderWatchRecord) => void;
 };
 
 const trimTrailingSlash = (value: string): string => value.replace(/\/$/, '');
@@ -39,10 +40,11 @@ export const DocSourceModal = ({ initialIntent = 'document', isOpen, target, onC
     initialIntent,
     isOpen,
     postType: target?.mode === 'new' ? target.postType : 'post',
-    onWatchCreated: (watch) => onFolderWatchCreated?.(watch.id)
+    onWatchCreated: (watch) => onFolderWatchCreated?.(watch)
   });
   const folderMode = canUseFolderIntent && folderFlow.intent === 'folder';
   const showFolderConfirm = folderMode && folderFlow.inventory !== null;
+  const showDriveBrowser = shouldShowDriveBrowser(modal.uiMode, showFolderConfirm);
   const uiMode = modal.uiMode;
   const compatibility = modal.metadata?.syncCompatibility;
   const driveBrowser = useLazyDriveBrowserPanel(isOpen && uiMode === 'browse');
@@ -128,20 +130,22 @@ export const DocSourceModal = ({ initialIntent = 'document', isOpen, target, onC
             ) : null}
             {uiMode === 'browse' ? (
               DriveBrowserPanel ? (
-                <DriveBrowserPanel
-                  allowMultiSelect={modal.allowMultiSelect && !folderMode}
-                  busy={modal.busy || folderFlow.busy}
-                  folderMode={folderMode}
-                  onLocationChange={folderFlow.setLocation}
-                  onSelect={modal.selectDocument}
-                  selectedDocument={modal.metadata}
-                  selectedDocuments={modal.selectedDocuments}
-                />
-              ) : (
+                <div className="docsync-wp-modal__drive-browser" hidden={!showDriveBrowser}>
+                  <DriveBrowserPanel
+                    allowMultiSelect={modal.allowMultiSelect && !folderMode}
+                    busy={modal.busy || folderFlow.busy}
+                    folderMode={folderMode}
+                    onLocationChange={folderFlow.setLocation}
+                    onSelect={modal.selectDocument}
+                    selectedDocument={modal.metadata}
+                    selectedDocuments={modal.selectedDocuments}
+                  />
+                </div>
+              ) : showDriveBrowser ? (
                 <LoadingState className="docsync-wp-drive-browser__state" variant="skeleton">
                   {driveBrowser.error || __('Loading Google Drive browser...', 'brasth-document-sync-for-google-docs')}
                 </LoadingState>
-              )
+              ) : null
             ) : null}
 
             {uiMode !== 'browse' ? (
@@ -166,6 +170,7 @@ export const DocSourceModal = ({ initialIntent = 'document', isOpen, target, onC
                 postStatus={folderFlow.postStatus}
                 postType={target.mode === 'new' ? target.postType : 'post'}
                 watch={folderFlow.watch}
+                onChangeFolder={folderFlow.watch ? undefined : folderFlow.changeFolder}
                 onExcludeToggle={folderFlow.toggleExcluded}
                 onIncludeSubfoldersChange={folderFlow.changeIncludeSubfolders}
                 onIntervalChange={folderFlow.setSyncInterval}

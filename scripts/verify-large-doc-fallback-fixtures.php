@@ -425,6 +425,7 @@ namespace {
 		'elementor_converter'        => $legacy_converter,
 		'elementor_updater'          => new PostUpdater( new CompatibilityChecker() ),
 		'elementor_preset_converter' => $elementor_preset_converter,
+		'schedule'                   => null,
 	);
 
 	foreach ( $properties as $property => $value ) {

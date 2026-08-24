@@ -20,6 +20,7 @@ type UpdateSourcePayload = {
   elementorSync?: boolean;
   layoutPreset?: string | null;
   elementorPreset?: string | null;
+  syncInterval?: string;
 };
 
 export const listSources = (filters: SourceFilters = {}): Promise<SourcesResponse> => {

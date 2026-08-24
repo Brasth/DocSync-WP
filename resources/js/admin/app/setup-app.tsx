@@ -3,6 +3,8 @@ import { __ } from '@wordpress/i18n';
 
 import { AccountPanel } from '../features/google-setup/account-panel';
 import { ActivationResult } from '../features/activation/activation-result';
+import { FolderActivationResult } from '../features/activation/folder-activation-result';
+import { FolderWatchPoller } from '../features/activation/folder-watch-poller';
 import { BackgroundSyncPoller } from '../features/post-sync/background-sync-poller';
 import { DocSourceModal } from '../features/doc-source-modal/doc-source-modal';
 import { GoogleSetupSyncDefaultsPanel } from '../features/google-setup/google-setup-sync-defaults-panel';
@@ -53,15 +55,20 @@ export const SetupApp = (): JSX.Element => {
             <SettingsPanel
               account={app.account}
               activated={activated}
+              availablePostTypes={app.workspace.availablePostTypes}
               busy={app.busy}
               canCreateSource={app.workspace.creatablePostTypes.length > 0}
+              creatablePostTypes={app.workspace.creatablePostTypes}
               layoutMode="ready"
               onClearOAuthConfiguration={app.clearSavedOAuthConfiguration}
               onConnect={app.connectGoogle}
               onCreateSource={app.openSourceModal}
               onSave={app.persistSettings}
+              onTargetPostTypeChange={app.setTargetPostType}
               redirectUri={app.redirectUri}
               settings={app.settings}
+              showTargetPicker={!activated}
+              targetPostType={app.targetPostType}
             />
           </div>
           <aside className="docsync-wp-admin-grid__side">
@@ -97,19 +104,25 @@ export const SetupApp = (): JSX.Element => {
             <SettingsPanel
               account={app.account}
               activated={activated}
+              availablePostTypes={app.workspace.availablePostTypes}
               busy={app.busy}
               canCreateSource={app.workspace.creatablePostTypes.length > 0}
+              creatablePostTypes={app.workspace.creatablePostTypes}
               layoutMode="focus"
               onClearOAuthConfiguration={app.clearSavedOAuthConfiguration}
               onConnect={app.connectGoogle}
               onCreateSource={app.openSourceModal}
               onSave={app.persistSettings}
+              onTargetPostTypeChange={app.setTargetPostType}
               redirectUri={app.redirectUri}
               settings={app.settings}
+              showTargetPicker={!activated}
+              targetPostType={app.targetPostType}
             />
           </div>
         </div>
       )}
+      {app.activationWatch ? <FolderActivationResult watch={app.activationWatch} /> : null}
       {app.activationSource ? (
         <ActivationResult busy={app.busy} onRetry={app.retryActivationSource} source={app.activationSource} />
       ) : null}
@@ -122,14 +135,21 @@ export const SetupApp = (): JSX.Element => {
           postId={app.activationSource.postId}
         />
       ) : null}
+      {app.activationWatch && (app.activationWatch.status === 'importing' || app.activationWatch.pendingCount > 0) ? (
+        <FolderWatchPoller
+          onError={app.handleActivationPollingError}
+          onStatus={app.handleActivationWatchStatus}
+          onTimeout={app.handleActivationSourceTimeout}
+          watchId={app.activationWatch.id}
+        />
+      ) : null}
       <DocSourceModal
+        initialIntent={app.sourceIntent}
         isOpen={app.sourceModalOpen}
         onClose={app.closeSourceModal}
         onCompleted={app.handleSourceCreated}
-        onFolderWatchCreated={() => {
-          void app.refresh();
-        }}
-        target={app.sourceModalOpen && app.workspace?.creatablePostTypes[0] ? { mode: 'new', postType: app.workspace.creatablePostTypes[0] } : null}
+        onFolderWatchCreated={app.handleFolderWatchCreated}
+        target={app.sourceModalOpen && app.targetPostType ? { mode: 'new', postType: app.targetPostType } : null}
       />
     </AdminShell>
   );

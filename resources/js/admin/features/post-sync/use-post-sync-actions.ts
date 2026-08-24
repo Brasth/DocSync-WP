@@ -90,6 +90,27 @@ export const usePostSyncActions = (postId: number, initialSource: SourceRecord |
     }
   };
 
+  const updateSyncInterval = async (syncInterval: string) => {
+    setBusy(true);
+    setNotice(null);
+
+    try {
+      const updated = await updateSource(postId, { syncInterval });
+      setSource(updated);
+      const message = syncInterval
+        ? __('Re-sync schedule updated.', 'brasth-document-sync-for-google-docs')
+        : __('This post will use the folder or site schedule.', 'brasth-document-sync-for-google-docs');
+      setNotice({ type: 'success', message });
+      speak(message);
+    } catch (caught) {
+      const message = caught instanceof Error ? caught.message : __('Could not update re-sync schedule.', 'brasth-document-sync-for-google-docs');
+      setNotice({ type: 'error', message });
+      speak(message, 'assertive');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const updateElementorPreset = async (elementorPreset: string) => {
     setBusy(true);
     setNotice(null);
@@ -119,6 +140,7 @@ export const usePostSyncActions = (postId: number, initialSource: SourceRecord |
     syncNow,
     updateElementorSync,
     updateElementorPreset,
-    updateLayoutPreset
+    updateLayoutPreset,
+    updateSyncInterval
   };
 };

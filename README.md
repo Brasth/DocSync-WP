@@ -54,9 +54,9 @@ https://example.com/wp-json/brasth-document-sync-for-google-docs/v1/oauth/google
 
 Replace `https://example.com` with the WordPress site URL. The OAuth callback URL belongs in **Authorized redirect URIs** and must include `/wp-json/brasth-document-sync-for-google-docs/v1/oauth/google/callback`.
 
-In WordPress admin, administrators open **Brasth Document Sync > Setup** to configure the site connection. The role-aware workspace separates the site-wide OAuth client from the current user's personal Google connection, shows one primary next action, and treats setup readiness as an intermediate state. Activation requires at least one source accessible to the current user to finish as `synced` or unchanged-complete (`skipped`) with a successful sync timestamp.
+In WordPress admin, administrators open **Brasth Document Sync > Setup** to configure the site connection. The role-aware workspace separates the site-wide OAuth client from the current user's personal Google connection, shows one primary next action, and treats setup readiness as an intermediate state. Activation completes when the current user has a healthy source (`synced` or unchanged-complete `skipped` with a successful sync timestamp) or a folder watch that has imported at least one Doc.
 
-When the site and personal connections are ready, **Choose Google Doc** opens the existing source workflow directly on Setup or Sources. It creates a WordPress draft, queues the first sync, shows background progress and safe recovery copy, then offers **Open draft** after successful completion.
+When the site and personal connections are ready, Setup offers **Watch a client folder** as the primary action and **Choose one Google Doc** as the one-off path. A folder watch creates drafts, queues imports, and counts as activation after the first imported Doc. The folder schedule governs both new-Doc discovery and member re-sync.
 
 Save:
 

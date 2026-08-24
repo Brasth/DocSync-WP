@@ -23,6 +23,8 @@
     "lint": "phpcs",
     "lint:fix": "phpcbf",
     "test:folder-watch-update": "php scripts/verify-folder-watch-update.php",
+    "test:html-zip-extractor": "php scripts/verify-html-zip-extractor.php",
+    "test:schedule-resolver": "php scripts/verify-schedule-resolver.php",
     "test:elementor-fixtures": "php scripts/verify-elementor-fixtures.php",
     "test:large-doc-fallback-fixtures": "php scripts/verify-large-doc-fallback-fixtures.php",
     "test:layout-fixtures": "php scripts/verify-layout-fixtures.php",
