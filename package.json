@@ -15,6 +15,7 @@
     "lint:blueprint": "node scripts/lint-blueprint.mjs",
     "lint:no-phpcs-ignore": "! rg --regexp \"phpcs:[i]gnore\" brasth-document-sync-for-google-docs.php src uninstall.php",
     "lint:screenshots": "node scripts/lint-screenshots.mjs",
+    "test:folder-watch-ops": "node --experimental-strip-types scripts/verify-folder-watch-ops.mjs",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
