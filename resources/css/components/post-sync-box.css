@@ -228,9 +228,10 @@
     margin-top: 10px;
   }
 
-  .docsync-wp-post-box__actions .docsync-wp-button {
+  #docsync-wp-post-sync-root .docsync-wp-post-box__actions .docsync-wp-button {
     justify-content: center;
     min-height: 32px;
+    padding: 0 10px;
     white-space: nowrap;
   }
 
@@ -253,7 +254,7 @@
     color: var(--docsync-error) !important;
   }
 
-  .docsync-wp-post-box__actions .docsync-wp-button:active:not(:disabled) {
+  #docsync-wp-post-sync-root .docsync-wp-post-box__actions .docsync-wp-button:active:not(:disabled) {
     transform: none;
   }
 
