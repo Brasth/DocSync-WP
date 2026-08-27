@@ -1,6 +1,6 @@
 # DocSync-WP Development Roadmap
 
-Last updated: 2026-07-11
+Last updated: 2026-08-27
 
 ## Strategic Direction
 
@@ -20,7 +20,8 @@ Each release must pass the existing validation pipeline (`pnpm lint`, `pnpm type
 
 ## Current State
 
-- Version 1.1.3 is the current release metadata, covering the merged usability polish and role-aware admin workspace work. The next release is a hardening-only 1.1.4; no new product capability is approved until its operational and release gates pass.
+- Version **1.1.5** is the published release: folder watches, folder-first Setup, and honest member re-sync. WordPress.org still shows fewer than 10 active installs and zero reviews. Growth research (2026-08-27) says distribution + a thin Drive Folders ops pass beat new platform features. See `docs/research/2026-08-27-growth-elementor-automation-ux.md`.
+- Version 1.1.3 shipped usability polish and the role-aware admin workspace. 1.1.4 added PHP 8.1 activate hardening plus Drive folder automation. Do not treat 1.1.4 as the next release.
 - Core sync engine is stable: Google export, media import, Gutenberg block conversion, Elementor JSON conversion, background sync, and sync logging.
 - The plugin supports one-way sync from Google Docs to WordPress posts, pages, and enabled public custom post types.
 - Setup now separates administrator-owned site configuration from personal Google access; capability-qualified operators continue activation in Sources without receiving settings secrets. Activation is an accessible successfully completed source, not account readiness.
@@ -54,14 +55,15 @@ Each release must pass the existing validation pipeline (`pnpm lint`, `pnpm type
 |---|---|---|---|
 | **1.1.0** | Released | Layout preset registry (`LayoutBlueprint`, `LayoutPresetRegistry`, `ContentRoleClassifier`, `LayoutConversionService`), 2 enhanced Gutenberg presets (`Clean Article`, `Documentation`), legacy `Plain Blocks`, site default setting, Setup dropdown, per-source/post selectors, layout fingerprints | Site admin sets a default layout; all synced posts look better |
 | **1.1.1** | Released | Layout preset reliability patch, clearer preset copy, tracked edge-case fixtures, CI fixture verification | Recommended update with more predictable preset output |
-| **1.1.2** | Released/current metadata | 2 Elementor presets (`Elementor Hero Page`, `Elementor Feature Block`) | Elementor users get layouts too |
-| **1.1.3** | Now | Elementor usability polish plus role-aware activation workspace, direct first-source flow, safe workspace bootstrap, source health ordering, and explicit owner transfer | Users reach a safely synced draft, then operate from Sources with the right responsibility and recovery context |
+| **1.1.2** | Released | 2 Elementor presets (`Elementor Hero Page`, `Elementor Feature Block`) | Elementor users get layouts too |
+| **1.1.3** | Released | Elementor usability polish plus role-aware activation workspace, direct first-source flow, safe workspace bootstrap, source health ordering, and explicit owner transfer | Users reach a safely synced draft, then operate from Sources with the right responsibility and recovery context |
 
 ### 1.1.x line — Release hardening
 
 | Version | Target Date | Scope | User-visible value |
 |---|---|---|---|
-| **1.1.4** | Next | PHP 8.1 activate fix plus Drive folder automation (watch a folder, inventory Docs, optional subfolders, draft/publish policy, per-folder schedule). Release-pipeline `php -l` on PHP 8.1. | Operators choose a Doc or a Drive folder; PHP 8.1 sites can activate |
+| **1.1.4** | Released | PHP 8.1 activate fix plus Drive folder automation (watch a folder, inventory Docs, optional subfolders, draft/publish policy, per-folder schedule). Release-pipeline `php -l` on PHP 8.1. | Operators choose a Doc or a Drive folder; PHP 8.1 sites can activate |
+| **1.1.5** | Released | Folder-first Setup, honest member re-sync on the folder schedule, cron continuation past the 20-source batch | Agency operator can start a client folder from Setup and trust the cadence |
 
 **Mandatory 1.1.4 release gates:**
 
@@ -142,7 +144,7 @@ Bulk import cannot rely on traffic-driven WP-Cron alone. Before 1.3.0, prove dur
 
 | Horizon | Versions | Focus | Key Deliverables |
 |---|---|---|---|
-| **Now** | 1.1.4 | Release hardening and field validation | Proven sync reliability, enforced release gates, staging/beta evidence |
+| **Now** | After 1.1.5 | Distribution + thin Automation ops | Listing/screenshots/reviews; Drive Folders attention queue; Elementor 3/4 compatibility QA, not Atomic rewrite |
 | **Next** | Conditional 1.2.0 | Layout selection clarity | Bounded accessible preset gallery if evidence shows current selector friction |
 | **Later** | 1.2.2 - 1.4.3 | Preview, agency scale, and monetization | Preview only with parity/operability proof; bulk import only with durable-job and commercial gates |
 | **Future** | 1.5.0 - 2.2.0 | Writer discovery, smart sync, expansion | Add-on, AI, managed OAuth, Notion, team workflows |
@@ -213,3 +215,4 @@ To sustain this cadence, the following must be in place. See `docs/deployment-gu
 - `plans/reports/research-20260622-layout-wizard-references.md` — prior art for layout presets
 - `plans/reports/research-20260622-growth-strategy-references.md` — competitive and go-to-market research
 - `plans/reports/research-20260622-competitive-strategy-references.md` — how to beat competitors and reach users
+- `docs/research/2026-08-27-growth-elementor-automation-ux.md` — post-1.1.5 growth, Elementor 4.0, Automation dashboard, admin UX
