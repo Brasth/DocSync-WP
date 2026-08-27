@@ -114,13 +114,13 @@
 }
 
 .docsync-wp-folder-watch-table__actions-col {
-  min-width: 220px;
+  min-width: 260px;
 }
 
 .docsync-wp-folder-watch-row-actions {
   align-items: center;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 6px;
 }
 
