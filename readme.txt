@@ -154,6 +154,7 @@ The build uses Vite and writes screen-specific manifests for Setup, Sources, Log
 * After the first imported Doc in a folder watch, Drive Folders can ask once for a WordPress.org review.
 * Listing copy and screenshot 1 now lead with folder automation.
 * Admin screens use a native WordPress page title, quieter filters, and single-line row actions.
+* Setup, the Doc source modal, and the post editor metabox now use the same compact native density.
 
 = 1.1.5 =
 * Replaced the narrow folder-watch drawer with a URL-backed full-page watch detail.

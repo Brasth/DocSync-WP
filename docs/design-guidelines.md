@@ -1,6 +1,6 @@
 # Brasth Admin Design Guidelines
 
-Last updated: 2026-08-27 (admin chrome flattened toward native wp-admin)
+Last updated: 2026-08-27 (Setup, Doc source modal, and post metabox flattened toward native wp-admin)
 
 ## Purpose
 
@@ -61,8 +61,9 @@ Use this guide for Brasth Document Sync admin UI work. The product direction is 
 ## Modal And Drive Browser
 
 - The Doc Source modal is one workflow: choose source, confirm document, choose output type when needed, choose layout, attach.
-- Header order: product label, action title, concise risk statement.
-- Browse, URL, and File ID modes use tabs with clear active and focus states.
+- Header order: action title, concise risk statement. No product mark, kicker, or teal top bar.
+- Browse, URL, and File ID modes use underline tabs with a clear active and focus state. Do not use pill/segmented tab chrome.
+- Drive browser sits on the modal surface. Do not nest a second card around the heading or toolbar.
 - Drive toolbar order: location, search, search action, refresh, clear search.
 - Breadcrumbs must wrap without pushing primary controls off screen.
 - Selected Drive docs need a strong row rail and a confirmation panel before footer actions.
@@ -74,8 +75,9 @@ Use this guide for Brasth Document Sync admin UI work. The product direction is 
 ## Setup Workspace
 
 - Present the responsibility sequence as Site connection -> Your Google account -> First publishing source; do not present account connection alone as completion.
+- The progress rail is a quiet checklist with a right divider, not a card. Active items use a left rail, not a filled row.
+- The active task panel is a section, not a nested card. Kickers stay muted sentence-case.
 - Make the next action dominant.
-- Keep checklist/progress visible but visually quiet.
 - Keep Setup administrator-only. Site-wide credentials, defaults, telemetry, and destructive configuration actions must not appear in operator-facing Sources guidance.
 - When site and account readiness permit, open the shared Doc source flow directly and keep queued/terminal first-sync feedback in the activation context.
 - Group credential import, redirect URI copy, Google Cloud links, connection test, and sync defaults by job.
@@ -110,7 +112,9 @@ Use this guide for Brasth Document Sync admin UI work. The product direction is 
 
 ## Post Sync Surfaces
 
-- Metabox action order: Link or Change source, Sync now, Detach.
+- Metabox labels use sentence case. Do not use uppercase tracked section titles.
+- Linked metabox actions stay on one row: Sync now, Change Doc, Detach. Empty state shows Link Google Doc only.
+- Metabox buttons use 32px WordPress density. Do not stretch Sync now across the metabox or use press-scale.
 - Busy and disabled copy should be visible near the action.
 - List-table actions must keep a native WordPress footprint.
 - Toasts should be concise, semantic, and actionable.

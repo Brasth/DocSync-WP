@@ -30,8 +30,6 @@ type Props = {
   onFolderWatchCreated?: (watch: FolderWatchRecord) => void;
 };
 
-const trimTrailingSlash = (value: string): string => value.replace(/\/$/, '');
-
 export const DocSourceModal = ({ initialIntent = 'document', isOpen, target, onClose, onCompleted, onFolderWatchCreated }: Props): JSX.Element | null => {
   const modal = useDocSourceModal({ isOpen, target, onClose, onCompleted });
   const canUseFolderIntent = target?.mode === 'new';
@@ -50,7 +48,6 @@ export const DocSourceModal = ({ initialIntent = 'document', isOpen, target, onC
   const driveBrowser = useLazyDriveBrowserPanel(isOpen && uiMode === 'browse');
   const DriveBrowserPanel = driveBrowser.Component;
   const config = getAdminConfig();
-  const markUrl = config.pluginUrl ? `${trimTrailingSlash(config.pluginUrl)}/resources/images/brasth-mark.png` : '';
   const useElementorPreset = modal.canChooseElementor && modal.outputType === 'elementor';
   const elementorDefaultPreset = 'elementor_feature_block';
   const elementorDefaultLabel = config.availableElementorLayoutPresets.find((preset) => preset.id === elementorDefaultPreset)?.label || elementorDefaultPreset;
@@ -86,18 +83,7 @@ export const DocSourceModal = ({ initialIntent = 'document', isOpen, target, onC
         >
           <div className="docsync-wp-modal__header">
             <div className="docsync-wp-modal__heading">
-              {markUrl ? (
-                <img
-                  alt=""
-                  aria-hidden="true"
-                  className="docsync-wp-modal__mark"
-                  height="40"
-                  src={markUrl}
-                  width="40"
-                />
-              ) : null}
               <div className="docsync-wp-modal__title">
-                <span>{__('Brasth Document Sync', 'brasth-document-sync-for-google-docs')}</span>
                 <Dialog.Title asChild>
                   <h2>{__('Choose source', 'brasth-document-sync-for-google-docs')}</h2>
                 </Dialog.Title>

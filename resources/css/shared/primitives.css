@@ -51,11 +51,11 @@
   }
 
   .docsync-wp-kicker {
-    color: var(--docsync-teal);
+    color: var(--docsync-text-muted);
     font-size: 12px;
-    font-weight: 700;
+    font-weight: 600;
     letter-spacing: 0;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
   }
 
   .docsync-wp-inline-warning {

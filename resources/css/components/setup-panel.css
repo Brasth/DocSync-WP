@@ -8,43 +8,45 @@
 
   .docsync-wp-setup-rail {
     align-self: start;
-    background: var(--docsync-surface);
-    border: 1px solid var(--docsync-border-subtle);
-    border-radius: var(--docsync-radius-sm);
+    background: transparent;
+    border: 0;
+    border-right: 1px solid var(--docsync-border-subtle);
+    border-radius: 0;
     box-shadow: none;
     min-width: 0;
-    padding: 14px;
+    padding: 0 16px 0 0;
   }
 
   .docsync-wp-setup-rail > strong {
     display: block;
-    font-size: 15px;
-    margin-bottom: 10px;
+    font-size: 13px;
+    margin-bottom: 8px;
   }
 
   .docsync-wp-setup-rail ol {
     display: grid;
-    gap: 8px;
+    gap: 2px;
     list-style: none;
-    margin: 14px 0 0;
+    margin: 12px 0 0;
     padding: 0;
   }
 
   .docsync-wp-setup-rail li {
     align-items: flex-start;
-    border: 1px solid transparent;
-    border-radius: var(--docsync-radius-md);
+    border: 0;
+    border-radius: 0;
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 8px;
     justify-content: space-between;
-    padding: 10px;
+    padding: 8px 0;
   }
 
   .docsync-wp-setup-rail li.is-active {
-    background: var(--docsync-surface-selected);
-    border-color: color-mix(in srgb, var(--docsync-teal) 24%, var(--docsync-border));
+    background: transparent;
+    border-color: transparent;
     box-shadow: inset 3px 0 0 var(--docsync-selected-rail);
+    padding-left: 10px;
   }
 
   .docsync-wp-setup-rail li span,
@@ -54,7 +56,7 @@
   }
 
   .docsync-wp-setup-rail li span {
-    font-weight: 700;
+    font-weight: 600;
   }
 
   .docsync-wp-setup-rail li small {
@@ -78,8 +80,33 @@
   }
 
   .docsync-wp-setup-task-panel {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
     min-width: 0;
     overflow: hidden;
+    padding: 0;
+  }
+
+  .docsync-wp-setup-task-panel__header {
+    border-bottom: 1px solid var(--docsync-border-subtle);
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+  }
+
+  .docsync-wp-setup-task-panel__header h2,
+  .docsync-wp-setup-task-panel__header p {
+    margin: 0;
+  }
+
+  .docsync-wp-setup-task-panel__header p:not(.docsync-wp-kicker) {
+    color: var(--docsync-text-secondary);
+    margin-top: 4px;
+  }
+
+  .docsync-wp-setup-workspace .docsync-wp-kicker {
+    color: var(--docsync-text-muted);
+    font-weight: 600;
   }
 
   .docsync-wp-setup-task-stack {
@@ -89,10 +116,11 @@
   }
 
   .docsync-wp-setup-task-message {
-    background: var(--docsync-surface-muted);
-    border: 1px solid var(--docsync-card-border);
-    border-radius: var(--docsync-radius-md);
-    padding: 14px;
+    background: var(--docsync-surface-subtle);
+    border: 0;
+    border-left: 3px solid var(--docsync-border);
+    border-radius: 0;
+    padding: 10px 12px;
   }
 
   .docsync-wp-setup-task-message strong,
@@ -124,49 +152,57 @@
     color: var(--docsync-text-secondary);
   }
 
-  .docsync-wp-setup-help-disclosure {
-    background: var(--docsync-surface-muted);
-    border: 1px solid var(--docsync-card-border);
-    border-radius: var(--docsync-radius-md);
+  .docsync-wp-setup-help-disclosure,
+  .docsync-wp-setup-advanced-disclosure {
+    background: transparent;
+    border: 0;
+    border-top: 1px solid var(--docsync-border-subtle);
+    border-radius: 0;
   }
 
-  .docsync-wp-setup-help-disclosure > summary {
+  .docsync-wp-setup-help-disclosure > summary,
+  .docsync-wp-setup-advanced-disclosure > summary {
     cursor: pointer;
-    font-weight: 700;
+    font-weight: 600;
     list-style: none;
-    padding: 12px 14px;
+    padding: 10px 0;
   }
 
-  .docsync-wp-setup-help-disclosure > summary::-webkit-details-marker {
+  .docsync-wp-setup-help-disclosure > summary::-webkit-details-marker,
+  .docsync-wp-setup-advanced-disclosure > summary::-webkit-details-marker {
     display: none;
   }
 
-  .docsync-wp-setup-help-disclosure > summary::after {
+  .docsync-wp-setup-help-disclosure > summary::after,
+  .docsync-wp-setup-advanced-disclosure > summary::after {
     color: var(--docsync-text-muted);
     content: "+";
     float: right;
-    font-weight: 700;
+    font-weight: 600;
   }
 
-  .docsync-wp-setup-help-disclosure[open] > summary::after {
+  .docsync-wp-setup-help-disclosure[open] > summary::after,
+  .docsync-wp-setup-advanced-disclosure[open] > summary::after {
     content: "-";
   }
 
-  .docsync-wp-setup-help-disclosure > div {
-    border-top: 1px solid var(--docsync-card-border);
-    padding: 0 14px 14px;
+  .docsync-wp-setup-help-disclosure > div,
+  .docsync-wp-setup-advanced-disclosure > div {
+    border-top: 1px solid var(--docsync-border-subtle);
+    padding: 0 0 12px;
   }
 
   .docsync-wp-next-action {
     align-items: center;
-    background: var(--docsync-surface-selected);
-    border: 1px solid var(--docsync-teal);
-    border-radius: var(--docsync-radius-md);
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--docsync-border-subtle);
+    border-radius: 0;
     display: flex;
-    gap: 18px;
+    gap: 16px;
     justify-content: space-between;
-    margin-bottom: 18px;
-    padding: 16px;
+    margin-bottom: 16px;
+    padding: 0 0 14px;
   }
 
   .docsync-wp-next-action h3,
@@ -184,14 +220,15 @@
 
   .docsync-wp-setup-summary {
     align-items: center;
-    background: var(--docsync-surface-subtle);
-    border: 1px solid var(--docsync-card-border);
-    border-radius: var(--docsync-radius-md);
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--docsync-border-subtle);
+    border-radius: 0;
     display: flex;
-    gap: 18px;
+    gap: 16px;
     justify-content: space-between;
-    margin-bottom: 18px;
-    padding: 14px;
+    margin-bottom: 16px;
+    padding: 0 0 12px;
   }
 
   .docsync-wp-setup-summary span,
@@ -206,10 +243,10 @@
 
   .docsync-wp-setup-progress {
     background: var(--docsync-border-muted);
-    border-radius: var(--docsync-radius-pill);
-    height: 10px;
+    border-radius: 0;
+    height: 4px;
     overflow: hidden;
-    width: min(220px, 35%);
+    width: 100%;
   }
 
   .docsync-wp-setup-progress span {
@@ -231,8 +268,9 @@
 
   .docsync-wp-setup-disclosure,
   .docsync-wp-setup-test {
-    border: 1px solid var(--docsync-card-border);
-    border-radius: var(--docsync-radius-md);
+    border: 0;
+    border-top: 1px solid var(--docsync-border-subtle);
+    border-radius: 0;
   }
 
   .docsync-wp-setup-steps > li {
@@ -244,12 +282,12 @@
   }
 
   .docsync-wp-setup-disclosure {
-    background: var(--docsync-surface);
+    background: transparent;
     overflow: hidden;
   }
 
   .docsync-wp-setup-disclosure[open] {
-    border-color: color-mix(in srgb, var(--docsync-teal) 28%, var(--docsync-border));
+    border-color: var(--docsync-border-subtle);
   }
 
   .docsync-wp-setup-disclosure > summary {
@@ -262,18 +300,12 @@
   }
 
   .docsync-wp-setup-disclosure > summary::after {
-    align-items: center;
-    border: 1px solid var(--docsync-card-border);
-    border-radius: var(--docsync-radius-pill);
     color: var(--docsync-text-muted);
     content: "+";
     display: inline-flex;
-    flex: 0 0 22px;
-    font-weight: 700;
-    height: 22px;
-    justify-content: center;
+    flex: 0 0 auto;
+    font-weight: 600;
     margin-left: auto;
-    width: 22px;
   }
 
   .docsync-wp-setup-disclosure[open] > summary::after {
@@ -295,18 +327,18 @@
 
   .docsync-wp-step-heading > span {
     align-items: center;
-    background: var(--docsync-navy);
-    border-radius: var(--docsync-radius-pill);
-    color: var(--docsync-text-inverse);
+    background: transparent;
+    border-radius: 0;
+    color: var(--docsync-text-muted);
     display: inline-flex;
-    flex: 0 0 26px;
-    font-weight: 700;
-    height: 26px;
+    flex: 0 0 20px;
+    font-weight: 600;
+    height: 20px;
     justify-content: center;
-    line-height: 26px;
-    min-width: 26px;
-    margin-top: 1px;
-    width: 26px;
+    line-height: 20px;
+    min-width: 20px;
+    margin-top: 2px;
+    width: 20px;
   }
 
   .docsync-wp-step-heading > .docsync-wp-step-icon {
@@ -332,9 +364,9 @@
   .docsync-wp-step-state {
     border-radius: var(--docsync-radius-pill);
     font-size: 11px;
-    font-weight: 700;
-    padding: 3px 8px;
-    text-transform: uppercase;
+    font-weight: 600;
+    padding: 2px 7px;
+    text-transform: none;
   }
 
   .docsync-wp-step-state.is-manual {
@@ -364,12 +396,12 @@
   }
 
   .docsync-wp-cloud-links a {
-    background: var(--docsync-teal-bg);
-    border-radius: var(--docsync-radius-pill);
-    color: var(--docsync-teal-text);
-    font-weight: 700;
-    padding: 6px 10px;
-    text-decoration: none;
+    background: transparent;
+    border-radius: 0;
+    color: var(--docsync-blue);
+    font-weight: 500;
+    padding: 0;
+    text-decoration: underline;
   }
 
   .docsync-wp-step-notes,
@@ -392,8 +424,8 @@
   }
 
   .docsync-wp-step-body {
-    border-top: 1px solid var(--docsync-card-border);
-    padding: 14px 14px 16px 52px;
+    border-top: 1px solid var(--docsync-border-subtle);
+    padding: 12px 0 14px 28px;
   }
 
   .docsync-wp-copy-row input {

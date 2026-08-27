@@ -1,10 +1,10 @@
 @layer components {
   .docsync-wp-advanced-source {
-    background: var(--docsync-surface);
-    border: 1px solid var(--docsync-card-border);
-    border-radius: var(--docsync-radius-md);
+    background: transparent;
+    border: 0;
+    border-radius: 0;
     max-width: 560px;
-    padding: 16px;
+    padding: 0;
   }
 }
 
@@ -25,10 +25,10 @@
   color: var(--docsync-text-primary);
   display: block;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.4;
   margin: 0 0 6px;
-  text-transform: uppercase;
+  text-transform: none;
 }
 
 .docsync-wp-modal .docsync-wp-advanced-source input[type="text"] {

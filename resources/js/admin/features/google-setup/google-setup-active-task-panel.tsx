@@ -189,8 +189,8 @@ export const GoogleSetupActiveTaskPanel = ({
   };
 
   return (
-    <section className="docsync-wp-card docsync-wp-setup-task-panel" aria-labelledby="docsync-wp-active-setup-task">
-      <div className="docsync-wp-card__header">
+    <section className="docsync-wp-setup-task-panel" aria-labelledby="docsync-wp-active-setup-task">
+      <div className="docsync-wp-setup-task-panel__header">
         <p className="docsync-wp-kicker">{__('Next action', 'brasth-document-sync-for-google-docs')}</p>
         <h2 id="docsync-wp-active-setup-task">{nextAction.title}</h2>
         <p>{nextAction.description}</p>

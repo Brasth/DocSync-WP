@@ -149,7 +149,7 @@
 
   .docsync-wp-post-box__section {
     min-width: 0;
-    padding: 14px 0;
+    padding: 10px 0;
   }
   .docsync-wp-post-box__section + .docsync-wp-post-box__section {
     border-top: 1px solid var(--docsync-border-subtle);
@@ -162,12 +162,12 @@
   .docsync-wp-post-box__section-label {
     color: var(--docsync-text-muted);
     display: block;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.04em;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0;
     line-height: 1.3;
     margin: 0;
-    text-transform: uppercase;
+    text-transform: none;
   }
 
   .docsync-wp-post-box__source-header {
@@ -222,25 +222,21 @@
 
   .docsync-wp-post-box__actions {
     align-items: center;
-    display: grid;
+    display: flex;
+    flex-wrap: wrap;
     gap: 8px;
-    grid-template-columns: minmax(0, 1fr) auto;
-    margin-top: 12px;
-  }
-
-  .docsync-wp-post-box__sync-action {
-    grid-column: 1 / -1;
+    margin-top: 10px;
   }
 
   .docsync-wp-post-box__actions .docsync-wp-button {
     justify-content: center;
-    min-height: 40px;
-    white-space: normal;
+    min-height: 32px;
+    white-space: nowrap;
   }
 
   .docsync-wp-post-box__sync-action,
   .docsync-wp-post-box__change-action {
-    width: 100%;
+    width: auto;
   }
 
   .docsync-wp-post-box__detach-action {
@@ -258,13 +254,7 @@
   }
 
   .docsync-wp-post-box__actions .docsync-wp-button:active:not(:disabled) {
-    transform: scale(0.96);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .docsync-wp-post-box__actions .docsync-wp-button:active:not(:disabled) {
-      transform: none;
-    }
+    transform: none;
   }
 
   .docsync-wp-checkbox-row {

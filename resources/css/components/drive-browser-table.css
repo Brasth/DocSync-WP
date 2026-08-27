@@ -1,7 +1,7 @@
 @layer components {
   .docsync-wp-drive-browser__table-wrap {
-    border: 1px solid var(--docsync-card-border);
-    border-radius: var(--docsync-radius-md);
+    border: 1px solid var(--docsync-border-subtle);
+    border-radius: 0;
     flex: 1 1 auto;
     height: clamp(420px, 60vh, 720px);
     margin-top: 10px;
@@ -42,13 +42,14 @@
   }
 
   .docsync-wp-drive-browser__table tr.is-selected td:first-child {
-    border-top-left-radius: var(--docsync-radius-sm);
-    border-bottom-left-radius: var(--docsync-radius-sm);
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    box-shadow: inset 3px 0 0 var(--docsync-selected-rail);
   }
 
   .docsync-wp-drive-browser__table tr.is-selected td:last-child {
-    border-top-right-radius: var(--docsync-radius-sm);
-    border-bottom-right-radius: var(--docsync-radius-sm);
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
   }
 
   /* Folder rows get subtle cyan tint */

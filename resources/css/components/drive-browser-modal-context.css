@@ -62,10 +62,10 @@
   color: var(--docsync-text-primary);
   display: block;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.4;
   margin-bottom: 6px;
-  text-transform: uppercase;
+  text-transform: none;
 }
 
 .docsync-wp-modal .docsync-wp-drive-browser__toolbar .components-search-control {
