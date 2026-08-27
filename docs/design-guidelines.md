@@ -1,6 +1,6 @@
 # Brasth Admin Design Guidelines
 
-Last updated: 2026-07-11
+Last updated: 2026-08-27
 
 ## Purpose
 
@@ -80,6 +80,18 @@ Use this guide for Brasth Document Sync admin UI work. The product direction is 
 - Group credential import, redirect URI copy, Google Cloud links, connection test, and sync defaults by job.
 - Dirty/saved state belongs near the panel it affects.
 - Long setup instructions belong in disclosures.
+
+## Drive Folders
+
+- Drive Folders is the agency ops surface. It answers “which client folders need work,” not “here is a CRUD table.”
+- Health tiles are filters: Folders, Watching, Importing, Needs attention. Selected tiles use `aria-pressed`.
+- Needs attention means error, paused, failed Docs, or a non-empty last error. Importing is attention because it is unfinished work.
+- Show an attention queue above the table when any watch needs work. Hide it only when the Watching filter is on.
+- Status pills must match the watch state: Watching, Importing, Paused, Error. Do not map those to Synced or Linked.
+- Command row: search, status filter, then **Watch a client folder** on the right.
+- Row primary action is Resume, Fix failures, Manage, or Scan now. Overflow holds the rest.
+- Folder detail uses a single page `<h1>` in the shell. The folder name in the header is an `<h2>`.
+- After the first imported Doc, a one-time dismissible WordPress.org review prompt may appear. Never nag on activate.
 
 ## Sources And Logs
 

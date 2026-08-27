@@ -1,6 +1,6 @@
 === Brasth Document Sync for Google Docs ===
 Contributors: canvilled
-Tags: google-docs, google-drive, content-sync, editorial-workflow, blocks
+Tags: google-docs, google-drive, elementor, content-sync, editorial-workflow
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 8.1
@@ -8,11 +8,11 @@ Stable tag: 1.1.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Sync Google Docs into WordPress posts and pages with layout presets, self-managed Google OAuth, and optional Elementor layout support.
+Watch a Google Drive folder, land WordPress drafts on a schedule, and sync Docs into blocks or Elementor layouts.
 
 == Description ==
 
-Brasth Document Sync for Google Docs helps editorial teams use Google Docs as the source of truth while publishing clean WordPress content. Site owners provide their own Google OAuth web client, each WordPress user connects their own Google account, and authorized users can browse accessible Google Docs, link a document to a post or page, and sync content into WordPress.
+Brasth Document Sync for Google Docs is for agencies and editorial teams that write in Google Docs and publish on self-hosted WordPress. Watch a client Drive folder to create drafts from every Doc, keep those posts on a folder schedule, and sync into Gutenberg blocks or an Elementor layout. Site owners provide their own Google OAuth web client. Each WordPress user connects their own Google account.
 
 The plugin exports Google Docs as HTML ZIP packages, imports embedded images into the WordPress Media Library, rewrites image URLs, sanitizes the resulting HTML, and converts common document structures to Gutenberg block markup. If Google blocks a large HTML ZIP export, Brasth Document Sync retries through the Google Docs API fallback before changing post content.
 
@@ -24,6 +24,7 @@ Documentation:
 
 Features include:
 
+* Watch a client Google Drive folder to create drafts and re-sync member Docs on that folder’s schedule.
 * Self-managed Google OAuth setup wizard with next-action guidance.
 * Server-side Google Drive document browser for My Drive and shared drives.
 * Advanced Google Docs URL and raw file ID linking.
@@ -137,7 +138,7 @@ The build uses Vite and writes screen-specific manifests for Setup, Sources, Log
 
 == Screenshots ==
 
-1. Setup wizard with self-managed OAuth next action, redirect URI copy, and account connection state.
+1. Drive Folders ops: attention queue, clickable health filters, and client folder status.
 2. Posts list Add Sync Doc flow with linked source status and background sync progress.
 3. Drive browser modal with breadcrumbs, search, and folder navigation.
 4. Drive browser empty folder state with search and access-check guidance.
@@ -145,9 +146,35 @@ The build uses Vite and writes screen-specific manifests for Setup, Sources, Log
 
 == Changelog ==
 
+= 1.1.6 =
+
+* Drive Folders now ranks failed, importing, and paused client folders first, with clickable health filters and one primary row action.
+* Status pills say Watching, Importing, Paused, or Error instead of remapping those states to Synced or Linked.
+* Sources, Drive Folders, and Sync Activity use a compact admin header. The Logs submenu is labeled Sync Activity.
+* After the first imported Doc in a folder watch, Drive Folders can ask once for a WordPress.org review.
+* Listing copy and screenshot 1 now lead with folder automation.
+
 = 1.1.5 =
 
-* Added a Drive Folders admin screen with a compact table, search and status filters, and row actions.
+== Screenshots ==
+
+1. Drive Folders ops: attention queue, clickable health filters, and client folder status.
+2. Posts list Add Sync Doc flow with linked source status and background sync progress.
+3. Drive browser modal with breadcrumbs, search, and folder navigation.
+4. Drive browser empty folder state with search and access-check guidance.
+5. Synced draft editor with the Brasth Document Sync meta box.
+
+== Changelog ==
+
+= 1.1.6 =
+
+* Drive Folders now ranks failed, importing, and paused client folders first, with clickable health filters and one primary row action.
+* Status pills say Watching, Importing, Paused, or Error instead of remapping those states to Synced or Linked.
+* Sources, Drive Folders, and Sync Activity use a compact admin header. The Logs submenu is labeled Sync Activity.
+* After the first imported Doc in a folder watch, Drive Folders can ask once for a WordPress.org review.
+* Listing copy and screenshot 1 now lead with folder automation.
+
+= 1.1.5 =
 * Replaced the narrow folder-watch drawer with a URL-backed full-page watch detail.
 * Added PATCH `/folders/:id` so operators can change schedule, post status, presets, subfolders, and excludes without recreating a watch.
 * Added a weekly folder schedule option. Schedule-only saves no longer require Google OAuth.
