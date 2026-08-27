@@ -1,14 +1,14 @@
 @layer components {
   .docsync-wp-log-console {
-    background: var(--docsync-surface);
-    border: 1px solid var(--docsync-card-border);
-    border-radius: var(--docsync-radius-md);
-    box-shadow: var(--docsync-card-shadow);
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
     display: grid;
-    gap: 12px;
+    gap: 10px;
     margin-bottom: 0;
     min-width: 0;
-    padding: 12px;
+    padding: 0;
   }
 
   .docsync-wp-log-command-bar {

@@ -52,14 +52,14 @@ export const AdminShell = ({
       <div className="docsync-wp-admin-shell__container">
         <header className="docsync-wp-masthead">
           <div className="docsync-wp-masthead__identity">
-            {markUrl ? (
+            {density === 'compact' ? null : markUrl ? (
               <img
                 alt=""
                 aria-hidden="true"
                 className="docsync-wp-masthead__mark"
-                height="44"
+                height="36"
                 src={markUrl}
-                width="44"
+                width="36"
               />
             ) : (
               <span aria-hidden="true" className="docsync-wp-masthead__fallback-mark">B</span>
@@ -89,8 +89,7 @@ export const AdminShell = ({
         </div>
 
         <footer className="docsync-wp-admin-shell__footer">
-          <span>{__('Found a problem or have an idea?', 'brasth-document-sync-for-google-docs')}</span>
-          <AdminButton onClick={() => setFeedbackOpen(true)} size="small">
+          <AdminButton onClick={() => setFeedbackOpen(true)} size="small" variant="link">
             {__('Create issue', 'brasth-document-sync-for-google-docs')}
           </AdminButton>
         </footer>

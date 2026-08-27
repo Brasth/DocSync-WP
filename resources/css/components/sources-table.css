@@ -1,15 +1,15 @@
 @layer components {
   .docsync-wp-source-filters {
     align-items: end;
-    background: var(--docsync-surface);
-    border: 1px solid var(--docsync-card-border);
-    border-radius: var(--docsync-radius-md);
-    box-shadow: var(--docsync-card-shadow);
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
     display: grid;
-    gap: 12px;
+    gap: 10px;
     grid-template-columns: minmax(220px, 1fr) minmax(160px, 220px) minmax(150px, 190px) auto;
-    margin-bottom: 14px;
-    padding: 12px;
+    margin-bottom: 12px;
+    padding: 0;
   }
 
   .docsync-wp-source-filters label {

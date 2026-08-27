@@ -1,6 +1,6 @@
 # Brasth Admin Design Guidelines
 
-Last updated: 2026-08-27
+Last updated: 2026-08-27 (admin chrome flattened toward native wp-admin)
 
 ## Purpose
 
@@ -12,6 +12,7 @@ Use this guide for Brasth Document Sync admin UI work. The product direction is 
 - Prefer clear task hierarchy over ornament.
 - Keep the WordPress admin context visible. Do not build landing-page heroes, decorative card stacks, gradient backgrounds, or nested cards for admin workflows.
 - Product identity should appear through the Brasth mark, navy/blue/teal roles, precise spacing, and consistent states.
+- Operational screens (Sources, Drive Folders, Sync Activity) use a WordPress page title, not a boxed SaaS masthead or logo tile. Setup may keep the mark and version.
 
 ## Tokens
 
@@ -41,7 +42,7 @@ Use this guide for Brasth Document Sync admin UI work. The product direction is 
 - Default card radius is 8px. Small controls may use 6px. Pills use full radius.
 - Do not put cards inside cards. Use sections, disclosure rows, or subtle surfaces inside panels.
 - Tables should preserve hierarchy: primary entity first, supporting metadata second, status/progress third, actions last.
-- Command rows should start with search or the main filter, then narrow filters, with actions on the right on desktop and stacked on mobile.
+- Command rows should start with search or the main filter, then narrow filters, with actions on the right on desktop and stacked on mobile. Do not wrap command rows or table row actions in a second card.
 - On mobile, primary task content should come before secondary progress rails or account/sidebar panels.
 
 ## Components

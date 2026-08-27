@@ -63,11 +63,6 @@ export const FolderWatchRowActions = ({
       <AdminButton disabled={busy || (primaryAction === 'scan' && paused)} onClick={runPrimary} size="small" variant="primary">
         {primaryLabel(primaryAction)}
       </AdminButton>
-      {primaryAction !== 'manage' && primaryAction !== 'fix' ? (
-        <AdminButton disabled={busy} onClick={onEdit} size="small">
-          {__('Manage', 'brasth-document-sync-for-google-docs')}
-        </AdminButton>
-      ) : null}
       <details className="docsync-wp-row-actions-menu">
         <summary
           aria-label={__('More actions', 'brasth-document-sync-for-google-docs')}
@@ -76,6 +71,11 @@ export const FolderWatchRowActions = ({
           ⋯
         </summary>
         <div className="docsync-wp-row-actions-menu__panel">
+          {primaryAction !== 'manage' && primaryAction !== 'fix' ? (
+            <AdminButton disabled={busy} onClick={onEdit} size="small">
+              {__('Manage', 'brasth-document-sync-for-google-docs')}
+            </AdminButton>
+          ) : null}
           {paused ? (
             primaryAction === 'resume' ? null : (
               <AdminButton disabled={busy} onClick={onResume} size="small">

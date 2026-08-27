@@ -1,10 +1,24 @@
 @layer components {
   .docsync-wp-card {
     background: var(--docsync-card-bg);
-    border: 1px solid var(--docsync-card-border);
-    border-radius: var(--docsync-card-radius);
-    box-shadow: var(--docsync-card-shadow);
+    border: 1px solid var(--docsync-border-subtle);
+    border-radius: var(--docsync-radius-sm);
+    box-shadow: none;
     padding: var(--docsync-card-padding);
+  }
+
+  .docsync-wp-card--wide {
+    padding: 0;
+  }
+
+  .docsync-wp-card--wide .docsync-wp-card__header {
+    margin-bottom: 0;
+    padding: 12px 14px;
+  }
+
+  .docsync-wp-card--wide .docsync-wp-source-filters,
+  .docsync-wp-card--wide .docsync-wp-table-footer {
+    padding: 0 14px 12px;
   }
 
   .docsync-wp-card__header {
@@ -345,8 +359,8 @@
 
   .docsync-wp-data-table tbody td {
     border-bottom: 1px solid var(--docsync-border-subtle);
-    padding: 11px 12px;
-    vertical-align: top;
+    padding: 8px 10px;
+    vertical-align: middle;
   }
 
   .docsync-wp-data-table tbody tr:nth-child(even) td {
@@ -535,12 +549,12 @@
   }
 
   .docsync-wp-source-health-summary {
-    background: var(--docsync-surface-subtle);
-    border: 1px solid var(--docsync-card-border);
-    border-radius: var(--docsync-radius-md);
+    background: var(--docsync-surface);
+    border: 1px solid var(--docsync-border-subtle);
+    border-radius: var(--docsync-radius-sm);
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    margin-bottom: 16px;
+    margin-bottom: 12px;
   }
 
   .docsync-wp-source-health-summary > div,
@@ -551,8 +565,8 @@
     cursor: pointer;
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    padding: 12px 14px;
+    gap: 1px;
+    padding: 8px 12px;
     text-align: left;
   }
 
@@ -572,16 +586,17 @@
   }
 
   .docsync-wp-source-health-summary strong {
-    font-size: 18px;
+    font-size: 15px;
     font-variant-numeric: tabular-nums;
+    line-height: 1.2;
   }
 
   .docsync-wp-folder-watches {
     background: var(--docsync-surface);
-    border-radius: var(--docsync-radius-md);
-    box-shadow: var(--docsync-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.06));
+    border: 1px solid var(--docsync-border-subtle);
+    border-radius: var(--docsync-radius-sm);
     margin: 0 0 16px;
-    padding: 16px;
+    padding: 12px 14px;
   }
 
   .docsync-wp-folder-watches__header {
@@ -611,8 +626,22 @@
   }
 
   .docsync-wp-folder-watches__item {
-    display: grid;
+    align-items: center;
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+  }
+
+  .docsync-wp-folder-watches__item > div {
+    align-items: baseline;
+    display: flex;
+    flex-wrap: wrap;
     gap: 8px;
+    min-width: 0;
+  }
+
+  .docsync-wp-folder-watches__item .docsync-wp-pill {
+    flex: 0 0 auto;
   }
 
   .docsync-wp-folder-watches__actions {

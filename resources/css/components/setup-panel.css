@@ -9,11 +9,11 @@
   .docsync-wp-setup-rail {
     align-self: start;
     background: var(--docsync-surface);
-    border: 1px solid var(--docsync-card-border);
-    border-radius: var(--docsync-card-radius);
-    box-shadow: var(--docsync-card-shadow);
+    border: 1px solid var(--docsync-border-subtle);
+    border-radius: var(--docsync-radius-sm);
+    box-shadow: none;
     min-width: 0;
-    padding: 16px;
+    padding: 14px;
   }
 
   .docsync-wp-setup-rail > strong {

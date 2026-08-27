@@ -1,10 +1,15 @@
 @layer components {
   .docsync-wp-admin-shell {
-    background: var(--docsync-page-bg);
+    background: transparent;
     color: var(--docsync-text-primary);
     margin: 0;
-    min-height: calc(100vh - 96px);
-    padding: 24px;
+    min-height: 0;
+    padding: 8px 0 24px;
+  }
+
+  .docsync-wp-admin-shell:not(.docsync-wp-admin-shell--compact) {
+    background: var(--docsync-page-bg);
+    padding: 16px 0 28px;
   }
 
   .docsync-wp-admin-shell__container {
@@ -34,12 +39,14 @@
 
   .docsync-wp-admin-shell__footer {
     align-items: center;
+    border-top: 1px solid var(--docsync-border-subtle);
     color: var(--docsync-text-secondary);
     display: flex;
     font-size: 12px;
     gap: 10px;
-    justify-content: flex-end;
-    margin-top: 14px;
+    justify-content: flex-start;
+    margin-top: 20px;
+    padding-top: 10px;
   }
 
   .docsync-wp-feedback-dialog {
@@ -300,30 +307,37 @@
   }
 
   .docsync-wp-admin-shell--compact .docsync-wp-masthead {
-    padding: 10px 12px;
-  }
-
-  .docsync-wp-admin-shell--compact .docsync-wp-masthead__mark,
-  .docsync-wp-admin-shell--compact .docsync-wp-masthead__fallback-mark {
-    flex-basis: 32px;
-    height: 32px;
-    width: 32px;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    margin: 0 0 12px;
+    padding: 0 0 8px;
   }
 
   .docsync-wp-admin-shell--compact .docsync-wp-masthead__copy h1 {
-    font-size: 18px;
+    font-size: 23px;
+    font-weight: 400;
+  }
+
+  .docsync-wp-admin-shell--compact .docsync-wp-masthead__status {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    min-height: 0;
+    padding: 0;
   }
 
   .docsync-wp-masthead {
     align-items: center;
-    background: var(--docsync-surface);
-    border: 1px solid var(--docsync-card-border);
-    border-radius: var(--docsync-card-radius);
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--docsync-border-subtle);
+    border-radius: 0;
     display: flex;
     gap: 14px;
     justify-content: space-between;
     margin: 0 0 16px;
-    padding: 12px 14px;
+    padding: 0 0 12px;
   }
 
   .docsync-wp-masthead__identity {
