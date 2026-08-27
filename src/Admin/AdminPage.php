@@ -130,8 +130,8 @@ final class AdminPage {
 
 		add_submenu_page(
 			$parent_slug,
-			esc_html__( 'Brasth Document Sync Logs', 'brasth-document-sync-for-google-docs' ),
-			esc_html__( 'Logs', 'brasth-document-sync-for-google-docs' ),
+			esc_html__( 'Brasth Document Sync Activity', 'brasth-document-sync-for-google-docs' ),
+			esc_html__( 'Sync Activity', 'brasth-document-sync-for-google-docs' ),
 			$use_capability,
 			self::LOGS_MENU_SLUG,
 			array( $this, 'renderLogs' )

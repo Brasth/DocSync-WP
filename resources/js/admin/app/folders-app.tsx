@@ -7,7 +7,7 @@ import { FolderWatchesView } from '../features/folder-watches/folder-watches-vie
 import { useFolderWatchRoute } from '../features/folder-watches/use-folder-watch-route';
 import { useFolderWatches } from '../features/folder-watches/use-folder-watches';
 import { AdminShell } from '../shared/ui/admin-shell';
-import { SourcesTableSkeleton } from '../features/sources/sources-table';
+import { FolderWatchesSkeleton } from '../features/folder-watches/folder-watches-skeleton';
 
 export const FoldersApp = (): JSX.Element => {
   const app = useFolderWatches();
@@ -42,6 +42,7 @@ export const FoldersApp = (): JSX.Element => {
 
   return (
     <AdminShell
+      density="compact"
       notice={app.notice}
       status={{
         label: app.watches.length === 1 ? __('folder watch', 'brasth-document-sync-for-google-docs') : __('folder watches', 'brasth-document-sync-for-google-docs'),
@@ -53,7 +54,7 @@ export const FoldersApp = (): JSX.Element => {
       {!app.workspace ? (
         <div className="docsync-wp-admin-grid docsync-wp-admin-grid--single">
           <div className="docsync-wp-admin-grid__main">
-            <SourcesTableSkeleton />
+            <FolderWatchesSkeleton />
           </div>
         </div>
       ) : (

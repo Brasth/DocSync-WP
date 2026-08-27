@@ -2,11 +2,13 @@ import { createElement } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 import { AdminButton } from '../../shared/ui/admin-button';
+import type { FolderWatchPrimaryAction } from './folder-watch-ops';
 import { sourcesForWatchUrl } from './folder-watch-labels';
 
 type Props = {
   busy: boolean;
   paused: boolean;
+  primaryAction: FolderWatchPrimaryAction;
   watchId: string;
   onEdit: () => void;
   onPause: () => void;
@@ -15,9 +17,26 @@ type Props = {
   onScan: () => void;
 };
 
+const primaryLabel = (action: FolderWatchPrimaryAction): string => {
+  if (action === 'resume') {
+    return __('Resume', 'brasth-document-sync-for-google-docs');
+  }
+
+  if (action === 'fix') {
+    return __('Fix failures', 'brasth-document-sync-for-google-docs');
+  }
+
+  if (action === 'manage') {
+    return __('Manage', 'brasth-document-sync-for-google-docs');
+  }
+
+  return __('Scan now', 'brasth-document-sync-for-google-docs');
+};
+
 export const FolderWatchRowActions = ({
   busy,
   paused,
+  primaryAction,
   watchId,
   onEdit,
   onPause,
@@ -25,14 +44,30 @@ export const FolderWatchRowActions = ({
   onResume,
   onScan
 }: Props): JSX.Element => {
+  const runPrimary = () => {
+    if (primaryAction === 'resume') {
+      onResume();
+      return;
+    }
+
+    if (primaryAction === 'scan') {
+      onScan();
+      return;
+    }
+
+    onEdit();
+  };
+
   return (
     <div className="docsync-wp-folder-watch-row-actions">
-      <AdminButton disabled={busy || paused} onClick={onScan} size="small">
-        {__('Scan', 'brasth-document-sync-for-google-docs')}
+      <AdminButton disabled={busy || (primaryAction === 'scan' && paused)} onClick={runPrimary} size="small" variant="primary">
+        {primaryLabel(primaryAction)}
       </AdminButton>
-      <AdminButton disabled={busy} onClick={onEdit} size="small" variant="primary">
-        {__('Manage', 'brasth-document-sync-for-google-docs')}
-      </AdminButton>
+      {primaryAction !== 'manage' && primaryAction !== 'fix' ? (
+        <AdminButton disabled={busy} onClick={onEdit} size="small">
+          {__('Manage', 'brasth-document-sync-for-google-docs')}
+        </AdminButton>
+      ) : null}
       <details className="docsync-wp-row-actions-menu">
         <summary
           aria-label={__('More actions', 'brasth-document-sync-for-google-docs')}
@@ -42,12 +77,19 @@ export const FolderWatchRowActions = ({
         </summary>
         <div className="docsync-wp-row-actions-menu__panel">
           {paused ? (
-            <AdminButton disabled={busy} onClick={onResume} size="small">
-              {__('Resume', 'brasth-document-sync-for-google-docs')}
-            </AdminButton>
+            primaryAction === 'resume' ? null : (
+              <AdminButton disabled={busy} onClick={onResume} size="small">
+                {__('Resume', 'brasth-document-sync-for-google-docs')}
+              </AdminButton>
+            )
           ) : (
             <AdminButton disabled={busy} onClick={onPause} size="small">
               {__('Pause', 'brasth-document-sync-for-google-docs')}
+            </AdminButton>
+          )}
+          {primaryAction === 'scan' ? null : (
+            <AdminButton disabled={busy || paused} onClick={onScan} size="small">
+              {__('Scan now', 'brasth-document-sync-for-google-docs')}
             </AdminButton>
           )}
           <a className="button button-secondary docsync-wp-button docsync-wp-button--small" href={sourcesForWatchUrl(watchId)}>

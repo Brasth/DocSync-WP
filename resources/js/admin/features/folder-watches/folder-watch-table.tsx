@@ -9,6 +9,7 @@ import { StatusPill } from '../../shared/ui/status-pill';
 import { formatScanTiming } from './folder-watch-format-time';
 import { FolderWatchRowActions } from './folder-watch-row-actions';
 import { watchScheduleLabel, watchStatusLabel } from './folder-watch-labels';
+import { primaryWatchAction } from './folder-watch-ops';
 
 type Props = {
   busy: boolean;
@@ -119,6 +120,7 @@ export const FolderWatchTable = ({
                       onResume={() => void onResume(watch.id)}
                       onScan={() => void onScan(watch.id)}
                       paused={watch.status === 'paused'}
+                      primaryAction={primaryWatchAction(watch)}
                       watchId={watch.id}
                     />
                   </td>

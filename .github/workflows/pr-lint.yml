@@ -125,6 +125,9 @@ jobs:
       - name: Run TypeScript typecheck
         run: pnpm typecheck
 
+      - name: Run folder watch ops verifier
+        run: pnpm test:folder-watch-ops
+
       - name: Run telemetry Worker tests
         run: pnpm --dir cloudflare/telemetry-worker lint && pnpm --dir cloudflare/telemetry-worker test
 

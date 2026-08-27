@@ -8,7 +8,7 @@ import { StatusPill } from '../../shared/ui/status-pill';
 import { FolderWatchEditForm, type FolderWatchEditDraft } from './folder-watch-edit-form';
 import { formatScanTiming } from './folder-watch-format-time';
 import { FolderWatchInventoryPanel } from './folder-watch-inventory-panel';
-import { foldersScreenUrl, sourcesForWatchUrl, watchScheduleLabel, watchStatusLabel } from './folder-watch-labels';
+import { folderWatchDetailUrl, sourcesForWatchUrl, watchScheduleLabel, watchStatusLabel } from './folder-watch-labels';
 import { buildUpdatePayload, draftFromWatch } from './folder-watch-update-helpers';
 import { useFolderWatchInventory } from './use-folder-watch-inventory';
 
@@ -87,11 +87,11 @@ export const FolderWatchDetailPage = ({
       <header className="docsync-wp-folder-watch-detail-page__header">
         <div>
           <p className="docsync-wp-folder-watch-detail-page__eyebrow">{__('Folder watch', 'brasth-document-sync-for-google-docs')}</p>
-          <h1 className="docsync-wp-folder-watch-detail-page__title">
+          <h2 className="docsync-wp-folder-watch-detail-page__title">
             {watch.webViewLink ? (
               <a href={watch.webViewLink} rel="noreferrer" target="_blank">{watch.folderName}</a>
             ) : watch.folderName}
-          </h1>
+          </h2>
           <div className="docsync-wp-folder-watch-detail-page__meta">
             {watch.ownerDisplayName ? (
               <span>{sprintf(
@@ -177,6 +177,4 @@ export const FolderWatchDetailPage = ({
   );
 };
 
-export const folderWatchDetailUrl = (watchId: string): string => {
-  return `${foldersScreenUrl}&watch=${encodeURIComponent(watchId)}`;
-};
+export { folderWatchDetailUrl };

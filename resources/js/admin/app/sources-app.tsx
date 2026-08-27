@@ -25,6 +25,7 @@ export const SourcesApp = (): JSX.Element => {
 
   return (
     <AdminShell
+      density="compact"
       notice={app.notice}
       status={{
         label: app.sources.length === 1 ? __('shown source', 'brasth-document-sync-for-google-docs') : __('shown sources', 'brasth-document-sync-for-google-docs'),

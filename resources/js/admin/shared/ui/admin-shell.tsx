@@ -16,6 +16,7 @@ type AdminShellStatus = {
 type Props = {
   children: ReactNode;
   className?: string;
+  density?: 'default' | 'compact';
   notice?: AdminNoticeState | null;
   status?: AdminShellStatus;
   title: ReactNode;
@@ -27,6 +28,7 @@ const trimTrailingSlash = (value: string): string => value.replace(/\/$/, '');
 export const AdminShell = ({
   children,
   className = '',
+  density = 'default',
   notice = null,
   status,
   title,
@@ -35,7 +37,11 @@ export const AdminShell = ({
   const config = getAdminConfig();
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const markUrl = config.pluginUrl ? `${trimTrailingSlash(config.pluginUrl)}/resources/images/brasth-mark.png` : '';
-  const shellClassName = ['docsync-wp-admin-shell', className].filter(Boolean).join(' ');
+  const shellClassName = [
+    'docsync-wp-admin-shell',
+    density === 'compact' ? 'docsync-wp-admin-shell--compact' : '',
+    className
+  ].filter(Boolean).join(' ');
   const statusClassName = [
     'docsync-wp-masthead__status',
     status?.variant ? `docsync-wp-masthead__status--${status.variant}` : ''
@@ -59,9 +65,13 @@ export const AdminShell = ({
               <span aria-hidden="true" className="docsync-wp-masthead__fallback-mark">B</span>
             )}
             <div className="docsync-wp-masthead__copy">
-              <p>{__('Brasth Document Sync', 'brasth-document-sync-for-google-docs')}</p>
+              {density === 'compact' ? null : (
+                <p>{__('Brasth Document Sync', 'brasth-document-sync-for-google-docs')}</p>
+              )}
               <h1>{title}</h1>
-              <span>{__('Version', 'brasth-document-sync-for-google-docs')} {version}</span>
+              {density === 'compact' ? null : (
+                <span>{__('Version', 'brasth-document-sync-for-google-docs')} {version}</span>
+              )}
             </div>
           </div>
           {status ? (

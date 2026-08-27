@@ -13,6 +13,8 @@ export type FolderWatchHealthFilter = '' | 'watching' | 'importing' | 'attention
 
 export type FolderWatchPrimaryAction = 'scan' | 'manage' | 'resume' | 'fix';
 
+export type FolderWatchAttentionReason = 'failed' | 'error' | 'importing' | 'paused' | null;
+
 export const watchNeedsAttention = (watch: FolderWatchOpsInput): boolean => {
   return watch.status === 'error'
     || watch.status === 'paused'
@@ -45,6 +47,26 @@ export const watchStatusTone = (status: string): string => {
   return status;
 };
 
+export const attentionReason = (watch: FolderWatchOpsInput): FolderWatchAttentionReason => {
+  if (watch.failed.length > 0) {
+    return 'failed';
+  }
+
+  if (watch.status === 'error' || watch.lastError.trim() !== '') {
+    return 'error';
+  }
+
+  if (watch.status === 'importing') {
+    return 'importing';
+  }
+
+  if (watch.status === 'paused') {
+    return 'paused';
+  }
+
+  return null;
+};
+
 export const primaryWatchAction = (watch: FolderWatchOpsInput): FolderWatchPrimaryAction => {
   if (watch.status === 'error' || watch.failed.length > 0 || watch.lastError.trim() !== '') {
     return 'fix';
@@ -61,11 +83,11 @@ export const primaryWatchAction = (watch: FolderWatchOpsInput): FolderWatchPrima
   return 'scan';
 };
 
-export const filterFolderWatches = (
-  watches: FolderWatchOpsInput[],
+export const filterFolderWatches = <T extends FolderWatchOpsInput>(
+  watches: T[],
   search: string,
   healthFilter: FolderWatchHealthFilter
-): FolderWatchOpsInput[] => {
+): T[] => {
   const needle = search.trim().toLowerCase();
 
   return watches

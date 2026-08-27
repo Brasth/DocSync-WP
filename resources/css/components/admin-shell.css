@@ -299,6 +299,21 @@
     }
   }
 
+  .docsync-wp-admin-shell--compact .docsync-wp-masthead {
+    padding: 10px 12px;
+  }
+
+  .docsync-wp-admin-shell--compact .docsync-wp-masthead__mark,
+  .docsync-wp-admin-shell--compact .docsync-wp-masthead__fallback-mark {
+    flex-basis: 32px;
+    height: 32px;
+    width: 32px;
+  }
+
+  .docsync-wp-admin-shell--compact .docsync-wp-masthead__copy h1 {
+    font-size: 18px;
+  }
+
   .docsync-wp-masthead {
     align-items: center;
     background: var(--docsync-surface);

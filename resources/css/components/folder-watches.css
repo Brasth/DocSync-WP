@@ -16,7 +16,72 @@
 }
 
 .docsync-wp-folder-watches-page__filters {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-start;
   margin: 0 0 16px;
+}
+
+.docsync-wp-folder-watches-page__filters .docsync-wp-button--primary,
+.docsync-wp-folder-watches-page__filters .button-primary {
+  margin-left: auto;
+}
+
+.docsync-wp-folder-attention,
+.docsync-wp-review-prompt {
+  background: var(--docsync-surface);
+  border: 1px solid var(--docsync-card-border);
+  border-radius: var(--docsync-radius-md);
+  margin: 0 0 16px;
+  padding: 14px 16px;
+}
+
+.docsync-wp-folder-attention__header h2,
+.docsync-wp-folder-attention__header p,
+.docsync-wp-review-prompt p {
+  margin: 0;
+}
+
+.docsync-wp-folder-attention__header p,
+.docsync-wp-review-prompt p {
+  color: var(--docsync-text-secondary);
+  margin-top: 4px;
+}
+
+.docsync-wp-folder-attention__list {
+  display: grid;
+  gap: 10px;
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+}
+
+.docsync-wp-folder-attention__item {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.docsync-wp-folder-attention__item p {
+  color: var(--docsync-text-secondary);
+  margin: 4px 0 0;
+}
+
+.docsync-wp-review-prompt {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.docsync-wp-review-prompt__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .docsync-wp-folder-watches-page__search {
@@ -129,6 +194,7 @@
 
 .docsync-wp-folder-watch-detail-page__title {
   font-size: 24px;
+  font-weight: 600;
   line-height: 1.2;
   margin: 0 0 8px;
 }

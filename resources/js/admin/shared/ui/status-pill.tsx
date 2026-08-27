@@ -18,7 +18,10 @@ const statusConfig: Record<string, StatusConfig> = {
   new: { label: __('New', 'brasth-document-sync-for-google-docs'), variant: 'synced' },
   unchanged: { label: __('Unchanged', 'brasth-document-sync-for-google-docs'), variant: 'skipped' },
   changed: { label: __('Changed', 'brasth-document-sync-for-google-docs'), variant: 'info' },
-  created: { label: __('Created', 'brasth-document-sync-for-google-docs'), variant: 'synced' }
+  created: { label: __('Created', 'brasth-document-sync-for-google-docs'), variant: 'synced' },
+  watching: { label: __('Watching', 'brasth-document-sync-for-google-docs'), variant: 'synced' },
+  importing: { label: __('Importing', 'brasth-document-sync-for-google-docs'), variant: 'syncing' },
+  paused: { label: __('Paused', 'brasth-document-sync-for-google-docs'), variant: 'warning' }
 };
 
 type Props = {

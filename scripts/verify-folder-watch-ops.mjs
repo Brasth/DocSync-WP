@@ -5,6 +5,7 @@
 
 import {
 	attentionRank,
+	attentionReason,
 	filterFolderWatches,
 	primaryWatchAction,
 	watchNeedsAttention,
@@ -62,6 +63,12 @@ assertSame('watching', watchStatusTone('watching'), 'watching tone');
 assertSame('importing', watchStatusTone('importing'), 'importing tone');
 assertSame('paused', watchStatusTone('paused'), 'paused tone');
 assertSame('error', watchStatusTone('error'), 'error tone');
+
+assertSame(null, attentionReason(healthy), 'healthy reason');
+assertSame('importing', attentionReason(importing), 'importing reason');
+assertSame('paused', attentionReason(paused), 'paused reason');
+assertSame('error', attentionReason(errored), 'error reason');
+assertSame('failed', attentionReason(failedDocs), 'failed-doc reason');
 
 assertSame('scan', primaryWatchAction(healthy), 'healthy primary');
 assertSame('manage', primaryWatchAction(importing), 'importing primary');
