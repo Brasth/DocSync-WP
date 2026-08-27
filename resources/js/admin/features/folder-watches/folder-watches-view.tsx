@@ -1,5 +1,5 @@
 import { createElement, useMemo, useState } from '@wordpress/element';
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 
 import type { FolderWatchRecord, WorkspaceResponse } from '../../api';
 import { AdminButton } from '../../shared/ui/admin-button';
@@ -42,7 +42,7 @@ const reasonLabel = (watch: FolderWatchRecord): string => {
   if (reason === 'failed') {
     return sprintf(
       /* translators: %d: number of failed Google Docs. */
-      __('%d Doc failed', 'brasth-document-sync-for-google-docs'),
+      _n('%d Doc failed', '%d Docs failed', watch.failed.length, 'brasth-document-sync-for-google-docs'),
       watch.failed.length
     );
   }
@@ -54,7 +54,7 @@ const reasonLabel = (watch: FolderWatchRecord): string => {
   if (reason === 'importing') {
     return sprintf(
       /* translators: %d: number of Docs still importing. */
-      __('%d Doc still importing', 'brasth-document-sync-for-google-docs'),
+      _n('%d Doc still importing', '%d Docs still importing', watch.pendingCount, 'brasth-document-sync-for-google-docs'),
       watch.pendingCount
     );
   }
