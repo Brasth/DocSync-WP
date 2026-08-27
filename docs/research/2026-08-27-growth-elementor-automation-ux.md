@@ -9,7 +9,7 @@ Related: `docs/project-roadmap.md`, `plans/reports/research-20260622-growth-stra
 ## Executive answers
 
 1. **Growth is not a feature gap.** Version 1.1.5 already ships the June 2026 wedge (folder watch + layout presets + Elementor). WordPress.org still shows **fewer than 10 active installs** and **zero reviews**. More product surface will not create demand. Distribution, first-review, and one hero screenshot of a live client-folder run will.
-2. **Do not chase Elementor 4.0 Atomic output now.** Keep v3 `heading` / `text-editor` / `image` / `html` / `divider` plus container-or-section wrapping. That JSON still works on Elementor 4.0 hybrid sites. Add a compatibility matrix and fixture against latest Elementor. Rewrite to `e-heading` + `$$type` props only when agencies on new Atomic-default sites report broken or uneditable layouts.
+2. **Do not chase Elementor 4.0 Atomic output now.** Keep v3 widgets (`heading`, `text-editor`, `image`, `icon-list`, `divider`, `spacer`, `html`) plus container-or-section wrapping. That JSON still works on Elementor 4.0 hybrid sites. Fixtures prove JSON shape only; there is no live Elementor in the devcontainer or CI. Add a live compatibility smoke. Rewrite to `e-heading` + `$$type` props only when agencies on new Atomic-default sites report broken or uneditable layouts.
 3. **The Automation dashboard is not a dashboard.** `Drive Folders` is a CRUD table with four dead count tiles. Agencies need an attention queue: next scan, stalled cron, failed Docs, import progress, one primary next action per watch.
 4. **The UI is designed, not native.** Custom masthead, tokens, pills, and progress rails look like a generated SaaS shell inside `wp-admin`. Guidelines already say utilitarian WordPress admin. The fix is density, native list-table grammar, and fewer product-chrome layers — not another visual system.
 
@@ -24,7 +24,7 @@ Related: `docs/project-roadmap.md`, `plans/reports/research-20260622-growth-stra
 | Agency increment | Folder-first Setup (`Watch a client folder` / `Choose one Google Doc`); watch interval now drives discovery **and** member re-sync |
 | Caps | 10 watches / 50 Docs / depth 3 (later agency plan) |
 | Monetization | All free. No Pro. No managed OAuth |
-| Roadmap docs | `docs/project-roadmap.md` still says 1.1.3 current / 1.1.4 next. Stale |
+| Roadmap docs | Current-state note in `docs/project-roadmap.md` updated to 1.1.5 in this research pass |
 
 Shipped differentiators vs June 2026 research:
 
@@ -91,13 +91,15 @@ OAuth setup remains the activation tax. Managed OAuth is still a compliance/reve
 
 `src/Sync/Elementor/` writes **Elementor 3.x widget JSON**:
 
-- Widgets: `heading`, `text-editor`, `image`, `html`, `divider` (`WidgetFactory`)
+- Widgets: `heading`, `text-editor`, `image`, `icon-list`, `divider`, `spacer`, `html` (`WidgetFactory`). Free widgets only. Feature lists assume Font Awesome (`fas fa-check`).
 - Layout: Flexbox `container` when the container experiment / post data says so; else legacy `section` + `column` (`LayoutBuilder`, `CompatibilityChecker`)
-- Presets: Hero Page, Feature Block; blueprint `schemaVersion` is `'3'`
+- Presets: Hero Page, Feature Block; blueprint behavior version is `'3'`
 - Detection: `class_exists('\Elementor\Plugin')`, `_elementor_edit_mode`, `experiments->is_feature_active('container')`
+- Writes `_elementor_data` directly and **clears `post_content`**. Elementor owns render via meta. Cache clear is `PostUpdater`.
 - No Atomic Editor sniff. No `e-heading` / `e-paragraph`. No `$$type` props. No Pro widgets (correct)
+- No minimum Elementor version. No `version_compare`. No WP+Elementor runtime tests. Devcontainer does not install Elementor. `plans/20260705-1-1-3-elementor-usability-polish/phase-04` (preset visual polish) is still pending.
 
-Fixtures prove JSON shape, not live Elementor 4 editor editability.
+Fixtures prove JSON shape, not live editor editability or frontend publishability.
 
 ### What Elementor 4.0 changed (2026)
 
@@ -141,7 +143,7 @@ Surfaces today:
 | Folder detail | Edit one watch | The only page that feels operational |
 | Sync Activity | Diagnostics | Event table. Not an ops home |
 
-`FolderWatchesView` tiles: Watches, Watching, Importing, Needs attention. None are clickable. Filter labels disagree with tiles (`watching` option label is **Synced**; tile says **Watching**). Search is client-side only.
+`FolderWatchesView` tiles: Watches, Watching, Importing, Needs attention. None are clickable. Status mapping lies: `watching` → pill **Synced**, `paused` → pill **Linked**. Filter option for `watching` is also labeled **Synced**. Search is client-side only. Folders loading reuses `SourcesTableSkeleton` (“Loading linked sources”). Folder detail renders a second `<h1>` under the shell title.
 
 Missing for an agency ops dashboard:
 
@@ -167,7 +169,7 @@ Not amateur. Tokens, Radix dialogs, skeletons, confirmations, and `docs/design-g
 
 1. **Masthead on every screen** (`AdminShell`): logo, product name, screen title, version, status chip. WordPress already has the admin header and submenu. This is a second product.
 2. **Count tiles that are not filters.** Sources health and Drive Folders health look like a dashboard and behave like decoration.
-3. **Noun soup.** Watch / folder / source / member Doc / client folder / Synced vs Watching vs Healthy. Operators cannot form a mental model.
+3. **Noun soup.** Menu vs screen: Setup vs Google Setup, Logs vs Sync Activity, Drive Folders vs client folder / folder watch. Status pills: Synced vs Watching vs Linked vs Healthy.
 4. **Setup never becomes small.** After activation it is still a branded workspace with rail + side panels (account, telemetry, defaults). Maintenance should collapse to a short settings screen.
 5. **Four homes.** Setup, Sources, Drive Folders, Sync Activity split one job: "is publishing on rails?"
 6. **Custom page background and card radius** (`--docsync-page-bg`, 8px cards, teal/navy roles) fight `wp-admin` chrome. Fine for a modal. Heavy for list screens.
@@ -219,7 +221,7 @@ Working name: **1.1.6 Automation ops + listing**. No new Google API. No Pro. No 
 1. Drive Folders attention queue + clickable health + noun/label cleanup
 2. Compact admin chrome on operational screens (keep full Setup masthead only during first-run)
 3. WordPress.org screenshot set + tag/short-description rewrite
-4. Elementor 3.x/4.x compatibility checklist in QA (not a new preset)
+4. Elementor 3.x/4.x live smoke (devcontainer or staging). JSON goldens stay. No new preset. Do not finish phase-04 visual polish until an agency doc set exists.
 5. In-plugin review prompt after first healthy folder import (WP.org guidelines: not nagging)
 
 Out of scope: custom preset builder, Docs add-on, managed OAuth, Bricks/Divi, raising 50-Doc cap, CPT watch storage.
