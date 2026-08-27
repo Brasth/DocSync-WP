@@ -155,26 +155,6 @@ The build uses Vite and writes screen-specific manifests for Setup, Sources, Log
 * Listing copy and screenshot 1 now lead with folder automation.
 
 = 1.1.5 =
-
-== Screenshots ==
-
-1. Drive Folders ops: attention queue, clickable health filters, and client folder status.
-2. Posts list Add Sync Doc flow with linked source status and background sync progress.
-3. Drive browser modal with breadcrumbs, search, and folder navigation.
-4. Drive browser empty folder state with search and access-check guidance.
-5. Synced draft editor with the Brasth Document Sync meta box.
-
-== Changelog ==
-
-= 1.1.6 =
-
-* Drive Folders now ranks failed, importing, and paused client folders first, with clickable health filters and one primary row action.
-* Status pills say Watching, Importing, Paused, or Error instead of remapping those states to Synced or Linked.
-* Sources, Drive Folders, and Sync Activity use a compact admin header. The Logs submenu is labeled Sync Activity.
-* After the first imported Doc in a folder watch, Drive Folders can ask once for a WordPress.org review.
-* Listing copy and screenshot 1 now lead with folder automation.
-
-= 1.1.5 =
 * Replaced the narrow folder-watch drawer with a URL-backed full-page watch detail.
 * Added PATCH `/folders/:id` so operators can change schedule, post status, presets, subfolders, and excludes without recreating a watch.
 * Added a weekly folder schedule option. Schedule-only saves no longer require Google OAuth.
