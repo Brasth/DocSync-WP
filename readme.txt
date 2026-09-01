@@ -8,11 +8,13 @@ Stable tag: 1.1.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Sync Google Docs into WordPress posts and pages with layout presets, self-managed Google OAuth, and optional Elementor layout support.
+Turn Google Drive Folders into synced WordPress drafts with local images, layouts, scheduled updates, and self-managed OAuth.
 
 == Description ==
 
-Brasth Document Sync for Google Docs helps editorial teams use Google Docs as the source of truth while publishing clean WordPress content. Site owners provide their own Google OAuth web client, each WordPress user connects their own Google account, and authorized users can browse accessible Google Docs, link a document to a post or page, and sync content into WordPress.
+Brasth Document Sync for Google Docs helps agencies and editorial teams turn a client's Google Drive folder into synced WordPress drafts with local images, layouts, and scheduled updates. Use Drive Folders to create a watch, review its Google Docs inventory, exclude files, choose subfolder scope, schedule, post status, and layout settings, then let WP-Cron pick up new Docs. Google Docs remain the one-way source of truth.
+
+Site owners provide their own Google OAuth web client, and each WordPress user connects their own Google account.
 
 The plugin exports Google Docs as HTML ZIP packages, imports embedded images into the WordPress Media Library, rewrites image URLs, sanitizes the resulting HTML, and converts common document structures to Gutenberg block markup. If Google blocks a large HTML ZIP export, Brasth Document Sync retries through the Google Docs API fallback before changing post content.
 
@@ -24,14 +26,18 @@ Documentation:
 
 Features include:
 
+* Use Drive Folders to watch a Google Drive folder, import selected Docs, and pick up new Docs on a recurring WP-Cron schedule.
+* Review searchable folder inventory, include or exclude Docs in bulk, and optionally include subfolders.
+* Set per-folder schedule, destination post status, Gutenberg or Elementor preset, and monitor watch and cron status.
+* Sync an individual Google Doc to a WordPress post, page, or enabled public custom post type.
+* Import exported images into the WordPress Media Library and produce Gutenberg block markup or optional Elementor layouts.
 * Self-managed Google OAuth setup wizard with next-action guidance.
 * Server-side Google Drive document browser for My Drive and shared drives.
 * Advanced Google Docs URL and raw file ID linking.
 * Background sync through WP-Cron with source status and diagnostic logs.
 * Searchable Sync Activity logs with troubleshooting views, advanced filters, recovery hints, and safe output-path details.
 * Safe log clearing for one source or all visible sources without deleting synced content or source links.
-* One-way Google Docs to WordPress sync for posts, pages, and enabled public custom post types.
-* Media import for images exported from Google Docs.
+* One-way Google Docs to WordPress sync.
 * Default synced layout presets for Gutenberg imports: Clean Article, Documentation, and legacy Plain Blocks.
 * Elementor layout presets for Elementor sync: Elementor Hero Page and Elementor Feature Block.
 * Gutenberg block markup for common headings, paragraphs, lists, tables, code, callouts, and images.
@@ -77,7 +83,8 @@ Authorized users can optionally submit feedback from the admin area. The plugin 
 6. Create an OAuth 2.0 Web application client.
 7. Add the authorized redirect URI shown in the Brasth Document Sync setup wizard.
 8. In WordPress admin, open Brasth Document Sync and save the OAuth client ID and client secret.
-9. Connect a Google account, browse or paste a Google Doc, and link it to a WordPress post or page.
+9. Connect a Google account, open Drive Folders, add a folder watch, review its inventory and exclusions, then run the initial import.
+10. To sync an individual Doc instead, browse or paste it and link it to a WordPress post or page.
 
 The Google Cloud walkthrough is also written out at https://docsyncwp.com/how-it-works/.
 
@@ -137,11 +144,11 @@ The build uses Vite and writes screen-specific manifests for Setup, Sources, Log
 
 == Screenshots ==
 
-1. Setup wizard with self-managed OAuth next action, redirect URI copy, and account connection state.
-2. Posts list Add Sync Doc flow with linked source status and background sync progress.
-3. Drive browser modal with breadcrumbs, search, and folder navigation.
-4. Drive browser empty folder state with search and access-check guidance.
-5. Synced draft editor with the Brasth Document Sync meta box.
+1. Drive Folders operational home for finding watches, filtering status, and opening the next folder workflow.
+2. Drive Folders inventory and configuration before import, with document selection, exclusions, subfolder scope, schedule, post status, and layout preset controls.
+3. Drive Folders watch detail for checking schedule, scan activity, cron health, and imported-document status.
+4. Sources view for Drive Folders imports, showing each Doc's WordPress destination and latest sync status.
+5. Publishable synced draft created through Drive Folders, ready to review in the WordPress editor with local media and clean layout output.
 
 == Changelog ==
 
