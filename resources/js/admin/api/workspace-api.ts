@@ -25,6 +25,7 @@ const normalizeFolderWatchSummary = (
 });
 
 const normalizeCronHealth = (health: WorkspaceCronHealth | undefined): WorkspaceCronHealth => ({
+  wpCronDisabled: Boolean(health?.wpCronDisabled),
   lastRunAt: typeof health?.lastRunAt === 'string' ? health.lastRunAt : '',
   stalled: health?.stalled === true
 });

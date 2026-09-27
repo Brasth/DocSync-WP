@@ -102,24 +102,26 @@ export const buildGoogleSetupNextAction = ({
 
   if (activated) {
     return {
-      title: __('Publishing workspace active', 'brasth-document-sync-for-google-docs'),
-      description: __('At least one source or client folder has completed successfully. Use Sources and Drive Folders for daily work.', 'brasth-document-sync-for-google-docs'),
-      label: __('View Sources', 'brasth-document-sync-for-google-docs'),
+      title: __('You\'re set', 'brasth-document-sync-for-google-docs'),
+      description: __('Google is connected and at least one Doc or folder watch is active. Use Sources, Drive Folders, or Sync Activity for daily work.', 'brasth-document-sync-for-google-docs'),
+      label: __('Open Sources', 'brasth-document-sync-for-google-docs'),
       href: 'admin.php?page=brasth-document-sync-for-google-docs-sources',
-      secondaryLabel: __('Manage Drive Folders', 'brasth-document-sync-for-google-docs'),
-      secondaryHref: 'admin.php?page=brasth-document-sync-for-google-docs-folders'
+      secondaryLabel: __('Sync Activity', 'brasth-document-sync-for-google-docs'),
+      secondaryHref: 'admin.php?page=brasth-document-sync-for-google-docs-logs',
+      tertiaryLabel: __('Drive Folders', 'brasth-document-sync-for-google-docs'),
+      tertiaryHref: 'admin.php?page=brasth-document-sync-for-google-docs-folders'
     };
   }
 
   return {
-    title: __('Start client folder automation', 'brasth-document-sync-for-google-docs'),
+    title: __('Watch a client folder', 'brasth-document-sync-for-google-docs'),
     description: canCreateSource
-      ? __('Watch a Drive folder to create drafts from every Google Doc. One-off Docs stay available.', 'brasth-document-sync-for-google-docs')
+      ? __('Best for agencies with a Drive folder of Docs.', 'brasth-document-sync-for-google-docs')
       : __('No enabled WordPress target is available for this user. Adjust post-type permissions before creating a source.', 'brasth-document-sync-for-google-docs'),
     label: __('Watch a client folder', 'brasth-document-sync-for-google-docs'),
     disabled: busy || !canCreateSource,
     onClick: async () => onCreateSource('folder'),
-    secondaryLabel: __('Choose one Google Doc', 'brasth-document-sync-for-google-docs'),
+    secondaryLabel: __('Link one Google Doc instead', 'brasth-document-sync-for-google-docs'),
     onSecondaryClick: () => onCreateSource('document')
   };
 };

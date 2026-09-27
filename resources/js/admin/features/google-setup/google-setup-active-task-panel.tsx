@@ -153,8 +153,8 @@ export const GoogleSetupActiveTaskPanel = ({
     if (activeTask === 'connect') {
       return (
         <div className="docsync-wp-setup-task-message">
-          <strong>{__('OAuth credentials are saved.', 'brasth-document-sync-for-google-docs')}</strong>
-          <p>{__('Connect this WordPress user to Google before browsing or syncing readable Docs.', 'brasth-document-sync-for-google-docs')}</p>
+          <strong>{__('Site Google app saved.', 'brasth-document-sync-for-google-docs')}</strong>
+          <p>{__('Each WordPress user who syncs connects their own Google account.', 'brasth-document-sync-for-google-docs')}</p>
         </div>
       );
     }
@@ -170,8 +170,8 @@ export const GoogleSetupActiveTaskPanel = ({
 
     return (
       <div className="docsync-wp-setup-task-message">
-        <strong>{__('Setup ready for client folder automation.', 'brasth-document-sync-for-google-docs')}</strong>
-        <p>{__('Watch a client folder to create drafts from every Google Doc, or choose one Doc for a single source.', 'brasth-document-sync-for-google-docs')}</p>
+        <strong>{__('Pick folder or Doc', 'brasth-document-sync-for-google-docs')}</strong>
+        <p>{__('Choose the client folder that holds the Docs, or paste a Doc URL and pick from Drive.', 'brasth-document-sync-for-google-docs')}</p>
         {showTargetPicker && creatablePostTypes.length > 0 ? (
           <label className="docsync-wp-field docsync-wp-field--compact">
             <span>{__('WordPress target type', 'brasth-document-sync-for-google-docs')}</span>
@@ -209,6 +209,11 @@ export const GoogleSetupActiveTaskPanel = ({
           disabled: nextAction.disabled,
           href: nextAction.secondaryHref,
           onClick: nextAction.onSecondaryClick,
+          variant: 'secondary'
+        }) : null}
+        {nextAction.tertiaryLabel ? renderActionButton(nextAction.tertiaryLabel, {
+          disabled: nextAction.disabled,
+          href: nextAction.tertiaryHref,
           variant: 'secondary'
         }) : null}
         <AdminButton disabled={busy} onClick={onTestSetup}>

@@ -55,6 +55,13 @@
     max-width: 680px;
   }
 
+  .docsync-wp-empty-state__action-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+  }
+
   .docsync-wp-empty-state__action {
     margin-top: 4px;
   }

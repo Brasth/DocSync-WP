@@ -28,6 +28,13 @@ final class HtmlDocumentImageRewriter {
 	private MediaAssetImporter $media_assets;
 
 	/**
+	 * Images that could not be imported during the last rewrite call.
+	 *
+	 * @var int
+	 */
+	private int $failed_image_count = 0;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param MediaAssetImporter $media_assets Media asset importer.
@@ -48,7 +55,8 @@ final class HtmlDocumentImageRewriter {
 	 * @return string|WP_Error
 	 */
 	public function rewrite( string $html, string $html_path, string $temp_dir, string $google_file_id, int $post_id, int $user_id ): string|WP_Error {
-		$document = $this->parseDocument( $html );
+		$this->failed_image_count = 0;
+		$document                 = $this->parseDocument( $html );
 
 		if ( is_wp_error( $document ) ) {
 			return $document;
@@ -82,7 +90,8 @@ final class HtmlDocumentImageRewriter {
 				$url = $this->media_assets->importImage( $asset['file_path'], $asset['asset_path'], $google_file_id, $post_id, $user_id );
 
 				if ( is_wp_error( $url ) ) {
-					return $url;
+					++$this->failed_image_count;
+					continue;
 				}
 
 				$image_urls[ $asset['asset_path'] ] = $url;
@@ -92,6 +101,13 @@ final class HtmlDocumentImageRewriter {
 		}
 
 		return wp_kses_post( $this->getBodyHtml( $document ) );
+	}
+
+	/**
+	 * Count of image imports that failed during the last rewrite call.
+	 */
+	public function getFailedImageCount(): int {
+		return $this->failed_image_count;
 	}
 
 	/**

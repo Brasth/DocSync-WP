@@ -62,6 +62,7 @@ export const useSourcesApp = () => {
   const [notice, setNotice] = useState<AdminNoticeState | null>(null);
   const [busy, setBusy] = useState(false);
   const [sourceModalOpen, setSourceModalOpen] = useState(false);
+  const [sourceIntent, setSourceIntent] = useState<'folder' | 'document'>('folder');
   const [activationSource, setActivationSource] = useState<SourceRecord | null>(null);
   const sourceSync = useSourceSyncProgress(setSources, setNotice);
   const sourceModalTrigger = useRef<HTMLElement | null>(null);
@@ -229,7 +230,8 @@ export const useSourcesApp = () => {
     await syncOne(activationSource.postId);
   };
 
-  const openSourceModal = () => {
+  const openSourceModal = (intent: 'folder' | 'document' = 'folder') => {
+    setSourceIntent(intent);
     sourceModalTrigger.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     restoreModalFocus.current = true;
     setSourceModalOpen(true);
@@ -262,6 +264,7 @@ export const useSourcesApp = () => {
     refresh,
     retryActivationSource,
     runAction,
+    sourceIntent,
     sourceModalOpen,
     sourceFilters,
     sources,

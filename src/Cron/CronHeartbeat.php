@@ -46,12 +46,13 @@ final class CronHeartbeat {
 	 *
 	 * @param array<int,string> $active_intervals Resolved cron interval keys.
 	 * @param int|null          $now              Unix timestamp. Defaults to now.
-	 * @return array{lastRunAt:string,stalled:bool}
+	 * @return array{lastRunAt:string,stalled:bool,wpCronDisabled:bool}
 	 */
 	public function snapshot( array $active_intervals, ?int $now = null ): array {
-		$now   = $now ?? time();
-		$last  = absint( get_option( self::OPTION_NAME, 0 ) );
-		$short = $this->shortestActiveSeconds( $active_intervals );
+		$now              = $now ?? time();
+		$last             = absint( get_option( self::OPTION_NAME, 0 ) );
+		$short            = $this->shortestActiveSeconds( $active_intervals );
+		$wp_cron_disabled = defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON;
 
 		$stalled = false;
 
@@ -66,9 +67,15 @@ final class CronHeartbeat {
 			}
 		}
 
+		if ( $wp_cron_disabled && $short > 0 && ! $stalled && $last <= 0 ) {
+			$baseline = $this->monitoringBaseline( $now );
+			$stalled  = ( $now - $baseline ) > self::MIN_STALL_SECONDS;
+		}
+
 		return array(
-			'lastRunAt' => $last > 0 ? gmdate( 'c', $last ) : '',
-			'stalled'   => $stalled,
+			'lastRunAt'      => $last > 0 ? gmdate( 'c', $last ) : '',
+			'stalled'        => $stalled,
+			'wpCronDisabled' => $wp_cron_disabled,
 		);
 	}
 

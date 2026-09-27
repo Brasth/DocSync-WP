@@ -71,4 +71,11 @@ final class HtmlZipImporter {
 			$this->package_extractor->deleteDirectory( $package['temp_dir'] );
 		}
 	}
+
+	/**
+	 * Images that failed to import during the last import call.
+	 */
+	public function getLastFailedImageCount(): int {
+		return $this->image_rewriter->getFailedImageCount();
+	}
 }

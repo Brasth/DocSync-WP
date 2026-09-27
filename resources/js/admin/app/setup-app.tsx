@@ -11,6 +11,7 @@ import { GoogleSetupSyncDefaultsPanel } from '../features/google-setup/google-se
 import { SettingsPanel } from '../features/google-setup/settings-panel';
 import { TelemetryConsentPanel } from '../features/google-setup/telemetry-consent-panel';
 import { AdminShell } from '../shared/ui/admin-shell';
+import { CronHealthBanner } from '../shared/ui/cron-health-banner';
 import { useSetupApp } from './use-setup-app';
 
 export const SetupApp = (): JSX.Element => {
@@ -52,6 +53,7 @@ export const SetupApp = (): JSX.Element => {
       ) : setupReady ? (
         <div className="docsync-wp-admin-grid docsync-wp-admin-grid--ready">
           <div className="docsync-wp-admin-grid__main">
+            <CronHealthBanner health={app.workspace.cronHealth} />
             <SettingsPanel
               account={app.account}
               activated={activated}
@@ -63,6 +65,7 @@ export const SetupApp = (): JSX.Element => {
               onClearOAuthConfiguration={app.clearSavedOAuthConfiguration}
               onConnect={app.connectGoogle}
               onCreateSource={app.openSourceModal}
+              oauthConnectError={app.oauthConnectError}
               onSave={app.persistSettings}
               onTargetPostTypeChange={app.setTargetPostType}
               redirectUri={app.redirectUri}
@@ -101,6 +104,7 @@ export const SetupApp = (): JSX.Element => {
       ) : (
         <div className="docsync-wp-admin-grid docsync-wp-admin-grid--single docsync-wp-admin-grid--focus">
           <div className="docsync-wp-admin-grid__main">
+            <CronHealthBanner health={app.workspace.cronHealth} />
             <SettingsPanel
               account={app.account}
               activated={activated}
@@ -112,6 +116,7 @@ export const SetupApp = (): JSX.Element => {
               onClearOAuthConfiguration={app.clearSavedOAuthConfiguration}
               onConnect={app.connectGoogle}
               onCreateSource={app.openSourceModal}
+              oauthConnectError={app.oauthConnectError}
               onSave={app.persistSettings}
               onTargetPostTypeChange={app.setTargetPostType}
               redirectUri={app.redirectUri}

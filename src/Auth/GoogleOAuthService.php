@@ -379,14 +379,49 @@ final class GoogleOAuthService {
 		}
 
 		if ( $status < 200 || $status >= 300 || ! is_array( $data ) ) {
+			$google_error = is_array( $data ) && isset( $data['error'] ) ? sanitize_key( (string) $data['error'] ) : '';
+
 			return new WP_Error(
 				'docsync_wp_bad_google_response',
 				__( 'Google returned an unexpected OAuth response.', 'brasth-document-sync-for-google-docs' ),
-				array( 'status' => 502 )
+				array(
+					'status'       => 502,
+					'google_error' => $google_error,
+				)
 			);
 		}
 
 		return $data;
+	}
+
+	/**
+	 * Redirect URL after OAuth failure, preserving safe admin context for the Setup UI.
+	 *
+	 * @param string        $state        OAuth state from the callback.
+	 * @param string        $google_error Google `error` query param when present.
+	 * @param WP_Error|null $plugin_error Optional token-exchange failure.
+	 */
+	public function buildFailureRedirect( string $state, string $google_error = '', ?WP_Error $plugin_error = null ): string {
+		$state_data = $this->consumeState( $state );
+		$return_url = is_wp_error( $state_data )
+			? admin_url( 'admin.php?page=brasth-document-sync-for-google-docs' )
+			: wp_validate_redirect(
+				(string) $state_data['return_url'],
+				admin_url( 'admin.php?page=brasth-document-sync-for-google-docs' )
+			);
+
+		$code  = OAuthConnectError::resolveCode( $google_error, $plugin_error );
+		$extra = array();
+
+		if ( OAuthConnectError::CODE_UNKNOWN === $code ) {
+			$detail = '' !== $google_error ? $google_error : ( null !== $plugin_error ? $plugin_error->get_error_code() : '' );
+
+			if ( '' !== $detail ) {
+				$extra['docsync_oauth_detail'] = sanitize_key( $detail );
+			}
+		}
+
+		return OAuthConnectError::appendToReturnUrl( $return_url, $code, $extra );
 	}
 
 	/**

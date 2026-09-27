@@ -742,14 +742,32 @@ final class SyncService {
 				$success_updates['last_layout_hash'] = $layout_hash;
 			}
 
+			$complete_message = __( 'Sync complete.', 'brasth-document-sync-for-google-docs' );
+			$failed_images    = absint( $import['failed_image_count'] ?? 0 );
+
+			if ( $failed_images > 0 ) {
+				$complete_message = sprintf(
+					/* translators: %d: number of images that failed to import. */
+					_n(
+						'Sync complete, but 1 image could not be imported.',
+						'Sync complete, but %d images could not be imported.',
+						$failed_images,
+						'brasth-document-sync-for-google-docs'
+					),
+					$failed_images
+				);
+			}
+
 			$source = $this->saveProgressState(
 				$post_id,
 				$source,
 				self::STATUS_SYNCED,
 				100,
 				'complete',
-				__( 'Sync complete.', 'brasth-document-sync-for-google-docs' ),
-				$success_updates
+				$complete_message,
+				$success_updates,
+				$failed_images > 0 ? array( 'failedImageCount' => $failed_images ) : array(),
+				$failed_images > 0 ? 'docsync_wp_image_import_partial' : ''
 			);
 
 			if ( is_wp_error( $source ) ) {
@@ -1057,9 +1075,12 @@ final class SyncService {
 				return $html;
 			}
 
+			$failed_images = $this->html_zip_importer->getLastFailedImageCount();
+
 			return array(
-				'html'   => $html,
-				'method' => self::SYNC_METHOD_HTML_ZIP,
+				'html'              => $html,
+				'method'            => self::SYNC_METHOD_HTML_ZIP,
+				'failed_image_count' => $failed_images,
 			);
 		}
 

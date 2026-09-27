@@ -83,6 +83,7 @@ export const SourcesApp = (): JSX.Element => {
             />
           </div>
           <DocSourceModal
+            initialIntent={app.sourceIntent}
             isOpen={app.sourceModalOpen}
             onClose={app.closeSourceModal}
             onCompleted={app.handleSourceCreated}
