@@ -40,6 +40,7 @@ export type WorkspaceFolderWatchSummary = {
 export type WorkspaceCronHealth = {
   lastRunAt: string;
   stalled: boolean;
+  wpCronDisabled?: boolean;
 };
 
 export type WorkspaceResponse = {

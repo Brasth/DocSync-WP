@@ -19,6 +19,7 @@ import {
   type WorkspaceResponse
 } from '../api';
 import { getAdminConfig } from '../config';
+import { readOAuthConnectErrorFromLocation, type OAuthConnectErrorView } from '../features/google-setup/oauth-connect-error';
 import type { AdminNoticeState } from '../shared/ui/admin-notice';
 
 const emptyAccount: GoogleAccount = { connected: false, hasRequiredScope: false };
@@ -35,6 +36,7 @@ export const useSetupApp = () => {
   const [targetPostType, setTargetPostType] = useState('');
   const [sourceModalOpen, setSourceModalOpen] = useState(false);
   const [notice, setNotice] = useState<AdminNoticeState | null>(null);
+  const [oauthConnectError, setOauthConnectError] = useState<OAuthConnectErrorView | null>(() => readOAuthConnectErrorFromLocation());
   const [busy, setBusy] = useState(false);
   const sourceModalTrigger = useRef<HTMLElement | null>(null);
   const restoreModalFocus = useRef(true);
@@ -79,6 +81,7 @@ export const useSetupApp = () => {
     }
 
     await runAction(async () => {
+      setOauthConnectError(null);
       const response = await getGoogleAuthUrl();
       window.location.assign(response.authUrl);
     });
@@ -113,11 +116,22 @@ export const useSetupApp = () => {
 
   const persistSettings = async (nextSettings: Partial<SettingsResponse> & { clientSecret?: string }) => {
     let savedSuccessfully = false;
+    const credentialOnlySave = (
+      ('clientId' in nextSettings || 'clientSecret' in nextSettings)
+      && !('syncInterval' in nextSettings)
+      && !('enabledPostTypes' in nextSettings)
+      && !('defaultLayoutPreset' in nextSettings)
+      && !('telemetryEnabled' in nextSettings)
+      && !('telemetryPromptDismissed' in nextSettings)
+    );
 
     await runAction(async () => {
       const saved = await saveSettings(nextSettings);
-      const message = __('Settings saved.', 'brasth-document-sync-for-google-docs');
+      const message = credentialOnlySave
+        ? __('Site Google app saved.', 'brasth-document-sync-for-google-docs')
+        : __('Settings saved.', 'brasth-document-sync-for-google-docs');
       setSettings(saved);
+      setOauthConnectError(null);
       setNotice({ type: 'success', message });
       speak(message);
       savedSuccessfully = true;
@@ -213,6 +227,7 @@ export const useSetupApp = () => {
     config,
     connectGoogle,
     disconnectGoogle,
+    oauthConnectError,
     notice,
     closeSourceModal,
     openSourceModal,

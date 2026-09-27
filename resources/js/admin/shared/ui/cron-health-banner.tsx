@@ -14,13 +14,13 @@ export const CronHealthBanner = ({ health }: Props): JSX.Element | null => {
 
   return (
     <aside className="docsync-wp-cron-health" role="status">
-      <strong>{__('Scheduled sync may be stalled', 'brasth-document-sync-for-google-docs')}</strong>
+      <strong>{__('Scheduled sync may not run on this site', 'brasth-document-sync-for-google-docs')}</strong>
       <p>
-        {__('Brasth Document Sync uses WP-Cron, which runs when this site receives traffic. Low-traffic sites or sites with DISABLE_WP_CRON should use a real server cron hitting wp-cron.php.', 'brasth-document-sync-for-google-docs')}
+        {__('Low-traffic WordPress or DISABLE_WP_CRON needs a real server cron. Brasth Document Sync relies on WP-Cron ticks to finish background sync.', 'brasth-document-sync-for-google-docs')}
       </p>
       <p>
         <a href="https://docsyncwp.com/user-guide/" rel="noreferrer" target="_blank">
-          {__('Read the server-cron guidance', 'brasth-document-sync-for-google-docs')}
+          {__('How to fix', 'brasth-document-sync-for-google-docs')}
         </a>
       </p>
     </aside>

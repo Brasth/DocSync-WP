@@ -165,16 +165,34 @@ final class OAuthController {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function handleCallback( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$state = (string) $request->get_param( 'state' );
 		$error = (string) $request->get_param( 'error' );
-		$code  = '' === $error ? (string) $request->get_param( 'code' ) : '';
 
-		$return_url = $this->oauth->handleCallback(
-			(string) $request->get_param( 'state' ),
-			$code
-		);
+		if ( '' !== $error ) {
+			$return_url = $this->oauth->buildFailureRedirect( $state, $error );
+
+			return new WP_REST_Response(
+				null,
+				302,
+				array(
+					'Location' => $return_url,
+				)
+			);
+		}
+
+		$code       = (string) $request->get_param( 'code' );
+		$return_url = $this->oauth->handleCallback( $state, $code );
 
 		if ( is_wp_error( $return_url ) ) {
-			return $return_url;
+			$redirect = $this->oauth->buildFailureRedirect( $state, '', $return_url );
+
+			return new WP_REST_Response(
+				null,
+				302,
+				array(
+					'Location' => $redirect,
+				)
+			);
 		}
 
 		return new WP_REST_Response(

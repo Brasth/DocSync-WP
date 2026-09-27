@@ -9,11 +9,12 @@ import type { OAuthClientJsonCredentials } from './oauth-client-json';
 import { buildSetupChecks, type SetupCheck } from './google-setup-utils';
 import {
   activeGoogleSetupTask,
-  buildGoogleSetupChecklistItems,
   buildGoogleSetupNextAction,
-  setupCredentialStepState,
-  setupFirstSyncStepState
+  setupCredentialStepState
 } from './google-setup-task-state';
+import { buildSetupWizardSteps } from './setup-wizard-steps';
+import { OAuthConnectErrorPanel } from './oauth-connect-error-panel';
+import type { OAuthConnectErrorView } from './oauth-connect-error';
 
 export type SettingsPanelLayoutMode = 'focus' | 'ready';
 
@@ -33,6 +34,7 @@ type Props = {
   onCreateSource?: (intent?: 'folder' | 'document') => void;
   onSave: (settings: Partial<SettingsResponse> & { clientSecret?: string }) => Promise<boolean>;
   onTargetPostTypeChange?: (postType: string) => void;
+  oauthConnectError?: OAuthConnectErrorView | null;
   showTargetPicker?: boolean;
   targetPostType?: string;
 };
@@ -52,6 +54,7 @@ export const SettingsPanel = ({
   onCreateSource = () => undefined,
   onSave,
   onTargetPostTypeChange,
+  oauthConnectError = null,
   showTargetPicker = false,
   targetPostType = ''
 }: Props): JSX.Element => {
@@ -60,13 +63,10 @@ export const SettingsPanel = ({
   const [copyMessage, setCopyMessage] = useState('');
   const [testChecks, setTestChecks] = useState<SetupCheck[] | null>(null);
   const setupChecks = useMemo(() => buildSetupChecks(settings, account), [settings, account]);
-  const completedChecks = setupChecks.filter((check) => check.complete).length;
-  const setupProgress = Math.round((completedChecks / setupChecks.length) * 100);
   const canCreateDraft = settings.hasRequiredSettings && account.connected && account.hasRequiredScope;
   const hasCredentialChanges = clientId !== settings.clientId || clientSecret.trim() !== '';
   const canSaveCredentials = clientId.trim() !== '' && (clientSecret.trim() !== '' || settings.hasClientSecret);
   const credentialStepState = setupCredentialStepState(settings, hasCredentialChanges);
-  const firstSyncStepState = setupFirstSyncStepState(canCreateDraft);
 
   useEffect(() => {
     setClientId(settings.clientId);
@@ -106,7 +106,7 @@ export const SettingsPanel = ({
   };
 
   const testSetup = () => {
-    setTestChecks(buildSetupChecks(settings, account));
+    setTestChecks(setupChecks);
   };
 
   const nextAction = buildGoogleSetupNextAction({
@@ -121,15 +121,17 @@ export const SettingsPanel = ({
     onCreateSource,
     onSaveCredentials: submit
   });
-  const activeTask = activeGoogleSetupTask(settings, account, hasCredentialChanges);
-  const checklistItems = buildGoogleSetupChecklistItems({
+  const activeTask = oauthConnectError?.code === 'oauth_invalid_credentials'
+    ? 'credentials'
+    : activeGoogleSetupTask(settings, account, hasCredentialChanges);
+  const wizardSteps = buildSetupWizardSteps({
     account,
     activated,
     canCreateDraft,
     credentialStepState,
-    firstSyncStepState,
     settings
   });
+  const completedSteps = wizardSteps.filter((step) => step.state === 'complete').length;
 
   const importCredentials = (credentials: OAuthClientJsonCredentials) => {
     setClientId(credentials.clientId);
@@ -141,11 +143,20 @@ export const SettingsPanel = ({
     <section className={`docsync-wp-setup-workspace docsync-wp-setup-workspace--${layoutMode}`}>
       <GoogleSetupProgressRail
         activeTask={activeTask}
-        checklistItems={checklistItems}
-        completedChecks={completedChecks}
-        setupChecks={setupChecks}
-        setupProgress={setupProgress}
+        activated={activated}
+        completedSteps={completedSteps}
+        wizardSteps={wizardSteps}
       />
+
+      {oauthConnectError ? (
+        <OAuthConnectErrorPanel
+          error={oauthConnectError}
+          onCopyRedirectUri={(value) => void copyValue(value, __('Redirect URI', 'brasth-document-sync-for-google-docs'))}
+          onReconnect={onConnect}
+          onRetry={onConnect}
+          redirectUri={redirectUri}
+        />
+      ) : null}
 
       <GoogleSetupActiveTaskPanel
         account={account}
@@ -166,6 +177,7 @@ export const SettingsPanel = ({
         onCopyValue={copyValue}
         onImported={importCredentials}
         onTargetPostTypeChange={onTargetPostTypeChange}
+        oauthConnectError={oauthConnectError}
         onTestSetup={testSetup}
         redirectUri={redirectUri}
         showTargetPicker={showTargetPicker}

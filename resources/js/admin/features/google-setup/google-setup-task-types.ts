@@ -13,6 +13,8 @@ export type GoogleSetupNextActionConfig = {
   secondaryHref?: string;
   secondaryLabel?: string;
   onSecondaryClick?: () => void;
+  tertiaryHref?: string;
+  tertiaryLabel?: string;
   title: string;
 };
 

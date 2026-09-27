@@ -47,7 +47,7 @@ export const AccountPanel = ({
         {account.connected ? (
           <div className="docsync-wp-account">
             <strong>{account.googleAccountEmail || __('Google account connected', 'brasth-document-sync-for-google-docs')}</strong>
-            <span>{account.scope || __('Drive read-only scope', 'brasth-document-sync-for-google-docs')}</span>
+            <span title={account.scope || undefined}>{account.scope || __('Drive read-only scope', 'brasth-document-sync-for-google-docs')}</span>
             {primaryActions && needsReconnect ? (
               <AdminButton disabled={busy || !canConnect} onClick={onConnect}>
                 {__('Reconnect Google', 'brasth-document-sync-for-google-docs')}

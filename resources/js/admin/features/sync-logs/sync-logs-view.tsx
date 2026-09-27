@@ -2,10 +2,11 @@ import { speak } from '@wordpress/a11y';
 import { createElement, useEffect, useMemo, useRef, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 
-import { clearSyncLogEntries, listSyncLogEntries, type SyncLogEntry } from '../../api';
+import { clearSyncLogEntries, getWorkspace, listSyncLogEntries, syncSource, type SyncLogEntry, type WorkspaceResponse } from '../../api';
 import { getAdminConfig } from '../../config';
 import { AdminButton } from '../../shared/ui/admin-button';
 import { AdminShell } from '../../shared/ui/admin-shell';
+import { CronHealthBanner } from '../../shared/ui/cron-health-banner';
 import { type AdminNoticeState } from '../../shared/ui/admin-notice';
 import { SyncLogEventsTable } from './sync-log-events-table';
 import { levelOptions, statusOptions, stepOptions } from './sync-log-filter-options';
@@ -134,6 +135,8 @@ export const SyncLogsView = (): JSX.Element => {
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(Boolean(initialFilters.postId));
   const [manageLogsOpen, setManageLogsOpen] = useState(false);
+  const [workspace, setWorkspace] = useState<WorkspaceResponse | null>(null);
+  const [retryBusyPostId, setRetryBusyPostId] = useState<number | null>(null);
   const autoRefreshRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const hasActiveFilters = Boolean(postId.trim() || search.trim() || level || status || step);
   const parsedPostId = parsePostIdFilter(postId);
@@ -201,6 +204,7 @@ export const SyncLogsView = (): JSX.Element => {
 
   useEffect(() => {
     void loadEntries(initialFilters.page, initialFilters);
+    void getWorkspace().then(setWorkspace).catch(() => undefined);
   }, []);
 
   useEffect(() => {
@@ -225,6 +229,25 @@ export const SyncLogsView = (): JSX.Element => {
 
   const applyFilters = async () => {
     await loadEntries(1, currentFilters());
+  };
+
+  const retrySyncFromLog = async (sourcePostId: number) => {
+    setRetryBusyPostId(sourcePostId);
+    setNotice(null);
+
+    try {
+      const result = await syncSource(sourcePostId, 'background');
+      const message = result.source?.syncMessage || __('Source sync queued.', 'brasth-document-sync-for-google-docs');
+      setNotice({ type: 'info', message });
+      speak(message);
+      await loadEntries(page, currentFilters(), true);
+    } catch (caught) {
+      const message = caught instanceof Error ? caught.message : __('Sync failed.', 'brasth-document-sync-for-google-docs');
+      setNotice({ type: 'error', message });
+      speak(message, 'assertive');
+    } finally {
+      setRetryBusyPostId(null);
+    }
   };
 
   const resetFilters = async () => {
@@ -311,6 +334,7 @@ export const SyncLogsView = (): JSX.Element => {
       title={__('Sync Activity', 'brasth-document-sync-for-google-docs')}
       version={config.version}
     >
+      <CronHealthBanner health={workspace?.cronHealth} />
       <div className="docsync-wp-admin-grid docsync-wp-admin-grid--single">
         <section className="docsync-wp-card docsync-wp-card--wide">
           <div className="docsync-wp-card__header docsync-wp-card__header--row">
@@ -425,7 +449,9 @@ export const SyncLogsView = (): JSX.Element => {
             hasActiveFilters={hasActiveFilters}
             hasLoaded={hasLoaded}
             level={level}
+            onRetrySync={retrySyncFromLog}
             postId={postId}
+            retryBusyPostId={retryBusyPostId}
             search={search}
             status={status}
             step={step}

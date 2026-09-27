@@ -146,6 +146,7 @@ export const PostMetaBoxApp = ({ postId, postType, initialSource, elementorAvail
         <SourceInspectorSummary source={actions.source} />
         <section aria-labelledby="docsync-wp-post-box-actions-heading" className="docsync-wp-post-box__section docsync-wp-post-box__section--actions">
           <h3 className="docsync-wp-post-box__section-label" id="docsync-wp-post-box-actions-heading">{__('Actions', 'brasth-document-sync-for-google-docs')}</h3>
+          <p className="docsync-wp-post-box__help">{__('WordPress content is overwritten from the Doc (one-way).', 'brasth-document-sync-for-google-docs')}</p>
           {shouldShowSyncProgress(actions.source) ? (
             <SyncProgress
               indeterminate={isQueuedSync(actions.source)}

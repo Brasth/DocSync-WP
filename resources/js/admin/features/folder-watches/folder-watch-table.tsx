@@ -52,8 +52,8 @@ export const FolderWatchTable = ({
           </AdminButton>
         )}
         className="docsync-wp-table-empty-state"
-        description={__('Choose a Google Drive folder to create drafts and keep them on a folder schedule.', 'brasth-document-sync-for-google-docs')}
-        title={__('No Drive folders watched yet', 'brasth-document-sync-for-google-docs')}
+        description={__('Watch a Drive folder to inventory Docs and create drafts automatically.', 'brasth-document-sync-for-google-docs')}
+        title={__('No folder watches yet', 'brasth-document-sync-for-google-docs')}
         variant="folders"
       />
     );

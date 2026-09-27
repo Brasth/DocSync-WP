@@ -391,7 +391,7 @@ final class FolderWatchService {
 	/**
 	 * Safe cron-health snapshot for the workspace route.
 	 *
-	 * @return array{lastRunAt:string,stalled:bool}
+	 * @return array{lastRunAt:string,stalled:bool,wpCronDisabled:bool}
 	 */
 	public function cronHealth(): array {
 		$intervals = array();

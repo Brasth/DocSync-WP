@@ -28,7 +28,7 @@ type Props = {
   onLoadMore: () => Promise<void>;
   onSync: (postId: number) => Promise<void>;
   onSyncAll: () => Promise<void>;
-  onCreateSource?: () => void;
+  onCreateSource?: (intent?: 'folder' | 'document') => void;
   canCreateSource?: boolean;
 };
 
@@ -251,20 +251,25 @@ export const SourcesTable = ({
                       </AdminButton>
                     ) : (
                       canCreateSource ? (
-                        <AdminButton disabled={busy} onClick={onCreateSource} variant="primary">
-                          {__('Choose source', 'brasth-document-sync-for-google-docs')}
-                        </AdminButton>
+                        <div className="docsync-wp-empty-state__action-row">
+                          <AdminButton disabled={busy} onClick={() => onCreateSource('folder')} variant="primary">
+                            {__('Watch a client folder', 'brasth-document-sync-for-google-docs')}
+                          </AdminButton>
+                          <AdminButton disabled={busy} onClick={() => onCreateSource('document')} variant="secondary">
+                            {__('Link one Google Doc instead', 'brasth-document-sync-for-google-docs')}
+                          </AdminButton>
+                        </div>
                       ) : undefined
                     )}
                     className="docsync-wp-table-empty-state"
                     description={hasActiveFilters
                       ? __('Adjust the filters or reset to see all linked sources.', 'brasth-document-sync-for-google-docs')
                       : canCreateSource
-                        ? __('Choose an accessible Google Doc to create the first synced WordPress draft.', 'brasth-document-sync-for-google-docs')
+                        ? __('No Docs linked yet. Link one Doc or watch a client folder.', 'brasth-document-sync-for-google-docs')
                         : __('Complete the connection responsibility above before creating a source.', 'brasth-document-sync-for-google-docs')}
                     title={hasActiveFilters
                       ? __('No sources match these filters.', 'brasth-document-sync-for-google-docs')
-                      : __('No linked Docs yet', 'brasth-document-sync-for-google-docs')}
+                      : __('No Docs linked yet', 'brasth-document-sync-for-google-docs')}
                     variant="sources"
                   />
                 </td>
