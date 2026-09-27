@@ -106,7 +106,7 @@ export const SettingsPanel = ({
   };
 
   const testSetup = () => {
-    setTestChecks(buildSetupChecks(settings, account));
+    setTestChecks(setupChecks);
   };
 
   const nextAction = buildGoogleSetupNextAction({
@@ -121,7 +121,9 @@ export const SettingsPanel = ({
     onCreateSource,
     onSaveCredentials: submit
   });
-  const activeTask = activeGoogleSetupTask(settings, account, hasCredentialChanges);
+  const activeTask = oauthConnectError?.code === 'oauth_invalid_credentials'
+    ? 'credentials'
+    : activeGoogleSetupTask(settings, account, hasCredentialChanges);
   const wizardSteps = buildSetupWizardSteps({
     account,
     activated,
@@ -175,6 +177,7 @@ export const SettingsPanel = ({
         onCopyValue={copyValue}
         onImported={importCredentials}
         onTargetPostTypeChange={onTargetPostTypeChange}
+        oauthConnectError={oauthConnectError}
         onTestSetup={testSetup}
         redirectUri={redirectUri}
         showTargetPicker={showTargetPicker}

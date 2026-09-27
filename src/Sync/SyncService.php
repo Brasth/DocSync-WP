@@ -730,26 +730,30 @@ final class SyncService {
 				);
 			}
 
+			$failed_images = absint( $import['failed_image_count'] ?? 0 );
+
 			$success_updates = array(
-				'last_hash'          => $hash,
 				'last_synced_at'     => current_time( 'mysql', true ),
 				'last_sync_method'   => $import['method'],
 				'sync_owner_user_id' => $sync_user_id,
 				'sync_error'         => '',
 			);
 
-			if ( '' !== $layout_hash ) {
-				$success_updates['last_layout_hash'] = $layout_hash;
+			if ( 0 === $failed_images ) {
+				$success_updates['last_hash'] = $hash;
+
+				if ( '' !== $layout_hash ) {
+					$success_updates['last_layout_hash'] = $layout_hash;
+				}
 			}
 
 			$complete_message = __( 'Sync complete.', 'brasth-document-sync-for-google-docs' );
-			$failed_images    = absint( $import['failed_image_count'] ?? 0 );
 
 			if ( $failed_images > 0 ) {
 				$complete_message = sprintf(
 					/* translators: %d: number of images that failed to import. */
 					_n(
-						'Sync complete, but 1 image could not be imported.',
+						'Sync complete, but %d image could not be imported.',
 						'Sync complete, but %d images could not be imported.',
 						$failed_images,
 						'brasth-document-sync-for-google-docs'
@@ -1078,8 +1082,8 @@ final class SyncService {
 			$failed_images = $this->html_zip_importer->getLastFailedImageCount();
 
 			return array(
-				'html'              => $html,
-				'method'            => self::SYNC_METHOD_HTML_ZIP,
+				'html'               => $html,
+				'method'             => self::SYNC_METHOD_HTML_ZIP,
 				'failed_image_count' => $failed_images,
 			);
 		}

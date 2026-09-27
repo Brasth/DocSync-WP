@@ -1,4 +1,4 @@
-import { createElement, useState } from '@wordpress/element';
+import { createElement, useEffect, useRef, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 import type { GoogleAccount } from '../../api';
@@ -9,6 +9,7 @@ import { GoogleSetupTestResult } from './google-setup-test-result';
 import { OAuthClientJsonImport } from './oauth-client-json-import';
 import type { OAuthClientJsonCredentials } from './oauth-client-json';
 import { googleCloudLinks, type SetupCheck } from './google-setup-utils';
+import type { OAuthConnectErrorView } from './oauth-connect-error';
 import type { GoogleSetupActiveTask, GoogleSetupNextActionConfig } from './google-setup-task-types';
 
 type Props = {
@@ -24,6 +25,7 @@ type Props = {
   availablePostTypes?: AvailablePostType[];
   creatablePostTypes?: string[];
   nextAction: GoogleSetupNextActionConfig;
+  oauthConnectError?: OAuthConnectErrorView | null;
   redirectUri: string;
   showTargetPicker?: boolean;
   targetPostType?: string;
@@ -82,10 +84,29 @@ export const GoogleSetupActiveTaskPanel = ({
   onClientSecretChange,
   onCopyValue,
   onImported,
+  oauthConnectError = null,
   onTargetPostTypeChange,
   onTestSetup
 }: Props): JSX.Element => {
   const [clearOAuthOpen, setClearOAuthOpen] = useState(false);
+  const clientIdRef = useRef<HTMLInputElement | null>(null);
+  const clientSecretRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (activeTask !== 'credentials' || !oauthConnectError?.focusField) {
+      return;
+    }
+
+    const target = oauthConnectError.focusField === 'clientId'
+      ? clientIdRef.current
+      : oauthConnectError.focusField === 'clientSecret'
+        ? clientSecretRef.current
+        : null;
+
+    if (target) {
+      window.setTimeout(() => target.focus(), 0);
+    }
+  }, [activeTask, oauthConnectError?.focusField, oauthConnectError?.code]);
 
   const clearOAuthConfiguration = async () => {
     const cleared = await onClearOAuthConfiguration();
@@ -133,14 +154,16 @@ export const GoogleSetupActiveTaskPanel = ({
           <div className="docsync-wp-settings-grid">
             <label>
               <span>{__('OAuth client ID', 'brasth-document-sync-for-google-docs')}</span>
-              <input className="regular-text" onChange={(event) => onClientIdChange(event.currentTarget.value)} type="text" value={clientId} />
+              <input className="regular-text" id="docsync-wp-oauth-client-id" onChange={(event) => onClientIdChange(event.currentTarget.value)} ref={clientIdRef} type="text" value={clientId} />
             </label>
             <label>
               <span>{__('OAuth client secret', 'brasth-document-sync-for-google-docs')}</span>
               <input
                 className="regular-text"
+                id="docsync-wp-oauth-client-secret"
                 onChange={(event) => onClientSecretChange(event.currentTarget.value)}
                 placeholder={hasClientSecret ? __('Saved. Enter a new secret to replace.', 'brasth-document-sync-for-google-docs') : ''}
+                ref={clientSecretRef}
                 type="password"
                 value={clientSecret}
               />

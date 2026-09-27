@@ -2,6 +2,7 @@ import { createElement } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 
 import type { SyncLogEntry } from '../../api';
+import { AdminButton } from '../../shared/ui/admin-button';
 import { EmptyState } from '../../shared/ui/empty-state';
 import { SkeletonTableRows } from '../../shared/ui/skeleton';
 import { StatusPill } from '../../shared/ui/status-pill';
@@ -17,6 +18,8 @@ type Props = {
   search: string;
   status: string;
   step: string;
+  onRetrySync?: (postId: number) => Promise<void>;
+  retryBusyPostId?: number | null;
 };
 
 type EmptyCopy = {
@@ -152,7 +155,17 @@ const getEmptyCopy = (postId: string, level: string, search: string, status: str
   };
 };
 
-const LogRow = ({ entry, level }: { entry: SyncLogEntry; level: string }): JSX.Element => {
+const LogRow = ({
+  entry,
+  level,
+  onRetrySync,
+  retryBusyPostId
+}: {
+  entry: SyncLogEntry;
+  level: string;
+  onRetrySync?: (postId: number) => Promise<void>;
+  retryBusyPostId?: number | null;
+}): JSX.Element => {
   const contextDetails = eventContext(entry);
   const hasContext = contextDetails.length > 0;
   const hint = syncLogRecoveryHint(entry);
@@ -214,13 +227,15 @@ const LogRow = ({ entry, level }: { entry: SyncLogEntry; level: string }): JSX.E
           <a className="button button-secondary docsync-wp-button docsync-wp-button--small" href={`post.php?post=${entry.postId}&action=edit`}>
             {__('View post', 'brasth-document-sync-for-google-docs')}
           </a>
-          {level === 'error' ? (
-            <a
-              className="button button-secondary docsync-wp-button docsync-wp-button--small"
-              href={`admin.php?page=brasth-document-sync-for-google-docs-sources&post_id=${entry.postId}`}
+          {level === 'error' && onRetrySync ? (
+            <AdminButton
+              disabled={retryBusyPostId === entry.postId}
+              onClick={() => onRetrySync(entry.postId)}
+              size="small"
+              variant="secondary"
             >
               {__('Retry', 'brasth-document-sync-for-google-docs')}
-            </a>
+            </AdminButton>
           ) : null}
         </div>
       </td>
@@ -228,7 +243,7 @@ const LogRow = ({ entry, level }: { entry: SyncLogEntry; level: string }): JSX.E
   );
 };
 
-export const SyncLogEventsTable = ({ busy, entries, hasActiveFilters, hasLoaded, level, postId, search, status, step }: Props): JSX.Element => {
+export const SyncLogEventsTable = ({ busy, entries, hasActiveFilters, hasLoaded, level, onRetrySync, postId, retryBusyPostId, search, status, step }: Props): JSX.Element => {
   const emptyCopy = getEmptyCopy(postId, level, search, status, step, hasActiveFilters);
 
   if (hasLoaded && !busy && entries.length === 0) {
@@ -264,7 +279,7 @@ export const SyncLogEventsTable = ({ busy, entries, hasActiveFilters, hasLoaded,
           {!hasLoaded || (busy && entries.length === 0) ? (
             <SkeletonTableRows columns={['58%', '46%', '66%', '52%', '78%', '64%']} rows={5} />
           ) : entries.map((entry) => (
-            <LogRow entry={entry} key={entry.eventId} level={entry.level} />
+            <LogRow entry={entry} key={entry.eventId} level={entry.level} onRetrySync={onRetrySync} retryBusyPostId={retryBusyPostId} />
           ))}
         </tbody>
       </table>
