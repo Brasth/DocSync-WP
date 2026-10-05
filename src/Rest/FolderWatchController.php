@@ -242,6 +242,7 @@ final class FolderWatchController {
 				'folderId',
 				'driveId',
 				'includeSubfolders',
+				'structure',
 				'confirmRoot',
 				'postType',
 				'postStatus',

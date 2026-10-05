@@ -22,12 +22,18 @@ export const GoogleSetupSyncDefaultsPanel = ({
   const [defaultLayoutPreset, setDefaultLayoutPreset] = useState(settings.defaultLayoutPreset);
   const [elementorSyncEnabled, setElementorSyncEnabled] = useState(settings.elementorSyncEnabled);
   const [telemetryEnabled, setTelemetryEnabled] = useState(settings.telemetryEnabled);
+  const [failureAlerts, setFailureAlerts] = useState(settings.failureAlerts);
+  const [metadataTableEnabled, setMetadataTableEnabled] = useState(settings.metadataTableEnabled);
+  const [publishedApplyPolicy, setPublishedApplyPolicy] = useState(settings.publishedApplyPolicy);
 
   const hasChanges =
     syncInterval !== settings.syncInterval ||
     defaultLayoutPreset !== settings.defaultLayoutPreset ||
     elementorSyncEnabled !== settings.elementorSyncEnabled ||
     telemetryEnabled !== settings.telemetryEnabled ||
+    failureAlerts !== settings.failureAlerts ||
+    metadataTableEnabled !== settings.metadataTableEnabled ||
+    publishedApplyPolicy !== settings.publishedApplyPolicy ||
     !samePostTypes(enabledPostTypes, settings.enabledPostTypes);
   const stepState = hasChanges ? 'needs-action' : 'ready';
 
@@ -37,6 +43,9 @@ export const GoogleSetupSyncDefaultsPanel = ({
     setDefaultLayoutPreset(settings.defaultLayoutPreset);
     setElementorSyncEnabled(settings.elementorSyncEnabled);
     setTelemetryEnabled(settings.telemetryEnabled);
+    setFailureAlerts(settings.failureAlerts);
+    setMetadataTableEnabled(settings.metadataTableEnabled);
+    setPublishedApplyPolicy(settings.publishedApplyPolicy);
   }, [settings]);
 
   const togglePostType = (postType: string) => {
@@ -59,7 +68,10 @@ export const GoogleSetupSyncDefaultsPanel = ({
       syncInterval,
       defaultLayoutPreset,
       elementorSyncEnabled,
-      telemetryEnabled
+      telemetryEnabled,
+      failureAlerts,
+      metadataTableEnabled,
+      publishedApplyPolicy
     });
   };
 
@@ -71,9 +83,15 @@ export const GoogleSetupSyncDefaultsPanel = ({
         defaultLayoutPreset={defaultLayoutPreset}
         elementorSyncEnabled={elementorSyncEnabled}
         enabledPostTypes={enabledPostTypes}
+        failureAlerts={failureAlerts}
         initialOpen={hasChanges}
+        metadataTableEnabled={metadataTableEnabled}
+        onPublishedApplyPolicyChange={setPublishedApplyPolicy}
+        publishedApplyPolicy={publishedApplyPolicy}
+        onMetadataTableChange={setMetadataTableEnabled}
         onDefaultLayoutPresetChange={setDefaultLayoutPreset}
         onElementorSyncChange={setElementorSyncEnabled}
+        onFailureAlertsChange={setFailureAlerts}
         onTelemetryChange={setTelemetryEnabled}
         onSyncIntervalChange={setSyncInterval}
         onTogglePostType={togglePostType}

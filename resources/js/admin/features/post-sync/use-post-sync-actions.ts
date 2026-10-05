@@ -3,6 +3,7 @@ import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 import { detachSource, syncSource, updateSource, type SourceRecord } from '../../api';
+import { AdminApiError } from '../../api/client';
 import type { AdminNoticeState } from '../../shared/ui/admin-notice';
 
 export const usePostSyncActions = (postId: number, initialSource: SourceRecord | null) => {
@@ -10,17 +11,30 @@ export const usePostSyncActions = (postId: number, initialSource: SourceRecord |
   const [notice, setNotice] = useState<AdminNoticeState | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const syncNow = async () => {
+  const syncNow = async (confirmOverwrite = false) => {
     setBusy(true);
     setNotice(null);
 
     try {
-      const result = await syncSource(postId, 'background');
+      const result = await syncSource(postId, 'background', confirmOverwrite);
       const message = result.source?.syncMessage || __('Google Doc sync queued.', 'brasth-document-sync-for-google-docs');
       setSource(result.source ?? source);
       setNotice({ type: 'info', message });
       speak(message);
     } catch (caught) {
+      if (caught instanceof AdminApiError && caught.code === 'docsync_wp_local_edits') {
+        setNotice({
+          actionLabel: __('Replace WordPress edits and sync', 'brasth-document-sync-for-google-docs'),
+          message: caught.message,
+          onAction: () => {
+            void syncNow(true);
+          },
+          type: 'warning'
+        });
+        speak(caught.message, 'assertive');
+        return;
+      }
+
       const message = caught instanceof Error ? caught.message : __('Sync failed.', 'brasth-document-sync-for-google-docs');
       setNotice({ type: 'error', message });
       speak(message, 'assertive');
@@ -111,6 +125,25 @@ export const usePostSyncActions = (postId: number, initialSource: SourceRecord |
     }
   };
 
+  const updateApplyPolicy = async (applyPolicy: 'auto' | 'review' | 'manual' | null) => {
+    setBusy(true);
+    setNotice(null);
+
+    try {
+      const updated = await updateSource(postId, { applyPolicy });
+      setSource(updated);
+      const message = __('Update policy saved.', 'brasth-document-sync-for-google-docs');
+      setNotice({ type: 'success', message });
+      speak(message);
+    } catch (caught) {
+      const message = caught instanceof Error ? caught.message : __('Could not update the update policy.', 'brasth-document-sync-for-google-docs');
+      setNotice({ type: 'error', message });
+      speak(message, 'assertive');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const updateElementorPreset = async (elementorPreset: string) => {
     setBusy(true);
     setNotice(null);
@@ -138,6 +171,7 @@ export const usePostSyncActions = (postId: number, initialSource: SourceRecord |
     setSource,
     source,
     syncNow,
+    updateApplyPolicy,
     updateElementorSync,
     updateElementorPreset,
     updateLayoutPreset,

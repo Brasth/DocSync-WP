@@ -21,6 +21,7 @@ type UpdateSourcePayload = {
   layoutPreset?: string | null;
   elementorPreset?: string | null;
   syncInterval?: string;
+  applyPolicy?: 'auto' | 'review' | 'manual' | null;
 };
 
 export const listSources = (filters: SourceFilters = {}): Promise<SourcesResponse> => {
@@ -56,10 +57,10 @@ export const getSourceContent = (postId: number): Promise<SourceContentResponse>
   return request<SourceContentResponse>(`sources/${postId}/content`);
 };
 
-export const syncSource = (postId: number, syncMode: SyncMode = 'background'): Promise<SyncResult> => {
+export const syncSource = (postId: number, syncMode: SyncMode = 'background', confirmOverwrite = false): Promise<SyncResult> => {
   return request<SyncResult>(`sources/${postId}/sync`, {
     method: 'POST',
-    data: { syncMode }
+    data: confirmOverwrite ? { syncMode, confirmOverwrite } : { syncMode }
   });
 };
 

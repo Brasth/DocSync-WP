@@ -64,6 +64,27 @@ jobs:
       - name: Verify layout fixtures
         run: composer test:layout-fixtures
 
+      - name: Verify output fidelity fixtures
+        run: composer test:output-fidelity-fixtures
+
+      - name: Verify failure digest
+        run: composer test:failure-digest
+
+      - name: Verify ZIP package limits
+        run: composer test:zip-package-limits
+
+      - name: Verify Doc metadata fixtures
+        run: composer test:doc-metadata-fixtures
+
+      - name: Verify synced region merge
+        run: composer test:synced-region-merge
+
+      - name: Verify apply policy
+        run: composer test:apply-policy
+
+      - name: Verify knowledge base helpers
+        run: composer test:knowledge-base-helpers
+
       - name: Verify Elementor fixtures
         run: composer test:elementor-fixtures
 

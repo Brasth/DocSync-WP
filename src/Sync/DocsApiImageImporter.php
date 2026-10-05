@@ -51,9 +51,10 @@ final class DocsApiImageImporter {
 	 * @param string $inline_id      Inline object ID.
 	 * @param string $google_file_id Google Drive file ID.
 	 * @param int    $post_id        Target post ID.
+	 * @param string $name_hint      Alt text used for the file name and attachment alt.
 	 * @return string|WP_Error
 	 */
-	public function import( int $user_id, string $content_uri, string $inline_id, string $google_file_id, int $post_id ): string|WP_Error {
+	public function import( int $user_id, string $content_uri, string $inline_id, string $google_file_id, int $post_id, string $name_hint = '' ): string|WP_Error {
 		$download = $this->docs_client->downloadContentUri( $user_id, $content_uri );
 
 		if ( is_wp_error( $download ) ) {
@@ -68,7 +69,8 @@ final class DocsApiImageImporter {
 				$asset_path,
 				$google_file_id,
 				$post_id,
-				$user_id
+				$user_id,
+				$name_hint
 			);
 		} finally {
 			if ( is_file( $download['file_path'] ) ) {

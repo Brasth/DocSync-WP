@@ -163,6 +163,9 @@ final class SettingsController {
 			'elementorSyncEnabled',
 			'telemetryEnabled',
 			'telemetryPromptDismissed',
+			'failureAlerts',
+			'metadataTableEnabled',
+			'publishedApplyPolicy',
 		);
 
 		$unknown_keys = array_diff( array_keys( $params ), $allowed_keys );
@@ -173,6 +176,16 @@ final class SettingsController {
 				__( 'Brasth Document Sync received unknown settings.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 400 )
 			);
+		}
+
+		foreach ( $params as $key => $value ) {
+			if ( 'enabledPostTypes' !== $key && ! is_scalar( $value ) ) {
+				return new WP_Error(
+					'docsync_wp_invalid_setting_type',
+					__( 'Brasth Document Sync received a setting with an unsupported value type.', 'brasth-document-sync-for-google-docs' ),
+					array( 'status' => 400 )
+				);
+			}
 		}
 
 		$mapped = array();
@@ -225,6 +238,18 @@ final class SettingsController {
 			$mapped['telemetry_prompt_dismissed'] = $params['telemetryPromptDismissed'];
 		}
 
+		if ( array_key_exists( 'metadataTableEnabled', $params ) ) {
+			$mapped['metadata_table_enabled'] = $params['metadataTableEnabled'];
+		}
+
+		if ( array_key_exists( 'publishedApplyPolicy', $params ) ) {
+			$mapped['published_apply_policy'] = $params['publishedApplyPolicy'];
+		}
+
+		if ( array_key_exists( 'failureAlerts', $params ) ) {
+			$mapped['failure_alerts'] = $params['failureAlerts'];
+		}
+
 		return $mapped;
 	}
 
@@ -248,6 +273,9 @@ final class SettingsController {
 			'elementorSyncEnabled'            => $settings['elementor_sync_enabled'],
 			'telemetryEnabled'                => $settings['telemetry_enabled'],
 			'telemetryPromptDismissed'        => $settings['telemetry_prompt_dismissed'],
+			'failureAlerts'                   => $settings['failure_alerts'],
+			'metadataTableEnabled'            => $settings['metadata_table_enabled'],
+			'publishedApplyPolicy'            => $settings['published_apply_policy'],
 			'hasClientId'                     => $settings['has_client_id'],
 			'hasClientSecret'                 => $settings['has_client_secret'],
 			'hasRequiredSettings'             => $settings['has_required_settings'],

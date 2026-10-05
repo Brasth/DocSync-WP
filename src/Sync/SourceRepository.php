@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace DocSyncWP\Sync;
 
+use DocSyncWP\Sync\Region\SyncedRegionStore;
 use DocSyncWP\Settings\SettingsRepository;
 use DocSyncWP\Sync\Elementor\Preset\ElementorPresetRegistry;
 use DocSyncWP\Sync\Layout\LayoutPresetRegistry;
@@ -49,6 +50,8 @@ final class SourceRepository {
 	public const META_LAYOUT_PRESET    = '_docsync_wp_layout_preset';
 	public const META_LAYOUT_HASH      = '_docsync_wp_last_layout_fingerprint';
 	public const META_FOLDER_WATCH_ID  = '_docsync_wp_folder_watch_id';
+	public const META_APPLY_POLICY     = '_docsync_wp_apply_policy';
+	public const META_PENDING_VERSION  = '_docsync_wp_pending_remote_version';
 
 	private const EXPORT_FORMAT_HTML_ZIP = 'html_zip';
 	private const STATUS_SYNCING         = 'syncing';
@@ -130,31 +133,33 @@ final class SourceRepository {
 		}
 
 		return array(
-			'google_file_id'       => $file_id,
-			'google_doc_url'       => $this->getStringMeta( $post_id, self::META_DOC_URL ),
-			'google_title'         => $this->getStringMeta( $post_id, self::META_TITLE ),
-			'google_modified_time' => $this->getStringMeta( $post_id, self::META_MODIFIED_TIME ),
-			'google_version'       => $this->getStringMeta( $post_id, self::META_VERSION ),
-			'last_hash'            => $this->getStringMeta( $post_id, self::META_LAST_HASH ),
-			'last_synced_at'       => $this->getStringMeta( $post_id, self::META_LAST_SYNCED ),
-			'next_sync_at'         => $this->getStringMeta( $post_id, self::META_NEXT_SYNC ),
-			'sync_interval'        => $this->getStringMeta( $post_id, self::META_SYNC_INTERVAL ),
-			'last_sync_method'     => $this->getStringMeta( $post_id, self::META_LAST_METHOD ),
-			'layout_preset'        => $this->getLayoutPreset( $post_id ),
-			'last_layout_hash'     => $this->getStringMeta( $post_id, self::META_LAYOUT_HASH ),
-			'sync_owner_user_id'   => absint( get_post_meta( $post_id, self::META_OWNER_USER_ID, true ) ),
-			'export_format'        => $this->getStringMeta( $post_id, self::META_EXPORT_FORMAT ),
-			'elementor_sync'       => $this->getElementorSync( $post_id ),
-			'elementor_preset'     => $this->getElementorPreset( $post_id ),
-			'sync_status'          => $sync_status,
-			'sync_error'           => $this->sanitizeErrorMessage( $this->getStringMeta( $post_id, self::META_SYNC_ERROR ) ),
-			'sync_progress'        => $this->getSyncProgress( $post_id, $sync_status ),
-			'sync_step'            => $sync_step,
-			'sync_message'         => $this->getSyncMessage( $post_id, $sync_step ),
-			'sync_started_at'      => $this->getStringMeta( $post_id, self::META_SYNC_STARTED ),
-			'sync_updated_at'      => $this->getStringMeta( $post_id, self::META_SYNC_UPDATED ),
-			'sync_error_code'      => $this->getStringMeta( $post_id, self::META_SYNC_ERR_CODE ),
-			'folder_watch_id'      => $this->getStringMeta( $post_id, self::META_FOLDER_WATCH_ID ),
+			'google_file_id'         => $file_id,
+			'google_doc_url'         => $this->getStringMeta( $post_id, self::META_DOC_URL ),
+			'google_title'           => $this->getStringMeta( $post_id, self::META_TITLE ),
+			'google_modified_time'   => $this->getStringMeta( $post_id, self::META_MODIFIED_TIME ),
+			'google_version'         => $this->getStringMeta( $post_id, self::META_VERSION ),
+			'last_hash'              => $this->getStringMeta( $post_id, self::META_LAST_HASH ),
+			'last_synced_at'         => $this->getStringMeta( $post_id, self::META_LAST_SYNCED ),
+			'next_sync_at'           => $this->getStringMeta( $post_id, self::META_NEXT_SYNC ),
+			'sync_interval'          => $this->getStringMeta( $post_id, self::META_SYNC_INTERVAL ),
+			'last_sync_method'       => $this->getStringMeta( $post_id, self::META_LAST_METHOD ),
+			'layout_preset'          => $this->getLayoutPreset( $post_id ),
+			'last_layout_hash'       => $this->getStringMeta( $post_id, self::META_LAYOUT_HASH ),
+			'sync_owner_user_id'     => absint( get_post_meta( $post_id, self::META_OWNER_USER_ID, true ) ),
+			'export_format'          => $this->getStringMeta( $post_id, self::META_EXPORT_FORMAT ),
+			'elementor_sync'         => $this->getElementorSync( $post_id ),
+			'elementor_preset'       => $this->getElementorPreset( $post_id ),
+			'sync_status'            => $sync_status,
+			'sync_error'             => $this->sanitizeErrorMessage( $this->getStringMeta( $post_id, self::META_SYNC_ERROR ) ),
+			'sync_progress'          => $this->getSyncProgress( $post_id, $sync_status ),
+			'sync_step'              => $sync_step,
+			'sync_message'           => $this->getSyncMessage( $post_id, $sync_step ),
+			'sync_started_at'        => $this->getStringMeta( $post_id, self::META_SYNC_STARTED ),
+			'sync_updated_at'        => $this->getStringMeta( $post_id, self::META_SYNC_UPDATED ),
+			'sync_error_code'        => $this->getStringMeta( $post_id, self::META_SYNC_ERR_CODE ),
+			'folder_watch_id'        => $this->getStringMeta( $post_id, self::META_FOLDER_WATCH_ID ),
+			'apply_policy'           => sanitize_key( $this->getStringMeta( $post_id, self::META_APPLY_POLICY ) ),
+			'pending_remote_version' => $this->getStringMeta( $post_id, self::META_PENDING_VERSION ),
 		);
 	}
 
@@ -194,15 +199,28 @@ final class SourceRepository {
 			);
 		}
 
+		// An absent key must never wipe stored data: this method is also called with partial arrays
+		// (source settings edits, hold/queue updates) that carry only the fields being changed.
+		// Callers that point a post at a different Google Doc must therefore pass the new google_*
+		// metadata explicitly; both link paths already do.
+		$current = $this->getSource( $post_id );
+		$field   = static function ( string $key, mixed $fallback = '' ) use ( $source, $current ): mixed {
+			if ( array_key_exists( $key, $source ) ) {
+				return $source[ $key ];
+			}
+
+			return is_array( $current ) && array_key_exists( $key, $current ) ? $current[ $key ] : $fallback;
+		};
+
 		update_post_meta( $post_id, self::META_FILE_ID, $file_id );
-		update_post_meta( $post_id, self::META_DOC_URL, isset( $source['google_doc_url'] ) ? esc_url_raw( (string) $source['google_doc_url'] ) : '' );
-		update_post_meta( $post_id, self::META_TITLE, isset( $source['google_title'] ) ? sanitize_text_field( (string) $source['google_title'] ) : '' );
-		update_post_meta( $post_id, self::META_MODIFIED_TIME, isset( $source['google_modified_time'] ) ? sanitize_text_field( (string) $source['google_modified_time'] ) : '' );
-		update_post_meta( $post_id, self::META_VERSION, isset( $source['google_version'] ) ? sanitize_text_field( (string) $source['google_version'] ) : '' );
-		update_post_meta( $post_id, self::META_LAST_HASH, isset( $source['last_hash'] ) ? sanitize_text_field( (string) $source['last_hash'] ) : '' );
-		update_post_meta( $post_id, self::META_LAST_SYNCED, isset( $source['last_synced_at'] ) ? sanitize_text_field( (string) $source['last_synced_at'] ) : '' );
-		update_post_meta( $post_id, self::META_NEXT_SYNC, isset( $source['next_sync_at'] ) ? sanitize_text_field( (string) $source['next_sync_at'] ) : '' );
-		update_post_meta( $post_id, self::META_LAST_METHOD, $this->sanitizeLastSyncMethod( $source['last_sync_method'] ?? '' ) );
+		update_post_meta( $post_id, self::META_DOC_URL, esc_url_raw( (string) $field( 'google_doc_url' ) ) );
+		update_post_meta( $post_id, self::META_TITLE, sanitize_text_field( (string) $field( 'google_title' ) ) );
+		update_post_meta( $post_id, self::META_MODIFIED_TIME, sanitize_text_field( (string) $field( 'google_modified_time' ) ) );
+		update_post_meta( $post_id, self::META_VERSION, sanitize_text_field( (string) $field( 'google_version' ) ) );
+		update_post_meta( $post_id, self::META_LAST_HASH, sanitize_text_field( (string) $field( 'last_hash' ) ) );
+		update_post_meta( $post_id, self::META_LAST_SYNCED, sanitize_text_field( (string) $field( 'last_synced_at' ) ) );
+		update_post_meta( $post_id, self::META_NEXT_SYNC, sanitize_text_field( (string) $field( 'next_sync_at' ) ) );
+		update_post_meta( $post_id, self::META_LAST_METHOD, $this->sanitizeLastSyncMethod( $field( 'last_sync_method' ) ) );
 
 		if ( array_key_exists( 'sync_interval', $source ) ) {
 			$previous      = $this->getStringMeta( $post_id, self::META_SYNC_INTERVAL );
@@ -228,10 +246,10 @@ final class SourceRepository {
 				}
 			}
 		}
-		update_post_meta( $post_id, self::META_LAYOUT_PRESET, $this->sanitizeLayoutPreset( $source['layout_preset'] ?? '' ) );
-		update_post_meta( $post_id, self::META_LAYOUT_HASH, isset( $source['last_layout_hash'] ) ? sanitize_text_field( (string) $source['last_layout_hash'] ) : '' );
-		update_post_meta( $post_id, self::META_OWNER_USER_ID, isset( $source['sync_owner_user_id'] ) ? absint( $source['sync_owner_user_id'] ) : 0 );
-		update_post_meta( $post_id, self::META_EXPORT_FORMAT, $this->sanitizeExportFormat( $source['export_format'] ?? self::EXPORT_FORMAT_HTML_ZIP ) );
+		update_post_meta( $post_id, self::META_LAYOUT_PRESET, $this->sanitizeLayoutPreset( $field( 'layout_preset' ) ) );
+		update_post_meta( $post_id, self::META_LAYOUT_HASH, sanitize_text_field( (string) $field( 'last_layout_hash' ) ) );
+		update_post_meta( $post_id, self::META_OWNER_USER_ID, absint( $field( 'sync_owner_user_id' ) ) );
+		update_post_meta( $post_id, self::META_EXPORT_FORMAT, $this->sanitizeExportFormat( $field( 'export_format', self::EXPORT_FORMAT_HTML_ZIP ) ) );
 
 		if ( array_key_exists( 'elementor_sync', $source ) ) {
 			update_post_meta( $post_id, self::META_ELEMENTOR_SYNC, $this->sanitizeElementorSync( $source['elementor_sync'] ) );
@@ -247,14 +265,34 @@ final class SourceRepository {
 			}
 		}
 
-		update_post_meta( $post_id, self::META_SYNC_STATUS, isset( $source['sync_status'] ) ? sanitize_key( (string) $source['sync_status'] ) : '' );
-		update_post_meta( $post_id, self::META_SYNC_ERROR, isset( $source['sync_error'] ) ? $this->sanitizeErrorMessage( $source['sync_error'] ) : '' );
-		update_post_meta( $post_id, self::META_SYNC_PROGRESS, $this->sanitizeProgress( $source['sync_progress'] ?? 0 ) );
-		update_post_meta( $post_id, self::META_SYNC_STEP, isset( $source['sync_step'] ) ? sanitize_key( (string) $source['sync_step'] ) : 'linked' );
-		update_post_meta( $post_id, self::META_SYNC_MESSAGE, $this->sanitizeProgressMessage( $source['sync_message'] ?? __( 'Linked and ready to sync.', 'brasth-document-sync-for-google-docs' ) ) );
-		update_post_meta( $post_id, self::META_SYNC_STARTED, isset( $source['sync_started_at'] ) ? sanitize_text_field( (string) $source['sync_started_at'] ) : '' );
-		update_post_meta( $post_id, self::META_SYNC_UPDATED, isset( $source['sync_updated_at'] ) ? sanitize_text_field( (string) $source['sync_updated_at'] ) : '' );
-		update_post_meta( $post_id, self::META_SYNC_ERR_CODE, isset( $source['sync_error_code'] ) ? sanitize_key( (string) $source['sync_error_code'] ) : '' );
+		update_post_meta( $post_id, self::META_SYNC_STATUS, sanitize_key( (string) $field( 'sync_status' ) ) );
+		update_post_meta( $post_id, self::META_SYNC_ERROR, $this->sanitizeErrorMessage( $field( 'sync_error' ) ) );
+		update_post_meta( $post_id, self::META_SYNC_PROGRESS, $this->sanitizeProgress( $field( 'sync_progress', 0 ) ) );
+		update_post_meta( $post_id, self::META_SYNC_STEP, sanitize_key( (string) $field( 'sync_step', 'linked' ) ) );
+		update_post_meta( $post_id, self::META_SYNC_MESSAGE, $this->sanitizeProgressMessage( $field( 'sync_message', __( 'Linked and ready to sync.', 'brasth-document-sync-for-google-docs' ) ) ) );
+		update_post_meta( $post_id, self::META_SYNC_STARTED, sanitize_text_field( (string) $field( 'sync_started_at' ) ) );
+		update_post_meta( $post_id, self::META_SYNC_UPDATED, sanitize_text_field( (string) $field( 'sync_updated_at' ) ) );
+		update_post_meta( $post_id, self::META_SYNC_ERR_CODE, sanitize_key( (string) $field( 'sync_error_code' ) ) );
+
+		if ( array_key_exists( 'apply_policy', $source ) ) {
+			$apply_policy = sanitize_key( (string) $source['apply_policy'] );
+
+			if ( in_array( $apply_policy, ApplyPolicyResolver::POLICIES, true ) ) {
+				update_post_meta( $post_id, self::META_APPLY_POLICY, $apply_policy );
+			} else {
+				delete_post_meta( $post_id, self::META_APPLY_POLICY );
+			}
+		}
+
+		if ( array_key_exists( 'pending_remote_version', $source ) ) {
+			$pending_version = sanitize_text_field( (string) $source['pending_remote_version'] );
+
+			if ( '' === $pending_version ) {
+				delete_post_meta( $post_id, self::META_PENDING_VERSION );
+			} else {
+				update_post_meta( $post_id, self::META_PENDING_VERSION, $pending_version );
+			}
+		}
 
 		if ( array_key_exists( 'folder_watch_id', $source ) ) {
 			$folder_watch_id = sanitize_key( (string) $source['folder_watch_id'] );
@@ -533,7 +571,31 @@ final class SourceRepository {
 			),
 		);
 
-		if ( '' !== $status ) {
+		if ( 'attention' === $status || 'healthy' === $status ) {
+			// Keep in step with getAccessibleSourceSummary() and applySourceHealthOrder():
+			// healthy is synced/skipped, attention is any non-syncing remainder.
+			if ( 'healthy' === $status ) {
+				$meta_query['sync_status'] = array(
+					'key'     => self::META_SYNC_STATUS,
+					'value'   => array( 'synced', 'skipped' ),
+					'compare' => 'IN',
+				);
+			} else {
+				// Everything that is neither syncing nor healthy: error, linked, update available, or no status yet.
+				$meta_query['sync_status'] = array(
+					'relation' => 'OR',
+					array(
+						'key'     => self::META_SYNC_STATUS,
+						'value'   => array( 'syncing', 'synced', 'skipped' ),
+						'compare' => 'NOT IN',
+					),
+					array(
+						'key'     => self::META_SYNC_STATUS,
+						'compare' => 'NOT EXISTS',
+					),
+				);
+			}
+		} elseif ( '' !== $status ) {
 			$meta_query['sync_status'] = array(
 				'key'     => self::META_SYNC_STATUS,
 				'value'   => $status,
@@ -636,6 +698,8 @@ final class SourceRepository {
 
 		global $wpdb;
 
+		// Health groups must match getAccessibleSourceSummary() and the Sources list filters:
+		// 1 = syncing, 2 = healthy (synced/skipped), 0 = everything else (needs attention).
 		$clauses['orderby'] = (string) $wpdb->prepare(
 			"CASE
 				WHEN EXISTS (
@@ -649,11 +713,6 @@ final class SourceRepository {
 					WHERE docsync_healthy_status.post_id = {$wpdb->posts}.ID
 						AND docsync_healthy_status.meta_key = %s
 						AND docsync_healthy_status.meta_value IN ( %s, %s )
-				) AND EXISTS (
-					SELECT 1 FROM {$wpdb->postmeta} AS docsync_last_synced
-					WHERE docsync_last_synced.post_id = {$wpdb->posts}.ID
-						AND docsync_last_synced.meta_key = %s
-						AND docsync_last_synced.meta_value <> ''
 				) THEN 2
 				ELSE 0
 			END ASC,
@@ -663,8 +722,7 @@ final class SourceRepository {
 			self::STATUS_SYNCING,
 			self::META_SYNC_STATUS,
 			'synced',
-			'skipped',
-			self::META_LAST_SYNCED
+			'skipped'
 		);
 
 		return $clauses;
@@ -983,6 +1041,7 @@ final class SourceRepository {
 				? $this->schedule->resolveInterval( $source )
 				: (string) ( $source['sync_interval'] ?? '' ),
 			'nextSyncAt'            => (string) ( $source['next_sync_at'] ?? '' ),
+			'applyPolicy'           => '' !== $source['apply_policy'] ? $source['apply_policy'] : null,
 		);
 	}
 
@@ -1233,9 +1292,12 @@ final class SourceRepository {
 						break 3;
 					}
 
+					// Sync status alone defines health so this count matches the Sources list filters
+					// and applySourceHealthOrder(): healthy is synced/skipped, attention is any
+					// non-syncing remainder. A synced source with a missing timestamp is still synced.
 					$status      = sanitize_key( $this->getStringMeta( $post_id, self::META_SYNC_STATUS ) );
 					$last_synced = $this->getStringMeta( $post_id, self::META_LAST_SYNCED );
-					$is_healthy  = in_array( $status, array( 'synced', 'skipped' ), true ) && '' !== $last_synced;
+					$is_healthy  = in_array( $status, array( 'synced', 'skipped' ), true );
 
 					++$summary['total'];
 
@@ -1243,7 +1305,11 @@ final class SourceRepository {
 						++$summary['syncing'];
 					} elseif ( $is_healthy ) {
 						++$summary['healthy'];
-						$summary['activated'] = true;
+
+						// Activation still requires a recorded successful sync, as documented in README.
+						if ( '' !== $last_synced ) {
+							$summary['activated'] = true;
+						}
 					} else {
 						++$summary['attention'];
 					}
@@ -1914,6 +1980,9 @@ final class SourceRepository {
 			self::META_SYNC_UPDATED,
 			self::META_SYNC_ERR_CODE,
 			self::META_SYNC_EVENTS,
+			self::META_APPLY_POLICY,
+			self::META_PENDING_VERSION,
+			SyncedRegionStore::META_BASELINE,
 		);
 	}
 }

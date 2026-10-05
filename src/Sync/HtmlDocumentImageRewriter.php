@@ -87,7 +87,7 @@ final class HtmlDocumentImageRewriter {
 			}
 
 			if ( ! isset( $image_urls[ $asset['asset_path'] ] ) ) {
-				$url = $this->media_assets->importImage( $asset['file_path'], $asset['asset_path'], $google_file_id, $post_id, $user_id );
+				$url = $this->media_assets->importImage( $asset['file_path'], $asset['asset_path'], $google_file_id, $post_id, $user_id, $image->getAttribute( 'alt' ) );
 
 				if ( is_wp_error( $url ) ) {
 					++$this->failed_image_count;

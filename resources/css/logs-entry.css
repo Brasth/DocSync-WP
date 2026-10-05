@@ -2,5 +2,6 @@
 @import "./shared/primitives.css";
 @import "./shared/empty-state.css";
 @import "./components/admin-shell.css";
+@import "./components/workspace-nav.css";
 @import "./components/sync-logs.css";
 @import "./shared/responsive.css";

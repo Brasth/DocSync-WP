@@ -2,6 +2,8 @@
 @import "./shared/primitives.css";
 @import "./shared/empty-state.css";
 @import "./components/admin-shell.css";
+@import "./components/workspace-nav.css";
 @import "./components/sources-table.css";
+@import "./components/activity-drawer.css";
 @import "./components/folder-watches.css";
 @import "./shared/responsive.css";

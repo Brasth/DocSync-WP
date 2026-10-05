@@ -7,6 +7,7 @@ export type CreateFolderWatchPayload = {
   folderId: string;
   driveId?: string;
   includeSubfolders?: boolean;
+  structure?: 'flat' | 'hierarchy';
   confirmRoot?: boolean;
   postType: string;
   postStatus?: 'draft' | 'publish';

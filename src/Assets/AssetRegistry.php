@@ -431,6 +431,7 @@ final class AssetRegistry {
 			$config['hasClientSecret']      = (bool) $settings['has_client_secret'];
 			$config['hasRequiredSettings']  = (bool) $settings['has_required_settings'];
 			$config['createSyncedDraftUrl'] = esc_url_raw( admin_url( 'edit.php' ) );
+			$config['canManageSettings']    = true;
 		}
 
 		return $config;

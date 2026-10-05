@@ -326,6 +326,7 @@ export const SyncLogsView = (): JSX.Element => {
 
   return (
     <AdminShell
+      screen="activity"
       notice={notice}
       status={{
         label: autoRefresh ? __('auto-refresh on', 'brasth-document-sync-for-google-docs') : __('visible events', 'brasth-document-sync-for-google-docs'),

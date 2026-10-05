@@ -45,6 +45,22 @@ if ( class_exists( DocSyncWP\Sync\FolderWatchService::class ) ) {
 	wp_clear_scheduled_hook( 'docsync_wp_scan_folder' );
 }
 
+delete_option( 'docsync_wp_pending_failures' );
+
+// ZIP import rate-limit rows: one option per user, hour bucket, and slot
+// (see ZipImportController::consumeRateLimit()). WordPress has no API for deleting options by
+// prefix, so the plugin-owned rows are removed directly.
+global $wpdb;
+
+$wpdb->query(
+	$wpdb->prepare(
+		"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s",
+		$wpdb->esc_like( 'docsync_wp_zip_import_' ) . '%'
+	)
+);
+
+wp_clear_scheduled_hook( 'docsync_wp_failure_digest' );
+
 if ( class_exists( DocSyncWP\Telemetry\TelemetryCron::class ) ) {
 	DocSyncWP\Telemetry\TelemetryCron::unschedule();
 } else {
@@ -84,6 +100,9 @@ foreach (
 		'_docsync_wp_sync_error_code',
 		'_docsync_wp_sync_events',
 		'_docsync_wp_folder_watch_id',
+		'_docsync_wp_region_baseline',
+		'_docsync_wp_apply_policy',
+		'_docsync_wp_pending_remote_version',
 	) as $meta_key
 ) {
 	delete_metadata( 'post', 0, $meta_key, '', true );

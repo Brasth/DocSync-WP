@@ -574,6 +574,7 @@ final class FolderWatchService {
 			'folderName'        => (string) ( $watch['folderName'] ?? '' ),
 			'webViewLink'       => (string) ( $watch['webViewLink'] ?? '' ),
 			'includeSubfolders' => ! empty( $watch['includeSubfolders'] ),
+			'structure'         => 'hierarchy' === ( $watch['structure'] ?? 'flat' ) ? 'hierarchy' : 'flat',
 			'postType'          => (string) ( $watch['postType'] ?? 'post' ),
 			'postStatus'        => (string) ( $watch['postStatus'] ?? 'draft' ),
 			'syncInterval'      => (string) ( $watch['syncInterval'] ?? 'site' ),
@@ -760,6 +761,12 @@ final class FolderWatchService {
 			'folderName'        => (string) ( $folder['name'] ?? '' ),
 			'webViewLink'       => (string) ( $folder['webViewLink'] ?? '' ),
 			'includeSubfolders' => ! empty( $input['includeSubfolders'] ),
+			'structure'         => FolderHierarchyMapper::resolveStructure(
+				sanitize_key( (string) ( $input['structure'] ?? 'flat' ) ),
+				! empty( $input['includeSubfolders'] ),
+				is_post_type_hierarchical( sanitize_key( (string) ( $input['postType'] ?? 'post' ) ) )
+			),
+			'folderPaths'       => $this->collectFolderPaths( $listing['documents'], $pending ),
 			'confirmRoot'       => ! empty( $input['confirmRoot'] ),
 			'postType'          => sanitize_key( (string) ( $input['postType'] ?? 'post' ) ),
 			'postStatus'        => $this->sanitizePostStatus( $input['postStatus'] ?? 'draft' ),
@@ -991,6 +998,27 @@ final class FolderWatchService {
 		}
 
 		return array_values( array_unique( $pending ) );
+	}
+
+	/**
+	 * Map pending file IDs to their Drive folder paths (used to place posts under container pages).
+	 *
+	 * @param array<int,array<string,mixed>> $documents Inventory documents.
+	 * @param array<int,string>              $pending   Pending file IDs.
+	 * @return array<string,string>
+	 */
+	private function collectFolderPaths( array $documents, array $pending ): array {
+		$paths = array();
+
+		foreach ( $documents as $document ) {
+			$file_id = isset( $document['fileId'] ) ? sanitize_text_field( (string) $document['fileId'] ) : '';
+
+			if ( '' !== $file_id && in_array( $file_id, $pending, true ) ) {
+				$paths[ $file_id ] = sanitize_text_field( (string) ( $document['folderPath'] ?? '' ) );
+			}
+		}
+
+		return $paths;
 	}
 
 	/**

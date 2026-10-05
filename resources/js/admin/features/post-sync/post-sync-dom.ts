@@ -167,7 +167,9 @@ const sourceStatusLabel = (status: string, step = ''): string => {
     case 'synced':
       return __('Synced', 'brasth-document-sync-for-google-docs');
     case 'skipped':
-      return __('Skipped', 'brasth-document-sync-for-google-docs');
+      return __('Up to date', 'brasth-document-sync-for-google-docs');
+    case 'update_available':
+      return __('Update available', 'brasth-document-sync-for-google-docs');
     case 'error':
       return __('Error', 'brasth-document-sync-for-google-docs');
     case 'linked':

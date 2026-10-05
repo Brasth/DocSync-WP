@@ -74,6 +74,13 @@ final class RestServiceProvider {
 	private FolderWatchController $folder_watch_controller;
 
 	/**
+	 * ZIP import controller.
+	 *
+	 * @var ZipImportController
+	 */
+	private ZipImportController $zip_import_controller;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param SettingsController    $settings_controller  Settings controller.
@@ -84,6 +91,7 @@ final class RestServiceProvider {
 	 * @param SyncLogController     $sync_log_controller  Sync log controller.
 	 * @param FeedbackController    $feedback_controller     Feedback controller.
 	 * @param FolderWatchController $folder_watch_controller Folder watch controller.
+	 * @param ZipImportController   $zip_import_controller   ZIP import controller.
 	 */
 	public function __construct(
 		SettingsController $settings_controller,
@@ -93,7 +101,8 @@ final class RestServiceProvider {
 		SourceController $source_controller,
 		SyncLogController $sync_log_controller,
 		FeedbackController $feedback_controller,
-		FolderWatchController $folder_watch_controller
+		FolderWatchController $folder_watch_controller,
+		ZipImportController $zip_import_controller
 	) {
 		$this->settings_controller     = $settings_controller;
 		$this->workspace_controller    = $workspace_controller;
@@ -103,6 +112,7 @@ final class RestServiceProvider {
 		$this->sync_log_controller     = $sync_log_controller;
 		$this->feedback_controller     = $feedback_controller;
 		$this->folder_watch_controller = $folder_watch_controller;
+		$this->zip_import_controller   = $zip_import_controller;
 	}
 
 	/**
@@ -124,5 +134,6 @@ final class RestServiceProvider {
 		$this->sync_log_controller->registerRoutes( self::NAMESPACE );
 		$this->feedback_controller->registerRoutes( self::NAMESPACE );
 		$this->folder_watch_controller->registerRoutes( self::NAMESPACE );
+		$this->zip_import_controller->registerRoutes( self::NAMESPACE );
 	}
 }

@@ -2,96 +2,221 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Brasth Document Sync for Google Docs 1.1.0\n"
-"POT-Creation-Date: 2026-06-30T15:41:46+0000\n"
+"Project-Id-Version: Brasth Document Sync for Google Docs 1.1.5\n"
+"POT-Creation-Date: 2026-10-05T01:56:12+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Domain: brasth-document-sync-for-google-docs\n"
 
-#. translators: 1: completed setup check count, 2: total setup check count.
-#: resources/js/admin/features/google-setup/google-setup-progress-rail.tsx:35
-msgid "%1$d of %2$d checks complete"
+#: resources/js/admin/features/doc-source-modal/folder-watch-confirm-panel.tsx:157
+msgid " This folder has more than 50 Docs. Brasth will automate the first 50."
+msgstr ""
+
+#: resources/js/admin/features/feedback/feedback-dialog.tsx:238
+msgid "(opens in a new tab)"
+msgstr ""
+
+#. translators: %s: site name.
+#: src/Notifications/SyncFailureDigest.php:154
+msgid "[%s] Google Docs sync needs attention"
+msgstr ""
+
+#. translators: 1: imported count, 2: pending count, 3: failed count.
+#: resources/js/admin/features/folder-watches/folder-watch-detail-page.tsx:119 resources/js/admin/features/folder-watches/folder-watch-table.tsx:27
+msgid "%1$d imported · %2$d pending · %3$d failed"
+msgstr ""
+
+#. translators: 1: selected Doc count, 2: inventory cap.
+#: resources/js/admin/features/doc-source-modal/folder-watch-confirm-panel.tsx:151
+msgid "%1$d of %2$d Docs selected"
+msgstr ""
+
+#. translators: 1: included Doc count, 2: total Doc count, 3: inventory cap.
+#: resources/js/admin/features/folder-watches/folder-watch-inventory-panel.tsx:90
+msgid "%1$d of %2$d Docs selected (up to %3$d)"
+msgstr ""
+
+#. translators: 1: completed step count, 2: total step count.
+#: resources/js/admin/features/google-setup/google-setup-progress-rail.tsx:30
+msgid "%1$d of %2$d steps complete"
+msgstr ""
+
+#. translators: 1: imported count, 2: total count.
+#: resources/js/admin/features/sources/sources-folder-watches.tsx:34
+msgid "%1$d/%2$d imported"
 msgstr ""
 
 #: resources/js/admin/features/post-sync/post-sync-dom.ts:25
 msgid "%1$s (%2$s)"
 msgstr ""
 
+#. translators: 1: field name (categories or tags), 2: comma-separated term names removed from the post.
+#: src/Sync/Metadata/PostMetadataApplier.php:202
+msgid "%1$s (removed: %2$s)"
+msgstr ""
+
+#. translators: 1: current character count, 2: maximum character count
+#: resources/js/admin/features/feedback/feedback-dialog.tsx:50
+msgid "%1$s / %2$s"
+msgstr ""
+
 #. translators: 1: asset group, 2: command to build frontend assets.
-#: src/Assets/AssetRegistry.php:157
+#: src/Assets/AssetRegistry.php:160
 msgid "%1$s assets are not built yet. Run %2$s before using this screen."
 msgstr ""
 
-#: resources/js/admin/shared/ui/sync-progress.tsx:28
+#: resources/js/admin/shared/ui/sync-progress.tsx:36
 msgid "%1$s. Last update: %2$s"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:86
+#: resources/js/admin/shared/format-time.ts:48
 msgid "%d days ago"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:82
+#: resources/js/admin/shared/format-time.ts:44
 msgid "%d hr ago"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:78
+#. translators: %d: number of sources.
+#: src/Notifications/SyncHealthSiteStatus.php:115
+msgid "%d linked source has a sync error, is waiting for an update review, or needs a reconnect."
+msgid_plural "%d linked sources have a sync error, are waiting for an update review, or need a reconnect."
+msgstr[0] ""
+msgstr[1] ""
+
+#: resources/js/admin/shared/format-time.ts:40
 msgid "%d min ago"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/settings-panel.tsx:65
+#. translators: %d: number of posts skipped.
+#: src/Admin/PostListActions.php:200
+msgid "%d post was skipped (not linked, no permission, or has WordPress edits in synced content)."
+msgid_plural "%d posts were skipped (not linked, no permission, or have WordPress edits in synced content)."
+msgstr[0] ""
+msgstr[1] ""
+
+#: resources/js/admin/features/activation/activation-guidance.tsx:61
+msgid "%d source needs attention"
+msgid_plural "%d sources need attention"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %s: comma-separated field names.
+#. translators: %s: field name (categories or tags).
+#: src/Sync/Metadata/PostMetadataApplier.php:185 src/Sync/Metadata/PostMetadataApplier.php:79
+msgid "%s (could not be saved)"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/settings-panel.tsx:88
 msgid "%s copied."
 msgstr ""
 
-#: resources/js/admin/app/use-admin-app.ts:86 resources/js/admin/app/use-setup-app.ts:44 resources/js/admin/app/use-sources-app.ts:61
+#: resources/js/admin/features/folder-watches/folder-watch-detail-page.tsx:63
+msgid "← Back to Drive Folders"
+msgstr ""
+
+#: resources/js/admin/features/activation/activation-result.tsx:25
+msgid "A site administrator must enable Google Docs API in the connected Google Cloud project, then retry."
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:140
+msgid "A two-column table with keys such as Title, Slug, Excerpt, Featured image, Categories, Tags, Author, SEO title, and SEO description sets those fields and is removed from the post content."
+msgstr ""
+
+#: resources/js/admin/features/sources/source-health-summary.tsx:48
+msgid "Accessible"
+msgstr ""
+
+#: resources/js/admin/features/sources/source-health-summary.tsx:44
+msgid "Accessible source health"
+msgstr ""
+
+#: resources/js/admin/app/use-admin-app.ts:87 resources/js/admin/app/use-setup-app.ts:67 resources/js/admin/app/use-sources-app.ts:127 resources/js/admin/features/folder-watches/use-folder-watches.ts:109 resources/js/admin/features/folder-watches/use-folder-watches.ts:78
 msgid "Action failed."
 msgstr ""
 
-#: resources/js/admin/features/sources/sources-table.tsx:100 resources/js/admin/features/sources/sources-table.tsx:212
+#: resources/js/admin/features/folder-watches/folder-watch-table.tsx:73 resources/js/admin/features/post-sync/post-meta-box-app.tsx:148 resources/js/admin/features/sources/sources-table.tsx:119 resources/js/admin/features/sources/sources-table.tsx:289 resources/js/admin/features/sync-logs/sync-log-events-table.tsx:240
 msgid "Actions"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:318
+#: resources/js/admin/features/sources/sources-table.tsx:440 resources/js/admin/shared/ui/workspace-nav.tsx:11 src/Admin/AdminPage.php:134
+msgid "Activity"
+msgstr ""
+
+#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:343
 msgid "Activity console"
+msgstr ""
+
+#: resources/js/admin/features/feedback/feedback-dialog.tsx:128
+msgid "Add a title for the report."
+msgstr ""
+
+#: resources/js/admin/features/drive-browser/drive-browser-table.tsx:100
+msgid "Add Google Doc %s to selection"
 msgstr ""
 
 #: resources/js/admin/features/google-setup/google-setup-cloud-steps.tsx:65
 msgid "Add redirect URI"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/list-entry-app.tsx:170
+#: resources/js/admin/features/feedback/feedback-dialog.tsx:134
+msgid "Add some details so the report can be investigated."
+msgstr ""
+
+#: resources/js/admin/features/post-sync/list-entry-app.tsx:178
 msgid "Add Sync Doc"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:98
+#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:92
 msgid "Adjust filters or clear them to inspect all stored events for this source."
 msgstr ""
 
-#: resources/js/admin/features/sources/sources-table.tsx:233
+#: resources/js/admin/features/sources/sources-table.tsx:318
 msgid "Adjust the filters or reset to see all linked sources."
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:119
+#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:113
 msgid "Adjust the filters to inspect another set of stored events."
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:383
+#: resources/js/admin/features/google-setup/google-setup-task-state.ts:141
+msgid "Administrator responsibility complete: OAuth web client saved."
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-task-state.ts:142
+msgid "Administrator responsibility: save the site OAuth web client."
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:110
+msgid "Administrators only"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:252
+msgid "Advanced"
+msgstr ""
+
+#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:408
 msgid "Advanced filters"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:382
+#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:407
 msgid "Advanced filters active"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-first-sync-step.tsx:30
-msgid "After settings are saved, connect Google from the next action on this page. Then create a synced draft from the Posts list."
+#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:119
+msgid "After you link a Doc, run Sync now or wait for the schedule."
 msgstr ""
 
-#: resources/js/admin/features/sources/sources-table.tsx:184
+#: resources/js/admin/features/folder-watches/folder-watch-inventory-panel.tsx:119
+msgid "All"
+msgstr ""
+
+#: resources/js/admin/features/sources/sources-table.tsx:239
 msgid "All enabled"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:35
+#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:36
 msgid "All events"
 msgstr ""
 
@@ -99,59 +224,105 @@ msgstr ""
 msgid "All levels"
 msgstr ""
 
-#: resources/js/admin/features/sources/sources-table.tsx:56 resources/js/admin/features/sync-logs/sync-log-filter-options.ts:11
+#: resources/js/admin/features/folder-watches/folder-watches-view.tsx:22 resources/js/admin/features/sources/sources-table.tsx:73 resources/js/admin/features/sync-logs/sync-log-filter-options.ts:11
 msgid "All statuses"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-filter-options.ts:20
+#: resources/js/admin/features/sync-logs/sync-log-filter-options.ts:21
 msgid "All steps"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:416
+#: src/Notifications/SyncFailureDigest.php:180
+msgid "and %d more post."
+msgid_plural "and %d more posts."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Sync/SyncService.php:914
+msgid "Applied from Doc: %s."
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:102
+msgid "Applies to scheduled syncs of published, scheduled, and private posts. Drafts always apply automatically. Each post can override this."
+msgstr ""
+
+#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:441
 msgid "Apply advanced filters"
 msgstr ""
 
-#: resources/js/admin/features/sources/sources-table.tsx:199
-msgid "Apply filters"
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:98 resources/js/admin/features/post-sync/post-meta-box-app.tsx:200
+msgid "Apply automatically"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:83
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:111
 msgid "Apply synced content"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:44
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:162 resources/js/admin/features/sources/sources-table.tsx:429
+msgid "Apply update"
+msgstr ""
+
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:72
 msgid "Applying synced Google Doc content."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-task-state.ts:81
+#: resources/js/admin/features/sources/sync-error-recovery.ts:46
+msgid "Ask an administrator"
+msgstr ""
+
+#: resources/js/admin/features/activation/activation-guidance.tsx:46
+msgid "Ask an administrator for permission to create an enabled post type before adding a source."
+msgstr ""
+
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:201
+msgid "Ask me first"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:99
+msgid "Ask me first (update available)"
+msgstr ""
+
+#: resources/js/admin/features/activation/activation-guidance.tsx:56
+msgid "At least one accessible source has completed successfully. Sources is now your daily workspace."
+msgstr ""
+
+#: resources/js/admin/features/google-setup/setup-wizard-steps.ts:68
+msgid "At least one Doc or folder watch completed successfully."
+msgstr ""
+
+#: src/Sync/Metadata/PostMetadataApplier.php:69
+msgid "author (user not found or not permitted)"
+msgstr ""
+
+#: resources/js/admin/features/activation/activation-guidance.tsx:32
+msgid "Authorize Drive read-only access for Docs this WordPress user can read."
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-task-state.ts:86
 msgid "Authorize this WordPress user to browse and sync readable Google Docs."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-task-state.ts:128
-msgid "Authorize this WordPress user."
-msgstr ""
-
-#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:74 resources/js/admin/features/google-setup/google-setup-cloud-steps.tsx:73
+#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:124 resources/js/admin/features/google-setup/google-setup-cloud-steps.tsx:73
 msgid "Authorized redirect URI in the OAuth client"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:355
+#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:380
 msgid "Auto-refresh"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:348
+#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:373
 msgid "Auto-refresh every 10 seconds"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:308
+#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:332
 msgid "auto-refresh on"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-task-state.ts:136
-msgid "Available after Google is connected."
+#: resources/js/admin/features/google-setup/google-setup-task-state.ts:119
+msgid "Best for agencies with a Drive folder of Docs."
 msgstr ""
 
-#: src/Sync/Layout/LayoutPresetRegistry.php:65
+#: src/Sync/Layout/LayoutPresetRegistry.php:66
 msgid "Best for guides and technical docs. Keeps code examples and callout notes easier to read."
 msgstr ""
 
@@ -159,27 +330,39 @@ msgstr ""
 msgid "Best for posts and pages. Keeps headings, media, tables, and lists clean for the block editor."
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-table.tsx:112
+#: resources/js/admin/features/drive-browser/drive-browser-table.tsx:120
 msgid "Blocked"
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:75 resources/js/admin/features/post-sync/list-entry-app.tsx:60 resources/js/admin/features/post-sync/post-list-row-action-sync.ts:42 resources/js/admin/shared/ui/admin-shell.tsx:59 src/Admin/AdminPage.php:53 src/Admin/AdminPage.php:54 src/Admin/PostSyncMetaBox.php:83
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:100 resources/js/admin/features/post-sync/list-entry-app.tsx:66 resources/js/admin/features/post-sync/post-list-row-action-sync.ts:42 resources/js/admin/shared/ui/admin-shell.tsx:65 src/Admin/AdminPage.php:91 src/Admin/AdminPage.php:92 src/Admin/PostSyncMetaBox.php:83
 msgid "Brasth Document Sync"
 msgstr ""
 
-#: brasth-document-sync-for-google-docs.php:163
+#: brasth-document-sync-for-google-docs.php:167
 msgid "Brasth Document Sync activation error"
+msgstr ""
+
+#: src/Admin/AdminPage.php:133
+msgid "Brasth Document Sync Activity"
 msgstr ""
 
 #: src/Google/DriveClient.php:78
 msgid "Brasth Document Sync can only inspect Google Docs documents."
 msgstr ""
 
+#: src/Google/DriveClient.php:131
+msgid "Brasth Document Sync can only open Google Drive folders and Google Docs."
+msgstr ""
+
+#: src/Sync/FolderWatchService.php:234
+msgid "Brasth Document Sync can watch 10 Drive folders on this site."
+msgstr ""
+
 #: src/Google/DocsApiErrorMapper.php:42
 msgid "Brasth Document Sync cannot access this Google Doc through the Docs API fallback. Reconnect Google Drive or choose a document your account can open, then try again."
 msgstr ""
 
-#: src/Google/DriveClient.php:607
+#: src/Google/DriveClient.php:660
 msgid "Brasth Document Sync cannot access this Google Doc. Reconnect Google Drive or choose a document your account can open, then try again."
 msgstr ""
 
@@ -187,7 +370,7 @@ msgstr ""
 msgid "Brasth Document Sync cannot read sensitive values because OpenSSL encryption is unavailable."
 msgstr ""
 
-#: src/Sync/SourceRepository.php:140
+#: src/Sync/SourceRepository.php:179
 msgid "Brasth Document Sync cannot save source metadata for an invalid post."
 msgstr ""
 
@@ -203,7 +386,15 @@ msgstr ""
 msgid "Brasth Document Sync cannot update Elementor data for an invalid post."
 msgstr ""
 
-#: src/Sync/SyncService.php:282
+#: src/Settings/SettingsRepository.php:294
+msgid "Brasth Document Sync could not clear the Google OAuth configuration."
+msgstr ""
+
+#: src/Sync/ZipImportService.php:75
+msgid "Brasth Document Sync could not create a draft for this import."
+msgstr ""
+
+#: src/Sync/SyncService.php:389
 msgid "Brasth Document Sync could not create a draft post for this Google Doc."
 msgstr ""
 
@@ -211,11 +402,11 @@ msgstr ""
 msgid "Brasth Document Sync could not create a temporary file for a Google Docs image."
 msgstr ""
 
-#: src/Sync/HtmlZipPackageExtractor.php:220
+#: src/Sync/HtmlZipPackageExtractor.php:264
 msgid "Brasth Document Sync could not create a temporary import directory."
 msgstr ""
 
-#: src/Auth/GoogleOAuthService.php:460
+#: src/Auth/GoogleOAuthService.php:502
 msgid "Brasth Document Sync could not create secure Google OAuth state."
 msgstr ""
 
@@ -231,36 +422,44 @@ msgstr ""
 msgid "Brasth Document Sync could not encode Elementor data."
 msgstr ""
 
+#: src/Sync/Elementor/Preset/ElementorPresetConversionService.php:470
+msgid "Brasth Document Sync could not encode Elementor preset data."
+msgstr ""
+
 #: src/Security/EncryptionService.php:79
 msgid "Brasth Document Sync could not encrypt the sensitive value."
 msgstr ""
 
-#: src/Sync/HtmlZipPackageExtractor.php:145
+#: src/Sync/HtmlZipPackageExtractor.php:144
 msgid "Brasth Document Sync could not extract the Google Docs HTML export."
 msgstr ""
 
-#: src/Sync/MediaAssetImporter.php:38
+#: src/Sync/MediaAssetImporter.php:39
 msgid "Brasth Document Sync could not find an image from the Google Docs export."
 msgstr ""
 
-#: src/Sync/HtmlDocumentImageRewriter.php:153
+#: src/Sync/HtmlDocumentImageRewriter.php:169
 msgid "Brasth Document Sync could not find an image referenced by the Google Docs export."
 msgstr ""
 
 #. translators: %s: command to install dependencies.
-#: brasth-document-sync-for-google-docs.php:106
+#: brasth-document-sync-for-google-docs.php:108
 msgid "Brasth Document Sync could not find Composer autoloading. Run %s in the plugin directory before using the plugin."
 msgstr ""
 
-#: src/Sync/HtmlZipPackageExtractor.php:204
+#: src/Sync/HtmlZipPackageExtractor.php:248
 msgid "Brasth Document Sync could not find HTML content in the Google Docs export."
 msgstr ""
 
-#: src/Rest/SourceController.php:1141 src/Sync/SourceRepository.php:907
+#: src/Sync/FolderWatchService.php:1037
+msgid "Brasth Document Sync could not find that folder watch."
+msgstr ""
+
+#: src/Rest/SourceController.php:1361 src/Sync/SourceRepository.php:1428
 msgid "Brasth Document Sync could not find that post."
 msgstr ""
 
-#: src/Rest/SourceController.php:580
+#: src/Rest/SourceController.php:666
 msgid "Brasth Document Sync could not find this post."
 msgstr ""
 
@@ -272,15 +471,19 @@ msgstr ""
 msgid "Brasth Document Sync could not generate secure encryption data."
 msgstr ""
 
-#: src/Sync/MediaAssetImporter.php:48
+#: src/Sync/FolderWatchRunner.php:195
+msgid "Brasth Document Sync could not import this Google Doc from the folder watch."
+msgstr ""
+
+#: src/Sync/MediaAssetImporter.php:49
 msgid "Brasth Document Sync could not inspect an exported Google Docs image."
 msgstr ""
 
-#: src/Sync/HtmlZipPackageExtractor.php:127
+#: src/Sync/HtmlZipPackageExtractor.php:126
 msgid "Brasth Document Sync could not open the Google Docs HTML export."
 msgstr ""
 
-#: src/Sync/HtmlDocumentImageRewriter.php:113
+#: src/Sync/HtmlDocumentImageRewriter.php:129
 msgid "Brasth Document Sync could not parse the Google Docs HTML export."
 msgstr ""
 
@@ -296,15 +499,19 @@ msgstr ""
 msgid "Brasth Document Sync could not prepare Google Docs content for the block editor."
 msgstr ""
 
+#: src/Sync/Elementor/Preset/ElementorPresetConversionService.php:197
+msgid "Brasth Document Sync could not prepare Google Docs content for the selected Elementor layout."
+msgstr ""
+
 #: src/Sync/Layout/LayoutConversionService.php:217
 msgid "Brasth Document Sync could not prepare Google Docs content for the selected layout."
 msgstr ""
 
-#: src/Sync/HtmlZipPackageExtractor.php:51
+#: src/Sync/HtmlZipPackageExtractor.php:55
 msgid "Brasth Document Sync could not prepare the Google Docs export for import."
 msgstr ""
 
-#: src/Cron/SyncCron.php:132 src/Cron/SyncCron.php:149
+#: src/Cron/SyncCron.php:208 src/Cron/SyncCron.php:225
 msgid "Brasth Document Sync could not queue this sync request."
 msgstr ""
 
@@ -316,111 +523,159 @@ msgstr ""
 msgid "Brasth Document Sync could not read the encrypted value payload."
 msgstr ""
 
-#: src/Sync/HtmlZipPackageExtractor.php:76
+#: src/Sync/HtmlZipPackageExtractor.php:80
 msgid "Brasth Document Sync could not read the Google Docs HTML export."
 msgstr ""
 
-#: src/Cron/SyncCron.php:205
+#: src/Cron/SyncCron.php:334
 msgid "Brasth Document Sync could not run this background sync because permission changed."
 msgstr ""
 
-#: src/Sync/SyncService.php:1096
+#: src/Cron/SyncCron.php:326
+msgid "Brasth Document Sync could not run this background sync because the site OAuth configuration is incomplete."
+msgstr ""
+
+#: src/Sync/SyncService.php:1516
 msgid "Brasth Document Sync could not save imported large-doc content yet."
+msgstr ""
+
+#: src/Sync/ZipImportService.php:108
+msgid "Brasth Document Sync could not save the imported content."
+msgstr ""
+
+#: src/Sync/FolderWatchService.php:267 src/Sync/FolderWatchService.php:370
+msgid "Brasth Document Sync could not save this folder watch."
 msgstr ""
 
 #: src/Google/DocsClient.php:126
 msgid "Brasth Document Sync could not store a Google Docs image before importing it."
 msgstr ""
 
-#: src/Sync/SyncService.php:670
+#: src/Sync/SyncService.php:862
 msgid "Brasth Document Sync could not update this post with Google Docs content."
 msgstr ""
 
-#: src/Sync/MediaAssetImporter.php:169
+#: src/Sync/MediaAssetImporter.php:205
 msgid "Brasth Document Sync could not upload an exported Google Docs image to the Media Library."
+msgstr ""
+
+#: src/Settings/SettingsRepository.php:268
+msgid "Brasth Document Sync could not verify that the settings were saved."
 msgstr ""
 
 #: src/Rest/DocumentController.php:179
 msgid "Brasth Document Sync document inspection requires a JSON object."
 msgstr ""
 
-#: src/Settings/SettingsRepository.php:504
+#: src/Admin/AdminPage.php:124
+msgid "Brasth Document Sync Drive Folders"
+msgstr ""
+
+#: src/Settings/SettingsRepository.php:626
 msgid "Brasth Document Sync enabled post types must be an array."
 msgstr ""
 
-#: src/Sync/MediaAssetImporter.php:146
+#: src/Rest/FolderWatchController.php:470
+msgid "Brasth Document Sync folder requests require a JSON object."
+msgstr ""
+
+#: src/Sync/MediaAssetImporter.php:182
 msgid "Brasth Document Sync found an exported Google Docs asset that is not a supported image."
 msgstr ""
 
-#: src/Rest/SourceController.php:1149 src/Rest/SourceController.php:1176 src/Rest/SourceController.php:1203 src/Sync/SourceRepository.php:915
+#: src/Rest/SourceController.php:1369 src/Rest/SourceController.php:1396 src/Rest/SourceController.php:1423 src/Sync/SourceRepository.php:1436
 msgid "Brasth Document Sync is not enabled for this post type."
 msgstr ""
 
-#: brasth-document-sync-for-google-docs.php:129
-msgid "Brasth Document Sync lets authorized WordPress users connect their own Google account to import Google Docs content into WordPress. The site owner supplies a Google OAuth client ID and client secret. Brasth Document Sync stores those site credentials, per-user Google access and refresh tokens, connected Google account email addresses, linked Google document metadata, source sync status, diagnostic sync events, and imported attachment metadata in the WordPress database.\n\nWhen a user connects Google, Brasth Document Sync sends OAuth authorization and token refresh requests to Google. During browsing and sync, Brasth Document Sync sends connected-user access tokens, Google Drive file IDs, folder IDs, shared-drive IDs, Drive search text, pagination tokens, and document export or read requests to the Google Drive API and Google Docs API. Google can return account email, OAuth tokens, document titles, document metadata, document export content, document structure, and image content URLs used to import media into WordPress.\n\nImported Google Docs images are stored in the WordPress Media Library. Synced posts, pages, imported media, and linked post metadata remain on the site until a user with sufficient permission changes or deletes them. Uninstall removes plugin settings, encrypted user Google tokens, and scheduled cron events. Linked post metadata is retained by default unless full Brasth Document Sync uninstall cleanup is enabled. Synced posts and imported media are not deleted automatically.\n\nOptional anonymous Brasth telemetry is off by default. When a site administrator enables usage diagnostics, Brasth Document Sync sends one weekly check-in to https://telemetry.brasth.com/v1/check-in with an anonymous site hash generated from a random install ID, plugin slug, plugin version, WordPress version, PHP version, and telemetry consent version. It does not send Google data, site URL, user email, post data, document IDs, document metadata, document content, or imported media. Brasth telemetry stores only those check-in fields, does not store IP addresses, user agents, request URLs, or request headers, and deletes rows that have not checked in for more than 90 days. Privacy Policy: https://docsyncwp.com/privacy-policy.\n\nGoogle provides the OAuth, Drive, and Docs services used by this plugin. Google Privacy Policy: https://policies.google.com/privacy. Google API Services User Data Policy: https://developers.google.com/terms/api-services-user-data-policy. Google APIs Terms of Service: https://developers.google.com/terms."
+#: brasth-document-sync-for-google-docs.php:131
+msgid "Brasth Document Sync lets authorized WordPress users connect their own Google account to import Google Docs content into WordPress. The site owner supplies a Google OAuth client ID and client secret. Brasth Document Sync stores those site credentials, per-user Google access and refresh tokens, connected Google account email addresses, linked Google document metadata, source sync status, diagnostic sync events, and imported attachment metadata in the WordPress database.\n\nWhen a user connects Google, Brasth Document Sync sends OAuth authorization and token refresh requests to Google. During browsing and sync, Brasth Document Sync sends connected-user access tokens, Google Drive file IDs, folder IDs, shared-drive IDs, Drive search text, pagination tokens, and document export or read requests to the Google Drive API and Google Docs API. Google can return account email, OAuth tokens, document titles, document metadata, document export content, document structure, and image content URLs used to import media into WordPress.\n\nImported Google Docs images are stored in the WordPress Media Library. Synced posts, pages, imported media, and linked post metadata remain on the site until a user with sufficient permission changes or deletes them. Uninstall removes plugin settings, encrypted user Google tokens, and scheduled cron events. Linked post metadata is retained by default unless full Brasth Document Sync uninstall cleanup is enabled. Synced posts and imported media are not deleted automatically.\n\nOptional anonymous Brasth telemetry is off by default. When a site administrator enables usage diagnostics, Brasth Document Sync sends one weekly check-in to https://telemetry.brasth.com/v1/check-in with an anonymous site hash generated from a random install ID, plugin slug, plugin version, WordPress version, PHP version, and telemetry consent version. It does not send Google data, site URL, user email, post data, document IDs, document metadata, document content, or imported media. Brasth telemetry stores only those check-in fields, does not store IP addresses, user agents, request URLs, or request headers, and deletes rows that have not checked in for more than 90 days. Privacy Policy: https://docsyncwp.com/privacy-policy.\n\nAuthorized users can also submit optional feedback from the admin area. Feedback title, type, and details are sent through the configured Brasth feedback Worker and published as a public GitHub issue in Brasth/DocSync-WP. Do not include secrets, private URLs, customer data, Google document data, or other sensitive information in a report. The plugin does not send the WordPress site URL or user identity with feedback.\n\nGoogle provides the OAuth, Drive, and Docs services used by this plugin. Google Privacy Policy: https://policies.google.com/privacy. Google API Services User Data Policy: https://developers.google.com/terms/api-services-user-data-policy. Google APIs Terms of Service: https://developers.google.com/terms."
 msgstr ""
 
-#: src/Admin/AdminPage.php:82
-msgid "Brasth Document Sync Logs"
-msgstr ""
-
-#: src/Sync/SyncService.php:1221
+#: src/Sync/SyncService.php:1641
 msgid "Brasth Document Sync only supports HTML ZIP exports."
 msgstr ""
 
-#: src/Rest/SourceController.php:935
+#: src/Rest/SettingsController.php:185
+msgid "Brasth Document Sync received a setting with an unsupported value type."
+msgstr ""
+
+#: src/Rest/SourceController.php:1031
 msgid "Brasth Document Sync received an invalid boolean field."
 msgstr ""
 
-#: src/Settings/SettingsRepository.php:519
+#: src/Settings/SettingsRepository.php:641
 msgid "Brasth Document Sync received an invalid post type."
 msgstr ""
 
-#: src/Settings/SettingsRepository.php:161
+#: src/Rest/FolderWatchController.php:528
+msgid "Brasth Document Sync received an unknown Elementor layout preset."
+msgstr ""
+
+#: src/Rest/FolderWatchController.php:504
+msgid "Brasth Document Sync received an unknown layout preset."
+msgstr ""
+
+#: src/Settings/SettingsRepository.php:196
 msgid "Brasth Document Sync received an unsupported default post status."
 msgstr ""
 
-#: src/Settings/SettingsRepository.php:193
+#: src/Settings/SettingsRepository.php:228
 msgid "Brasth Document Sync received an unsupported default synced layout."
 msgstr ""
 
-#: src/Rest/SourceController.php:894 src/Settings/SettingsRepository.php:169
+#: src/Rest/SourceController.php:1141 src/Rest/SourceController.php:1159 src/Sync/Elementor/Preset/ElementorPresetConversionService.php:149
+msgid "Brasth Document Sync received an unsupported Elementor layout preset."
+msgstr ""
+
+#: src/Rest/SourceController.php:990 src/Settings/SettingsRepository.php:204
 msgid "Brasth Document Sync received an unsupported export format."
 msgstr ""
 
-#: src/Settings/SettingsRepository.php:185
+#: src/Settings/SettingsRepository.php:128
+msgid "Brasth Document Sync received an unsupported failure alert setting."
+msgstr ""
+
+#: src/Settings/SettingsRepository.php:220
 msgid "Brasth Document Sync received an unsupported Google connection mode."
 msgstr ""
 
-#: src/Settings/SettingsRepository.php:153
+#: src/Settings/SettingsRepository.php:188
 msgid "Brasth Document Sync received an unsupported Google scope mode."
 msgstr ""
 
-#: src/Rest/SourceController.php:960 src/Rest/SourceController.php:978 src/Sync/Layout/LayoutConversionService.php:172
+#: src/Rest/SourceController.php:1098 src/Rest/SourceController.php:1116 src/Sync/Layout/LayoutConversionService.php:172
 msgid "Brasth Document Sync received an unsupported layout preset."
 msgstr ""
 
-#: src/Rest/SourceController.php:177
+#: src/Rest/SourceController.php:1056 src/Rest/SourceController.php:1070
+msgid "Brasth Document Sync received an unsupported re-sync schedule."
+msgstr ""
+
+#: src/Rest/SourceController.php:191
 msgid "Brasth Document Sync received an unsupported source status filter."
 msgstr ""
 
-#: src/Rest/SourceController.php:349
+#: src/Rest/SourceController.php:386
 msgid "Brasth Document Sync received an unsupported source target mode."
 msgstr ""
 
-#: src/Rest/SyncLogController.php:132 src/Sync/SourceRepository.php:297
+#: src/Rest/SyncLogController.php:132 src/Sync/SourceRepository.php:415
 msgid "Brasth Document Sync received an unsupported sync log level filter."
 msgstr ""
 
-#: src/Rest/SourceController.php:1009
+#: src/Rest/SourceController.php:1190
 msgid "Brasth Document Sync received an unsupported sync mode."
 msgstr ""
 
-#: src/Settings/SettingsRepository.php:177
+#: src/Settings/SettingsRepository.php:212
 msgid "Brasth Document Sync received an unsupported sync schedule."
 msgstr ""
 
-#: src/Rest/SourceController.php:517
+#: src/Rest/SourceController.php:569 src/Settings/SettingsRepository.php:120
+msgid "Brasth Document Sync received an unsupported update policy."
+msgstr ""
+
+#: src/Rest/SourceController.php:603
 msgid "Brasth Document Sync received no source fields to update."
 msgstr ""
 
@@ -428,27 +683,35 @@ msgstr ""
 msgid "Brasth Document Sync received unknown document inspection fields."
 msgstr ""
 
-#: src/Rest/SettingsController.php:134 src/Settings/SettingsRepository.php:124
+#: src/Rest/FolderWatchController.php:480
+msgid "Brasth Document Sync received unknown folder request fields."
+msgstr ""
+
+#: src/Rest/SettingsController.php:176 src/Settings/SettingsRepository.php:159
 msgid "Brasth Document Sync received unknown settings."
 msgstr ""
 
-#: src/Rest/SourceController.php:769 src/Rest/SourceController.php:804
+#: src/Rest/SourceController.php:865 src/Rest/SourceController.php:900
 msgid "Brasth Document Sync received unknown source request fields."
 msgstr ""
 
-#: src/Rest/SourceController.php:244
+#: src/Rest/SourceController.php:258
 msgid "Brasth Document Sync received unknown source target fields."
 msgstr ""
 
-#: src/Sync/HtmlZipPackageExtractor.php:168
+#: src/Sync/HtmlZipPackageExtractor.php:179
 msgid "Brasth Document Sync rejected a Google Docs export with unsafe file paths."
+msgstr ""
+
+#: src/Sync/HtmlZipPackageExtractor.php:216
+msgid "Brasth Document Sync rejected an HTML export that is too large or has too many files."
 msgstr ""
 
 #: src/Google/DocsClient.php:93
 msgid "Brasth Document Sync rejected an unsafe Google Docs image URL."
 msgstr ""
 
-#: src/Sync/HtmlDocumentImageRewriter.php:161
+#: src/Sync/HtmlDocumentImageRewriter.php:177
 msgid "Brasth Document Sync rejected an unsafe image path from the Google Docs export."
 msgstr ""
 
@@ -456,15 +719,15 @@ msgstr ""
 msgid "Brasth Document Sync requests drive.readonly so the connected account can browse and sync readable Docs."
 msgstr ""
 
-#: src/Sync/SourceRepository.php:158
+#: src/Sync/SourceRepository.php:197
 msgid "Brasth Document Sync requires a Google file ID before saving source metadata."
 msgstr ""
 
-#: src/Rest/SourceController.php:235
+#: src/Rest/SourceController.php:249
 msgid "Brasth Document Sync requires a source target."
 msgstr ""
 
-#: src/Rest/SourceController.php:989
+#: src/Rest/SourceController.php:1170
 msgid "Brasth Document Sync requires a valid post ID."
 msgstr ""
 
@@ -472,93 +735,173 @@ msgstr ""
 msgid "Brasth Document Sync requires a valid REST nonce."
 msgstr ""
 
-#: src/Admin/AdminPage.php:129
+#: src/Admin/AdminPage.php:195
 msgid "Brasth Document Sync requires JavaScript in the WordPress admin."
 msgstr ""
 
 #. translators: 1: required PHP version, 2: current PHP version, 3: required WordPress version, 4: current WordPress version.
-#: brasth-document-sync-for-google-docs.php:54
+#: brasth-document-sync-for-google-docs.php:56
 msgid "Brasth Document Sync requires PHP %1$s or newer and WordPress %3$s or newer. Current versions are PHP %2$s and WordPress %4$s."
 msgstr ""
 
-#: brasth-document-sync-for-google-docs.php:159
+#: brasth-document-sync-for-google-docs.php:163
 msgid "Brasth Document Sync requires PHP 8.1 or newer and WordPress 6.4 or newer."
 msgstr ""
 
-#: src/Sync/HtmlZipPackageExtractor.php:34
+#: src/Sync/HtmlZipPackageExtractor.php:38
 msgid "Brasth Document Sync requires the PHP Zip extension to import Google Docs images."
 msgstr ""
 
-#: src/Rest/SettingsController.php:87
+#: resources/js/admin/shared/ui/workspace-nav.tsx:20
+msgid "Brasth Document Sync sections"
+msgstr ""
+
+#: src/Rest/SettingsController.php:108
 msgid "Brasth Document Sync settings must be submitted as an object."
 msgstr ""
 
-#: src/Admin/AdminPage.php:64
+#: src/Admin/AdminPage.php:103
 msgid "Brasth Document Sync Setup"
 msgstr ""
 
-#: src/Sync/SourceRepository.php:148
+#: src/Sync/SourceRepository.php:187
 msgid "Brasth Document Sync source metadata cannot be saved for this post type."
 msgstr ""
 
-#: src/Rest/SourceController.php:759
+#: src/Rest/SourceController.php:855
 msgid "Brasth Document Sync source requests require a JSON object."
 msgstr ""
 
-#: src/Admin/AdminPage.php:73
+#: src/Admin/AdminPage.php:114
 msgid "Brasth Document Sync Sources"
 msgstr ""
 
-#: src/Sync/MediaAssetImporter.php:74
+#: src/Sync/MediaAssetImporter.php:81
 msgid "Brasth Document Sync uploaded an image but could not read its Media Library URL."
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal-options.ts:7
+#: resources/js/admin/features/doc-source-modal/doc-source-modal-options.ts:8
 msgid "Browse Google Docs"
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:28
+#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:61
 msgid "Browse source"
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:157 resources/js/admin/shared/ui/confirm-dialog.tsx:25
+#: resources/js/admin/features/feedback/feedback-dialog.tsx:30
+msgid "Bug report"
+msgstr ""
+
+#: src/Sync/Elementor/Preset/ElementorPresetRegistry.php:54
+msgid "Builds a page-style Elementor layout with the first heading, intro paragraph, and image as the hero section."
+msgstr ""
+
+#: src/Sync/Elementor/Preset/ElementorPresetRegistry.php:61
+msgid "Builds clean Elementor sections from document headings, text, lists, media, tables, and dividers."
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:275 resources/js/admin/features/feedback/feedback-dialog.tsx:347 resources/js/admin/features/folder-watches/folder-watch-detail-page.tsx:136 resources/js/admin/features/zip-import/zip-import-dialog.tsx:122 resources/js/admin/shared/ui/confirm-dialog.tsx:25
 msgid "Cancel"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:132
+#: src/Sync/Metadata/PostMetadataApplier.php:157
+msgid "categories (not permitted)"
+msgstr ""
+
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:176
 msgid "Change Doc"
 msgstr ""
 
-#: resources/js/admin/shared/ui/status-pill.tsx:20
+#: resources/js/admin/features/sources/sync-error-recovery.ts:42
+msgid "Change Doc in editor"
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/folder-watch-confirm-panel.tsx:94
+msgid "Change folder"
+msgstr ""
+
+#: resources/js/admin/shared/ui/status-pill.tsx:21
 msgid "Changed"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-filter-options.ts:22
+#: resources/js/admin/features/sources/sync-error-recovery.ts:38
+msgid "Check Doc sharing"
+msgstr ""
+
+#: resources/js/admin/features/sync-logs/sync-log-filter-options.ts:23
 msgid "Checking Google"
 msgstr ""
 
-#: src/Sync/SyncService.php:467
+#: src/Sync/SyncService.php:589
 msgid "Checking Google Doc metadata."
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:152
+#: resources/js/admin/features/zip-import/zip-import-dialog.tsx:39 src/Rest/ZipImportController.php:159 src/Rest/ZipImportController.php:167 src/Rest/ZipImportController.php:183
+msgid "Choose a .zip file to import."
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/source-intent-cards.tsx:16
+msgid "Choose a Google Doc or a Drive folder"
+msgstr ""
+
+#: src/Sync/FolderWatchService.php:248
+msgid "Choose a Google Drive folder to watch."
+msgstr ""
+
+#: src/Rest/ZipImportController.php:112
+msgid "Choose a supported layout."
+msgstr ""
+
+#: src/Rest/FeedbackController.php:117
+msgid "Choose a valid feedback type."
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:270
 msgid "Choose an accessible Google Doc to continue."
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:112
+#: resources/js/admin/features/activation/activation-guidance.tsx:45
+msgid "Choose an accessible Google Doc. Brasth will create and safely sync a WordPress draft in the background."
+msgstr ""
+
+#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:106
 msgid "Choose another level or clear filters to view all stored events."
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:29
+#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:62
 msgid "Choose from Google Drive"
 msgstr ""
 
-#: resources/js/admin/shared/ui/layout-preset-selector.tsx:48
-msgid "Choose how this Google Doc becomes block editor content. Elementor sync keeps using Elementor layout."
+#: resources/js/admin/shared/ui/layout-preset-selector.tsx:28
+msgid "Choose how this Google Doc becomes block editor content. Elementor presets are separate."
+msgstr ""
+
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:223
+msgid "Choose how this Google Doc becomes Elementor sections. Existing sources without a preset keep legacy output until changed."
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:233
+msgid "Choose how this Google Doc becomes Elementor sections. Gutenberg presets stay separate."
 msgstr ""
 
 #: resources/js/admin/features/google-setup/oauth-client-json-import.tsx:82
 msgid "Choose JSON"
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:269
+msgid "Choose one or more accessible Google Docs in this folder."
+msgstr ""
+
+#: resources/js/admin/features/activation/activation-guidance.tsx:81 resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:102
+msgid "Choose source"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/setup-wizard-steps.ts:60
+msgid "Choose the client folder that holds the Docs, or link one Google Doc."
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:197
+msgid "Choose the client folder that holds the Docs, or paste a Doc URL and pick from Drive."
 msgstr ""
 
 #: resources/js/admin/features/google-setup/oauth-client-json-import.tsx:25
@@ -577,7 +920,23 @@ msgstr ""
 msgid "Clear all logs"
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:69
+#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:264 resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:272
+msgid "Clear configuration"
+msgstr ""
+
+#: resources/js/admin/features/sources/sources-table.tsx:275
+msgid "Clear folder filter"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:255
+msgid "Clear saved OAuth configuration"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:275
+msgid "Clear saved OAuth configuration?"
+msgstr ""
+
+#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:102
 msgid "Clear search"
 msgstr ""
 
@@ -585,7 +944,7 @@ msgstr ""
 msgid "Clear source logs"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:288
+#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:311
 msgid "Cleared %d stored log events."
 msgstr ""
 
@@ -593,51 +952,55 @@ msgstr ""
 msgid "Clears stored events only. Source links, sync status, credentials, progress, and synced content stay intact."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-task-state.ts:117
-msgid "Client ID and secret saved."
-msgstr ""
-
-#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:92
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:117 resources/js/admin/features/sources/source-activity-drawer.tsx:68
 msgid "Close"
 msgstr ""
 
-#: src/Sync/Layout/LayoutPresetRegistry.php:74
+#: src/Sync/Layout/LayoutPresetRegistry.php:75
 msgid "Compatibility mode for existing synced posts. Keeps output closest to earlier versions."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-test-result.tsx:23 resources/js/admin/features/google-setup/setup-step-state.tsx:9 resources/js/admin/features/sync-logs/sync-log-filter-options.ts:29
+#: resources/js/admin/features/google-setup/google-setup-test-result.tsx:23 resources/js/admin/features/google-setup/setup-step-state.tsx:9 resources/js/admin/features/sync-logs/sync-log-filter-options.ts:30
 msgid "Complete"
 msgstr ""
 
-#: src/Auth/GoogleOAuthService.php:404
+#: resources/js/admin/features/sources/sources-table.tsx:321
+msgid "Complete the connection responsibility above before creating a source."
+msgstr ""
+
+#: src/Auth/GoogleOAuthService.php:444
 msgid "Configure the Google OAuth client ID and client secret before connecting."
 msgstr ""
 
-#: src/Auth/GoogleOAuthService.php:178
+#: src/Auth/GoogleOAuthService.php:183
 msgid "Connect a Google account before inspecting documents."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-first-sync-step.tsx:39
-msgid "Connect and sync first draft"
+#: resources/js/admin/features/google-setup/oauth-connect-error.ts:98
+msgid "Connect failed (%s)."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/account-panel.tsx:69 resources/js/admin/features/google-setup/google-setup-task-state.ts:125 resources/js/admin/features/google-setup/google-setup-task-state.ts:80 resources/js/admin/features/google-setup/google-setup-task-state.ts:82
+#: resources/js/admin/features/google-setup/oauth-connect-error.ts:99
+msgid "Connect failed."
+msgstr ""
+
+#: resources/js/admin/features/activation/activation-guidance.tsx:77 resources/js/admin/features/google-setup/account-panel.tsx:80 resources/js/admin/features/google-setup/google-setup-task-state.ts:85 resources/js/admin/features/google-setup/google-setup-task-state.ts:87 resources/js/admin/features/zip-import/zip-import-dialog.tsx:86
 msgid "Connect Google"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-first-sync-step.tsx:47
-msgid "Connect Google after credentials are saved."
-msgstr ""
-
-#: resources/js/admin/features/google-setup/account-panel.tsx:65
+#: resources/js/admin/features/google-setup/account-panel.tsx:75
 msgid "Connect Google before inspecting or syncing Docs. Brasth Document Sync will send OAuth requests to Google, request Drive read-only access, and use Google Drive and Docs APIs to list, inspect, export, and sync Docs this account can read."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:128
-msgid "Connect this WordPress user to Google before browsing or syncing readable Docs."
+#: resources/js/admin/features/google-setup/setup-wizard-steps.ts:52
+msgid "Connect your Google"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/account-panel.tsx:37
+#: resources/js/admin/features/activation/activation-guidance.tsx:31
+msgid "Connect your Google account"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/account-panel.tsx:43
 msgid "Connected account"
 msgstr ""
 
@@ -645,59 +1008,95 @@ msgstr ""
 msgid "Connected Google account"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-filter-options.ts:27
+#: resources/js/admin/features/sync-logs/sync-log-filter-options.ts:28
 msgid "Converting"
 msgstr ""
 
-#: src/Sync/SyncService.php:557
+#: src/Sync/SyncService.php:696
 msgid "Converting content to Elementor layout."
 msgstr ""
 
-#: src/Sync/SyncService.php:558
+#: src/Sync/SyncService.php:697
 msgid "Converting content to WordPress blocks."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:78 resources/js/admin/features/google-setup/google-setup-cloud-steps.tsx:77
+#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:128 resources/js/admin/features/google-setup/google-setup-cloud-steps.tsx:77
 msgid "Copy"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/settings-panel.tsx:59 resources/js/admin/features/google-setup/settings-panel.tsx:67
+#: resources/js/admin/features/google-setup/oauth-connect-error-panel.tsx:53
+msgid "Copy error"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/settings-panel.tsx:82 resources/js/admin/features/google-setup/settings-panel.tsx:90
 msgid "Copy the %s from the field."
+msgstr ""
+
+#: resources/js/admin/features/google-setup/oauth-connect-error.ts:119 resources/js/admin/features/google-setup/oauth-connect-error.ts:123
+msgid "Copy the error details manually."
+msgstr ""
+
+#: resources/js/admin/features/google-setup/oauth-connect-error-panel.tsx:36
+msgid "Copy URI"
+msgstr ""
+
+#: resources/js/admin/features/activation/folder-watch-poller.tsx:62
+msgid "Could not check folder import status."
 msgstr ""
 
 #: resources/js/admin/features/post-sync/background-sync-poller.tsx:63
 msgid "Could not check sync status."
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:295
+#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:318
 msgid "Could not clear sync logs."
+msgstr ""
+
+#: resources/js/admin/api/client.ts:52
+msgid "Could not complete the request. Please retry."
 msgstr ""
 
 #: resources/js/admin/features/google-setup/oauth-client-json-import.tsx:74
 msgid "Could not import this OAuth JSON file."
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/use-doc-source-modal.ts:58
+#: resources/js/admin/features/doc-source-modal/use-doc-source-modal.ts:102
 msgid "Could not inspect this Google Doc."
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/use-doc-source-modal.ts:113
+#: resources/js/admin/features/doc-source-modal/use-doc-source-modal.ts:246 resources/js/admin/features/doc-source-modal/use-doc-source-modal.ts:252 resources/js/admin/features/doc-source-modal/use-doc-source-modal.ts:267
 msgid "Could not link this Google Doc."
 msgstr ""
 
-#: resources/js/admin/app/sources-app.tsx:15
+#: resources/js/admin/features/doc-source-modal/use-folder-watch-flow.ts:94
+msgid "Could not list Google Docs in this folder."
+msgstr ""
+
+#: resources/js/admin/features/sources/source-activity-drawer.tsx:43
+msgid "Could not load activity."
+msgstr ""
+
+#: resources/js/admin/app/sources-app.tsx:22
 msgid "Could not load Brasth Document Sync sources."
 msgstr ""
 
-#: resources/js/admin/app/admin-app.tsx:20 resources/js/admin/app/setup-app.tsx:17
+#: resources/js/admin/app/admin-app.tsx:20 resources/js/admin/app/setup-app.tsx:23
 msgid "Could not load Brasth Document Sync."
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/lazy-drive-browser-panel.ts:84 resources/js/admin/features/doc-source-modal/lazy-drive-browser-panel.ts:95
+#: resources/js/admin/app/folders-app.tsx:22
+msgid "Could not load Drive folder watches."
+msgstr ""
+
+#: resources/js/admin/features/folder-watches/use-folder-watch-inventory.ts:43
+msgid "Could not load folder inventory."
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/lazy-drive-browser-panel.ts:100 resources/js/admin/features/doc-source-modal/lazy-drive-browser-panel.ts:89
 msgid "Could not load Google Drive browser assets."
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/lazy-drive-browser-panel.ts:126
+#: resources/js/admin/features/doc-source-modal/lazy-drive-browser-panel.ts:131
 msgid "Could not load Google Drive browser."
 msgstr ""
 
@@ -709,11 +1108,11 @@ msgstr ""
 msgid "Could not load shared drives."
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:188
+#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:191
 msgid "Could not load sync logs."
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:63
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:91
 msgid "Could not load synced Google Doc content."
 msgstr ""
 
@@ -721,107 +1120,267 @@ msgstr ""
 msgid "Could not parse this OAuth JSON file."
 msgstr ""
 
-#: resources/js/admin/features/post-sync/use-post-sync-actions.ts:64
+#: resources/js/admin/api/client.ts:44
+msgid "Could not reach the server. Check your connection, then retry."
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/use-folder-watch-flow.ts:178
+msgid "Could not retry failed Google Docs."
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/use-folder-watch-flow.ts:159
+msgid "Could not start this folder watch."
+msgstr ""
+
+#: resources/js/admin/features/feedback/feedback-dialog.tsx:177
+msgid "Could not submit feedback. Please retry later."
+msgstr ""
+
+#: resources/js/admin/features/post-sync/use-post-sync-actions.ts:158
+msgid "Could not update Elementor layout preset."
+msgstr ""
+
+#: resources/js/admin/features/post-sync/use-post-sync-actions.ts:78
 msgid "Could not update Elementor sync preference."
 msgstr ""
 
-#: resources/js/admin/features/post-sync/use-post-sync-actions.ts:85
+#: resources/js/admin/features/post-sync/use-post-sync-actions.ts:99
 msgid "Could not update layout preset."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:89
+#: resources/js/admin/features/post-sync/use-post-sync-actions.ts:120
+msgid "Could not update re-sync schedule."
+msgstr ""
+
+#: resources/js/admin/features/post-sync/use-post-sync-actions.ts:139
+msgid "Could not update the update policy."
+msgstr ""
+
+#. translators: %d: number of drafts to create.
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:319
+msgid "Create %d drafts"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/setup-wizard-steps.ts:47
+msgid "Create a Google Cloud OAuth client for this site. DocSync does not host Google for you."
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:139
 msgid "Create an OAuth web application client and add the redirect URI shown above."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-task-state.ts:99
-msgid "Create first synced draft"
+#: resources/js/admin/features/zip-import/zip-import-dialog.tsx:103
+msgid "Create as"
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/folder-watch-confirm-panel.tsx:169 resources/js/admin/features/folder-watches/folder-watch-edit-form.tsx:66
+msgid "Create as drafts"
 msgstr ""
 
 #: resources/js/admin/features/google-setup/google-setup-cloud-steps.tsx:36
 msgid "Create Google Cloud app"
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:173 resources/js/admin/features/google-setup/account-panel.tsx:52 resources/js/admin/features/google-setup/google-setup-first-sync-step.tsx:56 resources/js/admin/features/google-setup/google-setup-task-state.ts:101 resources/js/admin/features/sources/sources-table.tsx:228
+#: resources/js/admin/shared/ui/admin-shell.tsx:89
+msgid "Create issue"
+msgstr ""
+
+#: resources/js/admin/features/feedback/feedback-dialog.tsx:247
+msgid "Create public GitHub issue"
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:322 resources/js/admin/features/google-setup/account-panel.tsx:58
 msgid "Create synced draft"
 msgstr ""
 
-#: resources/js/admin/shared/ui/status-pill.tsx:21
+#: resources/js/admin/features/activation/activation-guidance.tsx:42
+msgid "Create your first publishing source"
+msgstr ""
+
+#: resources/js/admin/shared/ui/status-pill.tsx:22
 msgid "Created"
+msgstr ""
+
+#. translators: 1: imported count, 2: total count.
+#: resources/js/admin/features/doc-source-modal/folder-watch-confirm-panel.tsx:231
+msgid "Created %1$d of %2$d"
+msgstr ""
+
+#. translators: 1: created count, 2: total selected docs.
+#: resources/js/admin/features/doc-source-modal/use-doc-source-modal.ts:205 resources/js/admin/features/doc-source-modal/use-doc-source-modal.ts:230
+msgid "Created %1$d of %2$d…"
+msgstr ""
+
+#. translators: 1: post type, 2: schedule label.
+#: resources/js/admin/features/doc-source-modal/folder-watch-confirm-panel.tsx:220
+msgid "Creates %1$s posts. Folder schedule: %2$s."
+msgstr ""
+
+#: resources/js/admin/features/activation/folder-activation-result.tsx:44
+msgid "Creating drafts from this client folder"
+msgstr ""
+
+#: resources/js/admin/features/activation/activation-result.tsx:64
+msgid "Creating your synced draft"
 msgstr ""
 
 #: resources/js/admin/features/google-setup/google-setup-utils.ts:16
 msgid "Credentials"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:40
+#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:44
 msgid "Cron event"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:77
+#: resources/js/admin/features/doc-source-modal/folder-watch-confirm-panel.tsx:184 resources/js/admin/features/doc-source-modal/folder-watch-confirm-panel.tsx:45 resources/js/admin/features/folder-watches/folder-watch-labels.ts:21 resources/js/admin/features/google-setup/google-setup-targets-step.tsx:90 resources/js/admin/features/post-sync/post-meta-box-app.tsx:248
 msgid "Daily"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:82
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:119
 msgid "Default synced layout"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:135
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:178
 msgid "Detach"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/use-post-sync-actions.ts:43
+#: resources/js/admin/features/post-sync/use-post-sync-actions.ts:57
 msgid "Detach failed."
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:168 resources/js/admin/features/sync-logs/sync-log-events-table.tsx:217
+#: resources/js/admin/features/feedback/feedback-dialog.tsx:308 resources/js/admin/features/sync-logs/sync-log-events-table.tsx:172 resources/js/admin/features/sync-logs/sync-log-events-table.tsx:238
 msgid "Details"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/account-panel.tsx:56 resources/js/admin/features/google-setup/account-panel.tsx:77
+#: resources/js/admin/features/feedback/feedback-dialog.tsx:136
+msgid "Details cannot exceed 10,000 characters."
+msgstr ""
+
+#: resources/js/admin/features/feedback/feedback-dialog.tsx:362
+msgid "Discard draft"
+msgstr ""
+
+#: resources/js/admin/features/feedback/feedback-dialog.tsx:365
+msgid "Discard this feedback draft?"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/account-panel.tsx:62 resources/js/admin/features/google-setup/account-panel.tsx:89
 msgid "Disconnect"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/account-panel.tsx:80
+#: resources/js/admin/features/google-setup/account-panel.tsx:92
 msgid "Disconnect Google account?"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/sync-toast-stack.tsx:44
+#: resources/js/admin/features/post-sync/sync-toast-stack.tsx:47
 msgid "Dismiss notification"
+msgstr ""
+
+#: resources/js/admin/features/feedback/feedback-dialog.tsx:255
+msgid "Do not include passwords, tokens, private URLs, customer data, or Google document content."
+msgstr ""
+
+#: resources/js/admin/features/folder-watches/folder-watch-table.tsx:71
+msgid "Docs"
 msgstr ""
 
 #: resources/js/admin/features/doc-source-modal/source-mode-tabs.tsx:26
 msgid "Document source"
 msgstr ""
 
-#: src/Sync/Layout/LayoutPresetRegistry.php:64
+#: src/Sync/Layout/LayoutPresetRegistry.php:65
 msgid "Documentation"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/list-entry-app.tsx:87
-msgid "Draft created. Syncing Google Doc in the background."
+#: resources/js/admin/features/feedback/feedback-dialog.tsx:228 resources/js/admin/features/zip-import/zip-import-dialog.tsx:122
+msgid "Done"
 msgstr ""
 
-#: src/Sync/SyncService.php:965
+#: resources/js/admin/features/sources/sources-table.tsx:66
+msgid "Draft"
+msgstr ""
+
+#: resources/js/admin/features/zip-import/zip-import-dialog.tsx:82
+msgid "Draft created:"
+msgstr ""
+
+#: src/Sync/SyncService.php:1382
 msgid "Drive export was too large. Switching to the large-doc fallback."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/account-panel.tsx:44
-msgid "Drive read-only scope"
+#: resources/js/admin/features/sources/sources-folder-watches.tsx:21
+msgid "Drive folders"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-task-state.ts:127
-msgid "Drive read-only scope granted."
+#: resources/js/admin/app/folders-app.tsx:41 resources/js/admin/features/google-setup/google-setup-task-state.ts:111 resources/js/admin/shared/ui/workspace-nav.tsx:10 src/Admin/AdminPage.php:125
+msgid "Drive Folders"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/account-panel.tsx:50
+msgid "Drive read-only scope"
 msgstr ""
 
 #: resources/js/admin/features/google-setup/google-setup-utils.ts:41
 msgid "Each WordPress user connects their own Google account before selecting Docs."
 msgstr ""
 
+#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:180 resources/js/admin/features/google-setup/setup-wizard-steps.ts:53
+msgid "Each WordPress user who syncs connects their own Google account."
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/output-type-choice.tsx:23
+msgid "Editable in Elementor."
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/output-type-choice.tsx:18
+msgid "Editable in the block editor."
+msgstr ""
+
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:254
+msgid "Effective: %s. Next re-sync %s."
+msgstr ""
+
+#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:61
+msgid "Elementor"
+msgstr ""
+
+#: src/Sync/Elementor/Preset/ElementorPresetRegistry.php:60
+msgid "Elementor Feature Block"
+msgstr ""
+
+#: src/Sync/Elementor/Preset/ElementorPresetRegistry.php:53
+msgid "Elementor Hero Page"
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/output-type-choice.tsx:24 resources/js/admin/features/folder-watches/folder-watch-edit-form.tsx:88
+msgid "Elementor Layout"
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:234 resources/js/admin/features/doc-source-modal/folder-watch-confirm-panel.tsx:196 resources/js/admin/features/folder-watches/folder-watch-edit-form.tsx:97 resources/js/admin/features/post-sync/post-meta-box-app.tsx:224
+msgid "Elementor layout preset"
+msgstr ""
+
+#: resources/js/admin/features/post-sync/use-post-sync-actions.ts:154
+msgid "Elementor layout preset updated."
+msgstr ""
+
+#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:72
+msgid "Elementor mode"
+msgstr ""
+
+#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:80
+msgid "Elementor preset"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:107
+msgid "Email me when scheduled sync fails"
+msgstr ""
+
 #: resources/js/admin/features/google-setup/google-setup-cloud-steps.tsx:44
 msgid "Enable both Google Drive API and Google Docs API in that same project."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:88
+#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:138
 msgid "Enable both Google Drive API and Google Docs API in the same Google Cloud project."
 msgstr ""
 
@@ -833,15 +1392,15 @@ msgstr ""
 msgid "Enable Drive API"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:99
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:150
 msgid "Enable Elementor sync support when Elementor is active"
 msgstr ""
 
-#: resources/js/admin/api/client.ts:34 src/Google/DocsApiErrorMapper.php:34
+#: resources/js/admin/api/client.ts:46 src/Google/DocsApiErrorMapper.php:34
 msgid "Enable Google Docs API in the same Google Cloud project, then retry sync."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:56
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:69
 msgid "Enabled post types"
 msgstr ""
 
@@ -849,147 +1408,321 @@ msgstr ""
 msgid "Enter a Google Docs URL or a valid Google Drive file ID."
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-manage-dialog.tsx:28 resources/js/admin/features/sync-logs/sync-logs-view.tsx:271
+#: resources/js/admin/features/sync-logs/sync-log-manage-dialog.tsx:28 resources/js/admin/features/sync-logs/sync-logs-view.tsx:294
 msgid "Enter a valid source post ID before clearing source logs."
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:157
+#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:160
 msgid "Enter a valid source post ID."
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-sync-dom.ts:169 resources/js/admin/features/sources/sources-table.tsx:61 resources/js/admin/features/sync-logs/sync-log-filter-options.ts:16 resources/js/admin/features/sync-logs/sync-log-filter-options.ts:7 resources/js/admin/shared/ui/status-pill.tsx:14
+#: resources/js/admin/features/folder-watches/folder-watches-view.tsx:25 resources/js/admin/features/post-sync/post-sync-dom.ts:174 resources/js/admin/features/sources/sources-table.tsx:80 resources/js/admin/features/sync-logs/sync-log-filter-options.ts:17 resources/js/admin/features/sync-logs/sync-log-filter-options.ts:7 resources/js/admin/shared/ui/status-pill.tsx:15
 msgid "Error"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/oauth-connect-error.ts:117
+msgid "Error details copied."
 msgstr ""
 
 #: resources/js/admin/features/sync-logs/sync-log-summary-strip.tsx:29
 msgid "Errors"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:215
+#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:236
 msgid "Event"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/account-panel.tsx:78
+#: resources/js/admin/features/folder-watches/folder-watch-inventory-panel.tsx:102
+msgid "Exclude visible"
+msgstr ""
+
+#: resources/js/admin/features/folder-watches/folder-watch-inventory-panel.tsx:121
+msgid "Excluded"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/account-panel.tsx:90
 msgid "Existing linked posts stay linked, but this user cannot browse or sync Google Docs until they reconnect."
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-filter-options.ts:23
+#: resources/js/admin/features/sync-logs/sync-log-filter-options.ts:24
 msgid "Exporting"
 msgstr ""
 
-#: src/Sync/SyncService.php:533
+#: src/Sync/SyncService.php:672
 msgid "Exporting Google Doc."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-task-state.ts:133
-msgid "First synced draft"
+#: resources/js/admin/features/folder-watches/folder-watch-inventory-panel.tsx:191
+msgid "Failed imports"
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-utils.ts:31
+#: resources/js/admin/features/feedback/feedback-dialog.tsx:31
+msgid "Feature request"
+msgstr ""
+
+#: src/Sync/Metadata/PostMetadataApplier.php:94
+msgid "featured image (not in the Media Library)"
+msgstr ""
+
+#: src/Rest/FeedbackController.php:105
+msgid "Feedback contains unsupported fields."
+msgstr ""
+
+#: src/Rest/FeedbackController.php:133
+msgid "Feedback details must not be empty and cannot exceed 10,000 characters."
+msgstr ""
+
+#: src/Rest/FeedbackController.php:85
+msgid "Feedback is too large to submit."
+msgstr ""
+
+#: src/Rest/FeedbackController.php:184
+msgid "Feedback must be submitted as an object."
+msgstr ""
+
+#: src/Feedback/FeedbackService.php:39
+msgid "Feedback submission is not configured on this site."
+msgstr ""
+
+#: resources/js/admin/features/feedback/feedback-dialog.tsx:173
+msgid "Feedback submitted successfully."
+msgstr ""
+
+#: src/Rest/FeedbackController.php:125
+msgid "Feedback titles must not be empty and cannot exceed 120 characters."
+msgstr ""
+
+#: resources/js/admin/features/folder-watches/folder-watches-view.tsx:102
+msgid "Filter by status"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-task-state.ts:157
+msgid "First publishing source"
+msgstr ""
+
+#: resources/js/admin/features/activation/activation-result.tsx:61
+msgid "First source could not sync"
+msgstr ""
+
+#: resources/js/admin/features/activation/activation-guidance.tsx:50
+msgid "First source is syncing"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/setup-wizard-steps.ts:66
+msgid "First sync"
+msgstr ""
+
+#: resources/js/admin/features/drive-browser/drive-browser-utils.ts:31 resources/js/admin/features/folder-watches/folder-watch-table.tsx:68
 msgid "Folder"
+msgstr ""
+
+#: resources/js/admin/features/activation/folder-activation-result.tsx:43
+msgid "Folder automation is active"
+msgstr ""
+
+#: resources/js/admin/features/activation/folder-activation-result.tsx:50
+msgid "Folder automation is active. More Docs are still importing."
+msgstr ""
+
+#: resources/js/admin/features/activation/folder-activation-result.tsx:41
+msgid "Folder automation stopped"
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/folder-watch-confirm-panel.tsx:91 resources/js/admin/features/folder-watches/folder-watch-inventory-panel.tsx:86
+msgid "Folder inventory"
 msgstr ""
 
 #: resources/js/admin/features/drive-browser/drive-browser-toolbar.tsx:59
 msgid "Folder or document name"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/account-panel.tsx:43 resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:136
+#: resources/js/admin/features/doc-source-modal/folder-watch-confirm-panel.tsx:174 resources/js/admin/features/folder-watches/folder-watch-edit-form.tsx:37
+msgid "Folder schedule"
+msgstr ""
+
+#: resources/js/admin/app/folders-app.tsx:48
+msgid "folder watch"
+msgstr ""
+
+#: resources/js/admin/features/folder-watches/folder-watch-detail-page.tsx:89
+msgid "Folder watch"
+msgstr ""
+
+#: resources/js/admin/features/folder-watches/folder-watches-view.tsx:65
+msgid "Folder watch health"
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/use-folder-watch-flow.ts:155
+msgid "Folder watch started. Drafts are being created."
+msgstr ""
+
+#: resources/js/admin/app/folders-app.tsx:48
+msgid "folder watches"
+msgstr ""
+
+#: resources/js/admin/features/sources/sources-folder-watches.tsx:18
+msgid "Folder watches"
+msgstr ""
+
+#: resources/js/admin/shared/ui/admin-shell.tsx:87
+msgid "Found a problem or have an idea?"
+msgstr ""
+
+#. translators: %s: folder name.
+#: resources/js/admin/features/sources/sources-table.tsx:270 resources/js/admin/features/sources/sources-table.tsx:352
+msgid "From folder: %s"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/oauth-connect-error.ts:82
+msgid "Google access expired. Reconnect this user."
+msgstr ""
+
+#: resources/js/admin/features/google-setup/account-panel.tsx:49 resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:188
 msgid "Google account connected"
 msgstr ""
 
-#: resources/js/admin/app/use-admin-app.ts:119 resources/js/admin/app/use-setup-app.ts:70
+#: resources/js/admin/app/use-admin-app.ts:120 resources/js/admin/app/use-setup-app.ts:94
 msgid "Google account disconnected."
 msgstr ""
 
-#: resources/js/admin/app/admin-app.tsx:32 resources/js/admin/app/setup-app.tsx:29
+#: resources/js/admin/features/google-setup/oauth-connect-error-panel.tsx:30
+msgid "Google connect failed"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/oauth-connect-error.ts:68
+msgid "Google connect was cancelled. Try again when ready."
+msgstr ""
+
+#: resources/js/admin/app/admin-app.tsx:32 resources/js/admin/app/setup-app.tsx:39
 msgid "Google connection"
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:103
+#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:137
 msgid "Google could not search every Drive item. Narrow the search if the Doc is missing."
 msgstr ""
 
-#: src/Auth/GoogleOAuthService.php:287
+#: src/Auth/GoogleOAuthService.php:292
 msgid "Google did not return a refresh token. Reconnect and approve offline access."
 msgstr ""
 
-#: src/Auth/GoogleOAuthService.php:269
+#: src/Auth/GoogleOAuthService.php:274
 msgid "Google did not return an access token."
 msgstr ""
 
-#: src/Auth/GoogleOAuthService.php:125
+#: src/Auth/GoogleOAuthService.php:130
 msgid "Google did not return an authorization code."
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-utils.ts:31 resources/js/admin/features/sources/sources-table.tsx:209 resources/js/admin/features/sources/sources-table.tsx:97
+#: resources/js/admin/features/drive-browser/drive-browser-utils.ts:31 resources/js/admin/features/sources/sources-table.tsx:116 resources/js/admin/features/sources/sources-table.tsx:286
 msgid "Google Doc"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:39
+#: src/Sync/SyncService.php:1054
+msgid "Google Doc changed and this post has WordPress edits. Review and apply the update."
+msgstr ""
+
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:67
 msgid "Google Doc changed."
 msgstr ""
 
-#: resources/js/admin/features/post-sync/use-post-sync-actions.ts:38
+#: src/Sync/SyncService.php:1058
+msgid "Google Doc changed. Review and apply the update."
+msgstr ""
+
+#: resources/js/admin/features/post-sync/use-post-sync-actions.ts:52
 msgid "Google Doc detached."
 msgstr ""
 
-#: src/Sync/SyncService.php:516
+#: src/Sync/SyncService.php:655
 msgid "Google Doc has not changed."
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:39
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:67
 msgid "Google Doc linked."
 msgstr ""
 
-#: resources/js/admin/features/post-sync/list-entry-app.tsx:112
+#: resources/js/admin/features/post-sync/source-inspector-summary.tsx:37
+msgid "Google Doc source"
+msgstr ""
+
+#: resources/js/admin/features/post-sync/editor-integration.ts:33
+msgid "Google Doc sync"
+msgstr ""
+
+#: resources/js/admin/features/post-sync/list-entry-app.tsx:117
 msgid "Google Doc sync %s."
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:53
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:81
 msgid "Google Doc sync complete, but this editor cannot be updated without reopening the screen."
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:72
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:100
 msgid "Google Doc sync complete."
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:90
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:118
 msgid "Google Doc sync complete. Apply the synced content to the editor."
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:89
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:117
 msgid "Google Doc sync complete. Applying it will replace the current editor content."
 msgstr ""
 
-#: resources/js/admin/app/use-source-sync-progress.ts:43 resources/js/admin/features/post-sync/list-entry-app.tsx:111 resources/js/admin/features/post-sync/post-meta-box-app.tsx:72
+#: resources/js/admin/app/use-source-sync-progress.ts:43 resources/js/admin/features/post-sync/list-entry-app.tsx:116 resources/js/admin/features/post-sync/post-meta-box-app.tsx:100
 msgid "Google Doc sync failed."
 msgstr ""
 
-#: resources/js/admin/features/post-sync/list-entry-app.tsx:132
+#: resources/js/admin/features/post-sync/list-entry-app.tsx:140
 msgid "Google Doc sync is running."
 msgstr ""
 
-#: resources/js/admin/features/post-sync/list-entry-app.tsx:88 resources/js/admin/features/post-sync/post-meta-box-app.tsx:38 resources/js/admin/features/post-sync/use-post-sync-actions.ts:19
+#: resources/js/admin/features/post-sync/editor-integration.ts:55 resources/js/admin/features/post-sync/post-meta-box-app.tsx:66 resources/js/admin/features/post-sync/use-post-sync-actions.ts:20
 msgid "Google Doc sync queued."
+msgstr ""
+
+#: resources/js/admin/features/zip-import/zip-import-dialog.tsx:93
+msgid "Google Doc ZIP file"
 msgstr ""
 
 #: src/Google/DocsApiErrorMapper.php:67
 msgid "Google Docs API is temporarily unavailable. Try again shortly."
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:80
+#. translators: %s: folder name.
+#: resources/js/admin/features/doc-source-modal/folder-watch-confirm-panel.tsx:103
+msgid "Google Docs in %s and its subfolders (up to 3 levels). New Docs become WordPress drafts. You publish."
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:105
 msgid "Google Docs is source of truth. Sync overwrites WordPress content."
+msgstr ""
+
+#: src/Notifications/SyncHealthSiteStatus.php:107
+msgid "Google Docs scheduled sync is not running"
+msgstr ""
+
+#: src/Notifications/SyncHealthSiteStatus.php:72 src/Notifications/SyncHealthSiteStatus.php:89
+msgid "Google Docs sync"
+msgstr ""
+
+#: src/Notifications/SyncHealthSiteStatus.php:86
+msgid "Google Docs sync is healthy"
 msgstr ""
 
 #: resources/js/admin/features/doc-source-modal/advanced-source-panel.tsx:19
 msgid "Google Docs URL"
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/lazy-drive-browser-panel.ts:56
+#: resources/js/admin/features/activation/activation-result.tsx:23
+msgid "Google does not allow the connected account to download this Doc. Ask the document owner to allow access, then retry."
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/lazy-drive-browser-panel.ts:61
 msgid "Google Drive browser assets are not built."
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/lazy-drive-browser-panel.ts:78
+#: resources/js/admin/features/doc-source-modal/lazy-drive-browser-panel.ts:83
 msgid "Google Drive browser did not register correctly."
 msgstr ""
 
@@ -1001,35 +1734,47 @@ msgstr ""
 msgid "Google Drive folder path"
 msgstr ""
 
-#: src/Google/DriveClient.php:717
+#: src/Google/DriveClient.php:770
 msgid "Google Drive is temporarily unavailable. Try again shortly."
 msgstr ""
 
-#: src/Auth/GoogleOAuthService.php:344 src/Auth/GoogleOAuthService.php:356
+#: resources/js/admin/features/google-setup/google-setup-task-state.ts:106
+msgid "Google is connected and at least one Doc or folder watch is active. Use Sources, Drive Folders, or Sync Activity for daily work."
+msgstr ""
+
+#: src/Auth/GoogleOAuthService.php:349 src/Auth/GoogleOAuthService.php:361
 msgid "Google is temporarily unavailable. Try again shortly."
+msgstr ""
+
+#: resources/js/admin/features/google-setup/oauth-connect-error.ts:89
+msgid "Google is unreachable right now. Try again in a few minutes."
+msgstr ""
+
+#: resources/js/admin/features/google-setup/oauth-connect-error.ts:51
+msgid "Google rejected the client ID or secret. Check both fields match Google Cloud."
 msgstr ""
 
 #: src/Google/DocsApiErrorMapper.php:56
 msgid "Google returned an unexpected Docs API response."
 msgstr ""
 
-#: src/Google/DriveClient.php:706
+#: src/Google/DriveClient.php:759
 msgid "Google returned an unexpected Drive response."
 msgstr ""
 
-#: src/Auth/GoogleOAuthService.php:379
+#: src/Auth/GoogleOAuthService.php:386
 msgid "Google returned an unexpected OAuth response."
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/use-doc-source-modal.ts:90
+#: resources/js/admin/features/doc-source-modal/use-doc-source-modal.ts:175
 msgid "Google says this Doc cannot be downloaded by the connected account."
 msgstr ""
 
-#: src/Google/DriveClient.php:511
+#: src/Google/DriveClient.php:564
 msgid "Google says this Doc cannot be downloaded by the connected account. Adjust sharing or choose another Doc before linking."
 msgstr ""
 
-#: src/Sync/SyncService.php:1140
+#: src/Sync/SyncService.php:1560
 msgid "Google says this Doc cannot be downloaded by the connected account. Adjust sharing or choose another Doc before syncing."
 msgstr ""
 
@@ -1037,155 +1782,261 @@ msgstr ""
 msgid "Google says this Doc cannot be downloaded. Check the Doc owner, sharing, and download permissions."
 msgstr ""
 
-#: resources/js/admin/app/admin-app.tsx:41 resources/js/admin/app/setup-app.tsx:33
+#: resources/js/admin/app/admin-app.tsx:41 resources/js/admin/app/setup-app.tsx:43
 msgid "Google Setup"
+msgstr ""
+
+#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:67
+msgid "Gutenberg preset"
+msgstr ""
+
+#: resources/js/admin/features/sources/source-health-summary.tsx:47
+msgid "Healthy"
 msgstr ""
 
 #: resources/js/admin/features/google-setup/telemetry-consent-panel.tsx:22
 msgid "Help improve Brasth Document Sync"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:75
+#: resources/js/admin/features/doc-source-modal/folder-watch-confirm-panel.tsx:182 resources/js/admin/features/doc-source-modal/folder-watch-confirm-panel.tsx:37 resources/js/admin/features/folder-watches/folder-watch-labels.ts:13 resources/js/admin/features/google-setup/google-setup-targets-step.tsx:88 resources/js/admin/features/post-sync/post-meta-box-app.tsx:246
 msgid "Hourly"
 msgstr ""
 
-#: resources/js/admin/features/sources/sources-table.tsx:45
+#: resources/js/admin/shared/ui/cron-health-banner.tsx:23
+msgid "How to fix"
+msgstr ""
+
+#: resources/js/admin/features/sources/sources-table.tsx:54
 msgid "HTML ZIP"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:90 resources/js/admin/features/google-setup/google-setup-cloud-steps.tsx:45
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:261
+msgid "I want to watch the top of this Drive (first 50 Docs)."
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:140 resources/js/admin/features/google-setup/google-setup-cloud-steps.tsx:45
 msgid "If the OAuth app is in Google test mode, add each WordPress user as a test user before they connect."
+msgstr ""
+
+#: resources/js/admin/features/zip-import/zip-import-dialog.tsx:130
+msgid "Import"
+msgstr ""
+
+#: resources/js/admin/features/zip-import/zip-import-dialog.tsx:72
+msgid "Import a downloaded Google Doc"
+msgstr ""
+
+#: resources/js/admin/features/zip-import/zip-import-dialog.tsx:50
+msgid "Import complete. Draft created."
+msgstr ""
+
+#: resources/js/admin/features/zip-import/zip-import-dialog.tsx:52
+msgid "Import failed."
 msgstr ""
 
 #: resources/js/admin/features/google-setup/oauth-client-json-import.tsx:38
 msgid "Import OAuth JSON"
 msgstr ""
 
-#: src/Sync/SyncService.php:605
+#. translators: 1: imported count, 2: total count.
+#: resources/js/admin/features/activation/folder-activation-result.tsx:55
+msgid "Imported %1$d of %2$d Docs from this client folder."
+msgstr ""
+
+#: src/Sync/SyncService.php:770
 msgid "Imported content matches the current WordPress post."
 msgstr ""
 
-#: src/Sync/SyncService.php:1111
+#: src/Sync/ZipImportService.php:147
+msgid "Imported Google Doc"
+msgstr ""
+
+#: src/Sync/SyncService.php:1531
 msgid "Imported part of the large Doc."
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-filter-options.ts:25
+#: resources/js/admin/features/folder-watches/folder-watches-view.tsx:76 resources/js/admin/features/sync-logs/sync-log-filter-options.ts:26
 msgid "Importing"
 msgstr ""
 
-#: src/Sync/SyncService.php:934
+#: src/Sync/SyncService.php:1348
 msgid "Importing Google Doc HTML and assets."
 msgstr ""
 
-#: src/Sync/SyncService.php:982
+#: src/Sync/SyncService.php:1399
 msgid "Importing through the large-doc fallback."
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-filter-options.ts:5 resources/js/admin/shared/ui/status-pill.tsx:15
+#: resources/js/admin/features/zip-import/zip-import-dialog.tsx:130
+msgid "Importing..."
+msgstr ""
+
+#: resources/js/admin/features/zip-import/zip-import-dialog.tsx:76
+msgid "In Google Docs choose File > Download > Web Page (.html, zipped), then upload the .zip here. This is a one-time import: the draft is not linked to Google."
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/folder-watch-confirm-panel.tsx:121 resources/js/admin/features/folder-watches/folder-watch-edit-form.tsx:77
+msgid "Include subfolders"
+msgstr ""
+
+#: resources/js/admin/features/folder-watches/folder-watch-inventory-panel.tsx:120
+msgid "Included"
+msgstr ""
+
+#: resources/js/admin/features/sync-logs/sync-log-filter-options.ts:5 resources/js/admin/shared/ui/status-pill.tsx:16
 msgid "Info"
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:165
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:283
 msgid "Inspect"
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:153
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:271
 msgid "Inspect a Google Doc before linking it."
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:74
+#. translators: %s: GitHub issue number
+#: resources/js/admin/features/feedback/feedback-dialog.tsx:219
+msgid "Issue #%s created"
+msgstr ""
+
+#: resources/js/admin/shared/format-time.ts:36
 msgid "just now"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:50
+#: resources/js/admin/features/feedback/feedback-dialog.tsx:361
+msgid "Keep editing"
+msgstr ""
+
+#: resources/js/admin/features/post-sync/legacy-elementor-upgrade-notice.tsx:30
+msgid "Keep legacy"
+msgstr ""
+
+#: src/Sync/SyncService.php:890
+msgid "Kept %d block added in WordPress."
+msgid_plural "Kept %d blocks added in WordPress."
+msgstr[0] ""
+msgstr[1] ""
+
+#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:51
 msgid "Large doc fallback"
 msgstr ""
 
-#: resources/js/admin/features/sources/sources-table.tsx:41 resources/js/admin/features/sync-logs/sync-log-filter-options.ts:24
+#: resources/js/admin/features/sources/sources-table.tsx:50 resources/js/admin/features/sync-logs/sync-log-filter-options.ts:25
 msgid "Large-doc fallback"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:46
+#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:50
 msgid "Last heartbeat"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:50
+#. translators: %s: ISO timestamp.
+#: resources/js/admin/features/folder-watches/folder-watch-format-time.ts:34
+msgid "Last scan: %s"
+msgstr ""
+
+#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:54
 msgid "Last step"
 msgstr ""
 
-#: resources/js/admin/features/sources/sources-table.tsx:211 resources/js/admin/features/sources/sources-table.tsx:99
+#: resources/js/admin/features/sources/sources-table.tsx:118 resources/js/admin/features/sources/sources-table.tsx:288
 msgid "Last sync"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:127
-msgid "Last sync:"
+#: resources/js/admin/features/post-sync/source-inspector-summary.tsx:43
+msgid "Last synced"
+msgstr ""
+
+#. translators: %s: formatted date/time.
+#: resources/js/admin/features/folder-watches/folder-watch-format-time.ts:29
+msgid "Last: %s"
 msgstr ""
 
 #: resources/js/admin/features/sync-logs/sync-log-summary-strip.tsx:37
 msgid "Latest event"
 msgstr ""
 
-#: resources/js/admin/shared/ui/layout-preset-selector.tsx:34
+#: resources/js/admin/features/zip-import/zip-import-dialog.tsx:110
+msgid "Layout"
+msgstr ""
+
+#: resources/js/admin/shared/ui/layout-preset-selector.tsx:29
 msgid "Layout preset"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/use-post-sync-actions.ts:80
+#: resources/js/admin/features/post-sync/use-post-sync-actions.ts:94
 msgid "Layout preset updated."
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:389
+#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:74
+msgid "Legacy converter"
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:58 resources/js/admin/features/post-sync/legacy-elementor-upgrade-notice.tsx:20 resources/js/admin/features/post-sync/post-meta-box-app.tsx:42
+msgid "Legacy Elementor output"
+msgstr ""
+
+#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:414
 msgid "Level"
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:77 resources/js/admin/features/post-sync/post-meta-box-app.tsx:132 src/Admin/PostListActions.php:81
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:176 src/Admin/PostListActions.php:222
 msgid "Link Google Doc"
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:173
+#: resources/js/admin/features/google-setup/google-setup-task-state.ts:124 resources/js/admin/features/sources/sources-table.tsx:310
+msgid "Link one Google Doc instead"
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:323
 msgid "Link source"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-sync-dom.ts:172 resources/js/admin/features/sources/sources-table.tsx:57 resources/js/admin/features/sync-logs/sync-log-filter-options.ts:12 resources/js/admin/shared/ui/status-pill.tsx:10
+#: resources/js/admin/features/post-sync/post-sync-dom.ts:177 resources/js/admin/features/sources/sources-table.tsx:74 resources/js/admin/features/sync-logs/sync-log-filter-options.ts:12 resources/js/admin/shared/ui/status-pill.tsx:10
 msgid "Linked"
 msgstr ""
 
-#: src/Sync/SourceRepository.php:1230 src/Sync/SourceRepository.php:184 src/Sync/SyncService.php:210 src/Sync/SyncService.php:303
+#: src/Sync/SourceRepository.php:1818 src/Sync/SourceRepository.php:272 src/Sync/SyncService.php:305 src/Sync/SyncService.php:411
 msgid "Linked and ready to sync."
 msgstr ""
 
-#: resources/js/admin/features/sources/sources-table.tsx:156
+#: resources/js/admin/features/sources/sources-table.tsx:211
 msgid "Linked Google Docs across enabled WordPress targets."
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:309
+#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:333
 msgid "Live"
 msgstr ""
 
-#: resources/js/admin/features/sources/sources-table.tsx:319
+#: resources/js/admin/features/sources/sources-table.tsx:459
 msgid "Load more sources"
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-table.tsx:34
+#: resources/js/admin/features/folder-watches/folder-watch-inventory-panel.tsx:139
+msgid "Loading Docs in this folder…"
+msgstr ""
+
+#: resources/js/admin/features/drive-browser/drive-browser-table.tsx:35
 msgid "Loading Drive items..."
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:108
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:146
 msgid "Loading Google Drive browser..."
 msgstr ""
 
-#: resources/js/admin/features/sources/sources-table.tsx:68
+#: resources/js/admin/features/sources/sources-table.tsx:87
 msgid "Loading linked sources"
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-table.tsx:136
+#: resources/js/admin/features/drive-browser/drive-browser-table.tsx:144
 msgid "Loading more..."
 msgstr ""
 
-#: resources/js/admin/app/admin-app.tsx:54 resources/js/admin/app/setup-app.tsx:40
+#: resources/js/admin/app/admin-app.tsx:54 resources/js/admin/app/setup-app.tsx:50
 msgid "Loading settings..."
 msgstr ""
 
-#: src/Admin/PostSyncMetaBox.php:115
+#: src/Admin/PostSyncMetaBox.php:117
 msgid "Loading sync controls..."
 msgstr ""
 
@@ -1193,15 +2044,23 @@ msgstr ""
 msgid "Location"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:33
+#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:37
 msgid "Lock"
 msgstr ""
 
-#: resources/js/admin/features/sources/sources-table.tsx:306 src/Admin/AdminPage.php:83
-msgid "Logs"
+#: resources/js/admin/shared/ui/cron-health-banner.tsx:19
+msgid "Low-traffic WordPress or DISABLE_WP_CRON needs a real server cron. Brasth Document Sync relies on WP-Cron ticks to finish background sync."
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-manage-dialog.tsx:36 resources/js/admin/features/sync-logs/sync-logs-view.tsx:323
+#: resources/js/admin/features/folder-watches/folder-watch-row-actions.tsx:34
+msgid "Manage"
+msgstr ""
+
+#: resources/js/admin/features/sources/sources-folder-watches.tsx:24
+msgid "Manage client folders"
+msgstr ""
+
+#: resources/js/admin/features/sync-logs/sync-log-manage-dialog.tsx:36 resources/js/admin/features/sync-logs/sync-logs-view.tsx:348
 msgid "Manage logs"
 msgstr ""
 
@@ -1209,27 +2068,47 @@ msgstr ""
 msgid "Manual"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:125
-msgid "Manual and scheduled sync events appear here after a linked Doc syncs. Check Sources to sync or inspect linked Docs."
+#: resources/js/admin/features/folder-watches/folder-watch-edit-form.tsx:56
+msgid "Member Docs re-sync on this same interval."
+msgstr ""
+
+#: resources/js/admin/features/folder-watches/folder-watch-edit-form.tsx:53
+msgid "Member Docs re-sync on this same interval. Next scan: %s."
+msgstr ""
+
+#: resources/js/admin/features/activation/folder-activation-result.tsx:52
+msgid "Member Docs will re-sync on this folder's schedule."
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/folder-watch-confirm-panel.tsx:132
+msgid "Mirror folders as parent pages (pages and other hierarchical types only)"
 msgstr ""
 
 #: resources/js/admin/features/google-setup/google-setup-test-result.tsx:23
 msgid "Missing"
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-table.tsx:23
+#: resources/js/admin/features/drive-browser/drive-browser-table.tsx:24
 msgid "Modified"
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-toolbar.tsx:51 resources/js/admin/features/drive-browser/drive-browser-utils.ts:10
+#: resources/js/admin/features/folder-watches/folder-watch-row-actions.tsx:38
+msgid "More actions"
+msgstr ""
+
+#: resources/js/admin/features/drive-browser/drive-browser-toolbar.tsx:51 resources/js/admin/features/drive-browser/drive-browser-utils.ts:10 src/Google/DriveClient.php:99
 msgid "My Drive"
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-table.tsx:22
+#: resources/js/admin/features/drive-browser/drive-browser-table.tsx:23
 msgid "Name"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:85
+#: resources/js/admin/features/sources/source-health-summary.tsx:45
+msgid "Need attention"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:135
 msgid "Need Google Cloud help?"
 msgstr ""
 
@@ -1237,35 +2116,61 @@ msgstr ""
 msgid "Needs action"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:40
+#: resources/js/admin/features/folder-watches/folder-watches-view.tsx:80 resources/js/admin/features/sources/sources-table.tsx:79 resources/js/admin/features/sync-logs/sync-logs-view.tsx:41
 msgid "Needs attention"
 msgstr ""
 
-#: resources/js/admin/features/sources/sources-table.tsx:282
+#: resources/js/admin/features/sources/sources-table.tsx:416
 msgid "Never"
 msgstr ""
 
-#: resources/js/admin/shared/ui/status-pill.tsx:18
+#: resources/js/admin/shared/ui/status-pill.tsx:19
 msgid "New"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:89
+#: resources/js/admin/features/doc-source-modal/folder-watch-confirm-panel.tsx:213
+msgid "New Docs in this folder will be published immediately. Later syncs update content only and do not change post status."
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:215
+msgid "New Google Docs become WordPress drafts. You publish."
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/folder-watch-confirm-panel.tsx:163 resources/js/admin/features/folder-watches/folder-watch-edit-form.tsx:60
+msgid "New posts"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:126
 msgid "New synced block editor posts use this layout unless a source chooses a different one. Elementor sync uses Elementor layout."
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:438
+#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:465
 msgid "Next"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:153 resources/js/admin/features/google-setup/google-setup-next-action.tsx:23
+#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:217 resources/js/admin/features/google-setup/google-setup-next-action.tsx:23
 msgid "Next action"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:34 resources/js/admin/features/sync-logs/sync-log-events-table.tsx:41
+#: resources/js/admin/features/activation/activation-guidance.tsx:91
+msgid "Next responsibility"
+msgstr ""
+
+#. translators: %s: ISO timestamp.
+#: resources/js/admin/features/folder-watches/folder-watch-format-time.ts:47
+msgid "Next scan: %s"
+msgstr ""
+
+#. translators: %s: formatted date/time.
+#: resources/js/admin/features/folder-watches/folder-watch-format-time.ts:42
+msgid "Next: %s"
+msgstr ""
+
+#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:38 resources/js/admin/features/sync-logs/sync-log-events-table.tsx:45
 msgid "No"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:162
+#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:166
 msgid "No action needed"
 msgstr ""
 
@@ -1273,61 +2178,89 @@ msgstr ""
 msgid "No active lock or scheduled cron event was found. Retry sync and check WP-Cron if the source stays syncing."
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:85
+#: resources/js/admin/features/activation/activation-guidance.tsx:43
+msgid "No available WordPress target"
+msgstr ""
+
+#: resources/js/admin/features/sources/sources-table.tsx:324
+msgid "No Docs linked yet"
+msgstr ""
+
+#: resources/js/admin/features/sources/sources-table.tsx:320
+msgid "No Docs linked yet. Link one Doc or watch a client folder."
+msgstr ""
+
+#: resources/js/admin/features/folder-watches/folder-watch-inventory-panel.tsx:178
+msgid "No Docs match the current search or filter."
+msgstr ""
+
+#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:118
 msgid "No Drive items in this folder."
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:84
+#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:117
 msgid "No Drive items match this search."
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-task-state.ts:120
+msgid "No enabled WordPress target is available for this user. Adjust post-type permissions before creating a source."
 msgstr ""
 
 #: resources/js/admin/features/google-setup/oauth-client-json-import.tsx:85
 msgid "No file selected"
 msgstr ""
 
+#: resources/js/admin/features/folder-watches/folder-watch-table.tsx:56
+msgid "No folder watches yet"
+msgstr ""
+
 #. translators: %s: Google Drive search query.
-#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:79
+#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:112
 msgid "No folders or Google Docs found for \"%s\". Try another search, switch shared drives, or confirm this Google account can open the Doc."
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:82
+#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:115
 msgid "No folders or Google Docs were found here. Try a search, switch shared drives, or confirm this Google account has access."
+msgstr ""
+
+#: resources/js/admin/features/post-sync/source-inspector-summary.tsx:29
+msgid "No Google Doc linked yet."
 msgstr ""
 
 #: resources/js/admin/features/post-sync/post-sync-dom.ts:20
 msgid "No Google Doc linked."
 msgstr ""
 
-#: resources/js/admin/features/sources/sources-table.tsx:237
-msgid "No linked Docs yet"
+#: resources/js/admin/features/folder-watches/folder-watch-inventory-panel.tsx:149
+msgid "No Google Docs found in this folder."
 msgstr ""
 
-#: resources/js/admin/features/sources/sources-table.tsx:236
+#: resources/js/admin/features/sources/sources-table.tsx:323
 msgid "No sources match these filters."
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:286
+#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:309
 msgid "No stored log events found to clear."
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:111
+#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:105
 msgid "No sync events for this level."
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:97
+#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:91
 msgid "No sync events for this source and filters."
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:104
+#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:98
 msgid "No sync events for this source yet."
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:118
+#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:112
 msgid "No sync events match these filters."
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:124
-msgid "No sync events recorded yet."
+#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:118
+msgid "No syncs yet"
 msgstr ""
 
 #: resources/js/admin/features/google-setup/telemetry-consent-panel.tsx:31
@@ -1338,15 +2271,27 @@ msgstr ""
 msgid "None"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/account-panel.tsx:62
+#: src/Sync/SyncService.php:919
+msgid "Not applied: %s."
+msgstr ""
+
+#: resources/js/admin/features/google-setup/account-panel.tsx:72
 msgid "Not connected"
 msgstr ""
 
-#: src/Admin/PostListActions.php:128
+#: src/Admin/PostListActions.php:270
 msgid "Not linked"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:106 resources/js/admin/features/google-setup/google-setup-credentials-step.tsx:58 resources/js/admin/features/google-setup/google-setup-utils.ts:26
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:256
+msgid "not scheduled"
+msgstr ""
+
+#: resources/js/admin/features/folder-watches/folder-watch-format-time.ts:54
+msgid "Not scheduled"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:156 resources/js/admin/features/google-setup/google-setup-credentials-step.tsx:58 resources/js/admin/features/google-setup/google-setup-utils.ts:26
 msgid "OAuth client ID"
 msgstr ""
 
@@ -1354,20 +2299,12 @@ msgstr ""
 msgid "OAuth client ID and secret imported."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:110 resources/js/admin/features/google-setup/google-setup-credentials-step.tsx:62 resources/js/admin/features/google-setup/google-setup-utils.ts:32
+#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:160 resources/js/admin/features/google-setup/google-setup-credentials-step.tsx:62 resources/js/admin/features/google-setup/google-setup-utils.ts:32
 msgid "OAuth client secret"
 msgstr ""
 
 #: resources/js/admin/features/google-setup/google-setup-utils.ts:15
 msgid "OAuth consent"
-msgstr ""
-
-#: resources/js/admin/features/google-setup/google-setup-task-state.ts:115
-msgid "OAuth credentials"
-msgstr ""
-
-#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:127
-msgid "OAuth credentials are saved."
 msgstr ""
 
 #: resources/js/admin/features/google-setup/oauth-client-json-import.tsx:60
@@ -1386,7 +2323,11 @@ msgstr ""
 msgid "OAuth JSON is missing web.client_secret."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:74
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:255
+msgid "off"
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/folder-watch-confirm-panel.tsx:181 resources/js/admin/features/doc-source-modal/folder-watch-confirm-panel.tsx:53 resources/js/admin/features/folder-watches/folder-watch-labels.ts:29 resources/js/admin/features/google-setup/google-setup-targets-step.tsx:111 resources/js/admin/features/google-setup/google-setup-targets-step.tsx:87 resources/js/admin/features/post-sync/post-meta-box-app.tsx:245
 msgid "Off"
 msgstr ""
 
@@ -1398,43 +2339,93 @@ msgstr ""
 msgid "One Google Cloud project provides the APIs, consent screen, and OAuth web client."
 msgstr ""
 
+#: resources/js/admin/features/doc-source-modal/source-intent-cards.tsx:29
+msgid "One source. One draft. Follows the site schedule."
+msgstr ""
+
+#. translators: %s: folder name.
+#: resources/js/admin/features/doc-source-modal/folder-watch-confirm-panel.tsx:108
+msgid "Only Google Docs in %s, not subfolders. New Docs become WordPress drafts. You publish."
+msgstr ""
+
 #: resources/js/admin/features/sync-logs/sync-log-manage-dialog.tsx:27
 msgid "Only stored events for source post ID %d will be cleared."
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-table.tsx:94
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:202
+msgid "Only when I sync"
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/use-folder-watch-flow.ts:125
+msgid "Open a Google Drive folder first."
+msgstr ""
+
+#: resources/js/admin/features/activation/activation-result.tsx:77 resources/js/admin/features/zip-import/zip-import-dialog.tsx:126
+msgid "Open draft"
+msgstr ""
+
+#: resources/js/admin/features/activation/folder-activation-result.tsx:63
+msgid "Open Drive Folders"
+msgstr ""
+
+#: resources/js/admin/features/drive-browser/drive-browser-table.tsx:95
 msgid "Open folder %s"
 msgstr ""
 
-#: resources/js/admin/features/sources/sources-table.tsx:234
-msgid "Open Posts and use Add Sync Doc to choose a Google Doc and create the first synced draft."
+#: resources/js/admin/features/sources/source-activity-drawer.tsx:88
+msgid "Open full activity for this source"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-first-sync-step.tsx:27
-msgid "Open the Posts list, choose Add Sync Doc, select a Google Doc, and Brasth Document Sync will create the first synced draft."
+#: resources/js/admin/features/post-sync/editor-integration.ts:63
+msgid "Open Google Doc"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:145 resources/js/admin/features/google-setup/google-setup-task-state.ts:100
-msgid "Open the Posts list, choose Add Sync Doc, select a Google Doc, and create the first synced draft."
+#: resources/js/admin/features/activation/activation-guidance.tsx:72
+msgid "Open Setup"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-task-state.ts:107
+msgid "Open Sources"
+msgstr ""
+
+#: resources/js/admin/features/feedback/feedback-dialog.tsx:223
+msgid "Open the issue to track discussion and updates."
 msgstr ""
 
 #: resources/js/admin/features/google-setup/oauth-client-json-import.tsx:39
 msgid "Optional. Fill the credential fields from the Web application JSON downloaded from Google Cloud, then confirm the redirect URI is present exactly."
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:437
+#: resources/js/admin/features/folder-watches/folder-watch-edit-form.tsx:81 resources/js/admin/features/sync-logs/sync-log-events-table.tsx:59
+msgid "Output"
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/output-type-choice.tsx:31
+msgid "Output type"
+msgstr ""
+
+#. translators: %s: WordPress user display name.
+#: resources/js/admin/features/folder-watches/folder-watch-detail-page.tsx:99
+msgid "Owner: %s"
+msgstr ""
+
+#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:464
 msgid "Page %d"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-filter-options.ts:26
+#: resources/js/admin/features/sync-logs/sync-log-filter-options.ts:27
 msgid "Partial fallback import"
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal-options.ts:8
-msgid "Paste Doc URL"
+#: resources/js/admin/features/google-setup/setup-wizard-steps.ts:61
+msgid "Paste a Doc URL or pick from Drive after Google is connected."
 msgstr ""
 
 #: resources/js/admin/features/doc-source-modal/doc-source-modal-options.ts:9
+msgid "Paste Doc URL"
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/doc-source-modal-options.ts:10
 msgid "Paste file ID"
 msgstr ""
 
@@ -1442,31 +2433,63 @@ msgstr ""
 msgid "Paste the callback into Authorized redirect URIs for the Google OAuth web client."
 msgstr ""
 
-#: src/Admin/AdminPage.php:120
+#: src/Sync/SyncService.php:898
+msgid "Pattern not found: %s."
+msgstr ""
+
+#: resources/js/admin/features/folder-watches/folder-watch-detail-page.tsx:75 resources/js/admin/features/folder-watches/folder-watch-row-actions.tsx:50
+msgid "Pause"
+msgstr ""
+
+#: resources/js/admin/features/folder-watches/folder-watches-view.tsx:26
+msgid "Paused"
+msgstr ""
+
+#: resources/js/admin/features/sources/sources-table.tsx:67
+msgid "Pending review"
+msgstr ""
+
+#: src/Admin/AdminPage.php:186
 msgid "Permission denied"
 msgstr ""
 
-#: src/Sync/Layout/LayoutPresetRegistry.php:73
+#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:196 resources/js/admin/features/google-setup/setup-wizard-steps.ts:58
+msgid "Pick folder or Doc"
+msgstr ""
+
+#: src/Sync/Layout/LayoutPresetRegistry.php:74
 msgid "Plain Blocks"
 msgstr ""
 
-#: resources/js/admin/features/sources/sources-table.tsx:247 resources/js/admin/features/sources/sources-table.tsx:300 resources/js/admin/features/sync-logs/sync-log-events-table.tsx:140
+#: resources/js/admin/features/feedback/feedback-dialog.tsx:258
+msgid "Plugin, WordPress, and PHP version numbers are attached automatically for debugging. Your site URL and WordPress user identity are not sent."
+msgstr ""
+
+#: resources/js/admin/features/sources/sources-table.tsx:333 resources/js/admin/features/sources/sources-table.tsx:343 resources/js/admin/features/sources/sources-table.tsx:434 resources/js/admin/features/sync-logs/sync-log-events-table.tsx:145
 msgid "Post %d"
 msgstr ""
 
-#: resources/js/admin/features/sources/sources-table.tsx:176
+#: resources/js/admin/features/sources/sources-table.tsx:231
 msgid "Post or Google Doc"
 msgstr ""
 
-#: resources/js/admin/features/sources/sources-table.tsx:182
+#: resources/js/admin/features/sources/sources-table.tsx:237
 msgid "Post type"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:51
+#: resources/js/admin/features/folder-watches/folder-watch-edit-form.tsx:32
+msgid "Post type is fixed for this watch. Create a new watch to target another type."
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:64
 msgid "Post types, schedule, and Elementor support. These can be adjusted after setup."
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:436
+#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:75
+msgid "Preset"
+msgstr ""
+
+#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:463
 msgid "Previous"
 msgstr ""
 
@@ -1474,43 +2497,106 @@ msgstr ""
 msgid "Privacy policy"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:151
+#: resources/js/admin/features/sources/sources-table.tsx:68
+msgid "Private"
+msgstr ""
+
+#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:155
 msgid "Progress: %d%%"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-filter-options.ts:21 resources/js/admin/shared/ui/status-pill.tsx:17
+#: resources/js/admin/features/doc-source-modal/folder-watch-confirm-panel.tsx:170 resources/js/admin/features/folder-watches/folder-watch-edit-form.tsx:67
+msgid "Publish immediately"
+msgstr ""
+
+#: resources/js/admin/features/feedback/feedback-dialog.tsx:352
+msgid "Publish public issue"
+msgstr ""
+
+#: resources/js/admin/features/sources/sources-table.tsx:65
+msgid "Published"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-task-state.ts:159
+msgid "Publishing responsibility complete: folder automation or a source is active."
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-task-state.ts:162
+msgid "Publishing responsibility unlocks after Google is connected."
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-task-state.ts:161
+msgid "Publishing responsibility: watch a client folder or choose one Google Doc."
+msgstr ""
+
+#: resources/js/admin/features/activation/activation-guidance.tsx:99
+msgid "Publishing source"
+msgstr ""
+
+#: resources/js/admin/features/activation/activation-guidance.tsx:55
+msgid "Publishing workspace active"
+msgstr ""
+
+#: resources/js/admin/features/feedback/feedback-dialog.tsx:351
+msgid "Publishing..."
+msgstr ""
+
+#: resources/js/admin/features/feedback/feedback-dialog.tsx:32
+msgid "Question"
+msgstr ""
+
+#: resources/js/admin/features/post-sync/post-sync-dom.ts:166 resources/js/admin/features/sync-logs/sync-log-filter-options.ts:22 resources/js/admin/shared/ui/status-pill.tsx:18
 msgid "Queued"
 msgstr ""
 
-#: resources/js/admin/app/use-admin-app.ts:160 resources/js/admin/app/use-sources-app.ts:101
+#. translators: %d: number of posts queued for sync.
+#: src/Admin/PostListActions.php:193
+msgid "Queued Google Docs sync for %d post."
+msgid_plural "Queued Google Docs sync for %d posts."
+msgstr[0] ""
+msgstr[1] ""
+
+#: resources/js/admin/app/use-sources-app.ts:193
+msgid "Queued sync for %1$d source(s). %2$d skipped (already syncing, has WordPress edits, or could not be queued)."
+msgstr ""
+
+#: resources/js/admin/app/use-admin-app.ts:183 resources/js/admin/app/use-sources-app.ts:194 resources/js/admin/app/use-sources-app.ts:210
 msgid "Queued sync for %d source(s)."
 msgstr ""
 
-#: resources/js/admin/app/use-admin-app.ts:160 resources/js/admin/app/use-sources-app.ts:101
+#: resources/js/admin/app/use-admin-app.ts:183 resources/js/admin/app/use-sources-app.ts:210
 msgid "Queued sync for %d source(s). Run sync all again for more."
 msgstr ""
 
-#: resources/js/admin/app/admin-app.tsx:33 resources/js/admin/app/setup-app.tsx:30 resources/js/admin/features/google-setup/setup-step-state.tsx:13
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:238
+msgid "Re-sync schedule"
+msgstr ""
+
+#: resources/js/admin/features/post-sync/use-post-sync-actions.ts:115
+msgid "Re-sync schedule updated."
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:137
+msgid "Read post details from a table at the top of the Doc"
+msgstr ""
+
+#: resources/js/admin/app/admin-app.tsx:33 resources/js/admin/app/setup-app.tsx:40 resources/js/admin/features/google-setup/setup-step-state.tsx:13
 msgid "Ready"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-first-sync-step.tsx:44 resources/js/admin/features/google-setup/google-setup-task-state.ts:135
-msgid "Ready from the Posts list."
+#: resources/js/admin/features/google-setup/oauth-connect-error-panel.tsx:43
+msgid "Reconnect"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/account-panel.tsx:47 resources/js/admin/features/google-setup/google-setup-task-state.ts:124 resources/js/admin/features/google-setup/google-setup-task-state.ts:90 resources/js/admin/features/google-setup/google-setup-task-state.ts:92
+#: resources/js/admin/features/activation/activation-guidance.tsx:79 resources/js/admin/features/google-setup/account-panel.tsx:53 resources/js/admin/features/google-setup/google-setup-task-state.ts:148 resources/js/admin/features/google-setup/google-setup-task-state.ts:95 resources/js/admin/features/google-setup/google-setup-task-state.ts:97 resources/js/admin/features/sources/sync-error-recovery.ts:34
 msgid "Reconnect Google"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-first-sync-step.tsx:46
-msgid "Reconnect Google before selecting Docs."
-msgstr ""
-
-#: src/Auth/GoogleOAuthService.php:186
+#: src/Auth/GoogleOAuthService.php:191
 msgid "Reconnect Google Drive so Brasth Document Sync can browse and sync Google Docs with Drive read-only access."
 msgstr ""
 
-#: src/Auth/GoogleOAuthService.php:198 src/Auth/GoogleOAuthService.php:371
+#: src/Auth/GoogleOAuthService.php:203 src/Auth/GoogleOAuthService.php:376
 msgid "Reconnect Google Drive so Brasth Document Sync can refresh access."
 msgstr ""
 
@@ -1518,15 +2604,11 @@ msgstr ""
 msgid "Reconnect Google if needed, confirm Drive API and Docs API are enabled, then retry sync."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:137
+#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:189
 msgid "Reconnect Google to grant Drive read-only access required by the current browser and sync flow."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-first-sync-step.tsx:29
-msgid "Reconnect Google with Drive read-only access before selecting Docs."
-msgstr ""
-
-#: resources/js/admin/features/google-setup/account-panel.tsx:58
+#: resources/js/admin/features/google-setup/account-panel.tsx:66
 msgid "Reconnect to grant Drive read-only access before browsing Docs."
 msgstr ""
 
@@ -1534,95 +2616,223 @@ msgstr ""
 msgid "Reconnect to grant Drive read-only access before browsing or syncing Docs."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-task-state.ts:91
+#: resources/js/admin/features/google-setup/google-setup-task-state.ts:96
 msgid "Reconnect to grant Drive read-only access required by the current browser and sync flow."
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:216
+#: resources/js/admin/features/activation/activation-guidance.tsx:36
+msgid "Reconnect your Google account"
+msgstr ""
+
+#: resources/js/admin/features/activation/activation-result.tsx:21
+msgid "Reconnect your Google account, then retry this source."
+msgstr ""
+
+#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:237
 msgid "Recovery"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:77 resources/js/admin/features/google-setup/google-setup-cloud-steps.tsx:76
+#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:127 resources/js/admin/features/google-setup/google-setup-cloud-steps.tsx:76 resources/js/admin/features/google-setup/settings-panel.tsx:155
 msgid "Redirect URI"
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-toolbar.tsx:69 resources/js/admin/features/sources/sources-table.tsx:159 resources/js/admin/features/sync-logs/sync-logs-view.tsx:357
+#: resources/js/admin/features/google-setup/oauth-connect-error.ts:59
+msgid "Redirect URI does not match. Add exactly the URI shown below in Google Cloud → Credentials."
+msgstr ""
+
+#: resources/js/admin/features/drive-browser/drive-browser-toolbar.tsx:69 resources/js/admin/features/sources/sources-table.tsx:214 resources/js/admin/features/sync-logs/sync-logs-view.tsx:382
 msgid "Refresh"
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:73
+#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:106
 msgid "Refresh Drive"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/list-entry-app.tsx:117 resources/js/admin/features/post-sync/list-entry-app.tsx:142 resources/js/admin/features/post-sync/list-entry-app.tsx:157
+#: resources/js/admin/features/post-sync/list-entry-app.tsx:122 resources/js/admin/features/post-sync/list-entry-app.tsx:150 resources/js/admin/features/post-sync/list-entry-app.tsx:165
 msgid "Reload"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/list-entry-app.tsx:119
+#: resources/js/admin/features/post-sync/list-entry-app.tsx:124
 msgid "Reload to see the updated list."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:66
+#: resources/js/admin/features/folder-watches/folder-watch-detail-page.tsx:82 resources/js/admin/features/folder-watches/folder-watch-row-actions.tsx:57
+msgid "Remove"
+msgstr ""
+
+#: resources/js/admin/features/drive-browser/drive-browser-table.tsx:99
+msgid "Remove Google Doc %s from selection"
+msgstr ""
+
+#: resources/js/admin/features/folder-watches/folder-watch-detail-page.tsx:166 resources/js/admin/features/folder-watches/folder-watch-table.tsx:133
+msgid "Remove watch"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:257
+msgid "Removes the saved client credentials, disconnects all plugin users locally, and cancels queued syncs. Sources and synced content stay intact."
+msgstr ""
+
+#: resources/js/admin/features/post-sync/use-post-sync-actions.ts:27
+msgid "Replace WordPress edits and sync"
+msgstr ""
+
+#: src/Sync/SyncService.php:909
+msgid "Replaced in WordPress: %s."
+msgstr ""
+
+#: resources/js/admin/features/feedback/feedback-dialog.tsx:250
+msgid "Report a bug, request a feature, or ask a question. Maintainers review public issues in Brasth/DocSync-WP."
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:79
 msgid "Required"
 msgstr ""
 
-#: resources/js/admin/features/sources/sources-table.tsx:200 resources/js/admin/features/sync-logs/sync-logs-view.tsx:345
+#: resources/js/admin/features/sources/sources-table.tsx:261 resources/js/admin/features/sync-logs/sync-logs-view.tsx:370
 msgid "Reset"
 msgstr ""
 
-#: resources/js/admin/features/sources/sources-table.tsx:224
+#: resources/js/admin/features/sources/sources-table.tsx:301
 msgid "Reset filters"
+msgstr ""
+
+#: resources/js/admin/features/folder-watches/folder-watch-detail-page.tsx:71 resources/js/admin/features/folder-watches/folder-watch-row-actions.tsx:46
+msgid "Resume"
+msgstr ""
+
+#: src/Sync/FolderWatchService.php:536
+msgid "Resume this folder watch before scanning for new Google Docs."
+msgstr ""
+
+#: resources/js/admin/features/google-setup/oauth-connect-error-panel.tsx:48 resources/js/admin/features/sync-logs/sync-log-events-table.tsx:202
+msgid "Retry"
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/folder-watch-confirm-panel.tsx:241 resources/js/admin/features/folder-watches/folder-watch-inventory-panel.tsx:202
+msgid "Retry failed"
+msgstr ""
+
+#: resources/js/admin/features/activation/activation-result.tsx:78 resources/js/admin/features/sources/sync-error-recovery.ts:50 resources/js/admin/features/sources/sync-error-recovery.ts:53
+msgid "Retry sync"
 msgstr ""
 
 #: resources/js/admin/features/sync-logs/sync-log-recovery-hints.ts:19
 msgid "Retry sync. If it stalls again, configure a real server cron for wp-cron.php and check PHP error logs."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-task-state.ts:118
-msgid "Save a Google OAuth web client."
+#: resources/js/admin/features/activation/activation-guidance.tsx:84 src/Notifications/SyncHealthSiteStatus.php:119
+msgid "Review sources"
 msgstr ""
 
-#: resources/js/admin/app/use-admin-app.ts:103 resources/js/admin/app/use-setup-app.ts:54
+#: resources/js/admin/features/activation/activation-guidance.tsx:64
+msgid "Review the affected sources below. Failed syncs do not overwrite the existing WordPress content."
+msgstr ""
+
+#: src/Notifications/SyncFailureDigest.php:184
+msgid "Review them here:"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/setup-wizard-steps.ts:69
+msgid "Run the first sync to finish activation."
+msgstr ""
+
+#: resources/js/admin/features/folder-watches/folder-watch-detail-page.tsx:142
+msgid "Save changes"
+msgstr ""
+
+#: resources/js/admin/app/use-admin-app.ts:104 resources/js/admin/app/use-setup-app.ts:77
 msgid "Save OAuth client ID and client secret before connecting Google."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/account-panel.tsx:66
+#: resources/js/admin/features/google-setup/account-panel.tsx:76
 msgid "Save OAuth client ID and client secret before connecting. The Google Cloud project must have Drive API and Docs API enabled."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-credentials-step.tsx:44 resources/js/admin/features/google-setup/google-setup-task-state.ts:70 resources/js/admin/features/google-setup/google-setup-task-state.ts:72
+#: resources/js/admin/features/google-setup/google-setup-credentials-step.tsx:44 resources/js/admin/features/google-setup/google-setup-task-state.ts:75 resources/js/admin/features/google-setup/google-setup-task-state.ts:77
 msgid "Save OAuth credentials"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-sync-defaults-panel.tsx:88
+#: resources/js/admin/features/google-setup/google-setup-sync-defaults-panel.tsx:106
 msgid "Save sync defaults"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-task-state.ts:71
+#: resources/js/admin/features/google-setup/google-setup-task-state.ts:76
 msgid "Save the Google OAuth web client ID and secret before connecting Google."
+msgstr ""
+
+#: resources/js/admin/features/activation/activation-guidance.tsx:26
+msgid "Save this site's Google OAuth web client before anyone connects an account."
 msgstr ""
 
 #: resources/js/admin/features/google-setup/google-setup-utils.ts:27
 msgid "Saved from a Google OAuth web application client."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:114 resources/js/admin/features/google-setup/google-setup-credentials-step.tsx:66
+#: resources/js/admin/app/use-admin-app.ts:131 resources/js/admin/app/use-setup-app.ts:105
+msgid "Saved OAuth configuration cleared. All plugin users must reconnect after new credentials are saved."
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:165 resources/js/admin/features/google-setup/google-setup-credentials-step.tsx:66
 msgid "Saved. Enter a new secret to replace."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:72
+#: resources/js/admin/features/folder-watches/folder-watch-row-actions.tsx:31
+msgid "Scan"
+msgstr ""
+
+#: resources/js/admin/features/folder-watches/folder-watch-detail-page.tsx:67
+msgid "Scan now"
+msgstr ""
+
+#: resources/js/admin/features/folder-watches/folder-watch-table.tsx:69
+msgid "Schedule"
+msgstr ""
+
+#: resources/js/admin/features/sources/sources-table.tsx:69
+msgid "Scheduled"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:85
 msgid "Scheduled sync"
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-toolbar.tsx:66 resources/js/admin/features/sources/sources-table.tsx:172 resources/js/admin/features/sync-logs/sync-logs-view.tsx:344
+#: resources/js/admin/shared/ui/cron-health-banner.tsx:17
+msgid "Scheduled sync may not run on this site"
+msgstr ""
+
+#: src/Notifications/SyncHealthSiteStatus.php:92
+msgid "Scheduled syncs are running and no linked source reports an error."
+msgstr ""
+
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:204
+msgid "Scheduled syncs follow this. Drafts apply automatically unless you choose otherwise."
+msgstr ""
+
+#: resources/js/admin/features/drive-browser/drive-browser-toolbar.tsx:66 resources/js/admin/features/sources/sources-table.tsx:227 resources/js/admin/features/sync-logs/sync-logs-view.tsx:369
 msgid "Search"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:319
+#: resources/js/admin/features/folder-watches/folder-watch-inventory-panel.tsx:109
+msgid "Search Docs in this folder"
+msgstr ""
+
+#: resources/js/admin/features/folder-watches/folder-watch-inventory-panel.tsx:113
+msgid "Search Docs…"
+msgstr ""
+
+#: resources/js/admin/features/folder-watches/folder-watches-view.tsx:93
+msgid "Search folder watches"
+msgstr ""
+
+#: resources/js/admin/features/folder-watches/folder-watches-view.tsx:97
+msgid "Search folders or owners…"
+msgstr ""
+
+#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:344
 msgid "Search source events, switch troubleshooting views, and inspect recovery hints."
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:334
+#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:359
 msgid "Search sync activity"
 msgstr ""
 
@@ -1630,40 +2840,66 @@ msgstr ""
 msgid "Search this folder"
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-table.tsx:95
+#: resources/js/admin/features/sources/sources-table.tsx:284
+msgid "Select"
+msgstr ""
+
+#: resources/js/admin/features/sources/sources-table.tsx:333
+msgid "Select %s"
+msgstr ""
+
+#: resources/js/admin/features/drive-browser/drive-browser-table.tsx:103
 msgid "Select Google Doc %s"
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/use-doc-source-modal.ts:85
+#: resources/js/admin/features/doc-source-modal/use-doc-source-modal.ts:168
 msgid "Select or inspect a Google Doc before linking it."
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:131 resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:133
+#. translators: %d: maximum number of Google Docs that can be imported at once.
+#: resources/js/admin/features/doc-source-modal/use-doc-source-modal.ts:146
+msgid "Select up to %d Google Docs at a time."
+msgstr ""
+
+#: resources/js/admin/features/folder-watches/folder-watch-inventory-panel.tsx:99
+msgid "Select visible"
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:197 resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:206
 msgid "Selected Google Doc"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:112
+#. translators: %d: number of selected Google Docs.
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:203
+msgid "Selected Google Docs (%d)"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:114
+msgid "Sends at most one daily email listing posts whose scheduled sync failed. Site Health also reports sync problems."
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:163
 msgid "Sends one weekly anonymous install check-in with plugin, WordPress, and PHP versions only. No Google data, content, user data, document IDs, or site URL."
 msgstr ""
 
-#: resources/js/admin/app/use-admin-app.ts:128 resources/js/admin/app/use-setup-app.ts:79
+#: src/Sync/Metadata/PostMetadataApplier.php:304
+msgid "SEO fields (no supported SEO plugin active)"
+msgstr ""
+
+#: resources/js/admin/app/use-admin-app.ts:148 resources/js/admin/app/use-setup-app.ts:132
 msgid "Settings saved."
 msgstr ""
 
-#: resources/js/admin/app/admin-app.tsx:33 resources/js/admin/app/setup-app.tsx:30 src/Admin/AdminPage.php:65
+#: resources/js/admin/app/admin-app.tsx:33 resources/js/admin/app/setup-app.tsx:40 resources/js/admin/features/google-setup/google-setup-progress-rail.tsx:26 resources/js/admin/shared/ui/workspace-nav.tsx:12 src/Admin/AdminPage.php:104
 msgid "Setup"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-progress-rail.tsx:31
-msgid "Setup checklist"
+#: resources/js/admin/features/sources/sources-folder-watches.tsx:22
+msgid "Setup can start folder automation. Manage watches here."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-progress-rail.tsx:30
+#: resources/js/admin/features/google-setup/google-setup-progress-rail.tsx:25
 msgid "Setup progress"
-msgstr ""
-
-#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:144
-msgid "Setup ready for source selection."
 msgstr ""
 
 #: resources/js/admin/features/google-setup/google-setup-test-result.tsx:17
@@ -1678,7 +2914,7 @@ msgstr ""
 msgid "Share anonymous diagnostics"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:109
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:160
 msgid "Share anonymous usage diagnostics with Brasth"
 msgstr ""
 
@@ -1686,23 +2922,55 @@ msgstr ""
 msgid "Share one anonymous weekly check-in so we can understand active installs and version compatibility. No Google data, site URL, user email, document IDs, or content is sent."
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:59
+#: resources/js/admin/features/drive-browser/drive-browser-panel.tsx:92
 msgid "Shared drives are unavailable: %s"
 msgstr ""
 
-#: resources/js/admin/app/admin-app.tsx:28 resources/js/admin/app/sources-app.tsx:24
+#: resources/js/admin/app/admin-app.tsx:28 resources/js/admin/app/sources-app.tsx:32
 msgid "shown source"
 msgstr ""
 
-#: resources/js/admin/app/admin-app.tsx:28 resources/js/admin/app/sources-app.tsx:24
+#: resources/js/admin/app/admin-app.tsx:28 resources/js/admin/app/sources-app.tsx:32
 msgid "shown sources"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-sync-dom.ts:167 resources/js/admin/features/sources/sources-table.tsx:60 resources/js/admin/features/sync-logs/sync-log-filter-options.ts:15 resources/js/admin/shared/ui/status-pill.tsx:13
-msgid "Skipped"
+#: resources/js/admin/features/activation/activation-guidance.tsx:96 resources/js/admin/features/google-setup/google-setup-task-state.ts:139
+msgid "Site connection"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:214
+#: resources/js/admin/features/activation/activation-guidance.tsx:24
+msgid "Site connection needs an administrator"
+msgstr ""
+
+#: resources/js/admin/features/zip-import/zip-import-dialog.tsx:112
+msgid "Site default"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/setup-wizard-steps.ts:46
+msgid "Site Google app"
+msgstr ""
+
+#: resources/js/admin/app/use-setup-app.ts:131 resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:179
+msgid "Site Google app saved."
+msgstr ""
+
+#: src/Rest/SourceController.php:738
+msgid "Skipped: this post has WordPress edits inside the synced content. Sync it from the editor to confirm."
+msgstr ""
+
+#: src/Sync/Metadata/PostMetadataApplier.php:50
+msgid "slug (post is already published)"
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/folder-watch-confirm-panel.tsx:238
+msgid "Some Docs could not be imported."
+msgstr ""
+
+#: src/Notifications/SyncHealthSiteStatus.php:111
+msgid "Some Google Docs sources need attention"
+msgstr ""
+
+#: resources/js/admin/features/post-sync/source-inspector-summary.tsx:28 resources/js/admin/features/sync-logs/sync-log-events-table.tsx:235
 msgid "Source"
 msgstr ""
 
@@ -1714,148 +2982,203 @@ msgstr ""
 msgid "Source %d sync complete."
 msgstr ""
 
-#: resources/js/admin/app/use-admin-app.ts:139 resources/js/admin/app/use-sources-app.ts:80
+#: resources/js/admin/app/use-admin-app.ts:162 resources/js/admin/app/use-sources-app.ts:157
 msgid "Source %d sync queued."
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:126
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:158
 msgid "Source changes are locked while this sync is running."
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:142
-msgid "Source ID %d"
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:109
+msgid "Source owners and administrators"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:407
+#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:432
 msgid "Source post ID"
 msgstr ""
 
-#: resources/js/admin/app/admin-app.tsx:41 resources/js/admin/app/sources-app.tsx:27 resources/js/admin/features/sources/sources-table.tsx:155 src/Admin/AdminPage.php:74
+#: resources/js/admin/app/use-setup-app.ts:197 resources/js/admin/features/sync-logs/sync-logs-view.tsx:240
+msgid "Source sync queued."
+msgstr ""
+
+#: resources/js/admin/app/admin-app.tsx:41 resources/js/admin/app/sources-app.tsx:35 resources/js/admin/features/sources/sources-table.tsx:210 resources/js/admin/shared/ui/workspace-nav.tsx:9 src/Admin/AdminPage.php:115
 msgid "Sources"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:45
+#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:46
 msgid "Stalled / WP-Cron"
 msgstr ""
 
-#: resources/js/admin/features/sources/sources-table.tsx:210 resources/js/admin/features/sources/sources-table.tsx:98 resources/js/admin/features/sync-logs/sync-logs-view.tsx:395
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:301
+msgid "Start folder sync"
+msgstr ""
+
+#: resources/js/admin/features/folder-watches/folder-watch-table.tsx:72 resources/js/admin/features/sources/sources-table.tsx:117 resources/js/admin/features/sources/sources-table.tsx:287 resources/js/admin/features/sync-logs/sync-logs-view.tsx:420
 msgid "Status"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:401
+#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:426
 msgid "Step"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/list-entry-app.tsx:161
+#: resources/js/admin/features/post-sync/list-entry-app.tsx:169
 msgid "Still syncing"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:109
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:137
 msgid "Still syncing. Leave this editor open to keep checking progress."
 msgstr ""
 
-#: resources/js/admin/app/use-source-sync-progress.ts:59
+#: resources/js/admin/app/use-source-sync-progress.ts:61
 msgid "Still syncing. Refresh sources to check again later."
 msgstr ""
 
-#: resources/js/admin/features/post-sync/list-entry-app.tsx:153
+#: resources/js/admin/features/post-sync/list-entry-app.tsx:161
 msgid "Still syncing. The source status remains visible in the list."
+msgstr ""
+
+#: resources/js/admin/features/folder-watches/folder-watch-detail-page.tsx:169 resources/js/admin/features/folder-watches/folder-watch-table.tsx:136
+msgid "Stop watching this folder?"
 msgstr ""
 
 #: resources/js/admin/features/google-setup/google-setup-utils.ts:33
 msgid "Stored encrypted in WordPress options."
 msgstr ""
 
-#: resources/js/admin/features/sources/sources-table.tsx:295 src/Admin/PostListActions.php:105
+#: resources/js/admin/features/folder-watches/folder-watch-detail-page.tsx:107 resources/js/admin/features/folder-watches/folder-watch-table.tsx:98
+msgid "Subfolders"
+msgstr ""
+
+#: resources/js/admin/features/folder-watches/folder-watch-table.tsx:70 resources/js/admin/features/sources/sources-table.tsx:429 src/Admin/PostListActions.php:247
 msgid "Sync"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/list-entry-app.tsx:56
+#: resources/js/admin/features/post-sync/list-entry-app.tsx:62
 msgid "Sync %s."
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:311
+#: resources/js/admin/features/sources/source-activity-drawer.tsx:61
+msgid "Sync activity"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-task-state.ts:109 resources/js/admin/features/sync-logs/sync-logs-view.tsx:335
 msgid "Sync Activity"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:361
+#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:386
 msgid "Sync activity views"
 msgstr ""
 
-#: resources/js/admin/features/sources/sources-table.tsx:160
+#: resources/js/admin/features/sources/sources-table.tsx:215
 msgid "Sync all changed"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:145
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:214
 msgid "Sync as Elementor layout"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/list-entry-app.tsx:121
+#: resources/js/admin/features/post-sync/list-entry-app.tsx:126
 msgid "Sync complete"
 msgstr ""
 
-#: src/Sync/SyncService.php:694
+#. translators: %d: number of images that failed to import.
+#: src/Sync/SyncService.php:875
+msgid "Sync complete, but %d image could not be imported."
+msgid_plural "Sync complete, but %d images could not be imported."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Sync/SyncService.php:870
 msgid "Sync complete."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:48
+#: resources/js/admin/app/use-setup-app.ts:173
+msgid "Sync completed, but activation status could not refresh."
+msgstr ""
+
+#: resources/js/admin/app/use-sources-app.ts:258
+msgid "Sync completed, but Sources could not refresh."
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:61
 msgid "Sync defaults"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-list-row-action-sync.ts:18 resources/js/admin/features/post-sync/post-sync-dom.ts:43 src/Admin/PostListActions.php:81
+#: resources/js/admin/features/post-sync/post-list-row-action-sync.ts:18 resources/js/admin/features/post-sync/post-sync-dom.ts:43 src/Admin/PostListActions.php:222
 msgid "Sync Doc"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/list-entry-app.tsx:121 resources/js/admin/features/post-sync/post-list-row-action-sync.ts:53
+#: resources/js/admin/features/post-sync/list-entry-app.tsx:126 resources/js/admin/features/post-sync/post-list-row-action-sync.ts:53
 msgid "Sync failed"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-list-row-action-sync.ts:47 resources/js/admin/features/post-sync/use-post-sync-actions.ts:24
+#: resources/js/admin/features/post-sync/editor-integration.ts:56 resources/js/admin/features/post-sync/post-list-row-action-sync.ts:47 resources/js/admin/features/post-sync/use-post-sync-actions.ts:38 resources/js/admin/features/sync-logs/sync-logs-view.tsx:245
 msgid "Sync failed."
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:134
+#: resources/js/admin/features/post-sync/editor-integration.ts:51
+msgid "Sync from Google Doc"
+msgstr ""
+
+#: src/Admin/PostListActions.php:103
+msgid "Sync from Google Docs"
+msgstr ""
+
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:162
 msgid "Sync now"
 msgstr ""
 
 #. translators: %d: Sync progress percent.
-#: resources/js/admin/features/post-sync/post-sync-dom.ts:148 resources/js/admin/shared/ui/sync-progress.tsx:25 src/Admin/PostListActions.php:167
+#: resources/js/admin/features/post-sync/post-sync-dom.ts:149 resources/js/admin/shared/ui/sync-progress.tsx:33 src/Admin/PostListActions.php:309
 msgid "Sync progress: %d%%"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/list-entry-app.tsx:100
+#: resources/js/admin/features/post-sync/list-entry-app.tsx:105 resources/js/admin/features/post-sync/list-entry-app.tsx:142
 msgid "Sync queued"
 msgstr ""
 
-#: src/Sync/SyncService.php:374
+#: src/Sync/SyncService.php:483
 msgid "Sync queued."
 msgstr ""
 
-#: resources/js/admin/features/sources/sources-table.tsx:191
+#: resources/js/admin/features/sources/sources-table.tsx:258
+msgid "Sync selected"
+msgstr ""
+
+#: resources/js/admin/features/sources/sources-table.tsx:257
+msgid "Sync selected (%d)"
+msgstr ""
+
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:191
+msgid "Sync settings"
+msgstr ""
+
+#: resources/js/admin/features/sources/sources-table.tsx:246
 msgid "Sync status"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/list-entry-app.tsx:146
+#: resources/js/admin/features/post-sync/list-entry-app.tsx:154
 msgid "Sync status unavailable"
 msgstr ""
 
-#: src/Rest/SourceController.php:1080
+#: src/Rest/SourceController.php:1300
 msgid "Sync stopped before completion. Retry sync, and check WP-Cron or PHP error logs if it keeps happening."
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-sync-dom.ts:165 resources/js/admin/features/sources/sources-table.tsx:59 resources/js/admin/features/sync-logs/sync-log-filter-options.ts:14 resources/js/admin/shared/ui/status-pill.tsx:12
+#: resources/js/admin/features/folder-watches/folder-watches-view.tsx:23 resources/js/admin/features/post-sync/post-sync-dom.ts:168 resources/js/admin/features/sources/sources-table.tsx:76 resources/js/admin/features/sync-logs/sync-log-filter-options.ts:14 resources/js/admin/shared/ui/status-pill.tsx:12
 msgid "Synced"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:59
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:87
 msgid "Synced Google Doc content applied to the editor."
 msgstr ""
 
-#: resources/js/admin/features/post-sync/post-sync-dom.ts:163 resources/js/admin/features/sources/sources-table.tsx:58 resources/js/admin/features/sync-logs/sync-log-filter-options.ts:13 resources/js/admin/shared/ui/status-pill.tsx:11
+#: resources/js/admin/features/folder-watches/folder-watches-view.tsx:24 resources/js/admin/features/post-sync/post-sync-dom.ts:166 resources/js/admin/features/sources/source-health-summary.tsx:46 resources/js/admin/features/sources/sources-table.tsx:75 resources/js/admin/features/sync-logs/sync-log-filter-options.ts:13 resources/js/admin/shared/ui/status-pill.tsx:11
 msgid "Syncing"
 msgstr ""
 
-#: resources/js/admin/features/post-sync/list-entry-app.tsx:134
+#: resources/js/admin/features/post-sync/list-entry-app.tsx:142
 msgid "Syncing Google Doc"
 msgstr ""
 
@@ -1863,80 +3186,256 @@ msgstr ""
 msgid "Syncing..."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:163
+#: src/Sync/Metadata/PostMetadataApplier.php:157
+msgid "tags (not permitted)"
+msgstr ""
+
+#: src/Sync/Metadata/PostMetadataApplier.php:280
+msgid "term \"%s\" could not be created"
+msgstr ""
+
+#: src/Sync/Metadata/PostMetadataApplier.php:264
+msgid "term \"%s\" does not exist"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:243
 msgid "Test setup"
 msgstr ""
 
+#: resources/js/admin/features/feedback/feedback-dialog.tsx:209
+msgid "Thanks for the feedback"
+msgstr ""
+
+#: src/Rest/ZipImportController.php:171
+msgid "That file is too large. Connect Google instead to sync large documents."
+msgstr ""
+
+#: resources/js/admin/app/folders-app.tsx:34
+msgid "That folder watch could not be found."
+msgstr ""
+
+#: src/Rest/ZipImportController.php:178
+msgid "That is not a .zip file. In Google Docs choose File > Download > Web Page (.html, zipped)."
+msgstr ""
+
 #. translators: %s: post type name.
-#: src/Settings/SettingsRepository.php:547
+#: src/Settings/SettingsRepository.php:669
 msgid "The \"%s\" post type cannot be used for Brasth Document Sync."
+msgstr ""
+
+#: resources/js/admin/features/activation/activation-result.tsx:27
+msgid "The background job stopped updating. Retry from Sources; an administrator may need to verify WP-Cron."
+msgstr ""
+
+#: resources/js/admin/features/activation/activation-result.tsx:68
+msgid "The existing WordPress content was not replaced. Resolve the connection or document access issue, then retry."
 msgstr ""
 
 #: resources/js/admin/features/sync-logs/sync-log-recovery-hints.ts:27
 msgid "The fallback is writing an empty draft in chunks. Keep the browser open until sync reaches complete or error."
 msgstr ""
 
-#: src/Auth/GoogleOAuthService.php:488
+#: src/Feedback/FeedbackService.php:56
+msgid "The feedback could not be prepared. Please retry."
+msgstr ""
+
+#: src/Feedback/FeedbackService.php:85
+msgid "The feedback service could not be reached. Please retry later."
+msgstr ""
+
+#: src/Feedback/FeedbackService.php:96
+msgid "The feedback service rejected the report. Please retry later."
+msgstr ""
+
+#: src/Feedback/FeedbackService.php:108
+msgid "The feedback service returned an invalid response. Please retry later."
+msgstr ""
+
+#: resources/js/admin/features/activation/activation-result.tsx:70
+msgid "The first source completed successfully. You can edit the WordPress draft or continue in Sources."
+msgstr ""
+
+#: resources/js/admin/features/post-sync/editor-integration.ts:34
+msgid "The Google Doc changed since this post was last synced. Use \"Apply update\" in the Google Doc sync box before publishing."
+msgstr ""
+
+#: src/Auth/GoogleOAuthService.php:530
 msgid "The Google OAuth state is invalid or expired. Start the connection again."
 msgstr ""
 
-#: src/Sync/SyncService.php:874
+#: src/Sync/SyncService.php:1288
 msgid "The linked Google Doc changed while this sync was running. Start a new sync if needed."
 msgstr ""
 
-#: src/Google/DriveClient.php:517
+#: resources/js/admin/features/activation/activation-guidance.tsx:27
+msgid "The site connection is not ready. Ask a WordPress administrator to finish Brasth Document Sync Setup."
+msgstr ""
+
+#: resources/js/admin/features/activation/activation-result.tsx:71
+msgid "The source is queued in the background. You may leave this page and return later."
+msgstr ""
+
+#: resources/js/admin/app/use-sources-app.ts:247
+msgid "The source was created, but the filtered list could not refresh."
+msgstr ""
+
+#: resources/js/admin/features/activation/activation-result.tsx:29
+msgid "The sync could not complete. Review Sync Activity for safe diagnostics, then retry."
+msgstr ""
+
+#: src/Notifications/SyncFailureDigest.php:165
+msgid "These posts failed their last scheduled sync from Google Docs. Your published content was not changed."
+msgstr ""
+
+#: resources/js/admin/features/feedback/feedback-dialog.tsx:254
+msgid "This creates a public GitHub issue"
+msgstr ""
+
+#: src/Google/DriveClient.php:570
 msgid "This Doc may exceed Google's 10 MB export limit. Brasth Document Sync will use the large-doc fallback if needed."
 msgstr ""
 
-#: src/Google/DriveClient.php:695
+#: resources/js/admin/features/doc-source-modal/source-intent-cards.tsx:42
+msgid "This Drive folder"
+msgstr ""
+
+#: resources/js/admin/features/folder-watches/folder-watch-inventory-panel.tsx:185
+msgid "This folder has more than 50 Docs. Brasth will automate the first 50."
+msgstr ""
+
+#: resources/js/admin/features/google-setup/oauth-connect-error.ts:75
+msgid "This Google account needs Drive read access for Docs."
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/source-intent-cards.tsx:28
+msgid "This Google Doc"
+msgstr ""
+
+#: src/Google/DriveClient.php:748
 msgid "This Google Doc is too large to export for Brasth Document Sync."
 msgstr ""
 
-#: src/Sync/SyncService.php:455
+#: src/Sync/SyncService.php:577
 msgid "This Google Doc sync is already running."
+msgstr ""
+
+#: src/Sync/FolderWatchService.php:226
+msgid "This Google Drive folder is already being watched."
 msgstr ""
 
 #: resources/js/admin/features/sync-logs/sync-log-recovery-hints.ts:23
 msgid "This is expected for Docs that Google will not export as HTML ZIP. Let the fallback finish before retrying."
 msgstr ""
 
-#: src/Rest/SourceController.php:439 src/Rest/SourceController.php:474 src/Rest/SourceController.php:537 src/Rest/SourceController.php:570 src/Rest/SourceController.php:718 src/Sync/SourceRepository.php:224 src/Sync/SourceRepository.php:931 src/Sync/SyncService.php:356 src/Sync/SyncService.php:403 src/Sync/SyncService.php:447
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:332
+msgid "This linked source currently uses another operator's Google connection for scheduled syncs. Transfer responsibility to your connected account? Existing WordPress content, revisions, and source settings are retained."
+msgstr ""
+
+#: src/Sync/SyncService.php:1065
+msgid "This plugin version formats this Doc differently. Review and apply the update."
+msgstr ""
+
+#: src/Rest/SourceController.php:429
+msgid "This post has edits made in WordPress inside the synced content. Syncing will replace them."
+msgstr ""
+
+#: resources/js/admin/app/use-sources-app.ts:150
+msgid "This post has WordPress edits inside the synced content. Open the post and use Sync now there to confirm replacing them."
+msgstr ""
+
+#: src/Sync/SyncService.php:1062
+msgid "This post has WordPress edits. Review and apply the update."
+msgstr ""
+
+#: src/Rest/SourceController.php:484 src/Rest/SourceController.php:519 src/Rest/SourceController.php:623 src/Rest/SourceController.php:656 src/Rest/SourceController.php:814 src/Sync/SourceRepository.php:1452 src/Sync/SourceRepository.php:342 src/Sync/SyncService.php:465 src/Sync/SyncService.php:512 src/Sync/SyncService.php:557
 msgid "This post is not linked to a Google Doc."
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:105
+#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:99
 msgid "This post may not be linked, may not have synced yet, or its older events may have been pruned."
 msgstr ""
 
-#: resources/js/admin/features/post-sync/use-post-sync-actions.ts:59
+#: resources/js/admin/features/post-sync/use-post-sync-actions.ts:73
 msgid "This post will sync as an Elementor layout."
 msgstr ""
 
-#: resources/js/admin/features/post-sync/use-post-sync-actions.ts:60
+#: resources/js/admin/features/post-sync/use-post-sync-actions.ts:74
 msgid "This post will sync as WordPress blocks."
 msgstr ""
 
-#: resources/js/admin/features/post-sync/use-post-sync-actions.ts:81
+#: resources/js/admin/features/post-sync/use-post-sync-actions.ts:116
+msgid "This post will use the folder or site schedule."
+msgstr ""
+
+#: resources/js/admin/features/post-sync/use-post-sync-actions.ts:95
 msgid "This post will use the site default layout preset."
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:218
+#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:273
+msgid "This removes the saved OAuth client ID and secret, disconnects every plugin user locally, and cancels queued syncs. Linked sources, posts, revisions, media, and logs are retained."
+msgstr ""
+
+#: resources/js/admin/features/post-sync/legacy-elementor-upgrade-notice.tsx:21
+msgid "This source keeps the older Elementor conversion until you choose a preset. Presets apply on the next sync."
+msgstr ""
+
+#: src/Rest/SourceController.php:317
+msgid "This source uses another editor's Google connection for scheduled syncs. Confirm the ownership transfer before relinking it to your connection."
+msgstr ""
+
+#: resources/js/admin/features/folder-watches/folder-watch-detail-page.tsx:167 resources/js/admin/features/folder-watches/folder-watch-table.tsx:134
+msgid "This stops watching the Drive folder. Synced drafts and posts stay in WordPress."
+msgstr ""
+
+#: resources/js/admin/app/use-setup-app.ts:179
+msgid "This sync is taking longer than expected. WordPress content remains unchanged until sync completes. Check Sources later; low-traffic sites may need an administrator to verify WP-Cron."
+msgstr ""
+
+#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:239
 msgid "Time"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:338
+#: resources/js/admin/features/feedback/feedback-dialog.tsx:278
+msgid "Title"
+msgstr ""
+
+#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:363
 msgid "Title, Google Doc, message, code, step, status, or post ID"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/account-panel.tsx:38
+#: resources/js/admin/features/feedback/feedback-dialog.tsx:130
+msgid "Titles cannot exceed 120 characters."
+msgstr ""
+
+#: src/Notifications/SyncFailureDigest.php:187
+msgid "To stop these emails, change \"Email me when scheduled sync fails\" in Brasth Document Sync settings."
+msgstr ""
+
+#: resources/js/admin/features/google-setup/account-panel.tsx:44
 msgid "Tokens are stored per WordPress user and encrypted with WordPress salts."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:76
+#: src/Rest/ZipImportController.php:122
+msgid "Too many imports. Try again in an hour."
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:334
+msgid "Transfer scheduled sync responsibility?"
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:331
+msgid "Transfer sync responsibility"
+msgstr ""
+
+#: resources/js/admin/features/zip-import/zip-import-dialog.tsx:64
+msgid "Try it without Google setup"
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/folder-watch-confirm-panel.tsx:183 resources/js/admin/features/doc-source-modal/folder-watch-confirm-panel.tsx:41 resources/js/admin/features/folder-watches/folder-watch-labels.ts:17 resources/js/admin/features/google-setup/google-setup-targets-step.tsx:89 resources/js/admin/features/post-sync/post-meta-box-app.tsx:247
 msgid "Twice daily"
 msgstr ""
 
-#: resources/js/admin/features/drive-browser/drive-browser-table.tsx:24
+#: resources/js/admin/features/drive-browser/drive-browser-table.tsx:25 resources/js/admin/features/feedback/feedback-dialog.tsx:263
 msgid "Type"
 msgstr ""
 
@@ -1944,7 +3443,7 @@ msgstr ""
 msgid "Unavailable"
 msgstr ""
 
-#: resources/js/admin/shared/ui/status-pill.tsx:19
+#: resources/js/admin/shared/ui/status-pill.tsx:20
 msgid "Unchanged"
 msgstr ""
 
@@ -1952,31 +3451,67 @@ msgstr ""
 msgid "Unknown"
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:165
+#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:245
 msgid "Unsaved changes are not tested until saved."
 msgstr ""
 
-#: resources/js/admin/features/google-setup/google-setup-sync-defaults-panel.tsx:86
+#: resources/js/admin/features/google-setup/google-setup-sync-defaults-panel.tsx:104
 msgid "Unsaved sync defaults"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:141
+#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:144
 msgid "Untitled Google Doc"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-filter-options.ts:28
+#: resources/js/admin/features/post-sync/post-sync-dom.ts:170 resources/js/admin/features/sources/sources-table.tsx:77 resources/js/admin/features/sync-logs/sync-log-filter-options.ts:15 resources/js/admin/shared/ui/status-pill.tsx:13 src/Admin/PostListActions.php:279
+msgid "Up to date"
+msgstr ""
+
+#: resources/js/admin/features/post-sync/post-sync-dom.ts:172 resources/js/admin/features/sources/sources-table.tsx:78 resources/js/admin/features/sync-logs/sync-log-filter-options.ts:16 resources/js/admin/shared/ui/status-pill.tsx:14
+msgid "Update available"
+msgstr ""
+
+#: resources/js/admin/features/post-sync/use-post-sync-actions.ts:135
+msgid "Update policy saved."
+msgstr ""
+
+#: resources/js/admin/features/sync-logs/sync-log-filter-options.ts:29
 msgid "Updating post"
 msgstr ""
 
-#: src/Sync/SyncService.php:622
+#: src/Sync/SyncService.php:799
 msgid "Updating the WordPress post."
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal-options.ts:13
+#: resources/js/admin/features/post-sync/legacy-elementor-upgrade-notice.tsx:24
+msgid "Upgrade to Feature Block"
+msgstr ""
+
+#: resources/js/admin/features/post-sync/legacy-elementor-upgrade-notice.tsx:27
+msgid "Upgrade to Hero Page"
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/doc-source-modal-options.ts:14
 msgid "Use a full docs.google.com/document URL that your connected Google account can open."
 msgstr ""
 
-#: resources/js/admin/shared/ui/layout-preset-selector.tsx:41
+#: resources/js/admin/features/sources/sources-table.tsx:389
+msgid "Use Connect Google above"
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:59 resources/js/admin/features/post-sync/post-meta-box-app.tsx:41
+msgid "Use Elementor default (%s)"
+msgstr ""
+
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:244
+msgid "Use folder or site schedule"
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/folder-watch-confirm-panel.tsx:56 resources/js/admin/features/folder-watches/folder-watch-edit-form.tsx:43 resources/js/admin/features/folder-watches/folder-watch-labels.ts:32 resources/js/admin/features/post-sync/post-meta-box-app.tsx:199
+msgid "Use site default"
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/folder-watch-confirm-panel.tsx:180 resources/js/admin/shared/ui/layout-preset-selector.tsx:47
 msgid "Use site default (%s)"
 msgstr ""
 
@@ -1984,7 +3519,7 @@ msgstr ""
 msgid "Use the OAuth client JSON for a Google Web application."
 msgstr ""
 
-#: resources/js/admin/features/doc-source-modal/doc-source-modal-options.ts:14
+#: resources/js/admin/features/doc-source-modal/doc-source-modal-options.ts:15
 msgid "Use the raw Google Drive file ID when your connected Google account can open it."
 msgstr ""
 
@@ -1992,23 +3527,47 @@ msgstr ""
 msgid "Use the Web application client from the same Google Cloud project."
 msgstr ""
 
-#: resources/js/admin/shared/ui/admin-shell.tsx:61
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:292
+msgid "Use this folder"
+msgstr ""
+
+#: resources/js/admin/shared/ui/admin-shell.tsx:67
 msgid "Version"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:362
+#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:387
 msgid "View"
 msgstr ""
 
-#: resources/js/admin/features/sources/sources-table.tsx:299
-msgid "View logs for %s"
+#: resources/js/admin/features/sources/sources-table.tsx:433
+msgid "View activity for %s"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:198
+#: resources/js/admin/features/feedback/feedback-dialog.tsx:236
+msgid "View GitHub issue"
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/doc-source-modal.tsx:306
+msgid "View in Sources"
+msgstr ""
+
+#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:193
+msgid "View post"
+msgstr ""
+
+#: resources/js/admin/features/folder-watches/folder-watch-row-actions.tsx:54
+msgid "View posts"
+msgstr ""
+
+#: resources/js/admin/features/activation/activation-guidance.tsx:84 resources/js/admin/features/activation/activation-result.tsx:79 resources/js/admin/features/activation/folder-activation-result.tsx:67 resources/js/admin/features/sync-logs/sync-log-events-table.tsx:219
 msgid "View Sources"
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:308
+#: resources/js/admin/features/folder-watches/folder-watch-detail-page.tsx:79
+msgid "View synced posts"
+msgstr ""
+
+#: resources/js/admin/features/sync-logs/sync-logs-view.tsx:332
 msgid "visible events"
 msgstr ""
 
@@ -2020,15 +3579,23 @@ msgstr ""
 msgid "Visible log summary"
 msgstr ""
 
-#: src/Sync/SyncService.php:173
+#: src/Sync/SyncService.php:254
 msgid "Wait for the current Google Doc sync to finish before changing this source."
 msgstr ""
 
-#: src/Rest/SourceController.php:726
+#: src/Rest/SourceController.php:822
 msgid "Wait for the current Google Doc sync to finish before detaching this source."
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-filter-options.ts:6 resources/js/admin/shared/ui/status-pill.tsx:16
+#: resources/js/admin/features/post-sync/list-entry-app.tsx:140 resources/js/admin/features/post-sync/list-entry-app.tsx:92 resources/js/admin/features/post-sync/post-sync-dom.ts:149 resources/js/admin/features/post-sync/post-sync-dom.ts:156 resources/js/admin/shared/ui/sync-progress.tsx:32 resources/js/admin/shared/ui/sync-progress.tsx:34
+msgid "Waiting for the background worker."
+msgstr ""
+
+#: resources/js/admin/features/zip-import/zip-import-dialog.tsx:85
+msgid "Want it to stay in sync with the Doc?"
+msgstr ""
+
+#: resources/js/admin/features/sync-logs/sync-log-filter-options.ts:6 resources/js/admin/shared/ui/status-pill.tsx:17
 msgid "Warning"
 msgstr ""
 
@@ -2036,31 +3603,127 @@ msgstr ""
 msgid "Warnings"
 msgstr ""
 
-#: resources/js/admin/features/sources/sources-table.tsx:208 resources/js/admin/features/sources/sources-table.tsx:96
+#: resources/js/admin/features/folder-watches/folder-watch-table.tsx:51 resources/js/admin/features/google-setup/google-setup-task-state.ts:117 resources/js/admin/features/google-setup/google-setup-task-state.ts:121 resources/js/admin/features/sources/sources-table.tsx:307
+msgid "Watch a client folder"
+msgstr ""
+
+#: resources/js/admin/features/folder-watches/folder-watch-table.tsx:55
+msgid "Watch a Drive folder to inventory Docs and create drafts automatically."
+msgstr ""
+
+#: resources/js/admin/features/folder-watches/folder-watches-view.tsx:86
+msgid "Watch another folder"
+msgstr ""
+
+#: resources/js/admin/features/folder-watches/folder-watch-detail-page.tsx:133
+msgid "Watch settings"
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/source-intent-cards.tsx:43
+msgid "Watch the folder. New Docs become drafts."
+msgstr ""
+
+#: resources/js/admin/features/folder-watches/folder-watches-view.tsx:68
+msgid "Watches"
+msgstr ""
+
+#: resources/js/admin/features/folder-watches/folder-watches-view.tsx:72
+msgid "Watching"
+msgstr ""
+
+#: src/Sync/FolderWatchService.php:216
+msgid "Watching the top of this Drive can import many Google Docs. Confirm that you want the root folder."
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/use-folder-watch-flow.ts:130
+msgid "Watching the top of this Drive can import many Google Docs. Confirm the root folder to continue."
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/folder-watch-confirm-panel.tsx:185 resources/js/admin/features/doc-source-modal/folder-watch-confirm-panel.tsx:49 resources/js/admin/features/folder-watches/folder-watch-labels.ts:25 resources/js/admin/features/google-setup/google-setup-targets-step.tsx:91 resources/js/admin/features/post-sync/post-meta-box-app.tsx:249
+msgid "Weekly"
+msgstr ""
+
+#: resources/js/admin/features/feedback/feedback-dialog.tsx:41
+msgid "What are you trying to do, and what is unclear?"
+msgstr ""
+
+#: resources/js/admin/features/feedback/feedback-dialog.tsx:44
+msgid "What happened, what did you expect, and how can we reproduce it?"
+msgstr ""
+
+#: resources/js/admin/features/feedback/feedback-dialog.tsx:37
+msgid "What should change, who benefits, and what does success look like?"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-targets-step.tsx:96
+msgid "When a published post's Doc changes"
+msgstr ""
+
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:193
+msgid "When the Doc changes"
+msgstr ""
+
+#: resources/js/admin/features/doc-source-modal/output-type-choice.tsx:19 resources/js/admin/features/folder-watches/folder-watch-edit-form.tsx:87 resources/js/admin/features/sync-logs/sync-log-events-table.tsx:62
+msgid "WordPress Blocks"
+msgstr ""
+
+#: resources/js/admin/features/activation/folder-activation-result.tsx:48
+msgid "WordPress content already imported was not removed. Open Drive Folders to retry failed Docs."
+msgstr ""
+
+#: resources/js/admin/features/post-sync/post-meta-box-app.tsx:149
+msgid "WordPress content is overwritten from the Doc (one-way)."
+msgstr ""
+
+#: src/Sync/SyncService.php:892
+msgid "WordPress edits inside the synced content were replaced."
+msgstr ""
+
+#: resources/js/admin/features/sources/sources-table.tsx:115 resources/js/admin/features/sources/sources-table.tsx:285
 msgid "WordPress target"
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-active-task-panel.tsx:200
+msgid "WordPress target type"
 msgstr ""
 
 #: resources/js/admin/shared/ui/confirm-dialog.tsx:70
 msgid "Working..."
 msgstr ""
 
-#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:34 resources/js/admin/features/sync-logs/sync-log-events-table.tsx:41
+#: src/Notifications/SyncHealthSiteStatus.php:108
+msgid "WP-Cron has not run recently, so scheduled Google Docs syncs are stalled. Low-traffic sites and sites with DISABLE_WP_CRON need a real server cron job that calls wp-cron.php."
+msgstr ""
+
+#: resources/js/admin/features/sync-logs/sync-log-events-table.tsx:38 resources/js/admin/features/sync-logs/sync-log-events-table.tsx:45
 msgid "Yes"
 msgstr ""
 
-#: src/Admin/AdminPage.php:119
+#: resources/js/admin/features/activation/activation-guidance.tsx:51
+msgid "You can leave this page. The source remains safe while WordPress processes the background sync."
+msgstr ""
+
+#: src/Rest/ZipImportController.php:108
+msgid "You cannot create content of this type."
+msgstr ""
+
+#: src/Admin/AdminPage.php:185
 msgid "You do not have permission to access Brasth Document Sync."
 msgstr ""
 
-#: src/Rest/SourceController.php:1211
+#: src/Rest/FolderWatchController.php:267
+msgid "You do not have permission to create a synced draft for this post type."
+msgstr ""
+
+#: src/Rest/SourceController.php:1431
 msgid "You do not have permission to create this post type."
 msgstr ""
 
-#: src/Rest/SourceController.php:1184
+#: src/Rest/SourceController.php:1404
 msgid "You do not have permission to edit this post type."
 msgstr ""
 
-#: src/Rest/SourceController.php:1157 src/Sync/SourceRepository.php:923
+#: src/Rest/SourceController.php:1377 src/Sync/SourceRepository.php:1444
 msgid "You do not have permission to edit this post."
 msgstr ""
 
@@ -2068,8 +3731,16 @@ msgstr ""
 msgid "You do not have permission to manage Brasth Document Sync settings."
 msgstr ""
 
-#: src/Rest/RestPermissions.php:187
+#: src/Rest/FolderWatchController.php:277 src/Sync/FolderWatchService.php:208 src/Sync/FolderWatchService.php:303
+msgid "You do not have permission to publish synced posts for this post type."
+msgstr ""
+
+#: src/Rest/RestPermissions.php:187 src/Sync/FolderWatchService.php:1045
 msgid "You do not have permission to use Brasth Document Sync."
+msgstr ""
+
+#: src/Rest/FeedbackController.php:141
+msgid "You have submitted too much feedback recently. Please try again later."
 msgstr ""
 
 #: src/Auth/GoogleOAuthService.php:66
@@ -2078,4 +3749,36 @@ msgstr ""
 
 #: src/Rest/RestPermissions.php:176
 msgid "You must be logged in to use Brasth Document Sync."
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-task-state.ts:105
+msgid "You're set"
+msgstr ""
+
+#: resources/js/admin/features/activation/activation-guidance.tsx:37
+msgid "Your existing connection does not include the Drive read-only scope required for browsing and syncing."
+msgstr ""
+
+#: resources/js/admin/features/activation/activation-guidance.tsx:98 resources/js/admin/features/google-setup/google-setup-task-state.ts:149
+msgid "Your Google account"
+msgstr ""
+
+#: resources/js/admin/features/feedback/feedback-dialog.tsx:213
+msgid "Your report was created as a public GitHub issue."
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-task-state.ts:151
+msgid "Your responsibility complete: Drive read-only access granted."
+msgstr ""
+
+#: resources/js/admin/features/google-setup/google-setup-task-state.ts:152
+msgid "Your responsibility: authorize this WordPress user."
+msgstr ""
+
+#: resources/js/admin/features/activation/activation-result.tsx:63
+msgid "Your synced draft is ready"
+msgstr ""
+
+#: resources/js/admin/features/feedback/feedback-dialog.tsx:363
+msgid "Your title and details will be lost."
 msgstr ""

@@ -7,6 +7,7 @@ import { EmptyState } from '../../shared/ui/empty-state';
 import { SkeletonTableRows } from '../../shared/ui/skeleton';
 import { StatusPill } from '../../shared/ui/status-pill';
 import { syncLogRecoveryHint } from './sync-log-recovery-hints';
+import { formatRelativeTime } from '../../shared/format-time';
 
 type Props = {
   busy: boolean;
@@ -80,42 +81,6 @@ const eventContext = (entry: SyncLogEntry): { label: string; value: string }[] =
   }
 
   return details;
-};
-
-const formatRelativeTime = (timestamp: string): string => {
-  if (!timestamp) {
-    return '';
-  }
-
-  const date = new Date(timestamp);
-
-  if (Number.isNaN(date.getTime())) {
-    return '';
-  }
-
-  const now = Date.now();
-  const diffMs = now - date.getTime();
-  const diffMin = Math.floor(diffMs / 60000);
-  const diffHr = Math.floor(diffMin / 60);
-  const diffDay = Math.floor(diffHr / 24);
-
-  if (diffMin < 1) {
-    return __('just now', 'brasth-document-sync-for-google-docs');
-  }
-
-  if (diffMin < 60) {
-    return sprintf(__('%d min ago', 'brasth-document-sync-for-google-docs'), diffMin);
-  }
-
-  if (diffHr < 24) {
-    return sprintf(__('%d hr ago', 'brasth-document-sync-for-google-docs'), diffHr);
-  }
-
-  if (diffDay < 7) {
-    return sprintf(__('%d days ago', 'brasth-document-sync-for-google-docs'), diffDay);
-  }
-
-  return '';
 };
 
 const getEmptyCopy = (postId: string, level: string, search: string, status: string, step: string, hasActiveFilters: boolean): EmptyCopy => {

@@ -159,7 +159,7 @@ export const PostMetaBoxApp = ({ postId, postType, initialSource, elementorAvail
           {actions.source?.syncError ? <p className="docsync-wp-list-error">{actions.source.syncError}</p> : null}
           <AdminNotice className="inline docsync-wp-post-box__notice" notice={actions.notice} />
           <div className="docsync-wp-post-box__actions">
-            {actions.source ? <AdminButton className="docsync-wp-post-box__sync-action" disabled={actions.busy || isSyncing} onClick={actions.syncNow} variant="primary">{__('Sync now', 'brasth-document-sync-for-google-docs')}</AdminButton> : null}
+            {actions.source ? <AdminButton className="docsync-wp-post-box__sync-action" disabled={actions.busy || isSyncing} onClick={() => actions.syncNow()} variant="primary">{actions.source.syncStatus === 'update_available' ? __('Apply update', 'brasth-document-sync-for-google-docs') : __('Sync now', 'brasth-document-sync-for-google-docs')}</AdminButton> : null}
             <AdminButton
               className="docsync-wp-post-box__change-action"
               disabled={actions.busy || isSyncing}
@@ -189,6 +189,20 @@ export const PostMetaBoxApp = ({ postId, postType, initialSource, elementorAvail
         {actions.source ? (
           <section aria-labelledby="docsync-wp-post-box-settings-heading" className="docsync-wp-post-box__section docsync-wp-post-box__section--settings">
             <h3 className="docsync-wp-post-box__section-label" id="docsync-wp-post-box-settings-heading">{__('Sync settings', 'brasth-document-sync-for-google-docs')}</h3>
+            <label className="docsync-wp-field docsync-wp-field--compact">
+              <span>{__('When the Doc changes', 'brasth-document-sync-for-google-docs')}</span>
+              <select
+                disabled={actions.busy || isSyncing}
+                onChange={(event) => actions.updateApplyPolicy((event.currentTarget.value || null) as 'auto' | 'review' | 'manual' | null)}
+                value={actions.source.applyPolicy ?? ''}
+              >
+                <option value="">{__('Use site default', 'brasth-document-sync-for-google-docs')}</option>
+                <option value="auto">{__('Apply automatically', 'brasth-document-sync-for-google-docs')}</option>
+                <option value="review">{__('Ask me first', 'brasth-document-sync-for-google-docs')}</option>
+                <option value="manual">{__('Only when I sync', 'brasth-document-sync-for-google-docs')}</option>
+              </select>
+              <small className="docsync-wp-field-help">{__('Scheduled syncs follow this. Drafts apply automatically unless you choose otherwise.', 'brasth-document-sync-for-google-docs')}</small>
+            </label>
             {elementorAvailable ? (
               <label className="docsync-wp-checkbox-row">
                 <input

@@ -19,6 +19,8 @@ use DocSyncWP\Auth\GoogleOAuthService;
 use DocSyncWP\Auth\TokenStore;
 use DocSyncWP\Cron\ScheduleBackfill;
 use DocSyncWP\Cron\SyncCron;
+use DocSyncWP\Notifications\SyncFailureDigest;
+use DocSyncWP\Notifications\SyncHealthSiteStatus;
 use DocSyncWP\Feedback\FeedbackRateLimiter;
 use DocSyncWP\Feedback\FeedbackService;
 use DocSyncWP\Google\DocumentIdParser;
@@ -33,11 +35,13 @@ use DocSyncWP\Rest\RestServiceProvider;
 use DocSyncWP\Rest\SettingsController;
 use DocSyncWP\Rest\SourceController;
 use DocSyncWP\Rest\SyncLogController;
+use DocSyncWP\Rest\ZipImportController;
 use DocSyncWP\Rest\WorkspaceController;
 use DocSyncWP\Security\EncryptionService;
 use DocSyncWP\Settings\SettingsRepository;
 use DocSyncWP\Sync\DocsApiHtmlBuilder;
 use DocSyncWP\Sync\DocsApiHtmlImporter;
+use DocSyncWP\Sync\DocLinkResolver;
 use DocSyncWP\Sync\DocsApiImageImporter;
 use DocSyncWP\Sync\DocsApiInlineRenderer;
 use DocSyncWP\Sync\DocsApiParagraphRenderer;
@@ -50,6 +54,7 @@ use DocSyncWP\Sync\Elementor\PostUpdater as ElementorPostUpdater;
 use DocSyncWP\Sync\Elementor\SyncDecider as ElementorSyncDecider;
 use DocSyncWP\Sync\Elementor\WidgetFactory as ElementorWidgetFactory;
 use DocSyncWP\Sync\HtmlDocumentImageRewriter;
+use DocSyncWP\Sync\HtmlGoogleRedirectLinkCleaner;
 use DocSyncWP\Sync\HtmlToBlockContentConverter;
 use DocSyncWP\Sync\HtmlZipImporter;
 use DocSyncWP\Sync\HtmlZipPackageExtractor;
@@ -62,6 +67,7 @@ use DocSyncWP\Sync\SourceScheduleResolver;
 use DocSyncWP\Sync\SourceRepository;
 use DocSyncWP\Sync\SyncLock;
 use DocSyncWP\Sync\SyncService;
+use DocSyncWP\Sync\ZipImportService;
 use DocSyncWP\Telemetry\TelemetryCron;
 use DocSyncWP\Telemetry\TelemetryService;
 
@@ -142,18 +148,42 @@ final class Plugin {
 	private FolderWatchService $folder_watch_service;
 
 	/**
+	 * Sync failure digest.
+	 *
+	 * @var SyncFailureDigest
+	 */
+	private SyncFailureDigest $failure_digest;
+
+	/**
+	 * Site Health sync test.
+	 *
+	 * @var SyncHealthSiteStatus
+	 */
+	private SyncHealthSiteStatus $site_health;
+
+	/**
+	 * Cross-Doc link resolver.
+	 *
+	 * @var DocLinkResolver
+	 */
+	private DocLinkResolver $doc_link_resolver;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param AdminPage           $admin_page        Admin page service.
-	 * @param AssetRegistry       $assets            Asset registry service.
-	 * @param RestServiceProvider $rest              REST service provider.
-	 * @param PostSyncMetaBox     $post_sync_meta_box Post sync meta box service.
-	 * @param PostListActions     $post_list_actions Post list table actions service.
-	 * @param SyncCron            $sync_cron         Sync cron service.
-	 * @param TelemetryCron       $telemetry_cron    Telemetry cron service.
-	 * @param TokenStore          $token_store          Token store service.
-	 * @param SourceRepository    $source_repository    Source repository service.
-	 * @param FolderWatchService  $folder_watch_service Folder watch service.
+	 * @param AdminPage            $admin_page        Admin page service.
+	 * @param AssetRegistry        $assets            Asset registry service.
+	 * @param RestServiceProvider  $rest              REST service provider.
+	 * @param PostSyncMetaBox      $post_sync_meta_box Post sync meta box service.
+	 * @param PostListActions      $post_list_actions Post list table actions service.
+	 * @param SyncCron             $sync_cron         Sync cron service.
+	 * @param TelemetryCron        $telemetry_cron    Telemetry cron service.
+	 * @param TokenStore           $token_store          Token store service.
+	 * @param SourceRepository     $source_repository    Source repository service.
+	 * @param FolderWatchService   $folder_watch_service Folder watch service.
+	 * @param SyncFailureDigest    $failure_digest       Sync failure digest service.
+	 * @param SyncHealthSiteStatus $site_health         Site Health sync test.
+	 * @param DocLinkResolver      $doc_link_resolver   Cross-Doc link resolver.
 	 */
 	public function __construct(
 		AdminPage $admin_page,
@@ -165,7 +195,10 @@ final class Plugin {
 		TelemetryCron $telemetry_cron,
 		TokenStore $token_store,
 		SourceRepository $source_repository,
-		FolderWatchService $folder_watch_service
+		FolderWatchService $folder_watch_service,
+		SyncFailureDigest $failure_digest,
+		SyncHealthSiteStatus $site_health,
+		DocLinkResolver $doc_link_resolver
 	) {
 		$this->admin_page           = $admin_page;
 		$this->assets               = $assets;
@@ -177,6 +210,9 @@ final class Plugin {
 		$this->token_store          = $token_store;
 		$this->source_repository    = $source_repository;
 		$this->folder_watch_service = $folder_watch_service;
+		$this->failure_digest       = $failure_digest;
+		$this->site_health          = $site_health;
+		$this->doc_link_resolver    = $doc_link_resolver;
 	}
 
 	/**
@@ -210,13 +246,16 @@ final class Plugin {
 			$elementor_presets
 		);
 		$elementor_updater           = new ElementorPostUpdater( $elementor_checker );
+		$html_zip_importer           = new HtmlZipImporter(
+			new HtmlZipPackageExtractor(),
+			new HtmlDocumentImageRewriter( $media_assets ),
+			new HtmlGoogleRedirectLinkCleaner()
+		);
+		$layout_converter            = new LayoutConversionService( $settings, new HtmlToBlockContentConverter(), $layout_presets );
 		$sync_service                = new SyncService(
 			$source_repository,
 			$drive_client,
-			new HtmlZipImporter(
-				new HtmlZipPackageExtractor(),
-				new HtmlDocumentImageRewriter( $media_assets )
-			),
+			$html_zip_importer,
 			new DocsApiHtmlImporter(
 				$docs_client,
 				new DocsApiHtmlBuilder(
@@ -227,13 +266,16 @@ final class Plugin {
 					)
 				)
 			),
-			new LayoutConversionService( $settings, new HtmlToBlockContentConverter(), $layout_presets ),
+			$layout_converter,
 			new SyncLock(),
 			$elementor_decider,
 			$elementor_data,
 			$elementor_updater,
 			$elementor_presets_converter,
-			$schedule_resolver
+			$schedule_resolver,
+			null,
+			null,
+			$settings
 		);
 		$folder_watch_service        = new FolderWatchService(
 			$folder_watch_repository,
@@ -276,15 +318,19 @@ final class Plugin {
 					$source_repository,
 					$layout_presets,
 					$elementor_presets
-				)
+				),
+				new ZipImportController( new ZipImportService( $html_zip_importer, $layout_converter ), $source_repository, $settings, $layout_presets )
 			),
 			new PostSyncMetaBox( $source_repository, $settings, $sync_service->getElementorDecider() ),
-			new PostListActions( $source_repository, $sync_service->getElementorDecider() ),
+			new PostListActions( $source_repository, $sync_service->getElementorDecider(), $sync_service ),
 			new SyncCron( $settings, $source_repository, $sync_service, $schedule_resolver ),
 			new TelemetryCron( $settings, $telemetry_service ),
 			$token_store,
 			$source_repository,
-			$folder_watch_service
+			$folder_watch_service,
+			new SyncFailureDigest( $settings, $source_repository ),
+			new SyncHealthSiteStatus( $settings, $source_repository, $folder_watch_service ),
+			new DocLinkResolver( $source_repository )
 		);
 
 		$plugin->register();
@@ -310,6 +356,9 @@ final class Plugin {
 		$this->sync_cron->register();
 		$this->folder_watch_service->register();
 		$this->telemetry_cron->register();
+		$this->failure_digest->register();
+		$this->site_health->register();
+		$this->doc_link_resolver->register();
 		$this->rest->register();
 	}
 }

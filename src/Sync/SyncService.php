@@ -16,6 +16,12 @@ use DocSyncWP\Sync\Elementor\Preset\ElementorPresetRegistry;
 use DocSyncWP\Sync\Elementor\PostUpdater as ElementorPostUpdater;
 use DocSyncWP\Sync\Elementor\SyncDecider as ElementorSyncDecider;
 use DocSyncWP\Sync\Layout\LayoutConversionService;
+use DocSyncWP\Sync\Layout\HeadingAnchorBuilder;
+use DocSyncWP\Sync\Layout\PatternPlaceholderResolver;
+use DocSyncWP\Sync\Region\SyncedRegionStore;
+use DocSyncWP\Sync\Metadata\DocMetadataTableExtractor;
+use DocSyncWP\Sync\Metadata\PostMetadataApplier;
+use DocSyncWP\Settings\SettingsRepository;
 use DocSyncWP\Sync\Layout\LayoutPresetRegistry;
 use WP_Error;
 
@@ -30,6 +36,11 @@ final class SyncService {
 	public const STATUS_SYNCED  = 'synced';
 	public const STATUS_SKIPPED = 'skipped';
 	public const STATUS_ERROR   = 'error';
+
+	public const STATUS_UPDATE_AVAILABLE = 'update_available';
+
+	public const TRIGGER_MANUAL    = 'manual';
+	public const TRIGGER_SCHEDULED = 'scheduled';
 
 	private const EXPORT_FORMAT_HTML_ZIP = 'html_zip';
 	private const SYNC_METHOD_HTML_ZIP   = 'html_zip';
@@ -113,6 +124,41 @@ final class SyncService {
 	private ?SourceScheduleResolver $schedule = null;
 
 	/**
+	 * Doc metadata table extractor.
+	 *
+	 * @var DocMetadataTableExtractor
+	 */
+	private DocMetadataTableExtractor $metadata_extractor;
+
+	/**
+	 * Post metadata applier.
+	 *
+	 * @var PostMetadataApplier
+	 */
+	private PostMetadataApplier $metadata_applier;
+
+	/**
+	 * Settings repository, when available.
+	 *
+	 * @var SettingsRepository|null
+	 */
+	private ?SettingsRepository $settings;
+
+	/**
+	 * Synced region store.
+	 *
+	 * @var SyncedRegionStore
+	 */
+	private SyncedRegionStore $region_store;
+
+	/**
+	 * Pattern placeholder resolver.
+	 *
+	 * @var PatternPlaceholderResolver
+	 */
+	private PatternPlaceholderResolver $pattern_resolver;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param SourceRepository                      $source_repository   Source repository.
@@ -126,6 +172,9 @@ final class SyncService {
 	 * @param ElementorPostUpdater|null             $elementor_updater          Elementor post updater.
 	 * @param ElementorPresetConversionService|null $elementor_preset_converter Elementor preset converter.
 	 * @param SourceScheduleResolver|null           $schedule                   Schedule resolver.
+	 * @param DocMetadataTableExtractor|null        $metadata_extractor         Doc metadata table extractor.
+	 * @param PostMetadataApplier|null              $metadata_applier           Post metadata applier.
+	 * @param SettingsRepository|null               $settings                   Settings repository.
 	 */
 	public function __construct(
 		SourceRepository $source_repository,
@@ -138,7 +187,10 @@ final class SyncService {
 		?ElementorDataConverter $elementor_converter = null,
 		?ElementorPostUpdater $elementor_updater = null,
 		?ElementorPresetConversionService $elementor_preset_converter = null,
-		?SourceScheduleResolver $schedule = null
+		?SourceScheduleResolver $schedule = null,
+		?DocMetadataTableExtractor $metadata_extractor = null,
+		?PostMetadataApplier $metadata_applier = null,
+		?SettingsRepository $settings = null
 	) {
 		$this->source_repository          = $source_repository;
 		$this->drive_client               = $drive_client;
@@ -151,6 +203,11 @@ final class SyncService {
 		$this->elementor_updater          = $elementor_updater ?? new ElementorPostUpdater();
 		$this->elementor_preset_converter = $elementor_preset_converter ?? new ElementorPresetConversionService();
 		$this->schedule                   = $schedule;
+		$this->metadata_extractor         = $metadata_extractor ?? new DocMetadataTableExtractor();
+		$this->metadata_applier           = $metadata_applier ?? new PostMetadataApplier();
+		$this->settings                   = $settings;
+		$this->region_store               = new SyncedRegionStore();
+		$this->pattern_resolver           = new PatternPlaceholderResolver();
 	}
 
 	/**
@@ -485,12 +542,13 @@ final class SyncService {
 	/**
 	 * Sync a linked post from Google Docs.
 	 *
-	 * @param int  $post_id Post ID.
-	 * @param int  $user_id User ID making the request.
-	 * @param bool $force   Whether to force import even if unchanged.
+	 * @param int    $post_id Post ID.
+	 * @param int    $user_id User ID making the request.
+	 * @param bool   $force   Whether to force import even if unchanged.
+	 * @param string $trigger Sync trigger: manual or scheduled.
 	 * @return array<string,mixed>|WP_Error
 	 */
-	public function syncPost( int $post_id, int $user_id, bool $force = false ): array|WP_Error {
+	public function syncPost( int $post_id, int $user_id, bool $force = false, string $trigger = self::TRIGGER_MANUAL ): array|WP_Error {
 		$source = $this->source_repository->getSource( $post_id );
 
 		if ( null === $source ) {
@@ -499,6 +557,18 @@ final class SyncService {
 				__( 'This post is not linked to a Google Doc.', 'brasth-document-sync-for-google-docs' ),
 				array( 'status' => 404 )
 			);
+		}
+
+		// Phase 8 decision table: a manual-policy source is skipped by a scheduled run. Enforced
+		// here, before the lock and before any Google call, so the guarantee never depends on the
+		// caller remembering to filter these sources out.
+		if ( self::TRIGGER_SCHEDULED === $trigger && ! $force ) {
+			$scheduled_policy = $this->effectiveApplyPolicy( $post_id, $source );
+
+			if ( ApplyPolicyResolver::SKIP === ApplyPolicyResolver::decide( $scheduled_policy, false, false ) ) {
+				// No stored state changes: the source keeps its previous status and message.
+				return $this->formatResult( $post_id, self::STATUS_SKIPPED, false );
+			}
 		}
 
 		if ( ! $this->sync_lock->acquire( $post_id ) ) {
@@ -543,6 +613,21 @@ final class SyncService {
 			$layout_hash     = $use_elementor
 				? $this->elementor_preset_converter->fingerprintForSource( $source )
 				: $this->layout_converter->fingerprintForSource( $source );
+
+			if ( self::TRIGGER_SCHEDULED === $trigger && ! $force && '' !== (string) $previous_source['last_hash'] ) {
+				$remote_changed = (string) $previous_source['google_modified_time'] !== (string) $metadata['modifiedTime']
+					|| (string) $previous_source['google_version'] !== (string) $metadata['version'];
+
+				if ( $remote_changed ) {
+					$policy      = $this->effectiveApplyPolicy( $post_id, $previous_source );
+					$local_edits = 'auto' === $policy && ! $use_elementor && $this->region_store->hasLocalEdits( $post_id );
+
+					// Manual policy already returned above, so decide() can only hold or apply here.
+					if ( ApplyPolicyResolver::HOLD === ApplyPolicyResolver::decide( $policy, true, $local_edits ) ) {
+						return $this->holdForReview( $post_id, $previous_source, (string) $metadata['version'], $local_edits, true );
+					}
+				}
+			}
 
 			if (
 				! $force
@@ -617,6 +702,15 @@ final class SyncService {
 				return $source;
 			}
 
+			$metadata_fields     = array();
+			$unresolved_patterns = array();
+
+			if ( null === $this->settings || $this->settings->isMetadataTableEnabled() ) {
+				$extraction      = $this->metadata_extractor->extract( $import['html'] );
+				$import['html']  = $extraction['html'];
+				$metadata_fields = $extraction['fields'];
+			}
+
 			if ( $use_elementor ) {
 				$elementor_preset = $this->elementor_preset_converter->resolvePresetForSource( $source );
 				$elementor_json   = '' !== $elementor_preset
@@ -635,18 +729,32 @@ final class SyncService {
 					return $this->markError( $post_id, $source, $block_content );
 				}
 
+				$unresolved_patterns = array();
+
+				if ( 'plain_blocks' !== $this->layout_converter->resolvePresetForSource( $source ) ) {
+					$resolved            = $this->pattern_resolver->resolve( $block_content );
+					$block_content       = $resolved['markup'];
+					$unresolved_patterns = $resolved['unresolved'];
+				}
+
+				if ( LayoutPresetRegistry::PRESET_DOCUMENTATION === $this->layout_converter->resolvePresetForSource( $source ) ) {
+					$block_content = HeadingAnchorBuilder::apply( $block_content );
+				}
+
 				$content = $block_content;
 			}
 
-			$hash = hash( 'sha256', $content );
+			// Metadata-only Doc changes must not be skipped as unchanged content.
+			$hash = hash( 'sha256', $content . ( array() !== $metadata_fields ? (string) wp_json_encode( $metadata_fields ) : '' ) );
 
 			if ( ! $force && hash_equals( (string) $source['last_hash'], $hash ) ) {
 				$skip_updates = array(
-					'last_hash'          => $hash,
-					'last_synced_at'     => current_time( 'mysql', true ),
-					'last_sync_method'   => $import['method'],
-					'sync_owner_user_id' => $sync_user_id,
-					'sync_error'         => '',
+					'last_hash'              => $hash,
+					'last_synced_at'         => current_time( 'mysql', true ),
+					'last_sync_method'       => $import['method'],
+					'sync_owner_user_id'     => $sync_user_id,
+					'sync_error'             => '',
+					'pending_remote_version' => '',
 				);
 
 				if ( '' !== $layout_hash ) {
@@ -670,6 +778,18 @@ final class SyncService {
 				return $this->formatResult( $post_id, self::STATUS_SKIPPED, false );
 			}
 
+			if ( self::TRIGGER_SCHEDULED === $trigger && ! $force && '' !== (string) $previous_source['last_hash'] ) {
+				// Layout or pipeline changes also rewrite content, so scheduled syncs honor the policy here too.
+				$late_policy         = $this->effectiveApplyPolicy( $post_id, $previous_source );
+				$late_edits          = ! $use_elementor && $this->region_store->hasLocalEdits( $post_id );
+				$late_remote_changed = (string) $previous_source['google_modified_time'] !== (string) $metadata['modifiedTime']
+					|| (string) $previous_source['google_version'] !== (string) $metadata['version'];
+
+				if ( 'review' === $late_policy || $late_edits ) {
+					return $this->holdForReview( $post_id, $previous_source, (string) $metadata['version'], $late_edits, $late_remote_changed );
+				}
+			}
+
 			$source = $this->saveProgressState(
 				$post_id,
 				$source,
@@ -688,6 +808,21 @@ final class SyncService {
 
 			if ( is_wp_error( $current_source ) ) {
 				return $current_source;
+			}
+
+			$region_plan = array(
+				'content' => $content,
+				'status'  => 'no_baseline',
+				'prefix'  => 0,
+				'suffix'  => 0,
+			);
+
+			if ( ! $use_elementor ) {
+				$region_plan = $this->region_store->plan(
+					(string) get_post_field( 'post_content', $post_id ),
+					$this->region_store->getBaseline( $post_id ),
+					(string) $content
+				);
 			}
 
 			if ( $use_elementor ) {
@@ -711,7 +846,7 @@ final class SyncService {
 					wp_slash(
 						array(
 							'ID'           => $post_id,
-							'post_content' => $content,
+							'post_content' => $region_plan['content'],
 						)
 					),
 					true
@@ -732,21 +867,6 @@ final class SyncService {
 
 			$failed_images = absint( $import['failed_image_count'] ?? 0 );
 
-			$success_updates = array(
-				'last_synced_at'     => current_time( 'mysql', true ),
-				'last_sync_method'   => $import['method'],
-				'sync_owner_user_id' => $sync_user_id,
-				'sync_error'         => '',
-			);
-
-			if ( 0 === $failed_images ) {
-				$success_updates['last_hash'] = $hash;
-
-				if ( '' !== $layout_hash ) {
-					$success_updates['last_layout_hash'] = $layout_hash;
-				}
-			}
-
 			$complete_message = __( 'Sync complete.', 'brasth-document-sync-for-google-docs' );
 
 			if ( $failed_images > 0 ) {
@@ -760,6 +880,60 @@ final class SyncService {
 					),
 					$failed_images
 				);
+			}
+
+			if ( ! $use_elementor ) {
+				$this->region_store->saveBaseline( $post_id, $region_plan['prefix'], $region_plan['suffix'] );
+
+				if ( $region_plan['prefix'] + $region_plan['suffix'] > 0 ) {
+					/* translators: %d: number of WordPress blocks kept. */
+					$complete_message .= ' ' . sprintf( _n( 'Kept %d block added in WordPress.', 'Kept %d blocks added in WordPress.', $region_plan['prefix'] + $region_plan['suffix'], 'brasth-document-sync-for-google-docs' ), $region_plan['prefix'] + $region_plan['suffix'] );
+				} elseif ( 'conflict' === $region_plan['status'] ) {
+					$complete_message .= ' ' . __( 'WordPress edits inside the synced content were replaced.', 'brasth-document-sync-for-google-docs' );
+				}
+			}
+
+			if ( array() !== $unresolved_patterns ) {
+				/* translators: %s: comma-separated pattern names. */
+				$complete_message .= ' ' . sprintf( __( 'Pattern not found: %s.', 'brasth-document-sync-for-google-docs' ), implode( ', ', $unresolved_patterns ) );
+			}
+
+			if ( array() !== $metadata_fields ) {
+				$metadata_result = $this->metadata_applier->apply( $post_id, $sync_user_id, $metadata_fields );
+
+				$removed = $metadata_result['removed'] ?? array();
+
+				// Lead with what the sync replaced: the message is capped, so destructive news first.
+				if ( array() !== $removed ) {
+					/* translators: %s: comma-separated term lists replaced by the Doc. */
+					$complete_message .= ' ' . sprintf( __( 'Replaced in WordPress: %s.', 'brasth-document-sync-for-google-docs' ), implode( ', ', $removed ) );
+				}
+
+				if ( array() !== $metadata_result['applied'] ) {
+					/* translators: %s: comma-separated field names. */
+					$complete_message .= ' ' . sprintf( __( 'Applied from Doc: %s.', 'brasth-document-sync-for-google-docs' ), implode( ', ', $metadata_result['applied'] ) );
+				}
+
+				if ( array() !== $metadata_result['warnings'] ) {
+					/* translators: %s: comma-separated field names. */
+					$complete_message .= ' ' . sprintf( __( 'Not applied: %s.', 'brasth-document-sync-for-google-docs' ), implode( ', ', $metadata_result['warnings'] ) );
+				}
+			}
+
+			$success_updates = array(
+				'last_synced_at'         => current_time( 'mysql', true ),
+				'last_sync_method'       => $import['method'],
+				'sync_owner_user_id'     => $sync_user_id,
+				'sync_error'             => '',
+				'pending_remote_version' => '',
+			);
+
+			if ( 0 === $failed_images ) {
+				$success_updates['last_hash'] = $hash;
+
+				if ( '' !== $layout_hash ) {
+					$success_updates['last_layout_hash'] = $layout_hash;
+				}
 			}
 
 			$source = $this->saveProgressState(
@@ -782,6 +956,113 @@ final class SyncService {
 		} finally {
 			$this->sync_lock->release( $post_id );
 		}
+	}
+
+	/**
+	 * Effective update policy for a source.
+	 *
+	 * @param int                 $post_id Post ID.
+	 * @param array<string,mixed> $source  Source metadata.
+	 */
+	public function effectiveApplyPolicy( int $post_id, array $source ): string {
+		$site     = null !== $this->settings ? (string) ( $this->settings->get()['published_apply_policy'] ?? 'auto' ) : 'auto';
+		$override = sanitize_key( (string) ( $source['apply_policy'] ?? '' ) );
+
+		return ApplyPolicyResolver::effective( $override, $site, (string) get_post_status( $post_id ) );
+	}
+
+	/**
+	 * Whether WordPress edits exist inside the last synced block run (Gutenberg sources only).
+	 *
+	 * @param int $post_id Post ID.
+	 */
+	public function hasLocalEdits( int $post_id ): bool {
+		$source = $this->source_repository->getSource( $post_id );
+
+		if ( null === $source || ( null !== $this->elementor_decider && $this->elementor_decider->shouldUseElementor( $post_id ) ) ) {
+			return false;
+		}
+
+		return $this->region_store->hasLocalEdits( $post_id );
+	}
+
+	/**
+	 * Flag a changed Doc for review without touching post content.
+	 *
+	 * @param int                 $post_id         Post ID.
+	 * @param array<string,mixed> $previous_source Source before this check (keeps the old Google version).
+	 * @param string              $remote_version  Version Google reports now.
+	 * @param bool                $local_edits     Whether WordPress edits exist inside the synced content.
+	 * @param bool                $remote_changed  Whether the Google Doc itself changed since the last sync.
+	 * @return array<string,mixed>|WP_Error
+	 */
+	private function holdForReview( int $post_id, array $previous_source, string $remote_version, bool $local_edits, bool $remote_changed ): array|WP_Error {
+		$message = $this->holdMessage( $remote_changed, $local_edits );
+		$latest  = $this->source_repository->getSource( $post_id );
+
+		if ( is_array( $latest ) && $remote_version === (string) $latest['pending_remote_version'] ) {
+			// Already reported for this version: restore the status quietly, no new event.
+			$this->source_repository->saveSource(
+				$post_id,
+				array_merge(
+					$latest,
+					array(
+						'sync_status'     => self::STATUS_UPDATE_AVAILABLE,
+						'sync_progress'   => 100,
+						'sync_step'       => 'update_available',
+						'sync_message'    => $message,
+						'sync_updated_at' => current_time( 'mysql', true ),
+					)
+				)
+			);
+
+			return $this->formatResult( $post_id, self::STATUS_UPDATE_AVAILABLE, false );
+		}
+
+		$saved = $this->saveProgressState(
+			$post_id,
+			$previous_source,
+			self::STATUS_UPDATE_AVAILABLE,
+			100,
+			'update_available',
+			$message,
+			array(
+				'pending_remote_version' => $remote_version,
+				'sync_error'             => '',
+			)
+		);
+
+		if ( is_wp_error( $saved ) ) {
+			return $saved;
+		}
+
+		return $this->formatResult( $post_id, self::STATUS_UPDATE_AVAILABLE, false );
+	}
+
+	/**
+	 * Explain why a source is waiting for review.
+	 *
+	 * A hold has three causes, and saying "Google Doc changed" for all of them misleads the person
+	 * reading it: the Doc changed, WordPress-side edits exist inside the synced content, or the
+	 * newer plugin version formats the same Doc differently.
+	 *
+	 * @param bool $remote_changed Whether the Google Doc changed since the last sync.
+	 * @param bool $local_edits    Whether WordPress edits exist inside the synced content.
+	 */
+	private function holdMessage( bool $remote_changed, bool $local_edits ): string {
+		if ( $remote_changed && $local_edits ) {
+			return __( 'Google Doc changed and this post has WordPress edits. Review and apply the update.', 'brasth-document-sync-for-google-docs' );
+		}
+
+		if ( $remote_changed ) {
+			return __( 'Google Doc changed. Review and apply the update.', 'brasth-document-sync-for-google-docs' );
+		}
+
+		if ( $local_edits ) {
+			return __( 'This post has WordPress edits. Review and apply the update.', 'brasth-document-sync-for-google-docs' );
+		}
+
+		return __( 'This plugin version formats this Doc differently. Review and apply the update.', 'brasth-document-sync-for-google-docs' );
 	}
 
 	/**

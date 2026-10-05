@@ -16,6 +16,7 @@ import {
   type SyncResult,
   type WorkspaceResponse
 } from '../api';
+import { AdminApiError } from '../api/client';
 import { getAdminConfig } from '../config';
 import type { SourceListFilters } from '../features/sources/sources-table';
 import type { AdminNoticeState } from '../shared/ui/admin-notice';
@@ -140,7 +141,18 @@ export const useSourcesApp = () => {
 
   const syncOne = async (postId: number) => {
     await runAction(async () => {
-      const result = await syncSource(postId, 'background');
+      let result;
+
+      try {
+        result = await syncSource(postId, 'background');
+      } catch (caught) {
+        if (caught instanceof AdminApiError && caught.code === 'docsync_wp_local_edits') {
+          throw new Error(__('This post has WordPress edits inside the synced content. Open the post and use Sync now there to confirm replacing them.', 'brasth-document-sync-for-google-docs'));
+        }
+
+        throw caught;
+      }
+
       const source = result.source ?? null;
       const message = source?.syncMessage || sprintf(__('Source %d sync queued.', 'brasth-document-sync-for-google-docs'), postId);
 
@@ -151,6 +163,37 @@ export const useSourcesApp = () => {
 
       sourceSync.trackSourceIds([postId]);
       setNotice({ type: 'info', message });
+      speak(message);
+    });
+  };
+
+  const syncMany = async (postIds: number[]) => {
+    await runAction(async () => {
+      const queued: number[] = [];
+      let skipped = 0;
+
+      for (const postId of postIds) {
+        try {
+          const result = await syncSource(postId, 'background');
+
+          if (result.source) {
+            sourceSync.mergeSources([result.source]);
+          }
+
+          queued.push(postId);
+        } catch {
+          // Locked, has WordPress edits, or failed to queue: counted and reported below.
+          skipped += 1;
+        }
+      }
+
+      sourceSync.trackSourceIds(queued);
+
+      const message = skipped > 0
+        ? sprintf(__('Queued sync for %1$d source(s). %2$d skipped (already syncing, has WordPress edits, or could not be queued).', 'brasth-document-sync-for-google-docs'), queued.length, skipped)
+        : sprintf(__('Queued sync for %d source(s).', 'brasth-document-sync-for-google-docs'), queued.length);
+
+      setNotice({ type: skipped > 0 ? 'warning' : 'info', message });
       speak(message);
     });
   };
@@ -269,6 +312,7 @@ export const useSourcesApp = () => {
     sourceFilters,
     sources,
     syncAll,
+    syncMany,
     syncOne,
     trackedSourceIds: sourceSync.trackedSourceIds,
     handleSourcePollingError: sourceSync.handleSourcePollingError,

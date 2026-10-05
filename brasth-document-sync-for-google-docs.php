@@ -173,7 +173,9 @@ function docsync_wp_activate(): void {
 		add_option(
 			'docsync_wp_settings',
 			array(
-				'default_layout_preset' => 'clean_article',
+				'default_layout_preset'  => 'clean_article',
+				'published_apply_policy' => 'review',
+				'metadata_table_enabled' => true,
 			),
 			'',
 			false
@@ -204,6 +206,8 @@ function docsync_wp_deactivate(): void {
 	} else {
 		wp_clear_scheduled_hook( 'docsync_wp_telemetry_checkin' );
 	}
+
+	wp_clear_scheduled_hook( 'docsync_wp_failure_digest' );
 }
 register_deactivation_hook( __FILE__, 'docsync_wp_deactivate' );
 

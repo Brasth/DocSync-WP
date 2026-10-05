@@ -105,6 +105,13 @@ jobs:
           composer audit
           composer lint
           composer test:layout-fixtures
+          composer test:output-fidelity-fixtures
+          composer test:failure-digest
+          composer test:zip-package-limits
+          composer test:doc-metadata-fixtures
+          composer test:synced-region-merge
+          composer test:apply-policy
+          composer test:knowledge-base-helpers
           composer test:elementor-fixtures
           composer test:large-doc-fallback-fixtures
           composer test:telemetry-settings

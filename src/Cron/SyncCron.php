@@ -162,7 +162,15 @@ final class SyncCron {
 				continue;
 			}
 
-			$this->sync_service->syncPost( $post_id, $owner_user_id );
+			// Manual-policy sources are skipped inside syncPost() before any Google call.
+			$result = $this->sync_service->syncPost( $post_id, $owner_user_id, false, SyncService::TRIGGER_SCHEDULED );
+
+			if (
+				is_wp_error( $result )
+				&& ! in_array( $result->get_error_code(), array( 'docsync_wp_sync_locked', 'docsync_wp_source_changed', 'docsync_wp_source_not_found' ), true )
+			) {
+				do_action( 'docsync_wp_scheduled_sync_failed', $post_id, (string) $result->get_error_code() );
+			}
 		}
 
 		if ( count( $post_ids ) === self::BATCH_SIZE ) {

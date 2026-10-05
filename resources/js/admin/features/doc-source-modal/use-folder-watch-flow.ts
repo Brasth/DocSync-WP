@@ -33,6 +33,7 @@ export const useFolderWatchFlow = ({ canChooseElementor, initialIntent = 'docume
   const [intent, setIntent] = useState<SourceIntent>(initialIntent);
   const [location, setLocation] = useState<FolderLocation | null>(null);
   const [includeSubfolders, setIncludeSubfolders] = useState(false);
+  const [structure, setStructure] = useState<'flat' | 'hierarchy'>('flat');
   const [confirmRoot, setConfirmRoot] = useState(false);
   const [inventory, setInventory] = useState<FolderDocumentInventory | null>(null);
   const [excludedFileIds, setExcludedFileIds] = useState<string[]>([]);
@@ -138,6 +139,7 @@ export const useFolderWatchFlow = ({ canChooseElementor, initialIntent = 'docume
         folderId: location.folderId,
         driveId: location.driveId || undefined,
         includeSubfolders,
+        structure: includeSubfolders ? structure : 'flat',
         confirmRoot: location.isRoot ? true : undefined,
         postType,
         postStatus,
@@ -202,8 +204,10 @@ export const useFolderWatchFlow = ({ canChooseElementor, initialIntent = 'docume
     setLocation,
     setOutputType,
     setPostStatus,
+    setStructure,
     setSyncInterval,
     startWatch,
+    structure,
     syncInterval,
     toggleExcluded,
     watch

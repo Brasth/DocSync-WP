@@ -18,11 +18,13 @@ type Props = {
   outputType: DocSourceOutputType;
   postStatus: 'draft' | 'publish';
   postType: string;
+  structure: 'flat' | 'hierarchy';
   layoutPreset: string;
   watch: FolderWatchRecord | null;
   onChangeFolder?: () => void;
   onExcludeToggle: (fileId: string) => void;
   onIncludeSubfoldersChange: (value: boolean) => void;
+  onStructureChange: (value: 'flat' | 'hierarchy') => void;
   onIntervalChange: (value: string) => void;
   onLayoutPresetChange: (value: string) => void;
   onOutputTypeChange: (value: DocSourceOutputType) => void;
@@ -65,11 +67,13 @@ export const FolderWatchConfirmPanel = ({
   outputType,
   postStatus,
   postType,
+  structure,
   layoutPreset,
   watch,
   onChangeFolder,
   onExcludeToggle,
   onIncludeSubfoldersChange,
+  onStructureChange,
   onIntervalChange,
   onLayoutPresetChange,
   onOutputTypeChange,
@@ -116,6 +120,18 @@ export const FolderWatchConfirmPanel = ({
         />
         {__('Include subfolders', 'brasth-document-sync-for-google-docs')}
       </label>
+
+      {includeSubfolders ? (
+        <label className="docsync-wp-folder-confirm__switch">
+          <input
+            checked={structure === 'hierarchy'}
+            disabled={busy || Boolean(watch)}
+            onChange={(event) => onStructureChange(event.currentTarget.checked ? 'hierarchy' : 'flat')}
+            type="checkbox"
+          />
+          {__('Mirror folders as parent pages (pages and other hierarchical types only)', 'brasth-document-sync-for-google-docs')}
+        </label>
+      ) : null}
 
       <ul className="docsync-wp-folder-confirm__list">
         {inventory.documents.map((document) => (

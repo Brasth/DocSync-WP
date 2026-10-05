@@ -14,6 +14,11 @@ const callPattern = new RegExp(
 	`\\b(?:__|esc_html__|esc_attr__|esc_html_e|esc_attr_e)\\s*\\(\\s*(['"\`])((?:\\\\[\\s\\S]|(?!\\1)[\\s\\S])*?)\\1\\s*,\\s*(['"\`])${domain}\\3`,
 	'g',
 );
+// _n( $single, $plural, $number, $domain ): the plural form is the fourth argument.
+const pluralPattern = new RegExp(
+	`\\b_n\\s*\\(\\s*(['"\`])((?:\\\\[\\s\\S]|(?!\\1)[\\s\\S])*?)\\1\\s*,\\s*(['"\`])((?:\\\\[\\s\\S]|(?!\\3)[\\s\\S])*?)\\3\\s*,\\s*(?:[^(),]|\\([^()]*\\))*?\\s*,\\s*(['"\`])${domain}\\5`,
+	'g',
+);
 
 const entries = new Map();
 
@@ -77,9 +82,9 @@ function lineNumberAt(content, index) {
 	return content.slice(0, index).split(/\r?\n/).length;
 }
 
-function addEntry(msgid, ref, comment) {
+function addEntry(msgid, ref, comment, plural = '') {
 	if (!entries.has(msgid)) {
-		entries.set(msgid, { comments: new Set(), refs: new Set() });
+		entries.set(msgid, { comments: new Set(), refs: new Set(), plural: '' });
 	}
 
 	const entry = entries.get(msgid);
@@ -87,6 +92,10 @@ function addEntry(msgid, ref, comment) {
 
 	if (comment) {
 		entry.comments.add(comment);
+	}
+
+	if (plural && !entry.plural) {
+		entry.plural = plural;
 	}
 }
 
@@ -100,15 +109,26 @@ for (const file of roots.flatMap((root) => walk(root))) {
 		const ref = `${source}:${lineNumberAt(content, match.index)}`;
 		addEntry(msgid, ref, translatorCommentBefore(content, match.index));
 	}
+
+	while ((match = pluralPattern.exec(content)) !== null) {
+		const msgid = decodeLiteral(match[2]);
+		const ref = `${source}:${lineNumberAt(content, match.index)}`;
+		addEntry(msgid, ref, translatorCommentBefore(content, match.index), decodeLiteral(match[4]));
+	}
 }
 
 const now = new Date().toISOString().replace(/\.\d{3}Z$/, '+0000');
+
+// Read the authoritative plugin version from the main plugin file header.
+const mainFile = readFileSync('brasth-document-sync-for-google-docs.php', 'utf8');
+const pluginVersion = /^\s*\*?\s*Version:\s*(\S+)/m.exec(mainFile)?.[1] ?? '0.0.0';
+
 const header = [
 	'# Copyright (C) 2026 Brasth',
 	'# This file is distributed under the GPLv2 or later.',
 	'msgid ""',
 	'msgstr ""',
-	'"Project-Id-Version: Brasth Document Sync for Google Docs 1.1.0\\n"',
+	`"Project-Id-Version: Brasth Document Sync for Google Docs ${pluginVersion}\\n"`,
 	`"POT-Creation-Date: ${now}\\n"`,
 	'"MIME-Version: 1.0\\n"',
 	'"Content-Type: text/plain; charset=UTF-8\\n"',
@@ -123,7 +143,9 @@ const body = [...entries.entries()]
 		...[...entry.comments].map((comment) => `#. translators: ${comment}`),
 		`#: ${[...entry.refs].sort().join(' ')}`,
 		`msgid "${poEscape(msgid)}"`,
-		'msgstr ""',
+		...(entry.plural
+			? [`msgid_plural "${poEscape(entry.plural)}"`, 'msgstr[0] ""', 'msgstr[1] ""']
+			: ['msgstr ""']),
 		'',
 	]);
 
@@ -136,4 +158,5 @@ while (outputLines.at(-1) === '') {
 
 writeFileSync(outputFile, `${outputLines.join('\n')}\n`);
 
-console.log(`Extracted ${entries.size} strings to ${outputFile}.`);
+const pluralCount = [...entries.values()].filter((entry) => entry.plural).length;
+console.log(`Extracted ${entries.size} strings (${pluralCount} plural) to ${outputFile}.`);

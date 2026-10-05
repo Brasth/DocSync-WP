@@ -169,6 +169,8 @@ export const DocSourceModal = ({ initialIntent = 'document', isOpen, target, onC
                 outputType={folderFlow.outputType}
                 postStatus={folderFlow.postStatus}
                 postType={target.mode === 'new' ? target.postType : 'post'}
+                structure={folderFlow.structure}
+                onStructureChange={folderFlow.setStructure}
                 watch={folderFlow.watch}
                 onChangeFolder={folderFlow.watch ? undefined : folderFlow.changeFolder}
                 onExcludeToggle={folderFlow.toggleExcluded}

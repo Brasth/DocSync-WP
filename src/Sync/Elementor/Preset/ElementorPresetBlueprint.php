@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace DocSyncWP\Sync\Elementor\Preset;
 
+use DocSyncWP\Sync\ConversionPipelineVersion;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -102,10 +104,11 @@ final class ElementorPresetBlueprint {
 	 */
 	public function getFingerprintSeed(): array {
 		return array(
-			'editor'  => 'elementor',
-			'id'      => $this->id,
-			'layout'  => $this->layout,
-			'version' => $this->version,
+			'editor'   => 'elementor',
+			'id'       => $this->id,
+			'layout'   => $this->layout,
+			'pipeline' => ConversionPipelineVersion::CURRENT,
+			'version'  => $this->version,
 		);
 	}
 }

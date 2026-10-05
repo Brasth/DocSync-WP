@@ -29,9 +29,10 @@ final class MediaAssetImporter {
 	 * @param string $google_file_id Google Drive file ID.
 	 * @param int    $post_id        Parent post ID.
 	 * @param int    $user_id        Sync owner user ID.
+	 * @param string $name_hint      Alt text used for the new file name and attachment alt.
 	 * @return string|WP_Error
 	 */
-	public function importImage( string $file_path, string $asset_path, string $google_file_id, int $post_id, int $user_id ): string|WP_Error {
+	public function importImage( string $file_path, string $asset_path, string $google_file_id, int $post_id, int $user_id, string $name_hint = '' ): string|WP_Error {
 		if ( ! is_readable( $file_path ) ) {
 			return new WP_Error(
 				'docsync_wp_missing_export_asset',
@@ -56,7 +57,7 @@ final class MediaAssetImporter {
 			return $existing_url;
 		}
 
-		$attachment_id = $this->uploadImage( $file_path, $asset_path, $post_id, $user_id );
+		$attachment_id = $this->uploadImage( $file_path, $asset_path, $post_id, $user_id, $name_hint );
 
 		if ( is_wp_error( $attachment_id ) ) {
 			return $attachment_id;
@@ -65,6 +66,12 @@ final class MediaAssetImporter {
 		update_post_meta( $attachment_id, self::META_GOOGLE_FILE_ID, sanitize_text_field( $google_file_id ) );
 		update_post_meta( $attachment_id, self::META_ASSET_PATH, sanitize_text_field( $asset_path ) );
 		update_post_meta( $attachment_id, self::META_ASSET_HASH, sanitize_text_field( $image_hash ) );
+
+		$alt = sanitize_text_field( $name_hint );
+
+		if ( '' !== $alt ) {
+			update_post_meta( $attachment_id, '_wp_attachment_image_alt', $alt );
+		}
 
 		$url = wp_get_attachment_url( $attachment_id );
 
@@ -119,20 +126,49 @@ final class MediaAssetImporter {
 	}
 
 	/**
+	 * Build a descriptive upload file name: {post-slug}-{alt or original name}.{ext}.
+	 *
+	 * @param string $original  Original file name from the export.
+	 * @param int    $post_id   Parent post ID.
+	 * @param string $name_hint Alt text.
+	 */
+	private function buildFileName( string $original, int $post_id, string $name_hint ): string {
+		$original = sanitize_file_name( $original );
+		$post     = get_post( $post_id );
+		$prefix   = null !== $post ? sanitize_title( '' !== $post->post_name ? $post->post_name : $post->post_title ) : '';
+		$hint     = sanitize_title( $name_hint );
+
+		// Percent-encoded slugs (non-Latin scripts) would become hex strings once sanitized.
+		$prefix = str_contains( $prefix, '%' ) ? '' : rtrim( substr( $prefix, 0, 50 ), '-' );
+		$hint   = str_contains( $hint, '%' ) ? '' : rtrim( substr( $hint, 0, 60 ), '-' );
+
+		$extension = pathinfo( $original, PATHINFO_EXTENSION );
+		$stem      = '' !== $hint ? $hint : (string) pathinfo( $original, PATHINFO_FILENAME );
+		$name      = trim( $prefix . '-' . $stem, '-' );
+
+		if ( '' === $name || '' === $extension ) {
+			return $original;
+		}
+
+		return sanitize_file_name( $name . '.' . $extension );
+	}
+
+	/**
 	 * Upload an exported image to the Media Library.
 	 *
 	 * @param string $file_path  Local extracted file path.
 	 * @param string $asset_path Normalized asset path inside the ZIP.
 	 * @param int    $post_id    Parent post ID.
 	 * @param int    $user_id    Sync owner user ID.
+	 * @param string $name_hint  Alt text used for the file name.
 	 * @return int|WP_Error
 	 */
-	private function uploadImage( string $file_path, string $asset_path, int $post_id, int $user_id ): int|WP_Error {
+	private function uploadImage( string $file_path, string $asset_path, int $post_id, int $user_id, string $name_hint ): int|WP_Error {
 		require_once ABSPATH . 'wp-admin/includes/file.php';
 		require_once ABSPATH . 'wp-admin/includes/image.php';
 		require_once ABSPATH . 'wp-admin/includes/media.php';
 
-		$file_name = sanitize_file_name( basename( $asset_path ) );
+		$file_name = $this->buildFileName( basename( $asset_path ), $post_id, $name_hint );
 
 		if ( '' === $file_name ) {
 			$file_name = 'docsync-wp-image';

@@ -30,6 +30,11 @@ final class SettingsRepository {
 	private const DEFAULT_ELEMENTOR_SYNC             = false;
 	private const DEFAULT_TELEMETRY                  = false;
 	private const DEFAULT_TELEMETRY_PROMPT_DISMISSED = false;
+	private const DEFAULT_FAILURE_ALERTS             = 'owners_and_admin';
+	private const DEFAULT_METADATA_TABLE             = false;
+	private const DEFAULT_APPLY_POLICY               = 'auto';
+
+	public const FAILURE_ALERT_MODES = array( 'owners_and_admin', 'admin', 'off' );
 
 	/**
 	 * Layout preset registry.
@@ -107,6 +112,22 @@ final class SettingsRepository {
 
 		if ( ! $this->isValidSyncInterval( $settings['sync_interval'] ) ) {
 			$settings['sync_interval'] = self::DEFAULT_SYNC_INTERVAL;
+		}
+
+		if ( ! in_array( $settings['published_apply_policy'], array( 'auto', 'review' ), true ) ) {
+			return new WP_Error(
+				'docsync_wp_invalid_apply_policy',
+				__( 'Brasth Document Sync received an unsupported update policy.', 'brasth-document-sync-for-google-docs' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		if ( ! in_array( $settings['failure_alerts'], self::FAILURE_ALERT_MODES, true ) ) {
+			return new WP_Error(
+				'docsync_wp_invalid_failure_alerts',
+				__( 'Brasth Document Sync received an unsupported failure alert setting.', 'brasth-document-sync-for-google-docs' ),
+				array( 'status' => 400 )
+			);
 		}
 
 		if ( ! $this->isValidConnectionMode( $settings['connection_mode'] ) ) {
@@ -316,6 +337,9 @@ final class SettingsRepository {
 			'elementor_sync_enabled'     => $settings['elementor_sync_enabled'],
 			'telemetry_enabled'          => $settings['telemetry_enabled'],
 			'telemetry_prompt_dismissed' => $settings['telemetry_prompt_dismissed'],
+			'failure_alerts'             => $settings['failure_alerts'],
+			'metadata_table_enabled'     => $settings['metadata_table_enabled'],
+			'published_apply_policy'     => $settings['published_apply_policy'],
 			'has_client_id'              => '' !== $settings['client_id'],
 			'has_client_secret'          => '' !== $settings['encrypted_client_secret'],
 			'has_required_settings'      => '' !== $settings['client_id'] && '' !== $settings['encrypted_client_secret'],
@@ -351,6 +375,15 @@ final class SettingsRepository {
 		$settings = $this->get();
 
 		return (bool) ( $settings['elementor_sync_enabled'] ?? false );
+	}
+
+	/**
+	 * Whether a leading metadata table in the Doc sets post fields.
+	 */
+	public function isMetadataTableEnabled(): bool {
+		$settings = $this->get();
+
+		return (bool) ( $settings['metadata_table_enabled'] ?? self::DEFAULT_METADATA_TABLE );
 	}
 
 	/**
@@ -486,6 +519,9 @@ final class SettingsRepository {
 			'elementor_sync_enabled'         => self::DEFAULT_ELEMENTOR_SYNC,
 			'telemetry_enabled'              => self::DEFAULT_TELEMETRY,
 			'telemetry_prompt_dismissed'     => self::DEFAULT_TELEMETRY_PROMPT_DISMISSED,
+			'failure_alerts'                 => self::DEFAULT_FAILURE_ALERTS,
+			'metadata_table_enabled'         => self::DEFAULT_METADATA_TABLE,
+			'published_apply_policy'         => self::DEFAULT_APPLY_POLICY,
 			'telemetry_site_id'              => '',
 		);
 	}
@@ -516,6 +552,9 @@ final class SettingsRepository {
 			'elementor_sync_enabled',
 			'telemetry_enabled',
 			'telemetry_prompt_dismissed',
+			'failure_alerts',
+			'metadata_table_enabled',
+			'published_apply_policy',
 		);
 	}
 
@@ -538,6 +577,9 @@ final class SettingsRepository {
 		$settings['elementor_sync_enabled']         = $this->sanitizeBooleanSetting( $settings['elementor_sync_enabled'] ?? self::DEFAULT_ELEMENTOR_SYNC );
 		$settings['telemetry_enabled']              = $this->sanitizeBooleanSetting( $settings['telemetry_enabled'] ?? self::DEFAULT_TELEMETRY );
 		$settings['telemetry_prompt_dismissed']     = $this->sanitizeBooleanSetting( $settings['telemetry_prompt_dismissed'] ?? self::DEFAULT_TELEMETRY_PROMPT_DISMISSED );
+		$settings['metadata_table_enabled']         = $this->sanitizeBooleanSetting( $settings['metadata_table_enabled'] ?? self::DEFAULT_METADATA_TABLE );
+		$settings['published_apply_policy']         = sanitize_key( (string) ( $settings['published_apply_policy'] ?? self::DEFAULT_APPLY_POLICY ) );
+		$settings['failure_alerts']                 = sanitize_key( (string) ( $settings['failure_alerts'] ?? self::DEFAULT_FAILURE_ALERTS ) );
 		$settings['telemetry_site_id']              = sanitize_text_field( (string) ( $settings['telemetry_site_id'] ?? '' ) );
 
 		return $settings;

@@ -44,6 +44,14 @@
 		<exclude-pattern>src/Sync/SyncLock.php</exclude-pattern>
 	</rule>
 
+	<!-- Uninstall removes plugin-owned option rows by prefix; WordPress has no API for deleting options by prefix. -->
+	<rule ref="WordPress.DB.DirectDatabaseQuery.DirectQuery">
+		<exclude-pattern>uninstall.php</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.DB.DirectDatabaseQuery.NoCaching">
+		<exclude-pattern>uninstall.php</exclude-pattern>
+	</rule>
+
 	<!-- Source listings intentionally query postmeta because linked Google Docs are stored as post metadata. -->
 	<rule ref="WordPress.DB.SlowDBQuery.slow_db_query_meta_key">
 		<exclude-pattern>src/Sync/SourceRepository.php</exclude-pattern>
@@ -51,12 +59,14 @@
 	<rule ref="WordPress.DB.SlowDBQuery.slow_db_query_meta_query">
 		<exclude-pattern>src/Sync/SourceRepository.php</exclude-pattern>
 		<exclude-pattern>src/Sync/MediaAssetImporter.php</exclude-pattern>
+		<exclude-pattern>src/Sync/FolderHierarchyPlacer.php</exclude-pattern>
 	</rule>
 
 	<!-- HTML ZIP imports must manipulate temporary export files before handing images to WordPress media APIs. -->
 	<rule ref="WordPress.WP.AlternativeFunctions">
 		<exclude-pattern>src/Google/DocsClient.php</exclude-pattern>
 		<exclude-pattern>src/Sync/HtmlZipPackageExtractor.php</exclude-pattern>
+		<exclude-pattern>src/Rest/ZipImportController.php</exclude-pattern>
 		<exclude-pattern>src/Sync/MediaAssetImporter.php</exclude-pattern>
 	</rule>
 

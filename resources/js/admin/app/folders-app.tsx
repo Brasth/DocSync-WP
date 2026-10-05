@@ -42,6 +42,7 @@ export const FoldersApp = (): JSX.Element => {
 
   return (
     <AdminShell
+      screen="folders"
       notice={app.notice}
       status={{
         label: app.watches.length === 1 ? __('folder watch', 'brasth-document-sync-for-google-docs') : __('folder watches', 'brasth-document-sync-for-google-docs'),

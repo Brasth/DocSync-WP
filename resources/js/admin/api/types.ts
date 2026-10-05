@@ -12,6 +12,9 @@ export type SettingsResponse = {
   elementorSyncEnabled: boolean;
   telemetryEnabled: boolean;
   telemetryPromptDismissed: boolean;
+  failureAlerts: 'owners_and_admin' | 'admin' | 'off';
+  metadataTableEnabled: boolean;
+  publishedApplyPolicy: 'auto' | 'review';
   hasClientId: boolean;
   hasClientSecret: boolean;
   hasRequiredSettings: boolean;
@@ -182,6 +185,7 @@ export type SourceRecord = {
   syncInterval?: string;
   effectiveInterval?: string;
   nextSyncAt?: string;
+  applyPolicy?: 'auto' | 'review' | 'manual' | null;
 };
 
 export type FolderWatchStatus = 'importing' | 'watching' | 'paused' | 'error';
@@ -201,6 +205,7 @@ export type FolderWatchRecord = {
   folderName: string;
   webViewLink: string;
   includeSubfolders: boolean;
+  structure?: 'flat' | 'hierarchy';
   postType: string;
   postStatus: 'draft' | 'publish' | string;
   syncInterval: 'site' | 'off' | 'hourly' | 'twicedaily' | 'daily' | 'weekly' | string;

@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace DocSyncWP\Sync\Layout;
 
+use DocSyncWP\Sync\ConversionPipelineVersion;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -144,6 +146,7 @@ final class LayoutBlueprint {
 		return array(
 			'id'                        => $this->id,
 			'version'                   => $this->version,
+			'pipeline'                  => ConversionPipelineVersion::CURRENT,
 			'demote_top_level_headings' => $this->demote_top_level_headings,
 			'render_code_blocks'        => $this->render_code_blocks,
 			'render_callouts'           => $this->render_callouts,

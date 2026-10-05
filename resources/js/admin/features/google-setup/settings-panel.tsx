@@ -4,6 +4,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import type { GoogleAccount, SettingsResponse } from '../../api';
 import type { AvailablePostType } from '../../config';
 import { GoogleSetupActiveTaskPanel } from './google-setup-active-task-panel';
+import { ZipImportButton } from '../zip-import/zip-import-dialog';
 import { GoogleSetupProgressRail } from './google-setup-progress-rail';
 import type { OAuthClientJsonCredentials } from './oauth-client-json';
 import { buildSetupChecks, type SetupCheck } from './google-setup-utils';
@@ -184,6 +185,14 @@ export const SettingsPanel = ({
         targetPostType={targetPostType}
         testChecks={testChecks}
       />
+
+      {!settings.hasRequiredSettings ? (
+        <ZipImportButton
+          connectHref={undefined}
+          layoutPresets={settings.availableLayoutPresets}
+          postTypes={settings.availablePostTypes.filter((item) => settings.enabledPostTypes.includes(item.name))}
+        />
+      ) : null}
     </section>
   );
 };

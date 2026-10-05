@@ -32,14 +32,23 @@ final class HtmlZipImporter {
 	private HtmlDocumentImageRewriter $image_rewriter;
 
 	/**
+	 * Google redirect link cleaner.
+	 *
+	 * @var HtmlGoogleRedirectLinkCleaner
+	 */
+	private HtmlGoogleRedirectLinkCleaner $link_cleaner;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param HtmlZipPackageExtractor   $package_extractor ZIP package extractor.
-	 * @param HtmlDocumentImageRewriter $image_rewriter    HTML image rewriter.
+	 * @param HtmlZipPackageExtractor            $package_extractor ZIP package extractor.
+	 * @param HtmlDocumentImageRewriter          $image_rewriter    HTML image rewriter.
+	 * @param HtmlGoogleRedirectLinkCleaner|null $link_cleaner Google redirect link cleaner.
 	 */
-	public function __construct( HtmlZipPackageExtractor $package_extractor, HtmlDocumentImageRewriter $image_rewriter ) {
+	public function __construct( HtmlZipPackageExtractor $package_extractor, HtmlDocumentImageRewriter $image_rewriter, ?HtmlGoogleRedirectLinkCleaner $link_cleaner = null ) {
 		$this->package_extractor = $package_extractor;
 		$this->image_rewriter    = $image_rewriter;
+		$this->link_cleaner      = $link_cleaner ?? new HtmlGoogleRedirectLinkCleaner();
 	}
 
 	/**
@@ -59,7 +68,7 @@ final class HtmlZipImporter {
 		}
 
 		try {
-			return $this->image_rewriter->rewrite(
+			$html = $this->image_rewriter->rewrite(
 				$package['html'],
 				$package['html_path'],
 				$package['temp_dir'],
@@ -67,6 +76,8 @@ final class HtmlZipImporter {
 				$post_id,
 				$user_id
 			);
+
+			return is_wp_error( $html ) ? $html : $this->link_cleaner->clean( $html );
 		} finally {
 			$this->package_extractor->deleteDirectory( $package['temp_dir'] );
 		}

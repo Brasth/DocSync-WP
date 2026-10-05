@@ -1,6 +1,6 @@
 # System Architecture
 
-Last updated: 2026-07-11
+Last updated: 2026-10-03
 
 ## Overview
 
@@ -182,7 +182,7 @@ Implemented routes:
 
 `GET /workspace` is nonce-protected through `canUseAuthenticatedRest()` and uses an explicit safe-field allowlist. It contains no OAuth identifiers/secrets, tokens, Google account/email data, telemetry or schedule configuration, source/post/Google IDs, ownership identity, raw errors, messages, titles, or content. Its source summary includes only enabled targets passing normal per-post source authority, is capped at 500 accessible records, and reports `truncated` when the cap is reached.
 
-Workspace source categories are exhaustive: `syncing` is active work; `healthy` is `synced` or `skipped` with a non-empty successful timestamp; every other accessible source is `attention`. `activated` becomes true only when at least one accessible source is healthy. Account connection alone is not activation.
+Workspace source categories are exhaustive and defined by sync status alone, so the Sources list filters and `applySourceHealthOrder()` agree with the summary counts: `syncing` is active work; `healthy` is `synced` or `skipped`; every other accessible source is `attention`. A missing timestamp does not demote a synced source. `activated` is separate and still requires at least one accessible source that finished `synced`/`skipped` with a non-empty successful timestamp. Account connection alone is not activation.
 
 Source records include additive live progress fields: `syncProgress` from 0 to 100, `syncStep`, and `syncMessage`. Existing status values and route shapes stay unchanged. Relinking an existing source owned by another operator requires `transferOwnership: true`; an unconfirmed request returns HTTP 409 with `docsync_wp_source_owner_transfer_required`.
 
@@ -359,6 +359,49 @@ Current components:
 - `LegacyElementorUpgradeNotice` gives existing legacy Elementor sources an in-place preset upgrade path without forcing migration.
 
 Later phases add an in-linking preset gallery, preview endpoint, bulk Drive folder import, a custom preset builder, a Pro tier, a Google Docs Workspace Add-on, and optional managed OAuth. See `docs/project-roadmap.md` for the full phased plan.
+
+## Publish-Ready Sync Pipeline
+
+The HTML-ZIP sync path is a sequence of small, independently tested stages. Each stage lives in its own class so `SyncService` only orchestrates.
+
+```
+export ZIP -> HtmlZipPackageExtractor (path, entry-count and size limits)
+           -> HtmlDocumentImageRewriter (+ MediaAssetImporter: slug-based names, alt meta)
+           -> HtmlGoogleRedirectLinkCleaner (google.com/url?q= unwrap, scheme allowlist)
+           -> DocMetadataTableExtractor (leading key/value table -> fields, removed from content)
+           -> layout / Elementor preset conversion
+           -> PatternPlaceholderResolver ({{pattern: name}} -> wp:block / wp:pattern; Gutenberg presets other than Plain Blocks)
+           -> SyncedRegionStore::plan (keep WordPress blocks before/after the last synced run)
+           -> wp_update_post -> PostMetadataApplier (title, slug, excerpt, featured image, terms, author, SEO meta)
+           -> SyncedRegionStore::saveBaseline (fingerprints of the saved synced run)
+```
+
+- `ConversionPipelineVersion::CURRENT` is part of every layout and Elementor preset fingerprint. Bump it when pipeline output changes for unchanged Docs so each source re-converts once. Sources with no stored layout fingerprint (pre-1.1.0 Plain Blocks, legacy Elementor) are not forced.
+- Block fingerprints hash block name, semantic attributes (level, ordered, ref, slug), visible text, link and image targets, and inner blocks. They ignore wrapper classes, attribute order, and markup normalization so editor re-saves do not read as WordPress edits. `SyncedRegionMerger::locate` finds the stored run in current content; no match is a conflict (edits inside synced content).
+- Metadata fields are applied under the sync owner's capabilities, never the request user. Slug is ignored on published, scheduled, and private posts. Terms are created only when the owner can manage the taxonomy. A Categories or Tags row is authoritative for its taxonomy: the Doc's list replaces the post's terms, and terms added in WordPress that the Doc does not list are removed and named in the sync message (`Replaced in WordPress: ...`). Removing the row from the Doc leaves WordPress terms untouched. The content hash includes the fields so a metadata-only Doc change is not skipped.
+- The metadata table setting (`metadata_table_enabled`) is seeded on for new installs at activation and defaults off for upgraded sites, because it rewrites post fields from the Doc.
+- Doc metadata keys: Title, Slug, Excerpt, Featured image (image or `first`), Categories, Tags, Author, SEO title, SEO description. All keys in the first table must be recognized or the table stays content.
+
+### Apply policy
+
+`ApplyPolicyResolver` decides what a scheduled sync does. Policy per source (`_docsync_wp_apply_policy`: auto, review, manual) overrides the site setting `published_apply_policy` (published, scheduled, and private posts only; drafts always auto). New installs seed `review`; upgraded installs default to `auto`.
+
+| Policy | Doc changed | Edits inside synced content | Scheduled result |
+|---|---|---|---|
+| manual | any | any | skipped by `syncPost()` before any Google call |
+| review | yes | any | hold: status `update_available` |
+| auto | yes | no | apply |
+| auto | yes | yes | hold |
+
+A hold never advances the stored Google modified time or version, records `_docsync_wp_pending_remote_version`, and logs one event per remote version. The hold message names the actual cause: the Doc changed, WordPress edits exist inside the synced content, or the newer plugin version formats the same Doc differently. Manual syncs apply, but `POST /sources/:id/sync` returns 409 `docsync_wp_local_edits` when WordPress edits would be replaced unless `confirmOverwrite` is true. Sync-all and the Posts list bulk action skip such posts. `syncPost()` takes a `$trigger` (`manual`, `scheduled`) and owns the manual-policy skip, so no caller can apply a manual source on a schedule.
+
+### Failure alerts
+
+`SyncCron::run` fires `docsync_wp_scheduled_sync_failed` for failed scheduled syncs. `SyncFailureDigest` stores a bounded, de-duplicated pending list (`docsync_wp_pending_failures`) and a daily cron (`docsync_wp_failure_digest`) emails one plain-text digest per recipient (`FailureDigestPlanner` groups by source owner and administrators, filtered by per-post capability). `SyncHealthSiteStatus` adds a Site Health test for stalled WP-Cron and sources needing attention. Setting: `failure_alerts` (`owners_and_admin`, `admin`, `off`).
+
+### ZIP import
+
+`POST /imports/zip` (multipart) creates a draft from a downloaded Google Docs "Web Page (.html, zipped)" file with no Google connection and no source link. It requires the create capability for an enabled post type, a nonce, a `.zip` under 25 MB, and is limited to 10 imports per user per hour. The extractor limits (500 entries, 25 MB per entry, 100 MB total) apply to Google-sourced ZIPs too. A failed import deletes its draft.
 
 ## Operational Notes
 

@@ -53,6 +53,13 @@ final class FolderWatchRunner {
 	private SyncService $sync_service;
 
 	/**
+	 * Hierarchy placer.
+	 *
+	 * @var FolderHierarchyPlacer
+	 */
+	private FolderHierarchyPlacer $placer;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param DriveFolderInventory $inventory    Folder inventory.
@@ -67,6 +74,7 @@ final class FolderWatchRunner {
 		$this->inventory    = $inventory;
 		$this->sources      = $sources;
 		$this->sync_service = $sync_service;
+		$this->placer       = new FolderHierarchyPlacer();
 	}
 
 	/**
@@ -139,6 +147,8 @@ final class FolderWatchRunner {
 		$pending  = array_values( (array) ( $watch['pendingFileIds'] ?? array() ) );
 		$added    = 0;
 
+		$folder_paths = (array) ( $watch['folderPaths'] ?? array() );
+
 		foreach ( $listing['documents'] as $document ) {
 			$file_id = isset( $document['fileId'] ) ? sanitize_text_field( (string) $document['fileId'] ) : '';
 
@@ -154,10 +164,12 @@ final class FolderWatchRunner {
 				continue;
 			}
 
-			$pending[] = $file_id;
+			$pending[]                = $file_id;
+			$folder_paths[ $file_id ] = sanitize_text_field( (string) ( $document['folderPath'] ?? '' ) );
 			++$added;
 		}
 
+		$watch['folderPaths']    = $folder_paths;
 		$watch['pendingFileIds'] = $pending;
 		$watch['totalCount']     = absint( $watch['totalCount'] ?? 0 ) + $added;
 		$watch['overflow']       = ! empty( $listing['overflow'] );
@@ -206,6 +218,10 @@ final class FolderWatchRunner {
 		}
 
 		$post_id = absint( $result['postId'] ?? 0 );
+
+		if ( $post_id > 0 && 'hierarchy' === ( $watch['structure'] ?? 'flat' ) ) {
+			$this->placer->place( $post_id, $watch, (string) ( ( (array) ( $watch['folderPaths'] ?? array() ) )[ $file_id ] ?? '' ) );
+		}
 
 		if ( $post_id > 0 ) {
 			SyncCron::scheduleSourceSync( $post_id, $user_id, false );

@@ -155,7 +155,7 @@ final class DocsApiInlineRenderer {
 			return '' !== $alt ? esc_html( $alt ) : '';
 		}
 
-		$url = $this->image_importer->import( $user_id, (string) $uri, $inline_id, $google_file_id, $post_id );
+		$url = $this->image_importer->import( $user_id, (string) $uri, $inline_id, $google_file_id, $post_id, $alt );
 
 		if ( is_wp_error( $url ) ) {
 			return $url;

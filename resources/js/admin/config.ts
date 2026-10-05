@@ -30,6 +30,7 @@ export type DocSyncWPAdminConfig = {
   hasClientSecret: boolean;
   hasRequiredSettings: boolean;
   createSyncedDraftUrl: string;
+  canManageSettings: boolean;
   docSourceModalStyleUrls: string[];
   driveBrowserScriptUrl: string;
   driveBrowserStyleUrls: string[];
@@ -74,6 +75,7 @@ const fallbackConfig: DocSyncWPAdminConfig = {
   hasClientSecret: false,
   hasRequiredSettings: false,
   createSyncedDraftUrl: 'edit.php',
+  canManageSettings: false,
   docSourceModalStyleUrls: [],
   driveBrowserScriptUrl: '',
   driveBrowserStyleUrls: []

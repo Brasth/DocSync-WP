@@ -13,6 +13,7 @@ use DocSyncWP\Cron\SyncCron;
 use DocSyncWP\Google\DocumentIdParser;
 use DocSyncWP\Sync\Elementor\Preset\ElementorPresetRegistry;
 use DocSyncWP\Sync\Layout\LayoutPresetRegistry;
+use DocSyncWP\Sync\ApplyPolicyResolver;
 use DocSyncWP\Sync\SourceRepository;
 use DocSyncWP\Sync\SourceScheduleResolver;
 use DocSyncWP\Sync\SyncService;
@@ -404,7 +405,7 @@ final class SourceController {
 		$allowed = $this->validateEditablePost( $post_id, $user_id );
 		$params  = $this->getOptionalRequestParams(
 			$request,
-			array( 'syncMode' ),
+			array( 'syncMode', 'confirmOverwrite' ),
 			'docsync_wp_unknown_sync_fields'
 		);
 
@@ -420,6 +421,14 @@ final class SourceController {
 
 		if ( is_wp_error( $sync_mode ) ) {
 			return $sync_mode;
+		}
+
+		if ( true !== ( $params['confirmOverwrite'] ?? false ) && $this->sync_service->hasLocalEdits( $post_id ) ) {
+			return new WP_Error(
+				'docsync_wp_local_edits',
+				__( 'This post has edits made in WordPress inside the synced content. Syncing will replace them.', 'brasth-document-sync-for-google-docs' ),
+				array( 'status' => 409 )
+			);
 		}
 
 		if ( self::SYNC_MODE_BACKGROUND === $sync_mode ) {
@@ -514,7 +523,7 @@ final class SourceController {
 
 		$params = $this->getOptionalRequestParams(
 			$request,
-			array( 'elementorSync', 'layoutPreset', 'elementorPreset', 'syncInterval' ),
+			array( 'elementorSync', 'layoutPreset', 'elementorPreset', 'syncInterval', 'applyPolicy' ),
 			'docsync_wp_unknown_source_update_fields'
 		);
 
@@ -549,6 +558,21 @@ final class SourceController {
 
 			$update['layout_preset'] = $layout_preset;
 			$has_update              = true;
+		}
+
+		if ( array_key_exists( 'applyPolicy', $params ) ) {
+			$apply_policy = is_string( $params['applyPolicy'] ) ? sanitize_key( $params['applyPolicy'] ) : '';
+
+			if ( '' !== $apply_policy && ! in_array( $apply_policy, ApplyPolicyResolver::POLICIES, true ) ) {
+				return new WP_Error(
+					'docsync_wp_invalid_apply_policy',
+					__( 'Brasth Document Sync received an unsupported update policy.', 'brasth-document-sync-for-google-docs' ),
+					array( 'status' => 400 )
+				);
+			}
+
+			$update['apply_policy'] = $apply_policy;
+			$has_update             = true;
 		}
 
 		if ( array_key_exists( 'elementorPreset', $params ) ) {
@@ -704,6 +728,16 @@ final class SourceController {
 				$seen[ $post_id ] = true;
 
 				if ( ! $this->source_repository->userCanSyncPost( $post_id, $user_id ) ) {
+					continue;
+				}
+
+				if ( $this->sync_service->hasLocalEdits( $post_id ) ) {
+					$results[] = array(
+						'postId'  => $post_id,
+						'status'  => 'error',
+						'message' => __( 'Skipped: this post has WordPress edits inside the synced content. Sync it from the editor to confirm.', 'brasth-document-sync-for-google-docs' ),
+					);
+					++$count;
 					continue;
 				}
 
@@ -1414,6 +1448,10 @@ final class SourceController {
 			SyncService::STATUS_SYNCED,
 			SyncService::STATUS_SKIPPED,
 			SyncService::STATUS_ERROR,
+			SyncService::STATUS_UPDATE_AVAILABLE,
+			// Health groupings used by the Sources summary links.
+			'attention',
+			'healthy',
 		);
 	}
 }

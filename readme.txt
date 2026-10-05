@@ -121,6 +121,8 @@ Optional anonymous Brasth telemetry is off by default. When enabled by a site ad
 
 Feedback reports are optional and become public GitHub issues. Do not include secrets, private URLs, customer data, Google document data, or other sensitive information. The plugin does not send the WordPress site URL or user identity with feedback.
 
+When scheduled sync fails, the plugin can email a daily digest (post titles and error messages only) to the source owner and site administrators through WordPress `wp_mail`. Change or turn this off in Setup > Sync defaults.
+
 Uninstall removes plugin settings, encrypted user Google tokens, and scheduled cron events. Linked post metadata is retained by default; define `DOCSYNC_WP_FULL_UNINSTALL` or return true from the `docsync_wp_full_uninstall` filter to remove Brasth Document Sync post metadata. Synced posts and imported media are not deleted automatically.
 
 == Source And Build Instructions ==
@@ -144,6 +146,19 @@ The build uses Vite and writes screen-specific manifests for Setup, Sources, Log
 5. Synced draft editor with the Brasth Document Sync meta box.
 
 == Changelog ==
+
+= 1.2.0 =
+
+* Fixed Google redirect links in synced content and gave imported images descriptive file names with alt text.
+* Added a daily email digest and a Site Health check for failed scheduled syncs.
+* Added "Try it without Google setup": upload a downloaded Google Docs HTML ZIP to create a draft.
+* Added a leading metadata table in the Doc to set title, slug, excerpt, featured image, categories, tags, author, and Yoast SEO or Rank Math fields (on for new installs; upgraded sites enable it under Sync defaults).
+* Sync now keeps blocks added in WordPress above or below synced content and supports {{pattern: Name}} placeholders.
+* Added "Update available" review: choose per post or site-wide whether scheduled syncs apply automatically, wait for review, or run only manually. Syncing never replaces WordPress edits silently.
+* Sources now show relative times, readable labels, live filters, clickable health counts, bulk sync, and a recovery action for each error.
+* Added a Posts list bulk "Sync from Google Docs" action, block editor pre-publish notice, and command palette entries.
+* Added shared screen navigation and a per-source activity drawer; Logs is now Activity.
+* Drive folder watches can mirror subfolders as parent pages; links between synced Docs resolve to WordPress pages; the Documentation layout adds heading anchors and a table of contents.
 
 = 1.1.5 =
 

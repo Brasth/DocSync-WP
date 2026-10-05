@@ -11,6 +11,7 @@ import { DocSourceModal } from '../features/doc-source-modal/doc-source-modal';
 import { AdminShell } from '../shared/ui/admin-shell';
 import { CronHealthBanner } from '../shared/ui/cron-health-banner';
 import { useSourcesApp } from './use-sources-app';
+import { ZipImportButton } from '../features/zip-import/zip-import-dialog';
 
 export const SourcesApp = (): JSX.Element => {
   const app = useSourcesApp();
@@ -25,6 +26,7 @@ export const SourcesApp = (): JSX.Element => {
 
   return (
     <AdminShell
+      screen="sources"
       notice={app.notice}
       status={{
         label: app.sources.length === 1 ? __('shown source', 'brasth-document-sync-for-google-docs') : __('shown sources', 'brasth-document-sync-for-google-docs'),
@@ -61,7 +63,11 @@ export const SourcesApp = (): JSX.Element => {
               workspace={app.workspace}
             />
             <CronHealthBanner health={app.workspace.cronHealth} />
-            <SourceHealthSummary summary={app.workspace.sourceSummary} />
+            <SourceHealthSummary
+              activeStatus={app.sourceFilters.status}
+              onSelect={(status) => void app.applySourceFilters({ ...app.sourceFilters, status })}
+              summary={app.workspace.sourceSummary}
+            />
             <SourcesFolderWatches watches={app.folderWatches} />
             {app.activationSource ? (
               <ActivationResult busy={app.busy} onRetry={app.retryActivationSource} source={app.activationSource} />
@@ -69,6 +75,13 @@ export const SourcesApp = (): JSX.Element => {
             <SourcesTable
               availablePostTypes={app.workspace.availablePostTypes.filter((postType) => app.workspace?.enabledPostTypes.includes(postType.name))}
               busy={app.busy}
+              emptyStateExtra={(
+                <ZipImportButton
+                  connectHref={app.config.canManageSettings ? 'admin.php?page=brasth-document-sync-for-google-docs' : undefined}
+                  layoutPresets={app.config.availableLayoutPresets}
+                  postTypes={app.workspace.availablePostTypes.filter((postType) => app.workspace?.creatablePostTypes.includes(postType.name))}
+                />
+              )}
               canCreateSource={app.workspace.siteConnectionReady && app.account.connected && app.account.hasRequiredScope && app.workspace.creatablePostTypes.length > 0}
               folderWatchNames={Object.fromEntries(app.folderWatches.map((watch) => [watch.id, watch.folderName]))}
               filters={app.sourceFilters}
@@ -79,6 +92,7 @@ export const SourcesApp = (): JSX.Element => {
               onRefresh={() => app.runAction(app.refresh)}
               onSync={app.syncOne}
               onSyncAll={app.syncAll}
+              onSyncSelected={app.syncMany}
               sources={app.sources}
             />
           </div>

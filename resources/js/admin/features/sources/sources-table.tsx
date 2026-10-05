@@ -1,13 +1,16 @@
-import { createElement, useEffect, useState } from '@wordpress/element';
+import { createElement, useEffect, useRef, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 
 import type { SourceRecord } from '../../api';
-import type { AvailablePostType } from '../../config';
+import { getAdminConfig, type AvailablePostType } from '../../config';
 import { AdminButton } from '../../shared/ui/admin-button';
 import { EmptyState } from '../../shared/ui/empty-state';
 import { SkeletonTableRows, SkeletonText } from '../../shared/ui/skeleton';
 import { StatusPill } from '../../shared/ui/status-pill';
 import { isQueuedSync, shouldShowSyncProgress, SyncProgress } from '../../shared/ui/sync-progress';
+import { formatLocalDateTime, formatSyncTime } from '../../shared/format-time';
+import { recoveryForErrorCode } from './sync-error-recovery';
+import { SourceActivityDrawer } from './source-activity-drawer';
 
 export type SourceListFilters = {
   search: string;
@@ -28,8 +31,10 @@ type Props = {
   onLoadMore: () => Promise<void>;
   onSync: (postId: number) => Promise<void>;
   onSyncAll: () => Promise<void>;
+  onSyncSelected?: (postIds: number[]) => Promise<void>;
   onCreateSource?: (intent?: 'folder' | 'document') => void;
   canCreateSource?: boolean;
+  emptyStateExtra?: JSX.Element | null;
 };
 
 const statusLabel = (source: SourceRecord): string => {
@@ -52,8 +57,16 @@ const syncMethodLabel = (source: SourceRecord): string => {
   return '';
 };
 
-const logsUrl = (postId: number): string => {
-  return `admin.php?page=brasth-document-sync-for-google-docs-logs&post_id=${encodeURIComponent(String(postId))}`;
+const setupUrl = 'admin.php?page=brasth-document-sync-for-google-docs';
+const maxBulkSync = 20;
+const searchDebounceMs = 300;
+
+const postStatusLabels: Record<string, string> = {
+  publish: __('Published', 'brasth-document-sync-for-google-docs'),
+  draft: __('Draft', 'brasth-document-sync-for-google-docs'),
+  pending: __('Pending review', 'brasth-document-sync-for-google-docs'),
+  private: __('Private', 'brasth-document-sync-for-google-docs'),
+  future: __('Scheduled', 'brasth-document-sync-for-google-docs')
 };
 
 const statusOptions = [
@@ -61,7 +74,9 @@ const statusOptions = [
   { value: 'linked', label: __('Linked', 'brasth-document-sync-for-google-docs') },
   { value: 'syncing', label: __('Syncing', 'brasth-document-sync-for-google-docs') },
   { value: 'synced', label: __('Synced', 'brasth-document-sync-for-google-docs') },
-  { value: 'skipped', label: __('Skipped', 'brasth-document-sync-for-google-docs') },
+  { value: 'skipped', label: __('Up to date', 'brasth-document-sync-for-google-docs') },
+  { value: 'update_available', label: __('Update available', 'brasth-document-sync-for-google-docs') },
+  { value: 'attention', label: __('Needs attention', 'brasth-document-sync-for-google-docs') },
   { value: 'error', label: __('Error', 'brasth-document-sync-for-google-docs') }
 ];
 
@@ -125,34 +140,63 @@ export const SourcesTable = ({
   onLoadMore,
   onSync,
   onSyncAll,
+  onSyncSelected,
   onCreateSource = () => undefined,
-  canCreateSource = false
+  canCreateSource = false,
+  emptyStateExtra = null
 }: Props): JSX.Element => {
   const [search, setSearch] = useState(filters.search);
-  const [postType, setPostType] = useState(filters.postType);
-  const [status, setStatus] = useState(filters.status);
+  const [selected, setSelected] = useState<number[]>([]);
+  const [activitySource, setActivitySource] = useState<SourceRecord | null>(null);
+  const filtersRef = useRef(filters);
+  const submittedSearchRef = useRef(filters.search);
   const hasActiveFilters = Boolean(filters.search || filters.postType || filters.status || filters.folderWatchId);
+  const postTypeLabels = Object.fromEntries(availablePostTypes.map((item) => [item.name, item.label]));
+
+  filtersRef.current = filters;
 
   useEffect(() => {
-    setSearch(filters.search);
-    setPostType(filters.postType);
-    setStatus(filters.status);
-  }, [filters]);
+    // Ignore the echo of our own debounced request so typing during a refetch is never overwritten.
+    if (filters.search !== submittedSearchRef.current) {
+      submittedSearchRef.current = filters.search;
+      setSearch(filters.search);
+    }
+  }, [filters.search]);
 
-  const applyFilters = async () => {
-    await onFiltersChange({
-      search: search.trim(),
-      postType,
-      status,
-      folderWatchId: filters.folderWatchId
-    });
-  };
+  useEffect(() => {
+    setSelected((current) => current.filter((id) => sources.some((source) => source.postId === id)));
+  }, [sources]);
+
+  useEffect(() => {
+    const next = search.trim();
+
+    if (next === filtersRef.current.search) {
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => {
+      submittedSearchRef.current = next;
+      void onFiltersChange({ ...filtersRef.current, search: next });
+    }, searchDebounceMs);
+
+    return () => window.clearTimeout(timer);
+  }, [search]);
 
   const resetFilters = async () => {
+    submittedSearchRef.current = '';
     setSearch('');
-    setPostType('');
-    setStatus('');
     await onFiltersChange({ search: '', postType: '', status: '', folderWatchId: '' });
+  };
+
+  const toggleSelected = (postId: number) => {
+    setSelected((current) => current.includes(postId) ? current.filter((id) => id !== postId) : [...current, postId]);
+  };
+
+  const syncSelected = async () => {
+    const ids = selected.slice(0, maxBulkSync);
+
+    await onSyncSelected?.(ids);
+    setSelected([]);
   };
 
   const folderWatchLabel = filters.folderWatchId
@@ -176,7 +220,7 @@ export const SourcesTable = ({
         className="docsync-wp-source-filters"
         onSubmit={(event) => {
           event.preventDefault();
-          void applyFilters();
+          void onFiltersChange({ ...filters, search: search.trim() });
         }}
       >
         <label>
@@ -191,7 +235,7 @@ export const SourcesTable = ({
         </label>
         <label>
           <span>{__('Post type', 'brasth-document-sync-for-google-docs')}</span>
-          <select onChange={(event) => setPostType(event.currentTarget.value)} value={postType}>
+          <select onChange={(event) => void onFiltersChange({ ...filters, postType: event.currentTarget.value })} value={filters.postType}>
             <option value="">{__('All enabled', 'brasth-document-sync-for-google-docs')}</option>
             {availablePostTypes.map((item) => (
               <option key={item.name} value={item.name}>{item.label}</option>
@@ -200,14 +244,20 @@ export const SourcesTable = ({
         </label>
         <label>
           <span>{__('Sync status', 'brasth-document-sync-for-google-docs')}</span>
-          <select onChange={(event) => setStatus(event.currentTarget.value)} value={status}>
+          <select onChange={(event) => void onFiltersChange({ ...filters, status: event.currentTarget.value })} value={filters.status}>
             {statusOptions.map((item) => (
               <option key={item.value} value={item.value}>{item.label}</option>
             ))}
           </select>
         </label>
         <div className="docsync-wp-source-filters__actions">
-          <AdminButton disabled={busy} type="submit" variant="primary">{__('Apply filters', 'brasth-document-sync-for-google-docs')}</AdminButton>
+          {onSyncSelected ? (
+            <AdminButton disabled={busy || selected.length === 0} onClick={syncSelected}>
+              {selected.length > 0
+                ? sprintf(__('Sync selected (%d)', 'brasth-document-sync-for-google-docs'), Math.min(selected.length, maxBulkSync))
+                : __('Sync selected', 'brasth-document-sync-for-google-docs')}
+            </AdminButton>
+          ) : null}
           <AdminButton disabled={busy || !hasActiveFilters} onClick={resetFilters}>{__('Reset', 'brasth-document-sync-for-google-docs')}</AdminButton>
         </div>
       </form>
@@ -231,6 +281,7 @@ export const SourcesTable = ({
         <table aria-busy={busy && sources.length === 0} className="docsync-wp-data-table docsync-wp-sources-table">
           <thead>
             <tr>
+              <th className="docsync-wp-source-select-cell"><span className="screen-reader-text">{__('Select', 'brasth-document-sync-for-google-docs')}</span></th>
               <th>{__('WordPress target', 'brasth-document-sync-for-google-docs')}</th>
               <th>{__('Google Doc', 'brasth-document-sync-for-google-docs')}</th>
               <th>{__('Status', 'brasth-document-sync-for-google-docs')}</th>
@@ -240,10 +291,10 @@ export const SourcesTable = ({
           </thead>
           <tbody>
             {busy && sources.length === 0 ? (
-              <SkeletonTableRows columns={['62%', '58%', '44%', '48%', '72%']} rows={5} />
+              <SkeletonTableRows columns={['24px', '62%', '58%', '44%', '48%', '72%']} rows={5} />
             ) : sources.length === 0 ? (
               <tr>
-                <td colSpan={5}>
+                <td colSpan={6}>
                   <EmptyState
                     action={hasActiveFilters ? (
                       <AdminButton disabled={busy} onClick={resetFilters}>
@@ -258,8 +309,9 @@ export const SourcesTable = ({
                           <AdminButton disabled={busy} onClick={() => onCreateSource('document')} variant="secondary">
                             {__('Link one Google Doc instead', 'brasth-document-sync-for-google-docs')}
                           </AdminButton>
+                          {emptyStateExtra}
                         </div>
-                      ) : undefined
+                      ) : emptyStateExtra ?? undefined
                     )}
                     className="docsync-wp-table-empty-state"
                     description={hasActiveFilters
@@ -276,14 +328,23 @@ export const SourcesTable = ({
               </tr>
             ) : sources.map((source) => (
               <tr key={source.postId}>
+                <td className="docsync-wp-source-select-cell">
+                  <input
+                    aria-label={sprintf(__('Select %s', 'brasth-document-sync-for-google-docs'), source.postTitle || sprintf(__('Post %d', 'brasth-document-sync-for-google-docs'), source.postId))}
+                    checked={selected.includes(source.postId)}
+                    disabled={busy || source.syncStatus === 'syncing'}
+                    onChange={() => toggleSelected(source.postId)}
+                    type="checkbox"
+                  />
+                </td>
                 <td>
                   <div className="docsync-wp-source-target">
                     <a className="docsync-wp-source-target__title" href={source.editUrl}>
                       {source.postTitle || sprintf(__('Post %d', 'brasth-document-sync-for-google-docs'), source.postId)}
                     </a>
                     <div className="docsync-wp-source-target__meta">
-                      {source.postType ? <span className="docsync-wp-row-tag">{source.postType}</span> : null}
-                      {source.postStatus ? <span className="docsync-wp-row-tag">{source.postStatus}</span> : null}
+                      {source.postType ? <span className="docsync-wp-row-tag">{postTypeLabels[source.postType] || source.postType}</span> : null}
+                      {source.postStatus ? <span className="docsync-wp-row-tag">{postStatusLabels[source.postStatus] || source.postStatus}</span> : null}
                       {source.folderWatchId ? (
                         <span className="docsync-wp-folder-watch-chip">
                           {sprintf(
@@ -305,9 +366,6 @@ export const SourcesTable = ({
                     ) : (
                       <span className="docsync-wp-source-doc__title">{source.googleTitle || source.googleFileId}</span>
                     )}
-                    {source.googleFileId && source.googleTitle ? (
-                      <small className="docsync-wp-source-doc__id">{source.googleFileId}</small>
-                    ) : null}
                   </div>
                 </td>
                 <td>
@@ -318,12 +376,44 @@ export const SourcesTable = ({
                         <SyncProgress indeterminate={isQueuedSync(source)} message={source.syncMessage} progress={source.syncProgress} />
                       </div>
                     ) : null}
-                    {source.syncError ? <small className="docsync-wp-source-error-text">{source.syncError}</small> : null}
+                    {source.syncError ? (
+                      <small className="docsync-wp-source-error-text">
+                        {source.syncError}
+                        {' '}
+                        {(() => {
+                          const recovery = recoveryForErrorCode(source.syncErrorCode);
+
+                          if (recovery.kind === 'reconnect') {
+                            return getAdminConfig().canManageSettings
+                              ? <a href={setupUrl}>{recovery.label}</a>
+                              : <span>{__('Use Connect Google above', 'brasth-document-sync-for-google-docs')}</span>;
+                          }
+
+                          if (recovery.kind === 'open-doc' && source.googleDocUrl) {
+                            return <a href={source.googleDocUrl} rel="noreferrer" target="_blank">{recovery.label}</a>;
+                          }
+
+                          if (recovery.kind === 'change-doc') {
+                            return <a href={source.editUrl}>{recovery.label}</a>;
+                          }
+
+                          if (recovery.kind === 'ask-admin') {
+                            return <span>{recovery.label}</span>;
+                          }
+
+                          return (
+                            <AdminButton disabled={busy} onClick={() => onSync(source.postId)} size="small" variant="link">
+                              {recovery.label}
+                            </AdminButton>
+                          );
+                        })()}
+                      </small>
+                    ) : null}
                   </div>
                 </td>
                 <td>
                   <div className="docsync-wp-source-last-sync">
-                    <span>{source.lastSyncedAt || __('Never', 'brasth-document-sync-for-google-docs')}</span>
+                    <span title={formatLocalDateTime(source.lastSyncedAt)}>{source.lastSyncedAt ? formatSyncTime(source.lastSyncedAt) : __('Never', 'brasth-document-sync-for-google-docs')}</span>
                     {syncMethodLabel(source) ? <span className="docsync-wp-row-tag">{syncMethodLabel(source)}</span> : null}
                   </div>
                 </td>
@@ -334,21 +424,21 @@ export const SourcesTable = ({
                       disabled={busy}
                       onClick={() => onSync(source.postId)}
                       size="small"
-                      variant="primary"
+                      variant={source.syncStatus === 'update_available' ? 'primary' : 'secondary'}
                     >
-                      {__('Sync', 'brasth-document-sync-for-google-docs')}
+                      {source.syncStatus === 'update_available' ? __('Apply update', 'brasth-document-sync-for-google-docs') : __('Sync', 'brasth-document-sync-for-google-docs')}
                     </AdminButton>
-                    <a
+                    <AdminButton
                       aria-label={sprintf(
-                        __('View logs for %s', 'brasth-document-sync-for-google-docs'),
+                        __('View activity for %s', 'brasth-document-sync-for-google-docs'),
                         source.postTitle || sprintf(__('Post %d', 'brasth-document-sync-for-google-docs'), source.postId)
                       )}
-                      className="button button-secondary docsync-wp-button docsync-wp-button--small docsync-wp-view-logs-link"
-                      href={logsUrl(source.postId)}
+                      onClick={() => setActivitySource(source)}
+                      size="small"
                     >
                       <span aria-hidden="true" className="dashicons dashicons-list-view" />
-                      <span>{__('Logs', 'brasth-document-sync-for-google-docs')}</span>
-                    </a>
+                      <span>{__('Activity', 'brasth-document-sync-for-google-docs')}</span>
+                    </AdminButton>
                   </div>
                 </td>
               </tr>
@@ -356,6 +446,12 @@ export const SourcesTable = ({
           </tbody>
         </table>
       </div>
+
+      <SourceActivityDrawer
+        onClose={() => setActivitySource(null)}
+        postId={activitySource?.postId ?? null}
+        title={activitySource ? activitySource.postTitle || activitySource.googleTitle || '' : ''}
+      />
 
       {hasMore ? (
         <p className="docsync-wp-table-footer">

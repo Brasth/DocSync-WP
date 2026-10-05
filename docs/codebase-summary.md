@@ -1,6 +1,6 @@
 # Brasth Document Sync Codebase Summary
 
-Last updated: 2026-07-12
+Last updated: 2026-10-03
 
 ## Snapshot
 
@@ -54,6 +54,14 @@ Summary reflects the current source tree after the Radix plus WordPress-native a
 - `src/Sync/Layout/LayoutPresetRegistry.php` - built-in presets: Clean Article, Documentation, and Plain Blocks.
 - `src/Sync/Layout/LayoutBlueprint.php` - immutable preset metadata and behavior switches.
 - `src/Sync/Elementor/Preset/` - Elementor Hero Page and Elementor Feature Block registry, fingerprinting, and conversion services.
+- `src/Sync/HtmlGoogleRedirectLinkCleaner.php` - unwraps Google redirect links in imported HTML.
+- `src/Sync/ConversionPipelineVersion.php` - version folded into layout fingerprints to force one-time re-conversion.
+- `src/Sync/Metadata/` - leading metadata table extractor, post field applier (capability-checked), SEO plugin meta.
+- `src/Sync/Region/` - block fingerprints, synced-run locator, and store that keeps WordPress blocks around synced content.
+- `src/Sync/Layout/PatternPlaceholder*.php` - `{{pattern: name}}` parsing and resolution.
+- `src/Sync/ApplyPolicyResolver.php` - auto / review / manual decisions for scheduled syncs.
+- `src/Sync/ZipImportService.php` and `src/Rest/ZipImportController.php` - one-time ZIP upload import.
+- `src/Notifications/` - failure digest planner, daily digest mailer, Site Health test.
 - `src/Sync/Layout/ContentRoleClassifier.php` - detects headings, images, lists, tables, code, callouts, and containers.
 - `src/Sync/HtmlBlockFactory.php` - creates common core block arrays from DOM elements, including native `core/image` blocks for standalone images.
 - `src/Sync/HtmlStandaloneImageDetector.php` and `src/Sync/HtmlStandaloneImage.php` - detect image-only wrappers, links, and captions before block serialization.

@@ -21,6 +21,10 @@ defined( 'ABSPATH' ) || exit;
  * Creates a temporary extraction directory and locates exported HTML.
  */
 final class HtmlZipPackageExtractor {
+	public const MAX_ENTRIES     = 500;
+	public const MAX_ENTRY_BYTES = 26214400;
+	public const MAX_TOTAL_BYTES = 104857600;
+
 	/**
 	 * Extract a ZIP package and return its HTML content.
 	 *
@@ -131,7 +135,7 @@ final class HtmlZipPackageExtractor {
 			return $valid_paths;
 		}
 
-		$extracted = $zip->extractTo( $temp_dir );
+		$extracted = $zip->extractTo( $temp_dir, $this->allowedEntryNames( $zip ) );
 		$zip->close();
 
 		if ( ! $extracted ) {
@@ -153,9 +157,21 @@ final class HtmlZipPackageExtractor {
 	 */
 	private function validateZipPaths( ZipArchive $zip ): bool|WP_Error {
 		$file_count = count( $zip );
+		$total      = 0;
+
+		if ( $file_count > self::MAX_ENTRIES ) {
+			return $this->packageTooLargeError();
+		}
 
 		for ( $index = 0; $index < $file_count; $index++ ) {
-			$name = (string) $zip->getNameIndex( $index );
+			$name   = (string) $zip->getNameIndex( $index );
+			$stat   = $zip->statIndex( $index );
+			$size   = is_array( $stat ) ? (int) $stat['size'] : 0;
+			$total += $size;
+
+			if ( $size > self::MAX_ENTRY_BYTES || $total > self::MAX_TOTAL_BYTES ) {
+				return $this->packageTooLargeError();
+			}
 
 			if ( '' === $name || str_starts_with( $name, '/' ) || str_contains( $name, '\\' ) || preg_match( '#(^|/)\.\.(/|$)#', $name ) || preg_match( '/^[A-Za-z]:/', $name ) ) {
 				return new WP_Error(
@@ -167,6 +183,39 @@ final class HtmlZipPackageExtractor {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Entry names safe to extract: HTML, CSS, and common image files plus directories.
+	 *
+	 * @param ZipArchive $zip ZIP archive.
+	 * @return array<int,string>
+	 */
+	private function allowedEntryNames( ZipArchive $zip ): array {
+		$allowed = array( 'html', 'htm', 'css', 'png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg' );
+		$names   = array();
+		$count   = count( $zip );
+
+		for ( $index = 0; $index < $count; $index++ ) {
+			$name = (string) $zip->getNameIndex( $index );
+
+			if ( str_ends_with( $name, '/' ) || in_array( strtolower( pathinfo( $name, PATHINFO_EXTENSION ) ), $allowed, true ) ) {
+				$names[] = $name;
+			}
+		}
+
+		return $names;
+	}
+
+	/**
+	 * Error for packages that exceed extraction limits.
+	 */
+	private function packageTooLargeError(): WP_Error {
+		return new WP_Error(
+			'docsync_wp_zip_too_large',
+			__( 'Brasth Document Sync rejected an HTML export that is too large or has too many files.', 'brasth-document-sync-for-google-docs' ),
+			array( 'status' => 413 )
+		);
 	}
 
 	/**

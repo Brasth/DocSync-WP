@@ -1,6 +1,7 @@
 import { createElement, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
+import type { SettingsResponse } from '../../api';
 import type { AvailableLayoutPreset, AvailablePostType } from '../../config';
 import { SetupStepStateBadge, type SetupStepState } from './setup-step-state';
 
@@ -10,12 +11,18 @@ type Props = {
   defaultLayoutPreset: string;
   elementorSyncEnabled: boolean;
   enabledPostTypes: string[];
+  failureAlerts: SettingsResponse['failureAlerts'];
   initialOpen: boolean;
+  metadataTableEnabled: boolean;
+  publishedApplyPolicy: SettingsResponse['publishedApplyPolicy'];
   syncInterval: string;
   telemetryEnabled: boolean;
   stepState: SetupStepState;
   onDefaultLayoutPresetChange: (presetId: string) => void;
   onElementorSyncChange: (enabled: boolean) => void;
+  onFailureAlertsChange: (mode: SettingsResponse['failureAlerts']) => void;
+  onMetadataTableChange: (enabled: boolean) => void;
+  onPublishedApplyPolicyChange: (policy: SettingsResponse['publishedApplyPolicy']) => void;
   onTelemetryChange: (enabled: boolean) => void;
   onTogglePostType: (postType: string) => void;
   onSyncIntervalChange: (syncInterval: string) => void;
@@ -27,12 +34,18 @@ export const GoogleSetupTargetsStep = ({
   defaultLayoutPreset,
   elementorSyncEnabled,
   enabledPostTypes,
+  failureAlerts,
   initialOpen,
+  metadataTableEnabled,
+  publishedApplyPolicy,
   syncInterval,
   telemetryEnabled,
   stepState,
   onDefaultLayoutPresetChange,
   onElementorSyncChange,
+  onFailureAlertsChange,
+  onMetadataTableChange,
+  onPublishedApplyPolicyChange,
   onTelemetryChange,
   onTogglePostType,
   onSyncIntervalChange
@@ -80,6 +93,29 @@ export const GoogleSetupTargetsStep = ({
         </label>
 
         <label className="docsync-wp-field docsync-wp-field--compact">
+          <span>{__('When a published post\'s Doc changes', 'brasth-document-sync-for-google-docs')}</span>
+          <select onChange={(event) => onPublishedApplyPolicyChange(event.currentTarget.value as SettingsResponse['publishedApplyPolicy'])} value={publishedApplyPolicy}>
+            <option value="auto">{__('Apply automatically', 'brasth-document-sync-for-google-docs')}</option>
+            <option value="review">{__('Ask me first (update available)', 'brasth-document-sync-for-google-docs')}</option>
+          </select>
+          <small className="docsync-wp-field-help">
+            {__('Applies to scheduled syncs of published, scheduled, and private posts. Drafts always apply automatically. Each post can override this.', 'brasth-document-sync-for-google-docs')}
+          </small>
+        </label>
+
+        <label className="docsync-wp-field docsync-wp-field--compact">
+          <span>{__('Email me when scheduled sync fails', 'brasth-document-sync-for-google-docs')}</span>
+          <select onChange={(event) => onFailureAlertsChange(event.currentTarget.value as SettingsResponse['failureAlerts'])} value={failureAlerts}>
+            <option value="owners_and_admin">{__('Source owners and administrators', 'brasth-document-sync-for-google-docs')}</option>
+            <option value="admin">{__('Administrators only', 'brasth-document-sync-for-google-docs')}</option>
+            <option value="off">{__('Off', 'brasth-document-sync-for-google-docs')}</option>
+          </select>
+          <small className="docsync-wp-field-help">
+            {__('Sends at most one daily email listing posts whose scheduled sync failed. Site Health also reports sync problems.', 'brasth-document-sync-for-google-docs')}
+          </small>
+        </label>
+
+        <label className="docsync-wp-field docsync-wp-field--compact">
           <span>{__('Default synced layout', 'brasth-document-sync-for-google-docs')}</span>
           <select onChange={(event) => onDefaultLayoutPresetChange(event.currentTarget.value)} value={defaultLayoutPreset}>
             {availableLayoutPresets.map((preset) => (
@@ -90,6 +126,20 @@ export const GoogleSetupTargetsStep = ({
             {__('New synced block editor posts use this layout unless a source chooses a different one. Elementor sync uses Elementor layout.', 'brasth-document-sync-for-google-docs')}
           </small>
         </label>
+
+        <div className="docsync-wp-checkbox-stack">
+          <label className="docsync-wp-checkbox-row">
+            <input
+              checked={metadataTableEnabled}
+              onChange={(event) => onMetadataTableChange(event.currentTarget.checked)}
+              type="checkbox"
+            />
+            <span>{__('Read post details from a table at the top of the Doc', 'brasth-document-sync-for-google-docs')}</span>
+          </label>
+          <small className="docsync-wp-field-help">
+            {__('A two-column table with keys such as Title, Slug, Excerpt, Featured image, Categories, Tags, Author, SEO title, and SEO description sets those fields and is removed from the post content.', 'brasth-document-sync-for-google-docs')}
+          </small>
+        </div>
 
         <label className="docsync-wp-checkbox-row">
           <input

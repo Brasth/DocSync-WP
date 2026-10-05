@@ -6,6 +6,7 @@ import { getAdminConfig } from '../../config';
 import { FeedbackDialog } from '../../features/feedback/feedback-dialog';
 import { AdminButton } from './admin-button';
 import { AdminNotice, type AdminNoticeState } from './admin-notice';
+import { WorkspaceNav, type WorkspaceScreen } from './workspace-nav';
 
 type AdminShellStatus = {
   label: ReactNode;
@@ -16,6 +17,7 @@ type AdminShellStatus = {
 type Props = {
   children: ReactNode;
   className?: string;
+  screen?: WorkspaceScreen;
   notice?: AdminNoticeState | null;
   status?: AdminShellStatus;
   title: ReactNode;
@@ -27,6 +29,7 @@ const trimTrailingSlash = (value: string): string => value.replace(/\/$/, '');
 export const AdminShell = ({
   children,
   className = '',
+  screen,
   notice = null,
   status,
   title,
@@ -71,6 +74,8 @@ export const AdminShell = ({
             </div>
           ) : null}
         </header>
+
+        {screen ? <WorkspaceNav current={screen} /> : null}
 
         <AdminNotice className="docsync-wp-admin-shell__notice" notice={notice} />
 

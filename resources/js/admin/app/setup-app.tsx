@@ -33,6 +33,7 @@ export const SetupApp = (): JSX.Element => {
 
   return (
     <AdminShell
+      screen="setup"
       notice={app.notice}
       status={{
         label: __('Google connection', 'brasth-document-sync-for-google-docs'),

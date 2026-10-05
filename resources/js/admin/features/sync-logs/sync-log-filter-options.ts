@@ -12,7 +12,8 @@ export const statusOptions = [
   { value: 'linked', label: __('Linked', 'brasth-document-sync-for-google-docs') },
   { value: 'syncing', label: __('Syncing', 'brasth-document-sync-for-google-docs') },
   { value: 'synced', label: __('Synced', 'brasth-document-sync-for-google-docs') },
-  { value: 'skipped', label: __('Skipped', 'brasth-document-sync-for-google-docs') },
+  { value: 'skipped', label: __('Up to date', 'brasth-document-sync-for-google-docs') },
+  { value: 'update_available', label: __('Update available', 'brasth-document-sync-for-google-docs') },
   { value: 'error', label: __('Error', 'brasth-document-sync-for-google-docs') }
 ];
 

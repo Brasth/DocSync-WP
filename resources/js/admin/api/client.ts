@@ -6,6 +6,7 @@ import { getAdminConfig } from '../config';
 type ApiFetchOptions = {
   method?: string;
   data?: unknown;
+  body?: FormData;
   headers?: Record<string, string>;
 };
 

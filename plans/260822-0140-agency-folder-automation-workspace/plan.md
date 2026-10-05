@@ -63,6 +63,7 @@ Sequencing: 1 → 2 as one release train (UI plus the engine that makes per-fold
 - Existing: folder-watch service/runner/repository, `_docsync_wp_folder_watch_id` source meta, admin shell + per-screen Vite manifests (`AssetRegistry`), Radix dialogs, Sync Activity log, source ownership-transfer flow (pattern for Phase 4).
 - Google: `drive.readonly` scope already covers `changes.getStartPageToken` / `changes.list` — no re-consent needed for Phase 3.
 - WP-Cron remains the substrate; Phase 2 continuation events + health warning mitigate. No Action Scheduler dependency.
+- Related plan `261003-0607-publish-ready-sync-and-workspace-experience`: its Phase 3 builds the sync failure notifier and daily digest; Phase 4 here reuses it instead of building a second digest. Its Phase 11 (knowledge base mode) benefits from Phase 3 here but is not blocked by it.
 
 ## Not in this plan
 

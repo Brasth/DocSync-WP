@@ -199,3 +199,38 @@
   line-height: 1;
   width: 16px;
 }
+
+.docsync-wp-source-select-cell {
+  width: 32px;
+  padding-right: 0;
+}
+
+.docsync-wp-source-error-text a,
+.docsync-wp-source-error-text .docsync-wp-button--link {
+  margin-left: 4px;
+  font-weight: 600;
+}
+
+.docsync-wp-source-health-summary__filter {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--docsync-radius-sm, 6px);
+}
+
+.docsync-wp-source-health-summary__filter:hover strong,
+.docsync-wp-source-health-summary__filter.is-active strong {
+  text-decoration: underline;
+}
+
+.docsync-wp-source-health-summary__filter:focus-visible {
+  outline: 2px solid var(--docsync-blue, #2271b1);
+  outline-offset: 2px;
+}
