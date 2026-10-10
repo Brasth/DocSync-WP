@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite build --watch --mode setup",
-    "build": "vite build --mode setup && vite build --mode sources && vite build --mode folders && vite build --mode logs && vite build --mode post-sync && vite build --mode doc-source-modal && vite build --mode drive-browser",
+    "build": "vite build --mode setup && vite build --mode sources && vite build --mode folders && vite build --mode logs && vite build --mode post-sync && vite build --mode doc-source-modal && vite build --mode drive-browser && vite build --mode pdf-renderer",
     "i18n": "pnpm i18n:pot && pnpm i18n:json",
     "i18n:json": "node scripts/make-js-translations.mjs",
     "i18n:pot": "node scripts/make-pot.mjs",
@@ -16,6 +16,9 @@
     "lint:no-phpcs-ignore": "! rg --regexp \"phpcs:[i]gnore\" brasth-document-sync-for-google-docs.php src uninstall.php",
     "lint:screenshots": "node scripts/lint-screenshots.mjs",
     "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "pdfjs-dist": "5.6.205"
   },
   "devDependencies": {
     "@eslint/js": "^9.26.0",
@@ -37,12 +40,13 @@
     "globals": "^16.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-test-renderer": "18.3.1",
     "tailwindcss": "^4.3.1",
     "typescript": "^5.6.0",
     "vite": "^6.4.3"
   },
   "engines": {
-    "node": ">=20",
+    "node": ">=20.19",
     "pnpm": ">=9"
   },
   "packageManager": "pnpm@9.15.0",

@@ -20,6 +20,8 @@ defined( 'ABSPATH' ) || exit;
  */
 final class GoogleOAuthService {
 	public const DRIVE_READONLY_SCOPE = 'https://www.googleapis.com/auth/drive.readonly';
+	public const DRIVE_FILE_SCOPE     = 'https://www.googleapis.com/auth/drive.file';
+	public const CONTINUATION_ACTION  = 'docsync_wp_oauth_continuation_consumed';
 
 	private const AUTH_ENDPOINT           = 'https://accounts.google.com/o/oauth2/v2/auth';
 	private const TOKEN_ENDPOINT          = 'https://oauth2.googleapis.com/token';
@@ -43,14 +45,23 @@ final class GoogleOAuthService {
 	private TokenStore $token_store;
 
 	/**
+	 * OAuth continuation store.
+	 *
+	 * @var OAuthContinuationStore
+	 */
+	private OAuthContinuationStore $continuations;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param SettingsRepository $settings    Settings repository.
-	 * @param TokenStore         $token_store Token store.
+	 * @param SettingsRepository          $settings      Settings repository.
+	 * @param TokenStore                  $token_store   Token store.
+	 * @param OAuthContinuationStore|null $continuations Optional continuation store; defaults to one backed by the same settings.
 	 */
-	public function __construct( SettingsRepository $settings, TokenStore $token_store ) {
-		$this->settings    = $settings;
-		$this->token_store = $token_store;
+	public function __construct( SettingsRepository $settings, TokenStore $token_store, ?OAuthContinuationStore $continuations = null ) {
+		$this->settings      = $settings;
+		$this->token_store   = $token_store;
+		$this->continuations = $continuations ?? new OAuthContinuationStore( $settings );
 	}
 
 	/**
@@ -60,12 +71,103 @@ final class GoogleOAuthService {
 	 * @return string|WP_Error
 	 */
 	public function createAuthorizationUrl( int $user_id ): string|WP_Error {
+		return $this->buildAuthorizationUrl( $user_id, self::DRIVE_READONLY_SCOPE, '' );
+	}
+
+	/**
+	 * Create a Google authorization URL that resumes an allowlisted admin screen.
+	 *
+	 * The readonly scope stays the baseline. The `driveFile` scope set adds
+	 * `drive.file` incrementally and is only requested through this opt-in.
+	 *
+	 * @param int    $user_id     User ID.
+	 * @param string $scope_set   `readonly` or `driveFile`.
+	 * @param string $return_to   `sources` or `setup`.
+	 * @param string $resume_kind `import`, `matching`, or empty.
+	 * @param string $resume_id   Session or job ID owned by the user, or empty.
+	 * @return array{authUrl:string,continuationId:string,expiresAt:string}|WP_Error
+	 */
+	public function createContinuationAuthorization( int $user_id, string $scope_set, string $return_to, string $resume_kind, string $resume_id ): array|WP_Error {
 		if ( $user_id <= 0 ) {
-			return new WP_Error(
-				'docsync_wp_not_connected',
-				__( 'You must be logged in before connecting Google Drive.', 'brasth-document-sync-for-google-docs' ),
-				array( 'status' => 401 )
-			);
+			return $this->notLoggedInError();
+		}
+
+		$credentials = $this->getCredentials();
+
+		if ( is_wp_error( $credentials ) ) {
+			return $credentials;
+		}
+
+		$continuation = $this->continuations->create( $user_id, $scope_set, $return_to, $resume_kind, $resume_id );
+
+		if ( is_wp_error( $continuation ) ) {
+			return $continuation;
+		}
+
+		$scope = OAuthContinuationStore::SCOPE_SET_DRIVE_FILE === $scope_set
+			? self::DRIVE_READONLY_SCOPE . ' ' . self::DRIVE_FILE_SCOPE
+			: self::DRIVE_READONLY_SCOPE;
+
+		$auth_url = $this->buildAuthorizationUrl( $user_id, $scope, $continuation['continuationId'] );
+
+		if ( is_wp_error( $auth_url ) ) {
+			$this->continuations->consume( $continuation['continuationId'], $user_id );
+
+			return $auth_url;
+		}
+
+		return array(
+			'authUrl'        => $auth_url,
+			'continuationId' => $continuation['continuationId'],
+			'expiresAt'      => $continuation['expiresAt'],
+		);
+	}
+
+	/**
+	 * Whether an OAuth scope string includes the optional Drive file scope.
+	 *
+	 * @param string $scope OAuth scope string from Google.
+	 */
+	public static function hasDriveFileScope( string $scope ): bool {
+		$scopes = preg_split( '/\s+/', trim( $scope ) );
+
+		if ( ! is_array( $scopes ) ) {
+			return false;
+		}
+
+		return in_array( self::DRIVE_FILE_SCOPE, $scopes, true );
+	}
+
+	/**
+	 * Whether a user's stored Google token includes the Drive file scope.
+	 *
+	 * @param int $user_id User ID.
+	 */
+	public function userHasDriveFileScope( int $user_id ): bool {
+		if ( $user_id <= 0 ) {
+			return false;
+		}
+
+		$token = $this->token_store->get( $user_id );
+
+		if ( ! is_array( $token ) ) {
+			return false;
+		}
+
+		return self::hasDriveFileScope( (string) ( $token['scope'] ?? '' ) );
+	}
+
+	/**
+	 * Build a Google authorization URL and persist short-lived state.
+	 *
+	 * @param int    $user_id         User ID.
+	 * @param string $scope           Space-separated scopes to request.
+	 * @param string $continuation_id Optional continuation ID carried in server-side state.
+	 * @return string|WP_Error
+	 */
+	private function buildAuthorizationUrl( int $user_id, string $scope, string $continuation_id ): string|WP_Error {
+		if ( $user_id <= 0 ) {
+			return $this->notLoggedInError();
 		}
 
 		$credentials = $this->getCredentials();
@@ -87,6 +189,10 @@ final class GoogleOAuthService {
 			'oauth_configuration_generation' => $this->settings->getOAuthConfigurationGeneration(),
 		);
 
+		if ( '' !== $continuation_id ) {
+			$state_data['continuation_id'] = $continuation_id;
+		}
+
 		set_transient( $this->stateTransientKey( $state ), $state_data, self::STATE_TTL_SECONDS );
 
 		return add_query_arg(
@@ -94,7 +200,7 @@ final class GoogleOAuthService {
 				'client_id'              => $credentials['client_id'],
 				'redirect_uri'           => $this->getRedirectUri(),
 				'response_type'          => 'code',
-				'scope'                  => self::DRIVE_READONLY_SCOPE,
+				'scope'                  => $scope,
 				'access_type'            => 'offline',
 				'include_granted_scopes' => 'true',
 				'prompt'                 => 'consent',
@@ -125,17 +231,20 @@ final class GoogleOAuthService {
 		$code = sanitize_text_field( $code );
 
 		if ( '' === $code ) {
-			return new WP_Error(
-				'docsync_wp_bad_google_response',
-				__( 'Google did not return an authorization code.', 'brasth-document-sync-for-google-docs' ),
-				array( 'status' => 400 )
+			return $this->withContinuationFailure(
+				new WP_Error(
+					'docsync_wp_bad_google_response',
+					__( 'Google did not return an authorization code.', 'brasth-document-sync-for-google-docs' ),
+					array( 'status' => 400 )
+				),
+				$state_data
 			);
 		}
 
 		$credentials = $this->getCredentials();
 
 		if ( is_wp_error( $credentials ) ) {
-			return $credentials;
+			return $this->withContinuationFailure( $credentials, $state_data );
 		}
 
 		$token = $this->requestToken(
@@ -149,19 +258,106 @@ final class GoogleOAuthService {
 		);
 
 		if ( is_wp_error( $token ) ) {
-			return $token;
+			return $this->withContinuationFailure( $token, $state_data );
 		}
 
 		$saved = $this->saveTokenResponse( absint( $state_data['user_id'] ), $token );
 
 		if ( is_wp_error( $saved ) ) {
-			return $saved;
+			return $this->withContinuationFailure( $saved, $state_data );
 		}
 
-		return wp_validate_redirect(
+		$return_url = wp_validate_redirect(
 			(string) $state_data['return_url'],
 			admin_url( 'admin.php?page=brasth-document-sync-for-google-docs' )
 		);
+
+		if ( '' === $state_data['continuation_id'] ) {
+			return $return_url;
+		}
+
+		return $this->resumeContinuation( $state_data, $return_url );
+	}
+
+	/**
+	 * Consume a successful callback's continuation and build its resume URL.
+	 *
+	 * Invalid continuations fall back to the default callback redirect and never resume.
+	 *
+	 * @param array<string,mixed> $state_data Consumed OAuth state.
+	 * @param string              $fallback   Default callback redirect.
+	 */
+	private function resumeContinuation( array $state_data, string $fallback ): string {
+		$user_id      = absint( $state_data['user_id'] );
+		$continuation = $this->continuations->consume( (string) $state_data['continuation_id'], $user_id );
+
+		if ( is_wp_error( $continuation ) ) {
+			return add_query_arg( 'docsync_oauth', 'continuation_invalid', $fallback );
+		}
+
+		$args = array( 'docsync_oauth' => 'connected' );
+
+		if ( OAuthContinuationStore::SCOPE_SET_DRIVE_FILE === $continuation['scopeSet'] && ! $this->userHasDriveFileScope( $user_id ) ) {
+			$args['docsync_oauth_scope'] = 'drive_file_denied';
+		}
+
+		$redirect = $this->allowlistedRedirect( add_query_arg( $args, $continuation['returnUrl'] ) );
+
+		if ( '' === $redirect ) {
+			return add_query_arg( 'docsync_oauth', 'continuation_invalid', $fallback );
+		}
+
+		/**
+		 * Fires once after an OAuth continuation is consumed by a successful callback.
+		 *
+		 * @param int                 $user_id      Owner user ID.
+		 * @param array<string,mixed> $continuation Consumed continuation: returnUrl, scopeSet, resumeKind, resumeId.
+		 */
+		do_action( self::CONTINUATION_ACTION, $user_id, $continuation );
+
+		return $redirect;
+	}
+
+	/**
+	 * Attach a consumed continuation's allowlisted page to a callback failure.
+	 *
+	 * The OAuth state is single use, so the failure redirect cannot read it again.
+	 * The continuation is consumed here and never resumed; only its validated
+	 * page and resume identifiers are kept so the UI can reopen the same screen.
+	 *
+	 * @param WP_Error            $error      Callback failure.
+	 * @param array<string,mixed> $state_data Consumed OAuth state.
+	 */
+	private function withContinuationFailure( WP_Error $error, array $state_data ): WP_Error {
+		if ( '' === (string) ( $state_data['continuation_id'] ?? '' ) ) {
+			return $error;
+		}
+
+		$continuation = $this->continuations->consume( (string) $state_data['continuation_id'], absint( $state_data['user_id'] ) );
+
+		if ( is_wp_error( $continuation ) ) {
+			return $error;
+		}
+
+		$data = $error->get_error_data();
+		$data = is_array( $data ) ? $data : array();
+
+		$data['continuation_return_url'] = $continuation['returnUrl'];
+		$error->add_data( $data );
+
+		return $error;
+	}
+
+	/**
+	 * Validate a redirect as a same-site plugin admin URL.
+	 *
+	 * @param string $url Candidate redirect.
+	 * @return string Empty when invalid.
+	 */
+	private function allowlistedRedirect( string $url ): string {
+		$validated = wp_validate_redirect( $url, '' );
+
+		return '' !== $validated && str_starts_with( $validated, admin_url() ) ? $validated : '';
 	}
 
 	/**
@@ -410,6 +606,21 @@ final class GoogleOAuthService {
 				admin_url( 'admin.php?page=brasth-document-sync-for-google-docs' )
 			);
 
+		if ( ! is_wp_error( $state_data ) && '' !== $state_data['continuation_id'] ) {
+			$continuation = $this->continuations->consume( $state_data['continuation_id'], $state_data['user_id'] );
+
+			if ( ! is_wp_error( $continuation ) ) {
+				$return_url = $continuation['returnUrl'];
+			}
+		} elseif ( null !== $plugin_error ) {
+			$plugin_data = $plugin_error->get_error_data();
+			$resume_url  = is_array( $plugin_data ) ? $this->allowlistedRedirect( (string) ( $plugin_data['continuation_return_url'] ?? '' ) ) : '';
+
+			if ( '' !== $resume_url ) {
+				$return_url = $resume_url;
+			}
+		}
+
 		$code  = OAuthConnectError::resolveCode( $google_error, $plugin_error );
 		$extra = array();
 
@@ -456,7 +667,7 @@ final class GoogleOAuthService {
 	 * Consume an OAuth state transient.
 	 *
 	 * @param string $state OAuth state.
-	 * @return array{user_id:int,return_url:string,created_at:int,oauth_configuration_generation:int}|WP_Error
+	 * @return array{user_id:int,return_url:string,created_at:int,oauth_configuration_generation:int,continuation_id:string}|WP_Error
 	 */
 	private function consumeState( string $state ): array|WP_Error {
 		$state = sanitize_text_field( $state );
@@ -480,11 +691,17 @@ final class GoogleOAuthService {
 			return $this->invalidStateError();
 		}
 
+		$continuation_id = isset( $state_data['continuation_id'] ) && is_string( $state_data['continuation_id'] )
+			&& 1 === preg_match( '/^[a-f0-9]{48}$/', $state_data['continuation_id'] )
+			? $state_data['continuation_id']
+			: '';
+
 		return array(
 			'user_id'                        => absint( $state_data['user_id'] ),
 			'return_url'                     => esc_url_raw( (string) $state_data['return_url'] ),
 			'created_at'                     => absint( $state_data['created_at'] ),
 			'oauth_configuration_generation' => absint( $state_data['oauth_configuration_generation'] ),
+			'continuation_id'                => $continuation_id,
 		);
 	}
 
@@ -519,6 +736,17 @@ final class GoogleOAuthService {
 	 */
 	private function stateTransientKey( string $state ): string {
 		return self::STATE_TRANSIENT_PREFIX . hash( 'sha256', $state );
+	}
+
+	/**
+	 * Not-logged-in error.
+	 */
+	private function notLoggedInError(): WP_Error {
+		return new WP_Error(
+			'docsync_wp_not_connected',
+			__( 'You must be logged in before connecting Google Drive.', 'brasth-document-sync-for-google-docs' ),
+			array( 'status' => 401 )
+		);
 	}
 
 	/**

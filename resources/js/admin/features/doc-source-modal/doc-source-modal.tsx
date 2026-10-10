@@ -1,5 +1,5 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import { createElement, useEffect } from '@wordpress/element';
+import { createElement, Fragment, useEffect, useRef, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 
 import { AdminButton } from '../../shared/ui/admin-button';
@@ -8,7 +8,10 @@ import { ConfirmDialog } from '../../shared/ui/confirm-dialog';
 import { LayoutPresetSelector } from '../../shared/ui/layout-preset-selector';
 import { LoadingState } from '../../shared/ui/loading-state';
 import type { FolderWatchRecord, SyncResult } from '../../api';
+import type { ImportCommitResult } from '../../api/journey-types';
 import { getAdminConfig } from '../../config';
+import { AddContentDialog } from '../add-content/add-content-dialog';
+import type { AddContentView } from '../add-content/use-add-content';
 import { ensureLazyStyle, useLazyDriveBrowserPanel } from './lazy-drive-browser-panel';
 import { AdvancedSourcePanel } from './advanced-source-panel';
 import { OutputTypeChoice } from './output-type-choice';
@@ -16,23 +19,113 @@ import { SourceModeTabs } from './source-mode-tabs';
 import { FolderWatchConfirmPanel } from './folder-watch-confirm-panel';
 import { SourceIntentCards } from './source-intent-cards';
 import { shouldShowDriveBrowser } from './folder-watch-modal-visibility';
-import { type DocSourceTarget, useDocSourceModal } from './use-doc-source-modal';
+import { type DocSourceTarget, useAddContentResume, useDocSourceModal } from './use-doc-source-modal';
 import { useFolderWatchFlow } from './use-folder-watch-flow';
 
 export type { DocSourceTarget } from './use-doc-source-modal';
 
 type Props = {
   initialIntent?: 'document' | 'folder';
+  /** Add content screen to open for Docs and files: Google Docs (default) or Upload. */
+  initialView?: AddContentView;
   isOpen: boolean;
   target: DocSourceTarget | null;
   onClose: () => void;
   onCompleted: (result: SyncResult) => void;
   onFolderWatchCreated?: (watch: FolderWatchRecord) => void;
+  onImported?: (result: ImportCommitResult) => void;
 };
 
 const trimTrailingSlash = (value: string): string => value.replace(/\/$/, '');
 
-export const DocSourceModal = ({ initialIntent = 'document', isOpen, target, onClose, onCompleted, onFolderWatchCreated }: Props): JSX.Element | null => {
+/**
+ * Entry point for every "add a source" action. Docs, uploads, and linking an existing post
+ * open the Journey 2 Add content dialog; watching a folder keeps the existing folder-watch
+ * flow. An OAuth round trip or reload that left Add content state in the URL reopens it.
+ */
+export const DocSourceModal = ({
+  initialIntent = 'document',
+  initialView = 'google',
+  isOpen,
+  target,
+  onClose,
+  onCompleted,
+  onFolderWatchCreated,
+  onImported
+}: Props): JSX.Element | null => {
+  const [documentHandoff, setDocumentHandoff] = useState(false);
+  const { resume, clear: clearResume } = useAddContentResume();
+  const journeyRequested = target?.mode === 'existing' || initialIntent === 'document' || documentHandoff;
+  const journeyOpen = Boolean(isOpen && target && journeyRequested);
+  const folderOpen = Boolean(isOpen && target && !journeyRequested);
+  const resumeOpen = !journeyOpen && !folderOpen && resume !== null;
+
+  useEffect(() => {
+    if (!isOpen) {
+      setDocumentHandoff(false);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen && resume) {
+      clearResume();
+    }
+  }, [isOpen, resume]);
+
+  const importedDrafts = useRef(false);
+
+  const handleImported = (result: ImportCommitResult) => {
+    importedDrafts.current = importedDrafts.current || result.files.some((file) => file.status === 'created');
+    onImported?.(result);
+  };
+
+  /* Pages that do not track imports themselves (Setup, post lists) re-read the server so new drafts and activation show. */
+  const finishJourney = (close: () => void) => {
+    close();
+
+    if (!onImported && importedDrafts.current) {
+      importedDrafts.current = false;
+      window.location.reload();
+    }
+  };
+
+  return (
+    <Fragment>
+      <FolderSourceModal
+        initialIntent={initialIntent}
+        isOpen={folderOpen}
+        target={folderOpen ? target : null}
+        onClose={onClose}
+        onCompleted={onCompleted}
+        onDocumentIntent={() => setDocumentHandoff(true)}
+        onFolderWatchCreated={onFolderWatchCreated}
+      />
+      <AddContentDialog
+        initialFileId={journeyOpen ? null : resume?.fileId ?? null}
+        initialSessionId={journeyOpen ? null : resume?.sessionId ?? null}
+        initialView={journeyOpen ? initialView : resume?.view ?? 'google'}
+        isOpen={journeyOpen || resumeOpen}
+        notice={journeyOpen ? '' : resume?.notice ?? ''}
+        onClose={() => finishJourney(journeyOpen ? onClose : clearResume)}
+        onCompleted={onCompleted}
+        onImported={handleImported}
+        target={journeyOpen ? target : resumeOpen && resume ? { mode: 'new', postType: resume.postType } : null}
+      />
+    </Fragment>
+  );
+};
+
+type FolderSourceModalProps = {
+  initialIntent: 'document' | 'folder';
+  isOpen: boolean;
+  target: DocSourceTarget | null;
+  onClose: () => void;
+  onCompleted: (result: SyncResult) => void;
+  onDocumentIntent: () => void;
+  onFolderWatchCreated?: (watch: FolderWatchRecord) => void;
+};
+
+const FolderSourceModal = ({ initialIntent, isOpen, target, onClose, onCompleted, onDocumentIntent, onFolderWatchCreated }: FolderSourceModalProps): JSX.Element | null => {
   const modal = useDocSourceModal({ isOpen, target, onClose, onCompleted });
   const canUseFolderIntent = target?.mode === 'new';
   const folderFlow = useFolderWatchFlow({
@@ -124,7 +217,14 @@ export const DocSourceModal = ({ initialIntent = 'document', isOpen, target, onC
             {canUseFolderIntent && uiMode === 'browse' ? (
               <SourceIntentCards
                 disabled={modal.busy || folderFlow.busy || Boolean(folderFlow.watch)}
-                onChange={folderFlow.setIntent}
+                onChange={(intent) => {
+                  if (intent === 'document') {
+                    onDocumentIntent();
+                    return;
+                  }
+
+                  folderFlow.setIntent(intent);
+                }}
                 value={folderFlow.intent}
               />
             ) : null}

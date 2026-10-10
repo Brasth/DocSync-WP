@@ -14,6 +14,8 @@ Sync Google Docs into WordPress posts and pages with layout presets, self-manage
 
 Brasth Document Sync for Google Docs helps editorial teams use Google Docs as the source of truth while publishing clean WordPress content. Site owners provide their own Google OAuth web client, each WordPress user connects their own Google account, and authorized users can browse accessible Google Docs, link a document to a post or page, and sync content into WordPress.
 
+The same add-content dialog can add several Google Docs, upload a Word, PowerPoint, or PDF file when the user can upload files, or link posts that already exist. Word with Keep synced on stays as a Google Doc in the connected account's My Drive / Imported from WordPress. Word with Keep synced off, every PowerPoint file, and every PDF become one-time drafts. PDF text is read on the site. Word and PowerPoint conversions are created in Google only after the user opts in to the Drive file scope.
+
 The plugin exports Google Docs as HTML ZIP packages, imports embedded images into the WordPress Media Library, rewrites image URLs, sanitizes the resulting HTML, and converts common document structures to Gutenberg block markup. If Google blocks a large HTML ZIP export, Brasth Document Sync retries through the Google Docs API fallback before changing post content.
 
 Documentation:
@@ -26,7 +28,9 @@ Features include:
 
 * Self-managed Google OAuth setup wizard with next-action guidance.
 * Server-side Google Drive document browser for My Drive and shared drives.
-* Advanced Google Docs URL and raw file ID linking.
+* Advanced Google Docs URL and raw file ID linking, including several Docs in one batch.
+* Word, PowerPoint, and PDF upload for users who can upload files. Word can stay synced. PowerPoint and PDF are one-time drafts.
+* Link existing posts to Google Docs. The post body changes on a later sync, and WordPress keeps the usual revisions.
 * Background sync through WP-Cron with source status and diagnostic logs.
 * Searchable Sync Activity logs with troubleshooting views, advanced filters, recovery hints, and safe output-path details.
 * Safe log clearing for one source or all visible sources without deleting synced content or source links.
@@ -36,7 +40,7 @@ Features include:
 * Elementor layout presets for Elementor sync: Elementor Hero Page and Elementor Feature Block.
 * Gutenberg block markup for common headings, paragraphs, lists, tables, code, callouts, and images.
 * Documentation preset heuristics for semantic code, fenced code, Google Docs styled code-like paragraphs, and explicit Note/Tip/Warning/Important/Caution callouts.
-* Uninstall cleanup for settings, encrypted user tokens, and scheduled events.
+* Uninstall cleanup for settings, encrypted user tokens, scheduled events, private upload bytes, and, on a full uninstall, import provenance.
 * Optional admin feedback form that creates a public GitHub issue without storing a GitHub token in the plugin.
 
 = External Services =
@@ -46,12 +50,13 @@ Brasth Document Sync connects to Google services only after a site administrator
 This plugin sends requests to these Google services:
 
 * Google OAuth 2.0 endpoints, to authorize a user's Google account and refresh access tokens.
-* Google Drive API, to list visible Google Docs, shared drives, folders, document metadata, and HTML ZIP exports.
-* Google Docs API, to read document structure when the large-document fallback is needed.
+* Google Drive API, to list visible Google Docs, shared drives, folders, document metadata, and HTML ZIP exports. After the user opts in to `https://www.googleapis.com/auth/drive.file`, the same API creates the My Drive / Imported from WordPress folder, uploads a Word or PowerPoint file for conversion, and moves files the plugin created to the Drive trash.
+* Google Docs API, to read document structure when the large-document fallback is needed, and to read a Word file after Drive converts it to a Google Doc.
+* Google Slides API, to read a PowerPoint file after Drive converts it to a Google Slides presentation, including slide thumbnails stored in the private upload area.
 
-Data sent to Google can include OAuth client details supplied by the site owner, OAuth authorization codes, refresh-token requests, connected-user access tokens, Drive file IDs, folder IDs, shared-drive IDs, search text entered in the Drive browser, pagination tokens, and document export/read requests.
+Data sent to Google can include OAuth client details supplied by the site owner, OAuth authorization codes, refresh-token requests, connected-user access tokens, Drive file IDs, folder IDs, shared-drive IDs, search text entered in the Drive browser, pagination tokens, document export/read requests, and, only after the Drive file opt-in, the Word or PowerPoint bytes being converted. PDF bytes are parsed on the site and are not uploaded to Google for conversion.
 
-Data received from Google can include the connected Google account email address, OAuth tokens, Google Docs titles, metadata, modified time, version identifiers, document export content, and image content URLs needed to import media into WordPress.
+Data received from Google can include the connected Google account email address, OAuth tokens, Google Docs titles, metadata, modified time, version identifiers, document export content, slide thumbnails, and image content URLs needed to import media into WordPress.
 
 Google's terms and privacy documents apply to these services:
 
@@ -72,7 +77,7 @@ Authorized users can optionally submit feedback from the admin area. The plugin 
 1. Upload the `brasth-document-sync-for-google-docs` folder to `/wp-content/plugins/`, or install the plugin ZIP through Plugins > Add New > Upload Plugin.
 2. Activate Brasth Document Sync from the WordPress Plugins screen.
 3. In Google Cloud, create or select a project.
-4. Enable the Google Drive API and Google Docs API.
+4. Enable the Google Drive API, the Google Docs API, and the Google Slides API.
 5. Configure the OAuth consent screen for the WordPress site users.
 6. Create an OAuth 2.0 Web application client.
 7. Add the authorized redirect URI shown in the Brasth Document Sync setup wizard.
@@ -89,11 +94,21 @@ No. This release uses self-managed Google OAuth. The site owner supplies the Goo
 
 = Which Google APIs are required? =
 
-Enable both the Google Drive API and Google Docs API in the same Google Cloud project used by the OAuth client.
+Enable the Google Drive API, the Google Docs API, and the Google Slides API in the same Google Cloud project used by the OAuth client. Slides is used when a PowerPoint file is converted.
 
 = Which Google OAuth scope is used? =
 
-Brasth Document Sync uses `https://www.googleapis.com/auth/drive.readonly` so connected users can browse and sync Google Docs their account can read.
+Browsing and sync use `https://www.googleapis.com/auth/drive.readonly`.
+
+Word conversion, PowerPoint conversion, and creating a Google Doc from a post ask for `https://www.googleapis.com/auth/drive.file` only after you opt in. That consent keeps read-only access and adds permission for files the plugin creates. The plugin uses it to create My Drive / Imported from WordPress, upload a conversion, and move files it created to the Drive trash. Your original Google Docs stay in Drive. PDF upload does not send the PDF to Google.
+
+= Where do uploaded Word, PowerPoint, and PDF files stay? =
+
+An upload is private to the WordPress user who started it, for 24 hours, with at most 20 files in that session. Each file is limited to 25 MB, or a lower limit from the host. The site stores those bytes outside the web root when `DOCSYNC_WP_PRIVATE_STORAGE_DIR` is a writable directory outside WordPress. Otherwise it encrypts them under the uploads directory. The draft and any Media Library images are created at commit. Cancel or the 24-hour expiry removes the private bytes.
+
+= What stays linked after an upload? =
+
+Word with Keep synced on remains a Google Doc in My Drive / Imported from WordPress, and later syncs update the draft. Word with Keep synced off, every PowerPoint file, and every PDF are one-time drafts. The plugin trashes the temporary Google file it created for a one-time Word or PowerPoint conversion. PDF text is read on the site. A PDF with no selectable text is rejected. Linking an existing post saves the link only. The post content changes on a later sync, and WordPress keeps the usual revisions.
 
 = Does sync delete WordPress posts? =
 
@@ -115,13 +130,15 @@ Brasth Document Sync encrypts the site OAuth client secret and per-user Google t
 
 Brasth Document Sync stores site-level Google OAuth client settings, encrypted per-user Google tokens, connected Google account email addresses, linked Google document metadata, source sync status, diagnostic sync events, and imported attachment metadata in the WordPress database.
 
-During document browsing and sync, Brasth Document Sync communicates with Google OAuth, Google Drive API, and Google Docs API as described in the External Services section. Imported Google Docs images are stored in the WordPress Media Library. Synced WordPress posts and imported media remain on the site until a user with sufficient permission changes or deletes them.
+During document browsing and sync, Brasth Document Sync communicates with Google OAuth, the Google Drive API, the Google Docs API, and, for PowerPoint conversion, the Google Slides API, as described in the External Services section. Imported images are stored in the WordPress Media Library. Synced WordPress posts and imported media remain on the site until a user with sufficient permission changes or deletes them.
+
+Word, PowerPoint, and PDF uploads are stored for the uploading user for 24 hours, outside the web root or encrypted under `uploads/docsync-wp-private/`. They are not included in telemetry or feedback. PDF text is parsed on the site with `smalot/pdfparser`. The admin preview draws PDF pages with PDF.js 5.6.205 loaded from the plugin's own `build/` files.
 
 Optional anonymous Brasth telemetry is off by default. When enabled by a site administrator, the plugin sends one weekly active-install check-in containing only an anonymous site hash and plugin/WordPress/PHP versions. No Google data, site URL, user email, document IDs, content, or imported media are sent to Brasth telemetry.
 
 Feedback reports are optional and become public GitHub issues. Do not include secrets, private URLs, customer data, Google document data, or other sensitive information. The plugin does not send the WordPress site URL or user identity with feedback.
 
-Uninstall removes plugin settings, encrypted user Google tokens, and scheduled cron events. Linked post metadata is retained by default; define `DOCSYNC_WP_FULL_UNINSTALL` or return true from the `docsync_wp_full_uninstall` filter to remove Brasth Document Sync post metadata. Synced posts and imported media are not deleted automatically.
+Uninstall removes plugin settings, encrypted user Google tokens, scheduled cron events, add-content session data, and the plugin-owned private upload directory. Linked post metadata, including import provenance, is retained by default; define `DOCSYNC_WP_FULL_UNINSTALL` or return true from the `docsync_wp_full_uninstall` filter to remove Brasth Document Sync post metadata. Uninstall leaves posts, imported media, and Google Drive files in place, including the user's original Docs and any Google Doc the plugin created under Imported from WordPress.
 
 == Source And Build Instructions ==
 
@@ -133,7 +150,7 @@ To rebuild the admin assets from source:
 2. Install frontend dependencies with `pnpm install --frozen-lockfile`.
 3. Build assets with `pnpm build`.
 
-The build uses Vite and writes screen-specific manifests for Setup, Sources, Logs, Post Sync, and the lazy Drive browser, plus hashed CSS/JS assets. Runtime React is provided by WordPress through `wp-element`.
+The build uses Vite and Node.js 20.19 or newer. It writes eight screen-specific manifests for Setup, Sources, Drive Folders, Logs, Post Sync, the source modal, the lazy Drive browser, and the PDF renderer, plus hashed CSS/JS assets. PDF.js 5.6.205, its worker, and its font files ship inside `build/`. Runtime React is provided by WordPress through `wp-element`. Production Composer dependencies include `smalot/pdfparser` for PDF text. `.rig` and private upload directories are excluded from the installable package.
 
 == Screenshots ==
 
@@ -144,6 +161,10 @@ The build uses Vite and writes screen-specific manifests for Setup, Sources, Log
 5. Synced draft editor with the Brasth Document Sync meta box.
 
 == Changelog ==
+
+= Unreleased =
+
+* Add content for several Google Docs, Word, PowerPoint, and PDF, with private 24-hour uploads, optional Drive file scope, and one-time versus keep-synced provenance. Declared minimum support remains PHP 8.1 and WordPress 6.4. Add-content checks were exercised on PHP 8.3 and WordPress 7.1. The minimum pair is not yet re-proven for this work. A live Google account pass, a measured API quota, and a pixel-level artboard result are not recorded.
 
 = 1.1.5 =
 

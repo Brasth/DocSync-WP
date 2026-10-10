@@ -13,6 +13,7 @@ use DocSyncWP\Cron\SyncCron;
 use DocSyncWP\Google\DocumentIdParser;
 use DocSyncWP\Sync\Elementor\Preset\ElementorPresetRegistry;
 use DocSyncWP\Sync\Layout\LayoutPresetRegistry;
+use DocSyncWP\Sync\SourceBatchService;
 use DocSyncWP\Sync\SourceRepository;
 use DocSyncWP\Sync\SourceScheduleResolver;
 use DocSyncWP\Sync\SyncService;
@@ -30,6 +31,7 @@ defined( 'ABSPATH' ) || exit;
 final class SourceController {
 	private const SYNC_MODE_INLINE       = 'inline';
 	private const SYNC_MODE_BACKGROUND   = 'background';
+	private const SYNC_MODE_ATTACH_ONLY  = 'attach_only';
 	private const SYNC_ALL_BATCH_SIZE    = 20;
 	private const SYNC_ALL_SCAN_LIMIT    = 100;
 	private const SYNC_ALL_MAX_SCANS     = 5;
@@ -73,6 +75,13 @@ final class SourceController {
 	private ElementorPresetRegistry $elementor_presets;
 
 	/**
+	 * Multi-Doc batch service, injected by the REST provider when Journey 2 is ready.
+	 *
+	 * @var SourceBatchService|null
+	 */
+	private ?SourceBatchService $source_batch = null;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param SourceRepository             $source_repository  Source repository.
@@ -93,6 +102,30 @@ final class SourceController {
 		$this->document_id_parser = $document_id_parser;
 		$this->layout_presets     = $layout_presets ?? new LayoutPresetRegistry();
 		$this->elementor_presets  = $elementor_presets ?? new ElementorPresetRegistry();
+	}
+
+	/**
+	 * Expose the injected source services so additive providers reuse the same instances.
+	 *
+	 * @return array{sourceRepository:SourceRepository,syncService:SyncService,documentIdParser:DocumentIdParser,layoutPresets:LayoutPresetRegistry,elementorPresets:ElementorPresetRegistry}
+	 */
+	public function getDependencies(): array {
+		return array(
+			'sourceRepository' => $this->source_repository,
+			'syncService'      => $this->sync_service,
+			'documentIdParser' => $this->document_id_parser,
+			'layoutPresets'    => $this->layout_presets,
+			'elementorPresets' => $this->elementor_presets,
+		);
+	}
+
+	/**
+	 * Inject the multi-Doc batch service; `/sources/batch` returns 503 until this runs.
+	 *
+	 * @param SourceBatchService $source_batch Source batch service.
+	 */
+	public function setSourceBatch( SourceBatchService $source_batch ): void {
+		$this->source_batch = $source_batch;
 	}
 
 	/**
@@ -146,6 +179,16 @@ final class SourceController {
 			array(
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'getSourceContent' ),
+				'permission_callback' => array( RestPermissions::class, 'canUseAuthenticatedRest' ),
+			)
+		);
+
+		register_rest_route(
+			$rest_namespace,
+			'/sources/batch',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'createSourceBatch' ),
 				'permission_callback' => array( RestPermissions::class, 'canUseAuthenticatedRest' ),
 			)
 		);
@@ -263,7 +306,7 @@ final class SourceController {
 
 		$mode             = sanitize_key( (string) ( $target['mode'] ?? '' ) );
 		$export_format    = $this->getExportFormat( $params );
-		$sync_mode        = $this->getSyncMode( $params );
+		$sync_mode        = $this->getSourceSyncMode( $params, $mode );
 		$elementor_sync   = $this->getOptionalBoolean( $params, 'elementorSync' );
 		$transfer_owner   = $this->getOptionalBoolean( $params, 'transferOwnership' );
 		$layout_preset    = $this->getOptionalLayoutPreset( $params );
@@ -385,6 +428,47 @@ final class SourceController {
 			__( 'Brasth Document Sync received an unsupported source target mode.', 'brasth-document-sync-for-google-docs' ),
 			array( 'status' => 400 )
 		);
+	}
+
+	/**
+	 * Add up to 20 Google Docs at once: new targets queue a background sync,
+	 * existing targets are attach-only.
+	 *
+	 * @param WP_REST_Request $request REST request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function createSourceBatch( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		if ( null === $this->source_batch ) {
+			return new WP_Error(
+				'docsync_wp_journey2_unavailable',
+				__( 'Adding several Google Docs at once is not available on this site right now.', 'brasth-document-sync-for-google-docs' ),
+				array( 'status' => 503 )
+			);
+		}
+
+		$params = $request->get_json_params();
+
+		if (
+			! is_array( $params )
+			|| array() !== array_diff( array_keys( $params ), array( 'idempotencyKey', 'items' ) )
+			|| ! isset( $params['idempotencyKey'], $params['items'] )
+			|| ! is_string( $params['idempotencyKey'] )
+			|| ! is_array( $params['items'] )
+		) {
+			return new WP_Error(
+				'docsync_wp_source_batch_invalid',
+				__( 'Brasth Document Sync received an invalid batch of Google Docs.', 'brasth-document-sync-for-google-docs' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		$result = $this->source_batch->createBatch( get_current_user_id(), $params['items'], $params['idempotencyKey'] );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return rest_ensure_response( $result );
 	}
 
 	/**
@@ -1149,6 +1233,31 @@ final class SourceController {
 
 		if ( in_array( $sync_mode, array( self::SYNC_MODE_INLINE, self::SYNC_MODE_BACKGROUND ), true ) ) {
 			return $sync_mode;
+		}
+
+		return new WP_Error(
+			'docsync_wp_invalid_sync_mode',
+			__( 'Brasth Document Sync received an unsupported sync mode.', 'brasth-document-sync-for-google-docs' ),
+			array( 'status' => 400 )
+		);
+	}
+
+	/**
+	 * Get the create-source sync mode; `attach_only` is valid only for existing targets.
+	 *
+	 * @param array<string,mixed> $params Request params.
+	 * @param string              $mode   Target mode.
+	 * @return string|WP_Error
+	 */
+	private function getSourceSyncMode( array $params, string $mode ): string|WP_Error {
+		$sync_mode = isset( $params['syncMode'] ) ? sanitize_key( (string) $params['syncMode'] ) : '';
+
+		if ( self::SYNC_MODE_ATTACH_ONLY !== $sync_mode ) {
+			return $this->getSyncMode( $params );
+		}
+
+		if ( 'existing' === $mode ) {
+			return self::SYNC_MODE_ATTACH_ONLY;
 		}
 
 		return new WP_Error(

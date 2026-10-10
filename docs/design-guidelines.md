@@ -114,6 +114,25 @@ Use this guide for Brasth Document Sync admin UI work. The product direction is 
 - Constrain height with viewport-relative `max-height`, scroll the body, keep the footer reachable, and confirm before discarding a dirty draft.
 - Success shows the issue number, primary **View GitHub issue**, secondary **Done**.
 
+## Add Content
+
+The add-content dialog is the document path inside the existing Doc Source modal. Folder watch keeps its own confirm flow. Styles live in `resources/css/components/journey-add-content.css`, imported with the source-modal stylesheet. Use the existing admin tokens. Do not add a separate color scale for this dialog.
+
+Six screens are implemented and call live data: connect a Google account, choose Google Docs, upload files, preview and commit, review a PowerPoint deck, and link existing posts. Treat a measured artboard diff as future evidence. This guide does not record one.
+
+- Connect copy describes read-only Drive access. The Drive file opt-in is a separate explicit choice, used for the import folder, Word and PowerPoint conversion, and a Doc created from a post.
+- The Google Docs screen supports location, search, owner, and linked filters, multi-select, and pasted URLs or file IDs. Selected rows need a visible selected state before the footer action.
+- Upload accepts DOCX, PPTX, and PDF, at most 20 files, each at most 25 MB or the lower host limit. Show per-file progress and per-file errors. Hide the upload entry when the server bootstrap `canUploadFiles` is false. On an existing post, offer Google attach only.
+- Preview is lossy. Number every warning, and use the same numbers on the slide navigator, the preview, the caption, and the committed draft. An unsupported PowerPoint object keeps a private thumbnail plus its warning number. A changed preview blocks commit until the file is reviewed again.
+- The deck screen shows a real thumbnail for each slide. Copy states that a PowerPoint import is one-time.
+- PDF page images load PDF.js only when that panel needs them, from the plugin's `build/` files. A scanned or encrypted PDF fails with an inline reason. There is no OCR action in this dialog.
+- Link existing posts shows compare, manual choice, and attach. Commit copy must say the post body stays unchanged until a later sync. Preselect only a unique exact title or a unique exact leading-token match, and only when the folder inventory finished. A truncated inventory shows the warning and leaves the choice manual.
+- Commit results are per file or per pair. Upload commits create drafts. Keep-synced Word names the retained Doc in My Drive / Imported from WordPress. One-time Word, PowerPoint, and PDF name the one-time result.
+- Private upload state expires in 24 hours. Discard and expiry copy should say the private bytes are removed and Google files the plugin created are trashed. The user's original Docs stay in Drive.
+- URL state for view, session, and job must survive the OAuth round trip and land on the same screen.
+
+`pdfjs-dist` 5.6.205 is the PDF preview runtime. It is not a dependency of the other admin screens.
+
 ## Motion And Accessibility
 
 - Use CSS-only micro-interactions, 150-250ms.
@@ -137,6 +156,6 @@ Use this guide for Brasth Document Sync admin UI work. The product direction is 
 - No new runtime dependencies for admin polish.
 - No GSAP in plugin admin.
 - Keep Radix Dialog/Tabs for complex modal/tab behavior.
-- Keep Vite screen-specific bundles and lazy Drive browser/modal styles.
+- Keep Vite screen-specific bundles and lazy Drive browser/modal styles. PDF.js stays in the separate `pdf-renderer` bundle.
 - Keep standalone image output editor-native when possible so users can select and edit images normally in Gutenberg.
 - Preserve REST, settings, post meta, and Vite entry contracts.

@@ -11,6 +11,8 @@
 /.codex
 /.devcontainer
 /.opencode
+/.rig
+/.cursor
 /AGENTS.md
 /assets
 /eslint.config.js
@@ -19,6 +21,7 @@
 /docs
 /plans
 /tests
+/fixtures
 /.phpunit.cache
 /.phpunit.result.cache
 /coverage
@@ -30,3 +33,6 @@
 client_secret*.json
 .secrets/
 .env*
+# Private import storage and local journey fixtures must never ship.
+docsync-wp-private/
+docsync-journey-fixtures/

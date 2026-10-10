@@ -124,6 +124,8 @@ Do not copy OAuth credentials into the Docker image and do not commit them.
 
 The Compose stack includes a development-only `cron` worker. It runs due WordPress events with WP-CLI inside the Docker network, so local background sync does not depend on the browser-facing `http://localhost:8890` URL being reachable from the WordPress container.
 
+The `cron` service runs as `www-data`, the same filesystem identity Apache uses for REST. That matters for private imports: cron may write canonical files mode `0600`, and the web process must be able to read them. Existing root-created private files need a targeted ownership correction to `www-data`; do not broaden permissions with a wide `chmod`.
+
 Local secret paths ignored by Git:
 
 ```text

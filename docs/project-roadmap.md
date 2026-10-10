@@ -20,7 +20,9 @@ Each release should be reviewable on WordPress.org within 1-7 days. GitHub Actio
 
 ## Current State
 
-- Version 1.1.3 is the current release metadata, covering the merged usability polish and role-aware admin workspace work. The next release is a hardening-only 1.1.4; no new product capability is approved until its operational and release gates pass.
+- Version 1.1.5 is the published changelog. Add content (Journey 2) is implemented in the current source and is not yet a published version.
+- The six add-content screens, Drive/Docs/Slides conversion, private 24-hour uploads, optional `drive.file`, keep-synced Word, one-time PowerPoint and PDF, attach-only linking, and `GET /content` are in the source. A pixel-level artboard result is not recorded. A live Google account is not configured for an end-to-end Google pass. Google API quota is not a measured figure.
+- Declared minimum support remains PHP 8.1 and WordPress 6.4. Add-content checks for this source were exercised on PHP 8.3 and WordPress 7.1. The minimum pair is not yet re-proven for add content.
 - Core sync engine is stable: Google export, media import, Gutenberg block conversion, Elementor JSON conversion, background sync, and sync logging.
 - The plugin supports one-way sync from Google Docs to WordPress posts, pages, and enabled public custom post types.
 - Setup now separates administrator-owned site configuration from personal Google access; capability-qualified operators continue activation in Sources without receiving settings secrets. Activation is an accessible successfully completed source, not account readiness.
@@ -141,7 +143,7 @@ Bulk import cannot rely on traffic-driven WP-Cron alone. Before 1.3.0, prove dur
 
 | Horizon | Versions | Focus | Key Deliverables |
 |---|---|---|---|
-| **Now** | 1.1.4 | Release hardening and field validation | Proven sync reliability, enforced release gates, staging/beta evidence |
+| **Now** | 1.1.5 published; add content in source | Keep the published folder-watch release distinct from unpublished add content | Documented scopes, private uploads, provenance, and verification limits match the source |
 | **Next** | Conditional 1.2.0 | Layout selection clarity | Bounded accessible preset gallery if evidence shows current selector friction |
 | **Later** | 1.2.2 - 1.4.3 | Preview, agency scale, and monetization | Preview only with parity/operability proof; bulk import only with durable-job and commercial gates |
 | **Future** | 1.5.0 - 2.2.0 | Writer discovery, smart sync, expansion | Add-on, AI, managed OAuth, Notion, team workflows |

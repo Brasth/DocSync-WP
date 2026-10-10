@@ -1,8 +1,10 @@
 import { speak } from '@wordpress/a11y';
 import { createElement, Fragment, useEffect, useState } from '@wordpress/element';
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 
 import { type SourceRecord, type SyncResult } from '../../api';
+import type { ImportCommitResult } from '../../api/journey-types';
+import type { AddContentView } from '../add-content/use-add-content';
 import { DocSourceModal, type DocSourceTarget } from '../doc-source-modal/doc-source-modal';
 import { AdminButton } from '../../shared/ui/admin-button';
 import { isQueuedSync } from '../../shared/ui/sync-progress';
@@ -17,8 +19,13 @@ type TrackedSync = {
   postId: number;
 };
 
+/** The server marks the mount with the user's upload_files capability. */
+const listCanUpload = (): boolean => document.getElementById('docsync-wp-list-sync-root')?.dataset.canUpload === 'true';
+
 export const ListEntryApp = ({ postType }: { postType: string }): JSX.Element => {
+  const canUpload = listCanUpload();
   const [modalTarget, setModalTarget] = useState<DocSourceTarget | null>(null);
+  const [modalView, setModalView] = useState<AddContentView>('google');
   const [toasts, setToasts] = useState<SyncToast[]>([]);
   const [trackedSyncs, setTrackedSyncs] = useState<TrackedSync[]>([]);
 
@@ -39,6 +46,7 @@ export const ListEntryApp = ({ postType }: { postType: string }): JSX.Element =>
         return;
       }
 
+      setModalView('google');
       setModalTarget({
         mode: 'existing',
         postId,
@@ -59,7 +67,10 @@ export const ListEntryApp = ({ postType }: { postType: string }): JSX.Element =>
       return;
     }
 
-    const message = sprintf(__('Sync %s.', 'brasth-document-sync-for-google-docs'), result.status);
+    // Linking an existing post is attach-only: the post keeps its content until it syncs.
+    const message = result.status === 'linked'
+      ? __('Google Doc linked. This post keeps its content until its next sync.', 'brasth-document-sync-for-google-docs')
+      : sprintf(__('Sync %s.', 'brasth-document-sync-for-google-docs'), result.status);
     showToast({
       id: `sync-${result.postId}-${Date.now()}`,
       message,
@@ -67,6 +78,45 @@ export const ListEntryApp = ({ postType }: { postType: string }): JSX.Element =>
       tone: 'success'
     });
     speak(message);
+  };
+
+  const openAddContent = (view: AddContentView) => {
+    setModalView(canUpload ? view : 'google');
+    setModalTarget({ mode: 'new', postType });
+  };
+
+  /* Uploads commit drafts only; the list re-renders so the new drafts appear in place. */
+  const onImported = async (result: ImportCommitResult) => {
+    const created = result.files.filter((file) => file.status === 'created').length;
+    const failed = result.files.filter((file) => file.status === 'failed').length;
+
+    if (created === 0 && failed === 0) {
+      return;
+    }
+
+    const refreshed = created > 0 ? await refreshPostListTable() : true;
+    const message = failed > 0
+      ? sprintf(
+        /* translators: 1: drafts created, 2: files that failed. */
+        __('%1$d drafts created, %2$d files failed. Open Add content to see why.', 'brasth-document-sync-for-google-docs'),
+        created,
+        failed
+      )
+      : sprintf(
+        /* translators: %d: drafts created from uploaded files. */
+        _n('%d draft created from your upload.', '%d drafts created from your uploads.', created, 'brasth-document-sync-for-google-docs'),
+        created
+      );
+
+    showToast({
+      actionLabel: refreshed ? undefined : __('Reload', 'brasth-document-sync-for-google-docs'),
+      id: `import-${result.idempotencyKey}`,
+      message: refreshed ? message : `${message} ${__('Reload to see the updated list.', 'brasth-document-sync-for-google-docs')}`,
+      onAction: refreshed ? undefined : reloadPostListPage,
+      title: __('Brasth Document Sync', 'brasth-document-sync-for-google-docs'),
+      tone: failed > 0 ? 'warning' : 'success'
+    });
+    speak(message, failed > 0 ? 'assertive' : 'polite');
   };
 
   const dismissToast = (id: string) => {
@@ -174,9 +224,14 @@ export const ListEntryApp = ({ postType }: { postType: string }): JSX.Element =>
 
   return (
     <Fragment>
-      <AdminButton className="docsync-wp-add-sync-doc" onClick={() => setModalTarget({ mode: 'new', postType })} variant="primary">
-        {__('Add Sync Doc', 'brasth-document-sync-for-google-docs')}
+      <AdminButton className="docsync-wp-add-sync-doc" onClick={() => openAddContent('google')} variant="primary">
+        {__('Add content', 'brasth-document-sync-for-google-docs')}
       </AdminButton>
+      {canUpload ? (
+        <AdminButton className="docsync-wp-add-sync-doc" onClick={() => openAddContent('upload')} variant="secondary">
+          {__('Upload files', 'brasth-document-sync-for-google-docs')}
+        </AdminButton>
+      ) : null}
       <SyncToastStack toasts={toasts} />
       {trackedSyncs.map((sync) => (
         <BackgroundSyncPoller
@@ -189,9 +244,13 @@ export const ListEntryApp = ({ postType }: { postType: string }): JSX.Element =>
         />
       ))}
       <DocSourceModal
+        initialView={modalView}
         isOpen={modalTarget !== null}
         onClose={() => setModalTarget(null)}
         onCompleted={onCompleted}
+        onImported={(result) => {
+          void onImported(result);
+        }}
         target={modalTarget}
       />
     </Fragment>

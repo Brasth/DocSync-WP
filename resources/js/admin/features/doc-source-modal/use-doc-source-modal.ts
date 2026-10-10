@@ -11,6 +11,12 @@ import {
 } from '../../api';
 import { AdminApiError } from '../../api/client';
 import { getAdminConfig } from '../../config';
+import {
+  type AddContentView,
+  consumeOAuthReturn,
+  readAddContentUrlState,
+  takeAddContentReturn
+} from '../add-content/use-add-content';
 import { type DocSourceOutputType, type DocSourceUiMode } from './doc-source-modal-options';
 import { documentsCanAttach, isAuthFailureCode, MAX_FOLDER_DRAFTS, uniqueDocuments } from './doc-source-selection';
 
@@ -24,6 +30,85 @@ export type DocSourceTarget =
       layoutPreset?: string | null;
     }
   | { mode: 'new'; postType: string };
+
+export type AddContentResume = {
+  view: AddContentView;
+  sessionId: string | null;
+  fileId: string | null;
+  postType: string;
+  notice: string;
+};
+
+/* One modal per page owns the resume, so a page with several entry points never opens two dialogs. */
+let addContentResumeClaimed = false;
+
+const resolveAddContentResume = (): AddContentResume | null => {
+  const params = new URL(window.location.href).searchParams;
+
+  // Bulk linking resumes in its own Sources subview.
+  if (params.get('docsync_resume') === 'matching' || params.get('docsync_view') === 'match') {
+    return null;
+  }
+
+  const oauth = consumeOAuthReturn();
+  const url = readAddContentUrlState();
+  const marker = takeAddContentReturn();
+  const config = getAdminConfig();
+  const postType = marker?.postType && config.enabledPostTypes.includes(marker.postType)
+    ? marker.postType
+    : config.enabledPostTypes[0] || 'post';
+  const notice = oauth.continuationInvalid
+    ? __('That Google permission request expired or belongs to another session. Nothing was changed; try again.', 'brasth-document-sync-for-google-docs')
+    : oauth.driveFileDenied
+      ? __('Google did not grant permission to convert files. Word and PowerPoint files wait until you allow it; PDFs work without it.', 'brasth-document-sync-for-google-docs')
+      : '';
+
+  if (oauth.resumeKind === 'import' && oauth.resumeId) {
+    return {
+      view: url.view && url.view !== 'google' && url.sessionId === oauth.resumeId ? url.view : 'upload',
+      sessionId: oauth.resumeId,
+      fileId: url.sessionId === oauth.resumeId ? url.fileId : null,
+      postType,
+      notice
+    };
+  }
+
+  if (url.view) {
+    return { view: url.view, sessionId: url.sessionId, fileId: url.fileId, postType, notice };
+  }
+
+  if (marker && (oauth.connected || oauth.continuationInvalid)) {
+    return { view: marker.view, sessionId: null, fileId: null, postType, notice };
+  }
+
+  return null;
+};
+
+/**
+ * Reopen Add content on the screen an OAuth round trip or a reload left: the URL carries
+ * only the view, the caller-owned session ID, and the file ID; tokens never reach the browser.
+ */
+export const useAddContentResume = () => {
+  const [resume, setResume] = useState<AddContentResume | null>(null);
+
+  useEffect(() => {
+    if (addContentResumeClaimed) {
+      return;
+    }
+
+    const next = resolveAddContentResume();
+
+    if (next) {
+      addContentResumeClaimed = true;
+      setResume(next);
+    }
+  }, []);
+
+  return {
+    resume,
+    clear: () => setResume(null)
+  };
+};
 
 type Args = {
   isOpen: boolean;

@@ -31,6 +31,7 @@ services:
     build:
       context: ..
       dockerfile: .devcontainer/Dockerfile
+    user: www-data
     depends_on:
       db:
         condition: service_healthy

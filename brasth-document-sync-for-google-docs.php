@@ -133,13 +133,15 @@ function docsync_wp_add_privacy_policy_content(): void {
 
 When a user connects Google, Brasth Document Sync sends OAuth authorization and token refresh requests to Google. During browsing and sync, Brasth Document Sync sends connected-user access tokens, Google Drive file IDs, folder IDs, shared-drive IDs, Drive search text, pagination tokens, and document export or read requests to the Google Drive API and Google Docs API. Google can return account email, OAuth tokens, document titles, document metadata, document export content, document structure, and image content URLs used to import media into WordPress.
 
-Imported Google Docs images are stored in the WordPress Media Library. Synced posts, pages, imported media, and linked post metadata remain on the site until a user with sufficient permission changes or deletes them. Uninstall removes plugin settings, encrypted user Google tokens, and scheduled cron events. Linked post metadata is retained by default unless full Brasth Document Sync uninstall cleanup is enabled. Synced posts and imported media are not deleted automatically.
+Authorized users with permission to upload files can also import Word (DOCX), PowerPoint (PPTX), and PDF files. Uploaded files are kept privately on the site, outside the web root or encrypted inside the uploads directory, are readable only by the user who uploaded them, and are deleted when the import is committed or cancelled, or automatically once the import session expires 24 hours after it starts. Nothing is added to the Media Library or published before the user commits an import, and every committed upload becomes a draft. PDF files are processed only on the site and in the browser of the user who uploaded them; they are not sent to Google or any other service. DOCX and PPTX files are converted by uploading them to the Google Drive of the connected user through the Google Drive API, which requires the optional drive.file permission that a user grants only after choosing to. The plugin places these app-created conversions in a My Drive folder named Imported from WordPress and reads them through the Google Docs API and Google Slides API, including slide thumbnails. A Word file kept in sync stays in that folder as the linked Google Doc; every other conversion is moved to the Google Drive trash once the import finishes, is cancelled, or expires, and the move is retried later if Google is unavailable. The plugin trashes only files it created and never deletes files permanently. When a user links existing posts to Google Docs in bulk, the plugin reads document names and text to suggest matches and can create a new Google Doc from a post in the chosen folder or in Imported from WordPress. Links are saved without changing post content until the next sync.
+
+Imported Google Docs images are stored in the WordPress Media Library. Synced posts, pages, imported media, and linked post metadata remain on the site until a user with sufficient permission changes or deletes them. Uninstall removes plugin settings, encrypted user Google tokens, scheduled cron events, pending import sessions and their private uploaded files, bulk-linking jobs, and saved Google sign-in continuations. Linked post metadata and import history metadata are retained by default unless full Brasth Document Sync uninstall cleanup is enabled. Synced posts and imported media are not deleted automatically.
 
 Optional anonymous Brasth telemetry is off by default. When a site administrator enables usage diagnostics, Brasth Document Sync sends one weekly check-in to https://telemetry.brasth.com/v1/check-in with an anonymous site hash generated from a random install ID, plugin slug, plugin version, WordPress version, PHP version, and telemetry consent version. It does not send Google data, site URL, user email, post data, document IDs, document metadata, document content, or imported media. Brasth telemetry stores only those check-in fields, does not store IP addresses, user agents, request URLs, or request headers, and deletes rows that have not checked in for more than 90 days. Privacy Policy: https://docsyncwp.com/privacy-policy.
 
 Authorized users can also submit optional feedback from the admin area. Feedback title, type, and details are sent through the configured Brasth feedback Worker and published as a public GitHub issue in Brasth/DocSync-WP. Do not include secrets, private URLs, customer data, Google document data, or other sensitive information in a report. The plugin does not send the WordPress site URL or user identity with feedback.
 
-Google provides the OAuth, Drive, and Docs services used by this plugin. Google Privacy Policy: https://policies.google.com/privacy. Google API Services User Data Policy: https://developers.google.com/terms/api-services-user-data-policy. Google APIs Terms of Service: https://developers.google.com/terms.',
+Google provides the OAuth, Drive, Docs, and Slides services used by this plugin. Google Privacy Policy: https://policies.google.com/privacy. Google API Services User Data Policy: https://developers.google.com/terms/api-services-user-data-policy. Google APIs Terms of Service: https://developers.google.com/terms.',
 				'brasth-document-sync-for-google-docs'
 			)
 		)
@@ -204,6 +206,17 @@ function docsync_wp_deactivate(): void {
 	} else {
 		wp_clear_scheduled_hook( 'docsync_wp_telemetry_checkin' );
 	}
+
+	if ( class_exists( DocSyncWP\Import\ImportCleanup::class ) ) {
+		DocSyncWP\Import\ImportCleanup::unschedule();
+	} else {
+		wp_clear_scheduled_hook( 'docsync_wp_import_cleanup' );
+	}
+
+	// Conversion, commit, and matching events carry session or job arguments, so every instance is removed.
+	wp_unschedule_hook( class_exists( DocSyncWP\Import\ImportService::class ) ? DocSyncWP\Import\ImportService::CONVERT_HOOK : 'docsync_wp_import_convert' );
+	wp_unschedule_hook( class_exists( DocSyncWP\Import\ImportCommitter::class ) ? DocSyncWP\Import\ImportCommitter::COMMIT_HOOK : 'docsync_wp_import_commit' );
+	wp_unschedule_hook( class_exists( DocSyncWP\Matching\MatchingService::class ) ? DocSyncWP\Matching\MatchingService::RUN_HOOK : 'docsync_wp_matching_run' );
 }
 register_deactivation_hook( __FILE__, 'docsync_wp_deactivate' );
 

@@ -25,6 +25,7 @@ export type DocSyncWPAdminConfig = {
   availableElementorLayoutPresets: AvailableLayoutPreset[];
   elementorSyncEnabled: boolean;
   elementorAvailable: boolean;
+  canUploadFiles: boolean;
   syncInterval: string;
   hasClientId: boolean;
   hasClientSecret: boolean;
@@ -69,6 +70,7 @@ const fallbackConfig: DocSyncWPAdminConfig = {
   ],
   elementorSyncEnabled: false,
   elementorAvailable: false,
+  canUploadFiles: false,
   syncInterval: 'off',
   hasClientId: false,
   hasClientSecret: false,

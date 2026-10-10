@@ -26,6 +26,7 @@ final class AssetRegistry {
 	private const POST_SYNC_ENTRY           = 'resources/js/admin/entries/post-sync-entry.tsx';
 	private const DOC_SOURCE_MODAL_ENTRY    = 'resources/js/admin/entries/doc-source-modal-entry.ts';
 	private const DRIVE_BROWSER_ENTRY       = 'resources/js/admin/entries/drive-browser-entry.tsx';
+	private const PDF_RENDERER_ENTRY        = 'resources/js/admin/features/add-content/pdf-renderer.ts';
 	private const SETUP_MANIFEST            = 'manifest.setup.json';
 	private const SOURCES_MANIFEST          = 'manifest.sources.json';
 	private const FOLDERS_MANIFEST          = 'manifest.folders.json';
@@ -33,6 +34,7 @@ final class AssetRegistry {
 	private const POST_SYNC_MANIFEST        = 'manifest.post-sync.json';
 	private const DOC_SOURCE_MODAL_MANIFEST = 'manifest.doc-source-modal.json';
 	private const DRIVE_BROWSER_MANIFEST    = 'manifest.drive-browser.json';
+	private const PDF_RENDERER_MANIFEST     = 'manifest.pdf-renderer.json';
 	private const SETUP_HANDLE              = 'docsync-wp-setup';
 	private const SOURCES_HANDLE            = 'docsync-wp-sources';
 	private const FOLDERS_HANDLE            = 'docsync-wp-folders';
@@ -416,9 +418,13 @@ final class AssetRegistry {
 			'availableElementorLayoutPresets' => $this->settings->getAvailableElementorLayoutPresets(),
 			'elementorSyncEnabled'            => (bool) $settings['elementor_sync_enabled'],
 			'elementorAvailable'              => class_exists( '\Elementor\Plugin' ),
+			// Lets the admin UI hide one-time import actions the user cannot run.
+			'canUploadFiles'                  => current_user_can( 'upload_files' ),
 			'docSourceModalStyleUrls'         => $this->entryStyleUrls( self::DOC_SOURCE_MODAL_ENTRY, self::DOC_SOURCE_MODAL_MANIFEST ),
 			'driveBrowserScriptUrl'           => $this->entryScriptUrl( self::DRIVE_BROWSER_ENTRY, self::DRIVE_BROWSER_MANIFEST ),
 			'driveBrowserStyleUrls'           => $this->entryStyleUrls( self::DRIVE_BROWSER_ENTRY, self::DRIVE_BROWSER_MANIFEST ),
+			// Never enqueued: the add-content UI injects it only when a PDF preview mounts.
+			'pdfRendererScriptUrl'            => $this->entryScriptUrl( self::PDF_RENDERER_ENTRY, self::PDF_RENDERER_MANIFEST ),
 		);
 
 		if ( current_user_can( 'manage_options' ) ) {

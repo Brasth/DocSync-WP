@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace DocSyncWP\Rest;
 
+use DocSyncWP\Import\ImportProvenanceRepository;
 use DocSyncWP\Settings\SettingsRepository;
 use DocSyncWP\Sync\Elementor\CompatibilityChecker;
 use DocSyncWP\Sync\FolderWatchService;
@@ -52,6 +53,13 @@ final class WorkspaceController {
 	private FolderWatchService $folder_watches;
 
 	/**
+	 * Import provenance repository; the import activation term is skipped until injected.
+	 *
+	 * @var ImportProvenanceRepository|null
+	 */
+	private ?ImportProvenanceRepository $import_provenance = null;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param SettingsRepository   $settings  Settings repository.
@@ -69,6 +77,15 @@ final class WorkspaceController {
 		$this->sources        = $sources;
 		$this->elementor      = $elementor;
 		$this->folder_watches = $folder_watches;
+	}
+
+	/**
+	 * Inject the provenance repository so successful uploads count toward activation.
+	 *
+	 * @param ImportProvenanceRepository $provenance Import provenance repository.
+	 */
+	public function setImportProvenance( ImportProvenanceRepository $provenance ): void {
+		$this->import_provenance = $provenance;
 	}
 
 	/**
@@ -163,7 +180,8 @@ final class WorkspaceController {
 			'attention' => $summary['attention'],
 			'syncing'   => $summary['syncing'],
 			'healthy'   => $summary['healthy'],
-			'activated' => $summary['activated'] || $folder['imported'] >= 1,
+			'activated' => $summary['activated'] || $folder['imported'] >= 1
+				|| ( null !== $this->import_provenance && $this->import_provenance->hasAccessibleSuccess( $user_id ) ),
 			'truncated' => $summary['truncated'],
 		);
 	}

@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace DocSyncWP\Rest;
 
+use DocSyncWP\Journey2ServiceProvider;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -107,9 +109,54 @@ final class RestServiceProvider {
 
 	/**
 	 * Register WordPress hooks.
+	 *
+	 * Journey 2 is wired here, synchronously at plugin load and before
+	 * `rest_api_init`, so every request sees the injected collaborators. When
+	 * Journey 2 is absent or not ready, the legacy routes behave as before.
 	 */
 	public function register(): void {
 		add_action( 'rest_api_init', array( $this, 'registerRoutes' ) );
+
+		$dependencies = $this->getDependencies();
+
+		$this->document_controller->setSourceRepository( $dependencies['sourceRepository'] );
+
+		if ( ! class_exists( Journey2ServiceProvider::class ) ) {
+			return;
+		}
+
+		$journey2 = new Journey2ServiceProvider( $dependencies );
+		$journey2->register();
+
+		if ( ! $journey2->isReady() ) {
+			return;
+		}
+
+		$source_batch      = $journey2->getSourceBatch();
+		$import_provenance = $journey2->getImportProvenance();
+
+		if ( null !== $source_batch ) {
+			$this->source_controller->setSourceBatch( $source_batch );
+		}
+
+		if ( null !== $import_provenance ) {
+			$this->workspace_controller->setImportProvenance( $import_provenance );
+		}
+	}
+
+	/**
+	 * Shared service instances the controllers were built with.
+	 *
+	 * Merges the source, document, and OAuth controller maps; nothing is constructed here.
+	 *
+	 * @return array<string,object>
+	 */
+	public function getDependencies(): array {
+		return array_merge(
+			$this->source_controller->getDependencies(),
+			$this->document_controller->getDependencies(),
+			$this->oauth_controller->getDependencies()
+		);
 	}
 
 	/**

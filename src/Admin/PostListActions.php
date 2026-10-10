@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace DocSyncWP\Admin;
 
+use DocSyncWP\Import\ImportProvenanceRepository;
 use DocSyncWP\Rest\RestPermissions;
 use DocSyncWP\Sync\Elementor\SyncDecider;
 use DocSyncWP\Sync\SourceRepository;
@@ -35,6 +36,13 @@ final class PostListActions {
 	 * @var SyncDecider
 	 */
 	private SyncDecider $elementor_decider;
+
+	/**
+	 * Lazily built provenance reader; null until first use or when Journey 2 is absent.
+	 *
+	 * @var ImportProvenanceRepository|null
+	 */
+	private ?ImportProvenanceRepository $import_provenance = null;
 
 	/**
 	 * Constructor.
@@ -136,6 +144,13 @@ final class PostListActions {
 		$source = $this->source_repository->getSource( $post_id );
 
 		if ( null === $source ) {
+			$one_time = $this->oneTimeProvenance( $post_id );
+
+			if ( null !== $one_time ) {
+				$this->renderOneTimeStatus( $one_time );
+				return;
+			}
+
 			echo '<span class="docsync-wp-list-status is-empty">' . esc_html__( 'Not linked', 'brasth-document-sync-for-google-docs' ) . '</span>';
 			return;
 		}
@@ -154,6 +169,53 @@ final class PostListActions {
 
 		if ( '' !== $source['sync_error'] ) {
 			echo '<br /><small class="docsync-wp-list-error">' . esc_html( (string) $source['sync_error'] ) . '</small>';
+		}
+
+		echo '</div>';
+	}
+
+	/**
+	 * One-time import provenance for an unlinked post, or null.
+	 *
+	 * @param int $post_id Post ID.
+	 * @return array<string,mixed>|null
+	 */
+	private function oneTimeProvenance( int $post_id ): ?array {
+		if ( null === $this->import_provenance ) {
+			if ( ! class_exists( ImportProvenanceRepository::class ) ) {
+				return null;
+			}
+
+			$this->import_provenance = new ImportProvenanceRepository( $this->source_repository );
+		}
+
+		return $this->import_provenance->formatOneTime( $post_id );
+	}
+
+	/**
+	 * Render the status of a post imported once from an upload; it has no Google source to sync.
+	 *
+	 * @param array<string,mixed> $provenance One-time provenance.
+	 */
+	private function renderOneTimeStatus( array $provenance ): void {
+		$formats = array(
+			'docx' => __( 'Word', 'brasth-document-sync-for-google-docs' ),
+			'pptx' => __( 'PowerPoint', 'brasth-document-sync-for-google-docs' ),
+			'pdf'  => __( 'PDF', 'brasth-document-sync-for-google-docs' ),
+		);
+		$format  = (string) ( $provenance['format'] ?? '' );
+		$label   = sprintf(
+			/* translators: %s: Uploaded file format, such as Word, PowerPoint, or PDF. */
+			__( 'One-time import (%s)', 'brasth-document-sync-for-google-docs' ),
+			$formats[ $format ] ?? strtoupper( $format )
+		);
+
+		echo '<div class="docsync-wp-list-status is-one-time">';
+		echo '<strong>' . esc_html( (string) ( $provenance['originalName'] ?? '' ) ) . '</strong><br />';
+		echo '<span>' . esc_html( $label ) . '</span>';
+
+		if ( '' !== (string) ( $provenance['importedAt'] ?? '' ) ) {
+			echo '<br /><small>' . esc_html( (string) $provenance['importedAt'] ) . '</small>';
 		}
 
 		echo '</div>';
@@ -191,6 +253,11 @@ final class PostListActions {
 	/**
 	 * Render list-table top action mount point.
 	 *
+	 * The Add content action is shown whatever the Google account state; the
+	 * dialog guides connection. Capability flags let the app hide actions the
+	 * user cannot complete: uploads need `upload_files`. Folder watches are not
+	 * part of this mount.
+	 *
 	 * @param string $post_type Current post type.
 	 * @param string $which     Top or bottom tablenav location.
 	 */
@@ -206,7 +273,12 @@ final class PostListActions {
 		}
 
 		?>
-		<span id="docsync-wp-list-sync-root" data-post-type="<?php echo esc_attr( $post_type ); ?>"></span>
+		<span
+			id="docsync-wp-list-sync-root"
+			data-post-type="<?php echo esc_attr( $post_type ); ?>"
+			data-can-upload="<?php echo user_can( $user_id, 'upload_files' ) ? 'true' : 'false'; ?>"
+			data-can-link="<?php echo $this->source_repository->userCanEditPostType( $post_type, $user_id ) ? 'true' : 'false'; ?>"
+		></span>
 		<?php
 	}
 }

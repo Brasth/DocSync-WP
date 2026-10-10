@@ -25,6 +25,9 @@ final class DriveClient {
 	private const METADATA_FIELDS          = 'id,name,mimeType,modifiedTime,version,webViewLink,size,quotaBytesUsed,capabilities/canDownload';
 	private const DOCUMENT_LIST_FIELDS     = 'nextPageToken,incompleteSearch,files(id,name,mimeType,modifiedTime,version,webViewLink,size,quotaBytesUsed,capabilities/canDownload)';
 	private const DRIVE_ITEM_LIST_FIELDS   = 'nextPageToken,incompleteSearch,files(id,name,mimeType,modifiedTime,version,webViewLink,iconLink,size,quotaBytesUsed,capabilities/canDownload)';
+	private const DRIVE_SEARCH_FIELDS      = 'nextPageToken,incompleteSearch,files(id,name,mimeType,modifiedTime,version,webViewLink,iconLink,size,quotaBytesUsed,capabilities/canDownload,ownedByMe,owners(displayName,me))';
+	private const SEARCH_LOCATIONS         = array( 'myDrive', 'sharedWithMe', 'sharedDrive', 'recent', 'starred' );
+	private const SEARCH_OWNERS            = array( 'any', 'me', 'others' );
 	private const SHARED_DRIVE_LIST_FIELDS = 'nextPageToken,drives(id,name)';
 	private const HTML_ZIP_MIME_TYPE       = 'application/zip';
 	private const REQUEST_TIMEOUT_SECONDS  = 20;
@@ -271,6 +274,161 @@ final class DriveClient {
 		}
 
 		$this->sortDriveItems( $items );
+
+		return array(
+			'items'            => $items,
+			'nextPageToken'    => isset( $response['nextPageToken'] ) && is_scalar( $response['nextPageToken'] ) ? sanitize_text_field( (string) $response['nextPageToken'] ) : '',
+			'incompleteSearch' => ! empty( $response['incompleteSearch'] ),
+			'folderId'         => sanitize_text_field( $folder_id ),
+			'driveId'          => sanitize_text_field( $drive_id ),
+		);
+	}
+
+	/**
+	 * Search Drive browser items by location, owner, and optional global name search.
+	 *
+	 * Locations: `myDrive` and `sharedDrive` list one folder (default: the root or the
+	 * shared drive). `sharedWithMe`, `recent`, and `starred` are flat listings until a
+	 * `folderId` is given, which lists that folder instead. `globalSearch` ignores
+	 * parents and searches every Doc the account can see across all drives.
+	 *
+	 * @param int                 $user_id User ID.
+	 * @param array<string,mixed> $query   {location,folderId,driveId,search,globalSearch,owner,pageToken,pageSize}.
+	 * @return array{items:array<int,array<string,mixed>>,nextPageToken:string,incompleteSearch:bool,folderId:string,driveId:string}|WP_Error
+	 */
+	public function searchDriveItems( int $user_id, array $query ): array|WP_Error {
+		$location      = isset( $query['location'] ) && is_string( $query['location'] ) && '' !== $query['location'] ? $query['location'] : 'myDrive';
+		$owner         = isset( $query['owner'] ) && is_string( $query['owner'] ) && '' !== $query['owner'] ? $query['owner'] : 'any';
+		$folder_id     = isset( $query['folderId'] ) && is_scalar( $query['folderId'] ) ? trim( (string) $query['folderId'] ) : '';
+		$drive_id      = isset( $query['driveId'] ) && is_scalar( $query['driveId'] ) ? trim( (string) $query['driveId'] ) : '';
+		$search        = isset( $query['search'] ) && is_scalar( $query['search'] ) ? trim( (string) $query['search'] ) : '';
+		$page_token    = isset( $query['pageToken'] ) && is_scalar( $query['pageToken'] ) ? trim( (string) $query['pageToken'] ) : '';
+		$global_search = ! empty( $query['globalSearch'] );
+		$page_size     = isset( $query['pageSize'] ) ? absint( $query['pageSize'] ) : self::DEFAULT_LIST_PAGE_SIZE;
+		$page_size     = min( self::MAX_LIST_PAGE_SIZE, max( 1, $page_size ) );
+
+		if ( ! in_array( $location, self::SEARCH_LOCATIONS, true ) || ! in_array( $owner, self::SEARCH_OWNERS, true ) ) {
+			return new WP_Error(
+				'docsync_wp_invalid_drive_query',
+				__( 'Brasth Document Sync received an unsupported Drive location or owner filter.', 'brasth-document-sync-for-google-docs' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		if ( 'sharedDrive' === $location && '' === $drive_id && ! $global_search ) {
+			return new WP_Error(
+				'docsync_wp_shared_drive_required',
+				__( 'Choose a shared drive before browsing it.', 'brasth-document-sync-for-google-docs' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		$doc_clause    = "mimeType = '" . self::GOOGLE_DOC_MIME_TYPE . "'";
+		$folder_clause = "mimeType = '" . self::FOLDER_MIME_TYPE . "'";
+		$owner_clause  = $this->ownerQueryClause( $owner );
+		$doc_filter    = '' === $owner_clause ? $doc_clause : '(' . $doc_clause . ' and ' . $owner_clause . ')';
+		$item_filter   = '(' . $folder_clause . ' or ' . $doc_filter . ')';
+		$args          = array();
+		$order_by      = 'name_natural';
+		$sort_folders  = true;
+
+		if ( $global_search ) {
+			$conditions   = array( $doc_filter, 'trashed = false' );
+			$args         = array(
+				'corpora'                   => 'allDrives',
+				'includeItemsFromAllDrives' => 'true',
+				'supportsAllDrives'         => 'true',
+			);
+			$order_by     = 'modifiedTime desc';
+			$sort_folders = false;
+			$folder_id    = '';
+			$drive_id     = '';
+		} elseif ( '' !== $folder_id || in_array( $location, array( 'myDrive', 'sharedDrive' ), true ) ) {
+			if ( 'sharedDrive' === $location ) {
+				$folder_id = '' === $folder_id || 'root' === $folder_id ? $drive_id : $folder_id;
+				$args      = $this->driveListArgs( $drive_id );
+			} else {
+				$folder_id = '' === $folder_id ? 'root' : $folder_id;
+				$drive_id  = '';
+				$args      = array(
+					'corpora'                   => 'user',
+					'includeItemsFromAllDrives' => 'true',
+					'supportsAllDrives'         => 'true',
+				);
+			}
+
+			$conditions = array( "'" . $this->escapeDriveQueryValue( $folder_id ) . "' in parents", 'trashed = false', $item_filter );
+		} elseif ( 'recent' === $location ) {
+			$conditions   = array( $doc_filter, 'trashed = false', "viewedByMeTime > '1970-01-01T00:00:00'" );
+			$args         = array( 'corpora' => 'user' );
+			$order_by     = 'viewedByMeTime desc';
+			$sort_folders = false;
+			$drive_id     = '';
+		} else {
+			$conditions   = array( 'sharedWithMe' === $location ? 'sharedWithMe = true' : 'starred = true', 'trashed = false', $item_filter );
+			$args         = array(
+				'corpora'                   => 'user',
+				'includeItemsFromAllDrives' => 'true',
+				'supportsAllDrives'         => 'true',
+			);
+			$order_by     = 'folder,modifiedTime desc';
+			$sort_folders = false;
+			$drive_id     = '';
+		}
+
+		if ( '' !== $search ) {
+			$conditions[] = "name contains '" . $this->escapeDriveQueryValue( $search ) . "'";
+		}
+
+		$args = array_merge(
+			$args,
+			array(
+				'fields'   => self::DRIVE_SEARCH_FIELDS,
+				'orderBy'  => $order_by,
+				'pageSize' => $page_size,
+				'q'        => implode( ' and ', $conditions ),
+				'spaces'   => 'drive',
+			)
+		);
+
+		if ( '' !== $page_token ) {
+			$args['pageToken'] = $page_token;
+		}
+
+		$response = $this->requestJson( $user_id, add_query_arg( $args, self::API_BASE_URL . '/files' ) );
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		if ( ! isset( $response['files'] ) || ! is_array( $response['files'] ) ) {
+			return $this->badGoogleResponseError();
+		}
+
+		$items = array();
+
+		foreach ( $response['files'] as $file ) {
+			if ( ! is_array( $file ) || ! $this->hasDriveItemFields( $file ) ) {
+				continue;
+			}
+
+			$item = $this->formatDriveItemResponse( $file );
+
+			if ( ! in_array( $item['mimeType'], array( self::FOLDER_MIME_TYPE, self::GOOGLE_DOC_MIME_TYPE ), true ) ) {
+				continue;
+			}
+
+			if ( 'document' === $item['itemType'] ) {
+				$item['ownedByMe']        = ! empty( $file['ownedByMe'] );
+				$item['ownerDisplayName'] = $this->ownerDisplayName( $file );
+			}
+
+			$items[] = $item;
+		}
+
+		if ( $sort_folders ) {
+			$this->sortDriveItems( $items );
+		}
 
 		return array(
 			'items'            => $items,
@@ -616,6 +774,42 @@ final class DriveClient {
 	 */
 	private function escapeDriveQueryValue( string $value ): string {
 		return str_replace( array( '\\', "'" ), array( '\\\\', "\\'" ), $value );
+	}
+
+	/**
+	 * Drive query clause for an owner filter.
+	 *
+	 * @param string $owner `any`, `me`, or `others`.
+	 */
+	private function ownerQueryClause( string $owner ): string {
+		if ( 'me' === $owner ) {
+			return "'me' in owners";
+		}
+
+		if ( 'others' === $owner ) {
+			return "not 'me' in owners";
+		}
+
+		return '';
+	}
+
+	/**
+	 * First owner's display name, or empty for shared drive files.
+	 *
+	 * @param array<string,mixed> $file Drive file response.
+	 */
+	private function ownerDisplayName( array $file ): string {
+		if ( ! isset( $file['owners'] ) || ! is_array( $file['owners'] ) ) {
+			return '';
+		}
+
+		foreach ( $file['owners'] as $owner ) {
+			if ( is_array( $owner ) && isset( $owner['displayName'] ) && is_scalar( $owner['displayName'] ) ) {
+				return sanitize_text_field( (string) $owner['displayName'] );
+			}
+		}
+
+		return '';
 	}
 
 	/**

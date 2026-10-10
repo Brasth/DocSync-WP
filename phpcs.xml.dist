@@ -44,13 +44,30 @@
 		<exclude-pattern>src/Sync/SyncLock.php</exclude-pattern>
 	</rule>
 
+	<!-- Owner-bound option leases require explicit serialized-row compare-and-swap SQL; cache is explicitly invalidated. -->
+	<rule ref="WordPress.DB.DirectDatabaseQuery.DirectQuery">
+		<exclude-pattern>src/Sync/SourceBatchService.php</exclude-pattern>
+		<exclude-pattern>src/Import/ImportSessionRepository.php</exclude-pattern>
+		<exclude-pattern>src/Matching/MatchSessionRepository.php</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.DB.DirectDatabaseQuery.NoCaching">
+		<exclude-pattern>src/Sync/SourceBatchService.php</exclude-pattern>
+		<exclude-pattern>src/Import/ImportSessionRepository.php</exclude-pattern>
+		<exclude-pattern>src/Matching/MatchSessionRepository.php</exclude-pattern>
+	</rule>
+
 	<!-- Source listings intentionally query postmeta because linked Google Docs are stored as post metadata. -->
+	<!-- Canonical content / unlinked-post listing deliberately queries source/import post metadata with bounded scans. -->
 	<rule ref="WordPress.DB.SlowDBQuery.slow_db_query_meta_key">
 		<exclude-pattern>src/Sync/SourceRepository.php</exclude-pattern>
+		<exclude-pattern>src/Import/ImportProvenanceRepository.php</exclude-pattern>
+		<exclude-pattern>src/Matching/MatchingService.php</exclude-pattern>
 	</rule>
 	<rule ref="WordPress.DB.SlowDBQuery.slow_db_query_meta_query">
 		<exclude-pattern>src/Sync/SourceRepository.php</exclude-pattern>
 		<exclude-pattern>src/Sync/MediaAssetImporter.php</exclude-pattern>
+		<exclude-pattern>src/Import/ImportProvenanceRepository.php</exclude-pattern>
+		<exclude-pattern>src/Matching/MatchingService.php</exclude-pattern>
 	</rule>
 
 	<!-- HTML ZIP imports must manipulate temporary export files before handing images to WordPress media APIs. -->

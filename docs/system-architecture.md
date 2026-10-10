@@ -289,6 +289,67 @@ Menu visibility is only discoverability. Setup remains administrator-only; Sourc
 
 These identify images imported from a Google Docs HTML ZIP export so re-sync can reuse existing Media Library attachments.
 
+## Add Content
+
+Add content is a `Journey2ServiceProvider` composition of private storage, conversion, commit, provenance, and matching. Current wire shapes and routes live in [`../resources/js/admin/api/journey-types.ts`](../resources/js/admin/api/journey-types.ts), [`../src/Rest/ImportController.php`](../src/Rest/ImportController.php), and [`../src/Rest/MatchingController.php`](../src/Rest/MatchingController.php). Plans under `plans/` are historical records, not evergreen authority. The six screens are connect, Google Docs, upload, preview and commit, PowerPoint deck, and link existing posts. They live in the Doc Source modal bundle and call these routes.
+
+```mermaid
+flowchart TD
+    dialog[Add content dialog] --> google[Google Doc batch]
+    dialog --> upload[Private upload session]
+    dialog --> match[Match existing posts]
+    upload --> docx[DOCX via Drive and Docs]
+    upload --> pptx[PPTX via Drive and Slides]
+    upload --> pdf[PDF via smalot on the server]
+    docx --> commit[Commit canonical preview]
+    pptx --> commit
+    pdf --> commit
+    commit --> keep[Keep-synced Doc stays in Imported from WordPress]
+    commit --> once[One-time provenance, app-created file trashed]
+    google --> linked[Linked source]
+    match --> linked
+    linked --> later[Later explicit or scheduled sync]
+```
+
+### Google APIs And Scopes
+
+| Path | Google APIs | Scope | What remains |
+| --- | --- | --- | --- |
+| Browse and sync | Drive, Docs when the large-Doc fallback runs | `drive.readonly` | The user's original Doc |
+| Word, Keep synced on | Drive upload and conversion, Docs read | `drive.readonly` plus opted-in `drive.file` | App-created Doc under My Drive / Imported from WordPress |
+| Word, Keep synced off | Same conversion, then trash the app-created Doc | Same | One-time provenance `googleDocsOneTime` |
+| PowerPoint | Drive upload and conversion, Slides `presentations.get` and `pages.getThumbnail` | Same | One-time provenance `googleSlidesOneTime`; the temporary presentation is trashed |
+| PDF | None | None for the file bytes | One-time provenance `localPdf` |
+
+`drive.file` is requested only after the user opts in. The authorize URL keeps `drive.readonly`. The plugin creates the import folder lazily, stores its ID in user meta `docsync_wp_import_folder_id`, and recreates it when Drive says it is missing. Trash uses `files.update` with `trashed: true` and only for a non-folder file whose app properties include `docsyncWpCreated=1`. The import folder and the user's original Docs are never trashed. After a successful Keep-synced Word commit, that converted Doc stays in Imported from WordPress. Temporary app-created conversion files are trashed after one-time commit or session cleanup; a failed trash stays queued on the session until a later cleanup tick succeeds. Trash is not a permanent delete.
+
+### Private Storage, Preview, And Commit
+
+`DOCSYNC_WP_PRIVATE_STORAGE_DIR` selects an absolute directory outside the WordPress root. Otherwise bytes are encrypted under `uploads/docsync-wp-private/`. A third failure refuses the session. A user may hold 3 open sessions. Each session holds at most 20 files for 24 hours from `createdAt`. Expiry is not extended. Each file is at most 25 MiB (`26214400` bytes) or `wp_max_upload_size()` when the host limit is lower. Only the owner can read the session. Another user receives not-found. `.distignore` excludes `docsync-wp-private/` and `/.rig`.
+
+No post, revision, or Media Library item is created before commit. The preview body is canonical. Commit rejects a changed fingerprint with `409` `docsync_wp_import_preview_stale`. The same idempotency key and body replay the stored result for 24 hours. A different body returns `409` `docsync_wp_idempotency_conflict`. Commit copies the canonical preview, rewrites private image URLs to Media Library URLs, and does not queue a sync.
+
+The preview is lossy. Warnings are numbered in document order and carried into the navigator, caption, and committed draft. Unsupported PowerPoint objects (charts, video, animation, WordArt, and groups that contain them) keep a private thumbnail and a numbered warning. Supported text, tables, and images on that slide remain. A PDF with no selectable text fails as `docsync_wp_import_pdf_scanned`. An encrypted PDF fails as `docsync_wp_import_pdf_encrypted`. There is no OCR.
+
+DOCX and PPTX require `ZipArchive`. Its absence returns `docsync_wp_import_zip_unavailable` for that file and leaves PDF, Google Doc batch, matching, and `GET /content` available.
+
+The admin bootstrap sets `canUploadFiles` from `current_user_can( 'upload_files' )` in `AssetRegistry`. Sources shows upload only when that flag is true and the user can create a target. The dialog enables file import for a new target when the flag is true. `ImportController` and the commit worker require `upload_files` again.
+
+Import routes under `/imports/sessions` cover create, upload, discard, file read, preview, commit, and private asset bytes. Matching routes under `/matching/jobs` cover inventory, suggestions, manual pairs, compare, and attach-only commit. A suggestion is preselected only for one exact normalized title, or one exact match of the first 100 normalized tokens when both sides have at least 20 tokens, and only when the inventory finished. A truncated inventory (200 Docs, 500 folders, or depth 10) preselects nothing. Two matching jobs may be active per user. Creating a Doc from a post uses the import folder and the Drive file scope.
+
+Completed one-time and keep-synced imports write `_docsync_wp_import_provenance` and `_docsync_wp_import_kind`. Kinds are `syncedWord`, `googleDocsOneTime`, `googleSlidesOneTime`, and `localPdf`.
+
+### Schedules And Removal
+
+Deactivation clears four add-content hooks in addition to the existing sync and telemetry hooks:
+
+- `docsync_wp_import_convert`, every minute, one file per tick
+- `docsync_wp_import_commit`, every minute, one idempotent post per tick
+- `docsync_wp_matching_run`, every minute, one bounded inventory or compare slice
+- `docsync_wp_import_cleanup`, hourly, expired sessions, private bytes, and queued trash
+
+Uninstall deletes session, job, batch, and idempotency options, OAuth continuation user meta, the import-folder user meta, and the plugin-owned `docsync-wp-private` tree. Provenance meta is removed only on a full uninstall. Uninstall does not call Google, so it leaves original Docs and app-created Docs in Drive.
+
 ## Sync Flow
 
 1. User connects Google from the admin dashboard.
