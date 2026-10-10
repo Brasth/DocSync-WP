@@ -1,0 +1,67 @@
+/* Settings tabs and the Sync health tab. */
+#docsync-wp-admin-root .docsync-wp-settings-tabs { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; border-bottom: 1px solid #e5edec; }
+#docsync-wp-admin-root .docsync-wp-settings-tabs button { background: transparent; border: 0; border-bottom: 2px solid transparent; color: var(--setup-muted); cursor: pointer; font: inherit; font-size: 13px; font-weight: 600; line-height: 19.5px; margin-bottom: -1px; padding: 8px 12px; }
+#docsync-wp-admin-root .docsync-wp-settings-tabs button[aria-current] { border-color: #12213a; color: #12213a; }
+#docsync-wp-admin-root .docsync-wp-settings-tabs button:disabled { cursor: not-allowed; opacity: 0.6; }
+.docsync-wp-clear-confirm { display: grid; gap: 6px; margin-top: 4px; }
+.docsync-wp-clear-confirm input { max-width: 100%; min-height: 36px; }
+
+#docsync-wp-admin-root .docsync-wp-health { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr) 320px; align-items: start; }
+#docsync-wp-admin-root .docsync-wp-health__main { background: #fff; border: 1px solid #e5edec; border-radius: 6px; box-shadow: 0 1px 2px rgba(23,32,42,.05), 0 8px 24px -16px rgba(18,33,58,.25); min-width: 0; padding: 0; }
+#docsync-wp-admin-root .docsync-wp-health__header { align-items: center; display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; padding: 16px 20px; }
+#docsync-wp-admin-root .docsync-wp-health__header h2 { font-size: 16px; line-height: 24px; margin: 0; }
+#docsync-wp-admin-root .docsync-wp-health__header p { color: var(--setup-muted); font-size: 12px; line-height: 18px; margin: 0; }
+#docsync-wp-admin-root .docsync-wp-admin-shell--setup .docsync-wp-health .docsync-wp-button { height: 36px; line-height: 34px; min-height: 36px; padding: 0 14px; }
+#docsync-wp-admin-root .docsync-wp-admin-shell--setup .docsync-wp-health__actions .docsync-wp-button { height: 32px; line-height: 30px; min-height: 32px; padding: 0 12px; }
+#docsync-wp-admin-root .docsync-wp-health__rows { list-style: none; margin: 0; padding: 0; }
+#docsync-wp-admin-root .docsync-wp-health__row { align-items: start; border-top: 1px solid #eef3f1; display: grid; gap: 14px; grid-template-columns: 28px minmax(0, 1fr) auto; margin: 0; padding: 14px 20px; }
+#docsync-wp-admin-root .docsync-wp-health__icon { background: #eef0f2; border-radius: 4px; color: var(--setup-muted); display: grid; font-weight: 700; height: 24px; place-items: center; width: 24px; }
+#docsync-wp-admin-root .docsync-wp-health__row.is-pass .docsync-wp-health__icon { background: #d7f2ec; color: #0c5a51; }
+#docsync-wp-admin-root .docsync-wp-health__row.is-error .docsync-wp-health__icon { background: #f8d7da; color: #b42318; }
+#docsync-wp-admin-root .docsync-wp-health__row.is-warning .docsync-wp-health__icon { background: #fff8e5; color: #8a4b00; }
+#docsync-wp-admin-root .docsync-wp-health__body { font-size: 13px; line-height: 19.5px; min-width: 0; overflow-wrap: anywhere; }
+#docsync-wp-admin-root .docsync-wp-health__body p { margin: 2px 0 0; }
+#docsync-wp-admin-root .docsync-wp-health__body a { display: inline-block; margin-top: 4px; }
+#docsync-wp-admin-root .docsync-wp-health__note { color: #0c5a51; }
+#docsync-wp-admin-root .docsync-wp-health__note.is-error, #docsync-wp-admin-root .docsync-wp-health__error { color: #b42318; }
+#docsync-wp-admin-root .docsync-wp-health__error { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; padding: 0 20px 14px; }
+#docsync-wp-admin-root .docsync-wp-health__loading { margin: 0; padding: 14px 20px; }
+#docsync-wp-admin-root .docsync-wp-health__fix { margin-top: 6px; }
+#docsync-wp-admin-root .docsync-wp-health__fix summary { cursor: pointer; }
+#docsync-wp-admin-root .docsync-wp-health__fix ol { margin: 6px 0 0 18px; padding: 0; }
+#docsync-wp-admin-root .docsync-wp-health__actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+#docsync-wp-admin-root .docsync-wp-health__aside { display: grid; gap: 20px; min-width: 0; }
+#docsync-wp-admin-root .docsync-wp-health__card { background: #fff; border: 1px solid #e5edec; border-radius: 6px; box-shadow: 0 1px 2px rgba(23,32,42,.05), 0 8px 24px -16px rgba(18,33,58,.25); min-width: 0; padding: 18px 20px; }
+#docsync-wp-admin-root .docsync-wp-health__card h2 { font-size: 15px; line-height: 22px; margin: 0 0 12px; }
+#docsync-wp-admin-root .docsync-wp-health__card p { font-size: 12px; line-height: 18px; margin: 0 0 10px; }
+#docsync-wp-admin-root .docsync-wp-health__metrics { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0 0 12px; }
+#docsync-wp-admin-root .docsync-wp-health__metrics div { display: flex; flex-direction: column-reverse; min-width: 0; }
+#docsync-wp-admin-root .docsync-wp-health__metrics dd { font-size: 24px; font-weight: 700; line-height: 1; margin: 0; }
+#docsync-wp-admin-root .docsync-wp-health__metrics dt { color: var(--setup-muted); font-size: 12px; margin-top: 4px; }
+#docsync-wp-admin-root .docsync-wp-health__metrics .is-failed dd { color: #b42318; }
+#docsync-wp-admin-root .docsync-wp-health__hint, #docsync-wp-admin-root .docsync-wp-health__versions { color: var(--setup-muted); }
+#docsync-wp-admin-root .docsync-wp-health__chart { display: flex; gap: 4px; list-style: none; margin: 0 0 4px; padding: 0; }
+#docsync-wp-admin-root .docsync-wp-health__chart li { display: flex; flex: 1 1 0; flex-direction: column; gap: 4px; margin: 0; min-width: 0; text-align: center; }
+#docsync-wp-admin-root .docsync-wp-health__bar { background: transparent; border-radius: 2px; display: flex; flex-direction: column-reverse; height: 44px; overflow: hidden; }
+#docsync-wp-admin-root .docsync-wp-health__bar span { display: block; }
+#docsync-wp-admin-root .docsync-wp-health__bar .is-completed { background: #15803d; }
+#docsync-wp-admin-root .docsync-wp-health__bar .is-failed { background: #dc2626; }
+#docsync-wp-admin-root .docsync-wp-health__card p.docsync-wp-health__chart-days { color: var(--setup-muted); display: flex; font-size: 11px; justify-content: space-between; line-height: 16px; margin: 0 0 10px; }
+#docsync-wp-admin-root .docsync-wp-health__header p.docsync-wp-health__scope { margin-top: 2px; }
+#docsync-wp-admin-root .docsync-wp-health__refresh { fill: none; flex: none; margin-right: 6px; vertical-align: -2px; }
+#docsync-wp-admin-root .docsync-wp-health__manual { display: grid; gap: 4px; margin-top: 10px; font-size: 12px; }
+#docsync-wp-admin-root .docsync-wp-health__manual textarea { box-sizing: border-box; font-family: ui-monospace, monospace; font-size: 11px; width: 100%; }
+#docsync-wp-admin-root .docsync-wp-health__help-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+#docsync-wp-admin-root .docsync-wp-health :is(a, button, summary):focus-visible,
+#docsync-wp-admin-root .docsync-wp-settings-tabs button:focus-visible { outline: 2px solid var(--setup-teal); outline-offset: 2px; }
+@media (max-width: 900px) {
+  #docsync-wp-admin-root .docsync-wp-health { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 600px) {
+  #docsync-wp-admin-root .docsync-wp-health__row { grid-template-columns: 28px minmax(0, 1fr); }
+  #docsync-wp-admin-root .docsync-wp-health__actions { grid-column: 2; justify-content: flex-start; }
+  #docsync-wp-admin-root .docsync-wp-health__header .docsync-wp-button { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #docsync-wp-admin-root .docsync-wp-health *, #docsync-wp-admin-root .docsync-wp-settings-tabs * { scroll-behavior: auto; transition: none; animation: none; }
+}

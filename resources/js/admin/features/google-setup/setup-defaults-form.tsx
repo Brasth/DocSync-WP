@@ -117,7 +117,7 @@ export const SetupDefaultsForm = ({ busy, settings, onDirtyChange, onSave }: Pro
         </select>
       </label>
 
-      <p className="docsync-wp-setup-help">{__('Runs through WP-Cron. Individual sources and folders can override this.', textDomain)}</p>
+      <p className="docsync-wp-setup-help">{__('Linked posts re-sync on this schedule unless a source or folder sets its own.', textDomain)}</p>
       <label htmlFor="docsync-wp-setup-layout">
         <span>{__('Default layout', textDomain)}</span>
         <select disabled={busy} id="docsync-wp-setup-layout" onChange={(event) => setDefaultLayoutPreset(event.currentTarget.value)} value={defaultLayoutPreset}>
@@ -156,10 +156,11 @@ export const SetupDefaultsForm = ({ busy, settings, onDirtyChange, onSave }: Pro
         />
         <span>{__('Elementor sync', textDomain)}</span>
       </label>
-      {!getAdminConfig().elementorAvailable ? <p className="docsync-wp-setup-help">{__('Elementor is inactive. Activate it to use Elementor layouts; your saved preference is retained.', textDomain)}</p> : null}
-      {settings.elementorPreferencePresent ? null : (
-        <p className="docsync-wp-setup-help">{__('Elementor support was not in the saved settings. Leave this unchecked to keep that choice.', textDomain)}</p>
-      )}
+      <p className="docsync-wp-setup-help">
+        {__('Adds the Elementor layout option when Elementor is active.', textDomain)}
+        {getAdminConfig().elementorAvailable ? '' : ` ${__('Elementor is inactive now; your saved preference is retained.', textDomain)}`}
+        {settings.elementorPreferencePresent ? '' : ` ${__('Not in the saved settings; leave unchecked to keep that choice.', textDomain)}`}
+      </p>
 
       <label className="docsync-wp-setup-check">
         <input
@@ -171,7 +172,7 @@ export const SetupDefaultsForm = ({ busy, settings, onDirtyChange, onSave }: Pro
         <span>{__('Anonymous diagnostics', textDomain)}</span>
       </label>
       <p className="docsync-wp-setup-help">
-        {__('One weekly ping with an install ID hash, plugin slug, plugin, WordPress, PHP and consent versions. No Google data, site URL, email or Doc content.', textDomain)}
+        {__('Weekly ping: install ID hash, plugin slug, plugin, WordPress, PHP and consent versions. No Google data, site URL, email or Doc content.', textDomain)}
         {' '}<a href="https://docsyncwp.com/privacy-policy" rel="noreferrer" target="_blank">{__('Privacy', textDomain)}</a>
       </p>
 

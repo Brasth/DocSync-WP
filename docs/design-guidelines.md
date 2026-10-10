@@ -74,13 +74,14 @@ Use this guide for Brasth Document Sync admin UI work. The product direction is 
 
 - Journey 1 follows Google OAuth client -> Your Google account -> First Doc. Account readiness alone does not complete onboarding. Derive completion from retained successful source history or an imported folder member.
 - Keep Setup administrator-only. Site credentials, defaults, telemetry and the operator connection directory remain outside operator-facing Sources guidance.
-- Match the four administrator artboards: credential card, personal account card, Doc/folder choice, then full-width maintenance without the rail. The first-source cards put a single Doc before the folder option.
-- Setup uses a white masthead, teal tab underline, `#f0f0f1` background, navy current-step marker and blue primary controls. Controls use 4px corners and cards 6px. The scoped implementation owns its measurements in `resources/css/components/setup-journey.css`; do not change other screens’ tokens to achieve this design.
+- Match the administrator onboarding artboards: credential card, personal account card, Doc/folder choice, then full-width maintenance without the rail. The first-source cards put a single Doc before the folder option. Maintenance adds General and Sync health subnavigation; Notifications is a disabled future tab.
+- Setup uses a white masthead, teal tab underline, `#f0f0f1` background, navy current-step marker and blue primary controls. Controls use 4px corners and cards 6px. The scoped implementation owns its measurements in `resources/css/components/setup-journey.css`; do not change other screens’ tokens to achieve this design. `setup-health.css` owns the health layout: an 1180px container, flexible main card and 320px aside with 20px gaps, 24px status icons, 36px header/help buttons and 32px row actions. Stack cards below 900px and row actions below 600px. Show actual data and unknown states rather than prototype sample values.
 - Keep one heading per card with no kicker. Put detailed Google troubleshooting in a disclosure and describe actual scope, token storage and verification behavior accurately.
 - Use actual client/date/account identity and saved defaults, including default-off diagnostics. Never copy prototype example data into production state.
 - Retain the permitted target-type selector and existing Doc/folder modal, polling, recovery, and destructive confirmations.
 - Guard unsaved credentials/defaults before internal navigation and browser unload. A blank secret keeps the saved secret; JSON import only fills local fields.
 - At narrow widths, show the compact three-step rail before the task and stack fields/cards. All controls, disclosures and Radix dialogs remain keyboard accessible.
+- Clear OAuth confirmation requires the exact lowercase `clear`, retains typed text on failure, and keeps imported WordPress content. Tab changes reuse the unsaved-defaults guard.
 - Skip opens Sources without marking activation complete. Pending maintenance must retain a route back to the first import.
 
 ## Sources And Logs

@@ -5,6 +5,7 @@
 @import "./components/setup-settings.css";
 @import "./shared/responsive.css";
 @import "./components/setup-journey.css";
+@import "./components/setup-health.css";
 
 #docsync-wp-admin-root .docsync-wp-setup-rail ol,
 #docsync-wp-admin-root .docsync-wp-step-notes,
