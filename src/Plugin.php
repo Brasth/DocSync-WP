@@ -33,6 +33,7 @@ use DocSyncWP\Rest\OAuthController;
 use DocSyncWP\Rest\RestServiceProvider;
 use DocSyncWP\Rest\SettingsConnectionsController;
 use DocSyncWP\Rest\SettingsController;
+use DocSyncWP\Rest\SettingsHealthController;
 use DocSyncWP\Rest\SourceController;
 use DocSyncWP\Rest\SyncLogController;
 use DocSyncWP\Rest\WorkspaceController;
@@ -151,19 +152,27 @@ final class Plugin {
 	private SettingsConnectionsController $settings_connections;
 
 	/**
+	 * Settings sync health controller.
+	 *
+	 * @var SettingsHealthController
+	 */
+	private SettingsHealthController $settings_health;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param AdminPage                     $admin_page        Admin page service.
-	 * @param AssetRegistry                 $assets            Asset registry service.
-	 * @param RestServiceProvider           $rest              REST service provider.
-	 * @param PostSyncMetaBox               $post_sync_meta_box Post sync meta box service.
-	 * @param PostListActions               $post_list_actions Post list table actions service.
-	 * @param SyncCron                      $sync_cron         Sync cron service.
-	 * @param TelemetryCron                 $telemetry_cron    Telemetry cron service.
-	 * @param TokenStore                    $token_store          Token store service.
-	 * @param SourceRepository              $source_repository    Source repository service.
+	 * @param AdminPage                     $admin_page            Admin page service.
+	 * @param AssetRegistry                 $assets                Asset registry service.
+	 * @param RestServiceProvider           $rest                  REST service provider.
+	 * @param PostSyncMetaBox               $post_sync_meta_box    Post sync meta box service.
+	 * @param PostListActions               $post_list_actions     Post list table actions service.
+	 * @param SyncCron                      $sync_cron             Sync cron service.
+	 * @param TelemetryCron                 $telemetry_cron        Telemetry cron service.
+	 * @param TokenStore                    $token_store           Token store service.
+	 * @param SourceRepository              $source_repository     Source repository service.
 	 * @param FolderWatchService            $folder_watch_service  Folder watch service.
-	 * @param SettingsConnectionsController $settings_connections Settings connection directory controller.
+	 * @param SettingsConnectionsController $settings_connections  Settings connection directory controller.
+	 * @param SettingsHealthController      $settings_health       Settings sync health controller.
 	 */
 	public function __construct(
 		AdminPage $admin_page,
@@ -176,7 +185,8 @@ final class Plugin {
 		TokenStore $token_store,
 		SourceRepository $source_repository,
 		FolderWatchService $folder_watch_service,
-		SettingsConnectionsController $settings_connections
+		SettingsConnectionsController $settings_connections,
+		SettingsHealthController $settings_health
 	) {
 		$this->admin_page           = $admin_page;
 		$this->assets               = $assets;
@@ -189,6 +199,7 @@ final class Plugin {
 		$this->source_repository    = $source_repository;
 		$this->folder_watch_service = $folder_watch_service;
 		$this->settings_connections = $settings_connections;
+		$this->settings_health      = $settings_health;
 	}
 
 	/**
@@ -256,8 +267,17 @@ final class Plugin {
 			$settings,
 			$schedule_resolver
 		);
+		$connection_directory        = new GoogleConnectionDirectory( $encryption );
 		$settings_connections        = new SettingsConnectionsController(
-			new GoogleConnectionDirectory( $encryption ),
+			$connection_directory,
+			RestServiceProvider::NAMESPACE
+		);
+		$settings_health             = new SettingsHealthController(
+			$settings,
+			$token_store,
+			$connection_directory,
+			$folder_watch_service,
+			$source_repository,
 			RestServiceProvider::NAMESPACE
 		);
 
@@ -301,7 +321,8 @@ final class Plugin {
 			$token_store,
 			$source_repository,
 			$folder_watch_service,
-			$settings_connections
+			$settings_connections,
+			$settings_health
 		);
 
 		$plugin->register();
@@ -329,5 +350,6 @@ final class Plugin {
 		$this->telemetry_cron->register();
 		$this->rest->register();
 		$this->settings_connections->register();
+		$this->settings_health->register();
 	}
 }

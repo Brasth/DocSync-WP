@@ -6,7 +6,6 @@ import { BackgroundSyncPoller } from '../features/post-sync/background-sync-poll
 import { DocSourceModal } from '../features/doc-source-modal/doc-source-modal';
 import { SettingsPanel } from '../features/google-setup/settings-panel';
 import { AdminShell } from '../shared/ui/admin-shell';
-import { CronHealthBanner } from '../shared/ui/cron-health-banner';
 import { useSetupApp } from './use-setup-app';
 
 export const SetupApp = (): JSX.Element => {
@@ -19,7 +18,6 @@ export const SetupApp = (): JSX.Element => {
   return (
     <AdminShell notice={app.notice} title={__('Settings', 'brasth-document-sync-for-google-docs')} variant="setup" version={app.config.version}>
       {!app.settings || !app.workspace ? <section aria-busy="true" className="docsync-wp-setup-card" role="status"><p>{__('Loading settings…', 'brasth-document-sync-for-google-docs')}</p></section> : <>
-        <CronHealthBanner health={app.workspace.cronHealth} />
         <SettingsPanel account={app.account} activated={app.workspace.sourceSummary.activated} availablePostTypes={app.workspace.availablePostTypes} busy={app.busy} canCreateSource={app.workspace.creatablePostTypes.length > 0} creatablePostTypes={app.workspace.creatablePostTypes} oauthConnectError={app.oauthConnectError} onClearOAuthConfiguration={app.clearSavedOAuthConfiguration} onConnect={app.connectGoogle} onCreateSource={app.openSourceModal} onDisconnect={app.disconnectGoogle} onRetrySource={app.retryActivationSource} onSave={app.persistSettings} onTargetPostTypeChange={app.setTargetPostType} redirectUri={app.redirectUri} settings={app.settings} source={app.activationSource} targetPostType={app.targetPostType} watch={app.activationWatch} workspace={app.workspace} />
       </>}
       {app.activationSource && !['synced', 'skipped', 'error'].includes(app.activationSource.syncStatus) ? <BackgroundSyncPoller onError={app.handleActivationPollingError} onStatus={app.handleActivationSourceStatus} onTerminal={app.handleActivationSourceTerminal} onTimeout={app.handleActivationSourceTimeout} postId={app.activationSource.postId} /> : null}

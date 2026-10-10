@@ -6,7 +6,9 @@ Last updated: 2026-10-10
 
 Brasth Document Sync for Google Docs is a WordPress plugin with four admin surfaces and one shared sync backend:
 
-- `Brasth Document Sync > Setup` for administrator-only site configuration and administrator activation
+- `Brasth Document Sync > Setup` for administrator-only site configuration, activation, and local sync health diagnostics
+  - **General** tab: OAuth configuration, sync defaults, and site/account readiness
+  - **Sync health** tab: local health checks, activity metrics, and recent event report without Google contact
 - `Brasth Document Sync > Sources` for capability-safe activation continuation and linked source operations
 - `Brasth Document Sync > Logs` for bounded sync diagnostics
 - shared admin feedback dialog for public GitHub issue submission
@@ -64,17 +66,51 @@ flowchart LR
 - Entry point: `src/Admin/AdminPage.php`
 - React mount: `resources/js/admin/entries/setup-entry.tsx`
 - Main UI: `resources/js/admin/app/setup-app.tsx`
+- Tabs component: `resources/js/admin/features/google-setup/setup-settings-tabs.tsx`
 
 Responsibilities:
 
-- configure administrator-only site Google OAuth settings
+- configure administrator-only site Google OAuth settings via the **General** tab
 - guide self-managed Google Cloud setup with saved-state checks
 - connect or disconnect the current WordPress user
 - distinguish site configuration, personal account readiness, and first-source activation
 - open the shared Doc source modal directly, poll the first draft sync, and link to the completed draft
 - clear site OAuth configuration, all local Google connections, and sync schedules through an explicit administrator-only action
+- review sync health and diagnostics via the **Sync health** tab
 
 The administrator journey is derived by `features/google-setup/setup-journey-state.ts` from settings, the current account, retained source history, folder-watch counts, and workspace summaries. It persists no wizard completion flag. Credentials and account prerequisites take precedence; first-import progress/recovery remains actionable. Activation opens a full-width maintenance view. A temporary defaults view can be opened before activation without completing the journey. `SetupNavigationGuard` protects local credential/default edits, and source choices preserve Doc/folder intent in the existing modal.
+
+#### General Tab
+
+The **General** tab shows OAuth configuration, default sync settings, and site/account readiness after activation or when reviewing defaults before the first import. Clearing shared OAuth configuration requires typing the exact lowercase `clear`; imported WordPress content is retained. Notifications remains a disabled future tab. Switching tabs protects unsaved defaults.
+
+#### Sync Health Tab
+
+The **Sync health** tab displays local health checks and activity metrics without contacting Google. Checks include:
+
+- **Cron liveness** — WP-Cron tick is recorded inside the stall window or a real external scheduler is running. Administrators can manually spawn cron in the background to trigger due scheduled syncs.
+- **Editor connections** — count of eligible editors who are connected, not connected, or need to reconnect to Google. Links to the connection directory for status review.
+- **OAuth configuration** — site-level Google OAuth client credentials are saved in WordPress (not verified with Google Cloud).
+- **Your Google connection** — current administrator has the required Drive read-only scope and a locally usable access token or stored refresh token. This does not verify token validity with Google or estimate refresh-token expiry.
+- **Google API quota** — quota is unavailable without Google Cloud access. Guides to the Cloud console.
+- **Uploads directory** — WordPress uploads directory is writable and stores the maximum allowed upload size.
+- **Runtime versions** — WordPress and PHP versions meet the plugin's minimum requirements (WordPress 6.4, PHP 8.1).
+
+Each check reports a status (pass, warning, error, or unknown), description, optional action button, and optional fix steps. The **Activity** card displays the last seven days of completed/failed syncs, median sync duration, and syncs waiting on cron. A 7-day bar chart shows completed vs failed counts per UTC date. A **Need help?** card enables copying a redacted health report for troubleshooting without exposing account details, credentials, settings, or content.
+
+**Manual cron spawn**: Administrators can request WordPress to spawn due cron in the background through the cron liveness check. This does not block the request and does not report the spawn as finished. Administrators should refresh the checks after a tick is recorded to verify a new tick was recorded.
+
+**Scope and statistics bounds**:
+- Activity reads up to 500 accessible sources per user. Additional sources or a full retained event window that may hide events in the seven-day period mark the result limited; retention does not stop source traversal.
+- Each source retains up to 50 sync events; when full, the oldest event is dropped.
+- Recent event report shows the latest 20 retained diagnostic events, including progress, sorted by timestamp and event ID. Activity totals count only one latest terminal outcome per recorded run: synced is completed and error is failed; skipped and progress events are excluded.
+- Median sync time calculates from matched start-to-terminal durations over the 7-day window; null when no matched pairs exist.
+- Waiting counts due single-source cron events whose source IDs are in the scanned accessible set; sources beyond the cap are not counted.
+- The health report is safe to copy and share: it omits private fields and keeps timestamps, finite allowlisted status/step/error codes (unknown values become unknown), version strings, check IDs, and activity summaries.
+
+REST endpoints:
+- `GET /settings/health` — returns the full health snapshot including checks, versions, activity metrics, and recent event report
+- `POST /settings/health/run-cron` — spawns due WP-Cron in the background and returns `{ requested: true }`
 
 ### Sources Admin Page
 
@@ -161,6 +197,8 @@ Implemented routes:
 - `GET /workspace`, returning `canManageSettings`, site connection readiness, capability-filtered available/enabled/creatable post types, safe publishing defaults/preset labels, Elementor availability, an accessible-source summary, and `cronHealth` (`lastRunAt`, `stalled`)
 - `GET /settings`, including presets, telemetry choices, and additive read-only `oauthCredentialsSavedAt`, localized `oauthCredentialsSavedDateLabel`, and `currentUserDisplayName`. Credential timestamps change only when complete normalized credentials really change; legacy/no-op saves preserve the existing null/date, and clearing or incomplete credentials resets it.
 - `GET /settings/connections?page=1&perPage=20`, administrator nonce/capability protected, with `perPage` capped at 50. `SettingsConnectionsController` and `GoogleConnectionDirectory` return aggregate connected/notConnected/reconnectRequired counts and stable, paginated local operator records (`userId`, `displayName`, `state`). Eligibility uses current-site enabled-target capabilities, excluding viewers. Metadata is batched; no live Google request, Google email or token is returned.
+- `GET /settings/health`, administrator nonce/capability protected, returns health snapshot including checks, versions, activity metrics, and recent event report. No Google contact. Activity scans up to 500 accessible sources per user; report includes the latest 20 retained diagnostic events with finite code allowlists. Source retention is 50 events per source. All private/account fields are stripped.
+- `POST /settings/health/run-cron`, administrator nonce/capability protected, spawns due WP-Cron in the background without waiting for completion.
 - `POST /settings`, including `defaultLayoutPreset`, optional `telemetryEnabled`, and optional `telemetryPromptDismissed`
 - `DELETE /settings/oauth-configuration`, clearing the site OAuth client, all stored plugin Google tokens, and sync schedules while retaining sources and WordPress content
 - `GET /oauth/google/url`

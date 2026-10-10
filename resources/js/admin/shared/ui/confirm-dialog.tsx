@@ -11,6 +11,7 @@ type Props = {
   busy?: boolean;
   cancelLabel?: string;
   children?: ReactNode;
+  confirmDisabled?: boolean;
   confirmLabel: string;
   description: ReactNode;
   open: boolean;
@@ -24,6 +25,7 @@ export const ConfirmDialog = ({
   busy = false,
   cancelLabel = __('Cancel', 'brasth-document-sync-for-google-docs'),
   children,
+  confirmDisabled = false,
   confirmLabel,
   description,
   open,
@@ -63,7 +65,7 @@ export const ConfirmDialog = ({
             </Dialog.Close>
             <AdminButton
               className={variant === 'danger' ? 'docsync-wp-confirm-dialog__confirm--danger' : ''}
-              disabled={busy}
+              disabled={busy || confirmDisabled}
               onClick={onConfirm}
               variant="primary"
             >
