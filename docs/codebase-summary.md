@@ -1,12 +1,12 @@
 # Brasth Document Sync Codebase Summary
 
-Last updated: 2026-07-12
+Last updated: 2026-10-10
 
 ## Snapshot
 
 Brasth Document Sync for Google Docs is a WordPress plugin for one-way Google Docs -> WordPress sync. This checkout includes Google OAuth, document inspection, post/page linking and sync, list-table actions, role-aware Setup/Sources/Logs admin pages, a shared authenticated feedback form for public GitHub issues, a least-privilege workspace bootstrap route, first-source activation, health-first source operations, HTML ZIP media import, Gutenberg block conversion, diagnostic sync events, WP-Cron scheduling, optional anonymous active-install telemetry, and first-pass WordPress.org release packaging.
 
-Summary reflects the current source tree after the Radix plus WordPress-native admin frontend refactor, Drive modal polish, OAuth JSON import, admin UI fixes, Gutenberg sync conversion, layout preset foundation, Elementor preset release, 1.1.3 Elementor usability polish, standalone image block fixes, layout reliability fixture coverage, background sync progress, large-doc fallback, stale sync recovery, bounded sync logging, privacy disclosure, optional telemetry, screen-specific admin asset split, and local WordPress devcontainer setup.
+Summary reflects the current source tree after the Radix plus WordPress-native admin frontend refactor, Drive modal polish, OAuth JSON import, admin UI fixes, Gutenberg sync conversion, layout preset foundation, Elementor preset release, 1.1.3 Elementor usability polish, standalone image block fixes, background sync progress, large-doc fallback, stale sync recovery, bounded sync logging, privacy disclosure, optional telemetry, screen-specific admin asset split, and local WordPress devcontainer setup.
 
 - Total files tracked by `rg --files`: 268
 - Main languages: PHP, TypeScript, CSS
@@ -21,8 +21,7 @@ Summary reflects the current source tree after the Radix plus WordPress-native a
 - `resources/css/shared/` and `resources/css/components/` - reusable CSS partials
 - `docs/` - project documentation and research
 - `plans/` - implementation plans and phase notes
-- `tests/fixtures/` - golden fixtures for Gutenberg layout presets, Elementor presets, and large-doc fallback behavior
-- `.devcontainer/` - Docker Compose WordPress/MySQL development runtime with WP-CLI verification scripts
+- `.devcontainer/` - Docker Compose WordPress/MySQL development runtime with WP-CLI bootstrap
 - `build/` - Vite output used by WordPress admin screens
 - `assets/` - WordPress.org listing banner and icon assets
 - `cloudflare/telemetry-worker/` - isolated Cloudflare Worker package for optional anonymous active-install telemetry; excluded from installable WordPress ZIPs
@@ -94,9 +93,8 @@ Summary reflects the current source tree after the Radix plus WordPress-native a
 
 - `pnpm` and installed Node dependencies are available in this checkout environment.
 - Composer, PHPCS, PHP syntax linting, pnpm, and Node dependencies are available in this checkout environment.
-- The devcontainer provides WordPress, MySQL, Composer, WP-CLI, Node 24, pnpm 9.15.0, plugin activation, and runtime route verification at `http://localhost:8890`.
-- Runtime route verification includes `GET /workspace` registration.
-- Current local validation uses `composer validate --no-check-publish`, `composer lint`, `composer test:layout-fixtures`, `composer test:elementor-fixtures`, `composer test:large-doc-fallback-fixtures`, `composer test:telemetry-settings`, `vendor/bin/phpcs -i`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, and the telemetry and feedback Worker package tests.
+- The devcontainer provides WordPress, MySQL, Composer, WP-CLI, Node 24, pnpm 9.15.0, and plugin activation at `http://localhost:8890`.
+- Current local validation uses `composer validate --no-check-publish`, `composer lint`, `vendor/bin/phpcs -i`, `pnpm lint`, `pnpm typecheck`, and `pnpm build`. GitHub Actions runs build, package, and deploy workflows only.
 
 ## Upcoming Work
 
@@ -112,7 +110,6 @@ The 1.1.x line introduces layout presets to make synced Google Docs publishable 
 - Built-in Elementor presets covering Elementor Hero Page and Elementor Feature Block.
 - Explicit output type choice in the linking modal when Elementor is available.
 - Legacy Elementor upgrade actions in post-sync surfaces.
-- Tracked Gutenberg, Elementor, image-block, and large-doc fallback fixtures, wired into Composer and PR CI.
 
 Preview/gallery UI remains future work.
 

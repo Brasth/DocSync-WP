@@ -1,4 +1,4 @@
-import { createElement, useState } from '@wordpress/element';
+import { Fragment, createElement, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import type { ReactNode } from 'react';
 
@@ -20,6 +20,7 @@ type Props = {
   status?: AdminShellStatus;
   title: ReactNode;
   version: string;
+  variant?: 'default' | 'setup';
 };
 
 const trimTrailingSlash = (value: string): string => value.replace(/\/$/, '');
@@ -30,12 +31,13 @@ export const AdminShell = ({
   notice = null,
   status,
   title,
-  version
+  version,
+  variant = 'default'
 }: Props): JSX.Element => {
   const config = getAdminConfig();
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const markUrl = config.pluginUrl ? `${trimTrailingSlash(config.pluginUrl)}/resources/images/brasth-mark.png` : '';
-  const shellClassName = ['docsync-wp-admin-shell', className].filter(Boolean).join(' ');
+  const shellClassName = ['docsync-wp-admin-shell', variant === 'setup' ? 'docsync-wp-admin-shell--setup' : '', className].filter(Boolean).join(' ');
   const statusClassName = [
     'docsync-wp-masthead__status',
     status?.variant ? `docsync-wp-masthead__status--${status.variant}` : ''
@@ -59,9 +61,7 @@ export const AdminShell = ({
               <span aria-hidden="true" className="docsync-wp-masthead__fallback-mark">B</span>
             )}
             <div className="docsync-wp-masthead__copy">
-              <p>{__('Brasth Document Sync', 'brasth-document-sync-for-google-docs')}</p>
-              <h1>{title}</h1>
-              <span>{__('Version', 'brasth-document-sync-for-google-docs')} {version}</span>
+              {variant === 'setup' ? <><h1>{__('Document Sync', 'brasth-document-sync-for-google-docs')}</h1><p>{__('Google Docs → WordPress', 'brasth-document-sync-for-google-docs')}</p></> : <><p>{__('Brasth Document Sync', 'brasth-document-sync-for-google-docs')}</p><h1>{title}</h1><span>{__('Version', 'brasth-document-sync-for-google-docs')} {version}</span></>}
             </div>
           </div>
           {status ? (
@@ -71,6 +71,12 @@ export const AdminShell = ({
             </div>
           ) : null}
         </header>
+        {variant === 'setup' ? <nav aria-label={__('Document Sync', 'brasth-document-sync-for-google-docs')} className="docsync-wp-setup-tabs">
+          <a href="admin.php?page=brasth-document-sync-for-google-docs-sources">{__('Sources', 'brasth-document-sync-for-google-docs')}</a>
+          <a href="admin.php?page=brasth-document-sync-for-google-docs-folders">{__('Folders', 'brasth-document-sync-for-google-docs')}</a>
+          <a href="admin.php?page=brasth-document-sync-for-google-docs-logs">{__('Activity', 'brasth-document-sync-for-google-docs')}</a>
+          <a aria-current="page" href="admin.php?page=brasth-document-sync-for-google-docs">{__('Settings', 'brasth-document-sync-for-google-docs')}</a>
+        </nav> : null}
 
         <AdminNotice className="docsync-wp-admin-shell__notice" notice={notice} />
 

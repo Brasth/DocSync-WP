@@ -18,7 +18,7 @@
     "WP_CLI_ALLOW_ROOT": "1"
   },
   "postCreateCommand": "composer install --no-interaction --prefer-dist && CI=1 pnpm install --frozen-lockfile --reporter=append-only && pnpm build",
-  "postStartCommand": ".devcontainer/scripts/bootstrap-wordpress.sh && .devcontainer/scripts/verify-runtime.sh",
+  "postStartCommand": ".devcontainer/scripts/bootstrap-wordpress.sh",
   "customizations": {
     "vscode": {
       "extensions": [

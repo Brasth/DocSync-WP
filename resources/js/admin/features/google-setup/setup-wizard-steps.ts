@@ -1,90 +1,53 @@
 import { __ } from '@wordpress/i18n';
 
-import type { GoogleAccount, SettingsResponse } from '../../api';
-import type { GoogleSetupActiveTask } from './google-setup-task-types';
-import type { SetupStepState } from './setup-step-state';
+import type { SetupJourneyRailState, SetupJourneyStepId } from './setup-journey-state';
 
-export type SetupWizardStepId = 'site-app' | 'connect-google' | 'pick-source' | 'first-sync';
+const textDomain = 'brasth-document-sync-for-google-docs';
 
-export type SetupWizardStep = {
-  id: SetupWizardStepId;
+export type SetupJourneyRailItem = {
+  id: SetupJourneyStepId;
   label: string;
   description: string;
-  state: SetupStepState;
+  state: SetupJourneyRailState;
+  stateLabel: string;
 };
 
-type Args = {
-  account: GoogleAccount;
-  activated: boolean;
-  canCreateDraft: boolean;
-  settings: SettingsResponse;
-  credentialStepState: SetupStepState;
-};
-
-export const buildSetupWizardSteps = ({
-  account,
-  activated,
-  canCreateDraft,
-  settings,
-  credentialStepState
-}: Args): SetupWizardStep[] => {
-  const googleComplete = account.connected && account.hasRequiredScope;
-
-  let pickSourceState: SetupStepState = 'needs-action';
-
-  if (activated) {
-    pickSourceState = 'complete';
-  } else if (googleComplete && canCreateDraft) {
-    pickSourceState = 'ready';
-  }
-
-  const firstSyncState: SetupStepState = activated ? 'complete' : googleComplete && canCreateDraft ? 'ready' : 'needs-action';
-
-  return [
-    {
-      id: 'site-app',
-      label: __('Site Google app', 'brasth-document-sync-for-google-docs'),
-      description: __('Create a Google Cloud OAuth client for this site. DocSync does not host Google for you.', 'brasth-document-sync-for-google-docs'),
-      state: credentialStepState
-    },
-    {
-      id: 'connect-google',
-      label: __('Connect your Google', 'brasth-document-sync-for-google-docs'),
-      description: __('Each WordPress user who syncs connects their own Google account.', 'brasth-document-sync-for-google-docs'),
-      state: googleComplete ? 'complete' : settings.hasRequiredSettings ? 'needs-action' : 'manual'
-    },
-    {
-      id: 'pick-source',
-      label: __('Pick folder or Doc', 'brasth-document-sync-for-google-docs'),
-      description: canCreateDraft
-        ? __('Choose the client folder that holds the Docs, or link one Google Doc.', 'brasth-document-sync-for-google-docs')
-        : __('Paste a Doc URL or pick from Drive after Google is connected.', 'brasth-document-sync-for-google-docs'),
-      state: pickSourceState
-    },
-    {
-      id: 'first-sync',
-      label: __('First sync', 'brasth-document-sync-for-google-docs'),
-      description: activated
-        ? __('At least one Doc or folder watch completed successfully.', 'brasth-document-sync-for-google-docs')
-        : __('Run the first sync to finish activation.', 'brasth-document-sync-for-google-docs'),
-      state: firstSyncState
-    }
-  ];
-};
-
-export const activeWizardStepId = (activeTask: GoogleSetupActiveTask, activated: boolean): SetupWizardStepId => {
-  if (activated) {
-    return 'first-sync';
-  }
-
-  switch (activeTask) {
-    case 'credentials':
-      return 'site-app';
-    case 'connect':
-    case 'reconnect':
-      return 'connect-google';
-    case 'draft':
+const railStateLabel = (state: SetupJourneyRailState): string => {
+  switch (state) {
+    case 'complete':
+      return __('Complete', textDomain);
+    case 'current':
+      return __('Current', textDomain);
+    case 'attention':
+      return __('Needs attention', textDomain);
+    case 'upcoming':
     default:
-      return 'pick-source';
+      return __('Not yet', textDomain);
   }
 };
+
+export const buildSetupJourneyRail = (
+  rail: Record<SetupJourneyStepId, SetupJourneyRailState>
+): SetupJourneyRailItem[] => [
+  {
+    id: 'credentials',
+    label: __('Google OAuth client', textDomain),
+    description: __('Paste the client ID and secret from Google Cloud.', textDomain),
+    state: rail.credentials,
+    stateLabel: railStateLabel(rail.credentials)
+  },
+  {
+    id: 'account',
+    label: __('Your Google account', textDomain),
+    description: __('Each editor connects their own.', textDomain),
+    state: rail.account,
+    stateLabel: railStateLabel(rail.account)
+  },
+  {
+    id: 'source',
+    label: __('First Doc', textDomain),
+    description: __('Pick a Doc or watch a folder.', textDomain),
+    state: rail.source,
+    stateLabel: railStateLabel(rail.source)
+  }
+];

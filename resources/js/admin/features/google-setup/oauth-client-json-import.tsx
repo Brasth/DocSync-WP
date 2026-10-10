@@ -6,6 +6,7 @@ import { parseOAuthClientJson, type OAuthClientJsonCredentials } from './oauth-c
 
 type Props = {
   busy: boolean;
+  compact?: boolean;
   redirectUri: string;
   onImported: (credentials: OAuthClientJsonCredentials) => void;
 };
@@ -15,7 +16,7 @@ type ImportNotice = {
   message: string;
 };
 
-export const OAuthClientJsonImport = ({ busy, redirectUri, onImported }: Props): JSX.Element => {
+export const OAuthClientJsonImport = ({ busy, compact = false, redirectUri, onImported }: Props): JSX.Element => {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [notice, setNotice] = useState<ImportNotice | null>(null);
   const [fileName, setFileName] = useState('');
@@ -34,10 +35,10 @@ export const OAuthClientJsonImport = ({ busy, redirectUri, onImported }: Props):
 
   return (
     <div className="docsync-wp-oauth-import">
-      <div>
+      {!compact ? <div>
         <strong>{__('Import OAuth JSON', 'brasth-document-sync-for-google-docs')}</strong>
         <p>{__('Optional. Fill the credential fields from the Web application JSON downloaded from Google Cloud, then confirm the redirect URI is present exactly.', 'brasth-document-sync-for-google-docs')}</p>
-      </div>
+      </div> : null}
       <div className="docsync-wp-oauth-import__control">
         <input
           accept="application/json,.json"
@@ -78,12 +79,12 @@ export const OAuthClientJsonImport = ({ busy, redirectUri, onImported }: Props):
           ref={inputRef}
           type="file"
         />
-        <AdminButton disabled={busy} onClick={() => inputRef.current?.click()}>
-          {__('Choose JSON', 'brasth-document-sync-for-google-docs')}
+        <AdminButton disabled={busy} variant={compact ? 'link' : 'secondary'} onClick={() => inputRef.current?.click()}>
+          {compact ? __('Import client JSON instead', 'brasth-document-sync-for-google-docs') : __('Choose JSON', 'brasth-document-sync-for-google-docs')}
         </AdminButton>
-        <span className="docsync-wp-oauth-import__filename">
+        {!compact || fileName ? <span className="docsync-wp-oauth-import__filename">
           {fileName || __('No file selected', 'brasth-document-sync-for-google-docs')}
-        </span>
+        </span> : null}
       </div>
       {notice ? <p className={`docsync-wp-oauth-import__notice is-${notice.type}`}>{notice.message}</p> : null}
     </div>

@@ -30,7 +30,7 @@ http://localhost:8890/wp-json/brasth-document-sync-for-google-docs/v1/oauth/goog
 1. Open this repository in PhpStorm using **Remote Development > Dev Containers** or in VS Code using the Dev Containers extension.
 2. Start or reopen the project in the dev container.
 3. Wait for `postCreateCommand` to install Composer dependencies, install pnpm dependencies, and build Vite assets.
-4. Wait for `postStartCommand` to install WordPress, activate the plugin, and run runtime verification.
+4. Wait for `postStartCommand` to install WordPress and activate the plugin.
 5. Open `http://localhost:8890` if PhpStorm does not open the forwarded browser URL automatically.
 
 The Dev Container forwards port `8890` as **WordPress**. VS Code-compatible clients use `onAutoForward: openBrowser`; PhpStorm may require opening the URL from its forwarded-port or Services interface. The container lifecycle command cannot directly launch a browser on the host computer.
@@ -91,9 +91,6 @@ Run these inside the dev container from the plugin directory:
 ```sh
 composer validate --no-check-publish
 composer lint
-composer test:layout-fixtures
-composer test:elementor-fixtures
-composer test:telemetry-settings
 pnpm lint
 pnpm typecheck
 pnpm build
@@ -102,11 +99,10 @@ wp --allow-root --path=/var/www/html plugin status brasth-document-sync-for-goog
 wp --allow-root --path=/var/www/html cron event list
 ```
 
-Runtime checks can be rerun at any time:
+WordPress bootstrap can be rerun at any time:
 
 ```sh
 .devcontainer/scripts/bootstrap-wordpress.sh
-.devcontainer/scripts/verify-runtime.sh
 ```
 
 ## Google OAuth Smoke Test

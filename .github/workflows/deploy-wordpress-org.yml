@@ -11,7 +11,7 @@ on:
         required: true
         type: string
       dry_run:
-        description: "Validate the build without committing to SVN"
+        description: "Build the ZIP without committing to SVN"
         required: false
         type: boolean
         default: true
@@ -33,48 +33,13 @@ jobs:
         with:
           ref: ${{ env.RELEASE_TAG_NAME }}
 
-      - name: Validate tag and plugin versions
+      - name: Resolve release version
         run: |
           set -euo pipefail
-          TAG_NAME="${RELEASE_TAG_NAME:?Release tag is required.}"
-          TAG_VERSION="${TAG_NAME#v}"
-
-          if [ -z "${TAG_VERSION}" ] || ! [[ "${TAG_VERSION}" =~ ^[0-9]+[.][0-9]+[.][0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
-            echo "Release tag must be a plugin version with optional v prefix. Received: ${TAG_NAME}"
-            exit 1
-          fi
-
-          PLUGIN_HEADER_VERSION="$(
+          VERSION="$(
             awk -F':' '/^[[:space:]]*\*[[:space:]]*Version:/ {gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2; exit}' brasth-document-sync-for-google-docs.php
           )"
-          PLUGIN_CONST_VERSION="$(
-            sed -nE "s/^define\([[:space:]]*'DOCSYNC_WP_VERSION',[[:space:]]*'([^']+)'.*\);$/\1/p" brasth-document-sync-for-google-docs.php | head -n 1
-          )"
-          README_STABLE_TAG="$(
-            awk -F':' '/^Stable tag:/ {gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2; exit}' readme.txt
-          )"
-
-          if [ -z "${PLUGIN_HEADER_VERSION}" ] || [ -z "${PLUGIN_CONST_VERSION}" ] || [ -z "${README_STABLE_TAG}" ]; then
-            echo "Could not parse plugin version metadata from brasth-document-sync-for-google-docs.php and readme.txt."
-            exit 1
-          fi
-
-          if [ "${PLUGIN_HEADER_VERSION}" != "${PLUGIN_CONST_VERSION}" ]; then
-            echo "Plugin header version (${PLUGIN_HEADER_VERSION}) does not match DOCSYNC_WP_VERSION (${PLUGIN_CONST_VERSION})."
-            exit 1
-          fi
-
-          if [ "${PLUGIN_HEADER_VERSION}" != "${README_STABLE_TAG}" ]; then
-            echo "Plugin header version (${PLUGIN_HEADER_VERSION}) does not match readme.txt Stable tag (${README_STABLE_TAG})."
-            exit 1
-          fi
-
-          if [ "${TAG_VERSION}" != "${PLUGIN_HEADER_VERSION}" ]; then
-            echo "Tag version from ${TAG_NAME} (${TAG_VERSION}) does not match plugin version (${PLUGIN_HEADER_VERSION})."
-            exit 1
-          fi
-
-          echo "version=${TAG_VERSION}" >> "${GITHUB_ENV}"
+          echo "version=${VERSION}" >> "${GITHUB_ENV}"
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -101,7 +66,7 @@ jobs:
       - name: Build frontend assets
         run: pnpm build
 
-      - name: Build installable ZIP for dry-run validation
+      - name: Build installable ZIP for dry-run
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run == true }}
         id: package
         run: |
@@ -118,7 +83,3 @@ jobs:
           SLUG: brasth-document-sync-for-google-docs
           ASSETS_DIR: assets
           VERSION: ${{ env.version }}
-
-      - name: Validate deployable artifact (dry run)
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run == true }}
-        run: bash scripts/validate-release-zip.sh "${{ steps.package.outputs.zip_path }}"

@@ -1239,11 +1239,15 @@ final class SourceRepository {
 
 					++$summary['total'];
 
+					// Activation follows first successful sync timestamp, not current health.
+					if ( '' !== $last_synced ) {
+						$summary['activated'] = true;
+					}
+
 					if ( self::STATUS_SYNCING === $status ) {
 						++$summary['syncing'];
 					} elseif ( $is_healthy ) {
 						++$summary['healthy'];
-						$summary['activated'] = true;
 					} else {
 						++$summary['attention'];
 					}

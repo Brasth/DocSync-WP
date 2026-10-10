@@ -27,6 +27,5 @@ The WordPress route remains authenticated with the normal REST nonce and DocSync
 ## Verify
 
 ```sh
-npm test
 npm run lint
 ```

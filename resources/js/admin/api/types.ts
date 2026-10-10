@@ -10,6 +10,11 @@ export type SettingsResponse = {
   syncInterval: string;
   connectionMode: string;
   elementorSyncEnabled: boolean;
+  /**
+   * False when the response omitted elementorSyncEnabled. The defaults form
+   * must not write a replacement value in that case.
+   */
+  elementorPreferencePresent: boolean;
   telemetryEnabled: boolean;
   telemetryPromptDismissed: boolean;
   hasClientId: boolean;
@@ -18,6 +23,47 @@ export type SettingsResponse = {
   availablePostTypes: AvailablePostType[];
   availableLayoutPresets: AvailableLayoutPreset[];
   availableElementorLayoutPresets: AvailableLayoutPreset[];
+  oauthCredentialsSavedAt: string | null;
+  oauthCredentialsSavedDateLabel: string | null;
+  currentUserDisplayName: string;
+};
+
+/** Writable POST /settings keys. Readonly identity and capability fields stay off this type. */
+export type SettingsUpdate = {
+  clientId?: string;
+  clientSecret?: string;
+  scopeMode?: string;
+  enabledPostTypes?: string[];
+  defaultPostStatus?: string;
+  defaultExportFormat?: string;
+  defaultLayoutPreset?: string;
+  syncInterval?: string;
+  connectionMode?: string;
+  elementorSyncEnabled?: boolean;
+  telemetryEnabled?: boolean;
+  telemetryPromptDismissed?: boolean;
+};
+
+export type SettingsConnectionState = 'connected' | 'not_connected' | 'reconnect_required';
+
+export type SettingsConnectionUser = {
+  userId: number;
+  displayName: string;
+  state: SettingsConnectionState;
+};
+
+export type SettingsConnectionsSummary = {
+  connected: number;
+  notConnected: number;
+  reconnectRequired: number;
+};
+
+export type SettingsConnectionsResponse = {
+  summary: SettingsConnectionsSummary;
+  users: SettingsConnectionUser[];
+  page: number;
+  perPage: number;
+  total: number;
 };
 
 export type WorkspaceSourceSummary = {
@@ -314,4 +360,149 @@ export type SyncLogResponse = {
 
 export type ClearSyncLogResponse = {
   cleared: number;
+};
+
+const isRecord = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+};
+
+const asString = (value: unknown, fallback = ''): string => {
+  return typeof value === 'string' ? value : fallback;
+};
+
+const asBoolean = (value: unknown, fallback = false): boolean => {
+  return typeof value === 'boolean' ? value : fallback;
+};
+
+const asNullableString = (value: unknown): string | null => {
+  return typeof value === 'string' && value.trim() !== '' ? value : null;
+};
+
+const asCount = (value: unknown): number => {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) {
+    return 0;
+  }
+
+  return Math.floor(value);
+};
+
+const asStringList = (value: unknown, fallback: string[]): string[] => {
+  if (!Array.isArray(value)) {
+    return fallback;
+  }
+
+  return value.filter((item): item is string => typeof item === 'string');
+};
+
+const asPostTypes = (value: unknown): AvailablePostType[] => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((item) => {
+    if (!isRecord(item) || typeof item.name !== 'string' || typeof item.label !== 'string') {
+      return [];
+    }
+
+    return [{ name: item.name, label: item.label }];
+  });
+};
+
+const asLayoutPresets = (value: unknown): AvailableLayoutPreset[] => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((item) => {
+    if (!isRecord(item) || typeof item.id !== 'string' || typeof item.label !== 'string') {
+      return [];
+    }
+
+    return [{
+      id: item.id,
+      label: item.label,
+      description: asString(item.description)
+    }];
+  });
+};
+
+const CONNECTION_STATES: readonly SettingsConnectionState[] = ['connected', 'not_connected', 'reconnect_required'];
+
+const isConnectionState = (value: unknown): value is SettingsConnectionState => {
+  return typeof value === 'string' && CONNECTION_STATES.some((state) => state === value);
+};
+
+/**
+ * Fill optional setup fields so an older settings payload still renders.
+ * Omitted Elementor preference is remembered so a later save does not invent false.
+ */
+export const normalizeSettingsResponse = (raw: unknown): SettingsResponse => {
+  const record = isRecord(raw) ? raw : {};
+  const elementorPreferencePresent = Object.prototype.hasOwnProperty.call(record, 'elementorSyncEnabled')
+    && typeof record.elementorSyncEnabled === 'boolean';
+
+  return {
+    clientId: asString(record.clientId),
+    scopeMode: asString(record.scopeMode),
+    enabledPostTypes: asStringList(record.enabledPostTypes, ['post']),
+    defaultPostStatus: asString(record.defaultPostStatus, 'draft'),
+    defaultExportFormat: asString(record.defaultExportFormat, 'html_zip'),
+    defaultLayoutPreset: asString(record.defaultLayoutPreset),
+    syncInterval: asString(record.syncInterval, 'off'),
+    connectionMode: asString(record.connectionMode),
+    elementorSyncEnabled: elementorPreferencePresent ? record.elementorSyncEnabled === true : false,
+    elementorPreferencePresent,
+    telemetryEnabled: asBoolean(record.telemetryEnabled),
+    telemetryPromptDismissed: asBoolean(record.telemetryPromptDismissed),
+    hasClientId: asBoolean(record.hasClientId),
+    hasClientSecret: asBoolean(record.hasClientSecret),
+    hasRequiredSettings: asBoolean(record.hasRequiredSettings),
+    availablePostTypes: asPostTypes(record.availablePostTypes),
+    availableLayoutPresets: asLayoutPresets(record.availableLayoutPresets),
+    availableElementorLayoutPresets: asLayoutPresets(record.availableElementorLayoutPresets),
+    oauthCredentialsSavedAt: asNullableString(record.oauthCredentialsSavedAt),
+    oauthCredentialsSavedDateLabel: asNullableString(record.oauthCredentialsSavedDateLabel),
+    currentUserDisplayName: asString(record.currentUserDisplayName).trim()
+  };
+};
+
+/** Coerce the team connections payload. Drops tokens, emails, and unknown states. */
+export const normalizeSettingsConnections = (raw: unknown): SettingsConnectionsResponse => {
+  const record = isRecord(raw) ? raw : {};
+  const summary = isRecord(record.summary) ? record.summary : {};
+  const users = (Array.isArray(record.users) ? record.users : []).flatMap((item): SettingsConnectionUser[] => {
+    if (!isRecord(item) || !isConnectionState(item.state)) {
+      return [];
+    }
+
+    const userId = asCount(item.userId);
+
+    if (userId < 1) {
+      return [];
+    }
+
+    return [{
+      userId,
+      displayName: asString(item.displayName).trim(),
+      state: item.state
+    }];
+  }).sort((left, right) => {
+    if (left.displayName === right.displayName) {
+      return left.userId - right.userId;
+    }
+
+    return left.displayName < right.displayName ? -1 : 1;
+  });
+
+  return {
+    summary: {
+      connected: asCount(summary.connected),
+      notConnected: asCount(summary.notConnected),
+      reconnectRequired: asCount(summary.reconnectRequired)
+    },
+    users,
+    page: Math.max(1, asCount(record.page) || 1),
+    perPage: Math.min(50, Math.max(1, asCount(record.perPage) || 20)),
+    total: asCount(record.total)
+  };
 };

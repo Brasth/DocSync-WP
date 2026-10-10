@@ -1,6 +1,6 @@
 # System Architecture
 
-Last updated: 2026-07-11
+Last updated: 2026-10-10
 
 ## Overview
 
@@ -73,6 +73,8 @@ Responsibilities:
 - distinguish site configuration, personal account readiness, and first-source activation
 - open the shared Doc source modal directly, poll the first draft sync, and link to the completed draft
 - clear site OAuth configuration, all local Google connections, and sync schedules through an explicit administrator-only action
+
+The administrator journey is derived by `features/google-setup/setup-journey-state.ts` from settings, the current account, retained source history, folder-watch counts, and workspace summaries. It persists no wizard completion flag. Credentials and account prerequisites take precedence; first-import progress/recovery remains actionable. Activation opens a full-width maintenance view. A temporary defaults view can be opened before activation without completing the journey. `SetupNavigationGuard` protects local credential/default edits, and source choices preserve Doc/folder intent in the existing modal.
 
 ### Sources Admin Page
 
@@ -157,7 +159,8 @@ REST namespace: `brasth-document-sync-for-google-docs/v1`
 Implemented routes:
 
 - `GET /workspace`, returning `canManageSettings`, site connection readiness, capability-filtered available/enabled/creatable post types, safe publishing defaults/preset labels, Elementor availability, an accessible-source summary, and `cronHealth` (`lastRunAt`, `stalled`)
-- `GET /settings`, including `defaultLayoutPreset`, `availableLayoutPresets`, `availableElementorLayoutPresets`, `telemetryEnabled`, and `telemetryPromptDismissed`
+- `GET /settings`, including presets, telemetry choices, and additive read-only `oauthCredentialsSavedAt`, localized `oauthCredentialsSavedDateLabel`, and `currentUserDisplayName`. Credential timestamps change only when complete normalized credentials really change; legacy/no-op saves preserve the existing null/date, and clearing or incomplete credentials resets it.
+- `GET /settings/connections?page=1&perPage=20`, administrator nonce/capability protected, with `perPage` capped at 50. `SettingsConnectionsController` and `GoogleConnectionDirectory` return aggregate connected/notConnected/reconnectRequired counts and stable, paginated local operator records (`userId`, `displayName`, `state`). Eligibility uses current-site enabled-target capabilities, excluding viewers. Metadata is batched; no live Google request, Google email or token is returned.
 - `POST /settings`, including `defaultLayoutPreset`, optional `telemetryEnabled`, and optional `telemetryPromptDismissed`
 - `DELETE /settings/oauth-configuration`, clearing the site OAuth client, all stored plugin Google tokens, and sync schedules while retaining sources and WordPress content
 - `GET /oauth/google/url`
@@ -182,7 +185,7 @@ Implemented routes:
 
 `GET /workspace` is nonce-protected through `canUseAuthenticatedRest()` and uses an explicit safe-field allowlist. It contains no OAuth identifiers/secrets, tokens, Google account/email data, telemetry or schedule configuration, source/post/Google IDs, ownership identity, raw errors, messages, titles, or content. Its source summary includes only enabled targets passing normal per-post source authority, is capped at 500 accessible records, and reports `truncated` when the cap is reached.
 
-Workspace source categories are exhaustive: `syncing` is active work; `healthy` is `synced` or `skipped` with a non-empty successful timestamp; every other accessible source is `attention`. `activated` becomes true only when at least one accessible source is healthy. Account connection alone is not activation.
+Workspace source categories are exhaustive: `syncing` is active work; `healthy` is `synced` or `skipped` with a non-empty successful timestamp; every other accessible source is `attention`. `activated` derives from retained successful `lastSyncedAt` history on an accessible source or a folder watch with at least one imported Doc. Later errors change the current health counts without erasing activation. Removing all qualifying accessible sources/watches can make activation false. Account connection alone is not activation.
 
 Source records include additive live progress fields: `syncProgress` from 0 to 100, `syncStep`, and `syncMessage`. Existing status values and route shapes stay unchanged. Relinking an existing source owned by another operator requires `transferOwnership: true`; an unconfirmed request returns HTTP 409 with `docsync_wp_source_owner_transfer_required`.
 
@@ -273,7 +276,7 @@ These identify images imported from a Google Docs HTML ZIP export so re-sync can
 14. WordPress post content is updated only after export/import or fallback conversion and block conversion succeed; progress moves to `updating_post`.
 15. Source state is saved back to post meta with `lastSyncMethod` set to `html_zip` or `docs_api_fallback` after successful content import.
 16. Result state becomes `linked`, `syncing`, `synced`, `skipped`, or `error`; `synced` and `skipped` finish at `100`, while queued API responses use top-level `status: queued` and persisted state remains `syncing`.
-17. First-source UI derives activation only from `synced`/`skipped` plus `lastSyncedAt`; success offers the real draft edit URL and Sources, while terminal errors preserve the created draft/source and expose a safe retry path.
+17. First-source UI derives activation from a retained successful `lastSyncedAt` or an imported folder member; later failures do not reset prior success. Until activation, terminal errors preserve the created draft/source and expose a safe retry path.
 
 Skip behavior:
 
@@ -303,7 +306,7 @@ Skip behavior:
 
 ## Optional Telemetry
 
-Telemetry is opt-in and default off. Setup shows a compact inline consent panel until the site administrator opts in or dismisses it; the Sync defaults panel keeps the permanent `telemetryEnabled` checkbox. Both use the same settings route, and `telemetryPromptDismissed` stores only the local prompt state. `SettingsRepository` generates `telemetry_site_id` only after opt-in and clears it on opt-out; REST and admin config never expose the raw ID.
+Telemetry is opt-in and default off. Setup maintenance shows a compact inline consent panel until the site administrator opts in or dismisses it; the Sync defaults panel keeps the permanent `telemetryEnabled` checkbox. Both use the same settings route, and `telemetryPromptDismissed` stores only the local prompt state. `SettingsRepository` generates `telemetry_site_id` only after opt-in and clears it on opt-out; REST and admin config never expose the raw ID.
 
 `TelemetryService` sends a weekly POST to `https://telemetry.brasth.com/v1/check-in`, filterable through `docsync_wp_telemetry_endpoint` for staging and tests. The payload contains `siteHash` as `sha256(telemetry_site_id)`, plugin slug, plugin version, WordPress version, PHP version, and consent version. It does not include Google data, site URL, user email, post data, Google document IDs, document metadata, document content, or imported media.
 
@@ -372,6 +375,6 @@ Later phases add an in-linking preset gallery, preview endpoint, bulk Drive fold
 - pasted Docs or raw file IDs only work when the connected Google account already has access
 - Vite externalizes Radix React peer imports and WordPress package imports to WordPress globals, and aliases Radix JSX runtime imports to the local WordPress JSX runtime shim; avoid direct app imports from `react` or `react-dom`
 - Inline PHPCS suppression comments are blocked by the frontend lint guard; unavoidable standards exceptions must live in `phpcs.xml.dist`
-- local verification uses Composer, PHPCS, PHP syntax checks, fixture verifiers, pnpm lint/typecheck, and Vite builds
-- `.devcontainer/` provides a disposable WordPress/MySQL runtime at `http://localhost:8890` with WP-CLI bootstrap and route verification scripts; `verify-runtime.sh` requires `/workspace` alongside the existing core routes
-- the Cloudflare telemetry Worker is excluded from WordPress plugin ZIPs and has separate Node-based checks under `cloudflare/telemetry-worker/`
+- local verification uses Composer, PHPCS, PHP syntax checks, pnpm lint/typecheck, and Vite builds; GitHub Actions runs build, package, and deploy workflows only
+- `.devcontainer/` provides a disposable WordPress/MySQL runtime at `http://localhost:8890` with WP-CLI bootstrap
+- the Cloudflare telemetry Worker is excluded from WordPress plugin ZIPs and keeps a local `lint` script under `cloudflare/telemetry-worker/`

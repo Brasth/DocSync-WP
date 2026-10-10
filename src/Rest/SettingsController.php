@@ -251,9 +251,69 @@ final class SettingsController {
 			'hasClientId'                     => $settings['has_client_id'],
 			'hasClientSecret'                 => $settings['has_client_secret'],
 			'hasRequiredSettings'             => $settings['has_required_settings'],
+			'oauthCredentialsSavedAt'         => $this->oauthCredentialsSavedAt( $settings ),
+			'oauthCredentialsSavedDateLabel'  => $this->oauthCredentialsSavedDateLabel( $settings ),
+			'currentUserDisplayName'          => $this->currentUserDisplayName(),
 			'availablePostTypes'              => $this->settings->getAvailablePostTypes(),
 			'availableLayoutPresets'          => $this->settings->getAvailableLayoutPresets(),
 			'availableElementorLayoutPresets' => $this->settings->getAvailableElementorLayoutPresets(),
 		);
+	}
+
+	/**
+	 * UTC RFC3339 credential timestamp, or null when none is stored.
+	 *
+	 * @param array<string,mixed> $settings Public settings.
+	 */
+	private function oauthCredentialsSavedAt( array $settings ): ?string {
+		$saved_at = $settings['oauth_credentials_saved_at'] ?? '';
+
+		return is_string( $saved_at ) && '' !== $saved_at ? $saved_at : null;
+	}
+
+	/**
+	 * Site-localized calendar date for the credential timestamp.
+	 *
+	 * @param array<string,mixed> $settings Public settings.
+	 */
+	private function oauthCredentialsSavedDateLabel( array $settings ): ?string {
+		$saved_at = $this->oauthCredentialsSavedAt( $settings );
+
+		if ( null === $saved_at ) {
+			return null;
+		}
+
+		$timestamp = strtotime( $saved_at );
+
+		if ( false === $timestamp ) {
+			return null;
+		}
+
+		$format = get_option( 'date_format' );
+
+		if ( ! is_string( $format ) || '' === $format ) {
+			$format = 'F j, Y';
+		}
+
+		$label = wp_date( $format, $timestamp );
+
+		if ( ! is_string( $label ) || '' === $label ) {
+			return null;
+		}
+
+		return $label;
+	}
+
+	/**
+	 * Display name of the logged-in administrator.
+	 */
+	private function currentUserDisplayName(): string {
+		$user = wp_get_current_user();
+
+		if ( ! is_object( $user ) || ! isset( $user->display_name ) ) {
+			return '';
+		}
+
+		return sanitize_text_field( (string) $user->display_name );
 	}
 }
