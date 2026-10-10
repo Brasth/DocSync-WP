@@ -54,9 +54,9 @@ https://example.com/wp-json/brasth-document-sync-for-google-docs/v1/oauth/google
 
 Replace `https://example.com` with the WordPress site URL. The OAuth callback URL belongs in **Authorized redirect URIs** and must include `/wp-json/brasth-document-sync-for-google-docs/v1/oauth/google/callback`.
 
-In WordPress admin, administrators open **Brasth Document Sync > Setup** to configure the site connection. The role-aware workspace separates the site-wide OAuth client from the current user's personal Google connection, shows one primary next action, and treats setup readiness as an intermediate state. Activation completes when the current user has a healthy source (`synced` or unchanged-complete `skipped` with a successful sync timestamp) or a folder watch that has imported at least one Doc.
+In WordPress admin, administrators open **Brasth Document Sync > Setup** for a three-step journey: save the site Google OAuth client, connect their own Google account, then import a first Doc or watch a folder. Readiness alone does not complete onboarding. Activation derives from an accessible source with a retained successful `lastSyncedAt` timestamp or a folder watch that has imported at least one Doc. A later sync failure changes source health but does not erase that prior success. Removing the qualifying source/watch can make activation false again; no separate onboarding flag is stored.
 
-When the site and personal connections are ready, Setup offers **Watch a client folder** as the primary action and **Choose one Google Doc** as the one-off path. A folder watch creates drafts, queues imports, and counts as activation after the first imported Doc. The folder schedule governs both new-Doc discovery and member re-sync.
+The first-source screen offers **Add one Google Doc** and **Watch a Drive folder**. Both use the existing source modal and create drafts. **Skip for now** opens Sources; **Change defaults** opens settings while keeping the first import pending. After activation, Setup shows Google connections and Sync defaults side by side. Credential and default edits prompt before unsaved changes are discarded. Administrators can inspect eligible operators’ local connection states; that view does not contact Google or expose their Google emails or tokens. Folder schedules govern new-Doc discovery and member re-sync.
 
 Save:
 
@@ -105,7 +105,7 @@ Brasth Document Sync uses WP-Cron for scheduled sync and manual background sync.
 - `GET /workspace` is the nonce-protected, least-privilege operational bootstrap route. It returns capability-filtered target types, safe publishing defaults, Elementor availability, accessible-source health counts, and `cronHealth`; it never returns OAuth credentials, Google account identity, telemetry choices, schedules, source IDs, owner IDs, or raw errors.
 - Google OAuth client secrets and user tokens are encrypted with WordPress salts. Rotating those salts invalidates stored Brasth Document Sync credentials and tokens, so users must reconnect Google accounts afterward.
 - Clearing the saved site OAuth configuration is administrator-only. It removes the client credentials, invalidates in-flight OAuth state, deletes locally stored Google connections for all plugin users, and unschedules sync jobs while retaining linked sources and WordPress content.
-- Optional anonymous active-install telemetry is default off. Setup includes a dismissible inline opt-in prompt plus the permanent Sync defaults checkbox. When enabled, telemetry sends one weekly install-level check-in to `https://telemetry.brasth.com/v1/check-in` through `src/Telemetry/`; the Cloudflare Worker lives under `cloudflare/telemetry-worker/` and is excluded from installable plugin ZIPs.
+- Optional anonymous active-install telemetry is default off. Setup maintenance includes a dismissible inline opt-in prompt plus the permanent Sync defaults checkbox. When enabled, telemetry sends one weekly install-level check-in to `https://telemetry.brasth.com/v1/check-in` through `src/Telemetry/`; the Cloudflare Worker lives under `cloudflare/telemetry-worker/` and is excluded from installable plugin ZIPs.
 - Admin users can open **Send feedback** from the shared admin shell. The authenticated WordPress REST route relays validated bug reports, feature requests, and questions to the Cloudflare feedback Worker, which creates public issues in `Brasth/DocSync-WP`. Reports are short-lived rate-limited to 5 per user and 20 per IP per hour. Do not include secrets or private data. The GitHub token exists only as the Worker secret `GITHUB_TOKEN`; configure the Worker separately under `cloudflare/feedback-worker/`.
 - Uninstall removes plugin settings, encrypted user Google tokens, and scheduled cron events. Linked post metadata is kept by default; define `DOCSYNC_WP_FULL_UNINSTALL` or return true from `docsync_wp_full_uninstall` to remove linked post meta. Synced posts are never deleted.
 - Inline PHPCS suppression comments are prohibited in plugin source. Use code changes first; if a WordPress standards exception is unavoidable, keep it narrow in `phpcs.xml.dist`.
@@ -132,16 +132,13 @@ define( 'DOCSYNC_WP_FEEDBACK_WORKER_SECRET', 'the-same-worker-secret' );
 
 ## Verification
 
+Local lint and typecheck remain available. GitHub Actions runs build, package, and deploy workflows only; it does not run tests or lint checks.
+
 ```sh
 composer install
 vendor/bin/phpcs -i
 composer validate --no-check-publish
 composer lint
-composer test:layout-fixtures
-composer test:elementor-fixtures
-composer test:large-doc-fallback-fixtures
-composer test:telemetry-settings
-composer test:folder-watch-update
 pnpm install --frozen-lockfile
 pnpm lint
 pnpm typecheck
@@ -150,7 +147,7 @@ pnpm build
 
 Use `composer lint:fix` only for safe automatic PHPCS fixes. Keep unavoidable WordPress coding standards exceptions narrow and centralized in `phpcs.xml.dist`.
 
-A ready-to-use WordPress dev container is available under `.devcontainer/`. It runs WordPress at `http://localhost:8890`, activates the plugin, and verifies core runtime routes after startup, including the role-aware `/workspace` route.
+A ready-to-use WordPress dev container is available under `.devcontainer/`. It runs WordPress at `http://localhost:8890` and activates the plugin after startup.
 
 ## Release Packaging
 
@@ -162,7 +159,7 @@ pnpm install --frozen-lockfile
 pnpm build
 ```
 
-The `Build Release ZIP (Tag)` workflow runs when a GitHub Release is published. It checks out the release tag, validates the tag version against `brasth-document-sync-for-google-docs.php` and `readme.txt`, installs production dependencies, builds frontend assets, stages files using `.distignore`, creates `brasth-document-sync-for-google-docs-v<version>.zip`, uploads that ZIP as a workflow artifact, and attaches it to the GitHub Release with `gh release upload --clobber`.
+The `Build Release ZIP (Tag)` workflow runs when a GitHub Release is published. It checks out the release tag, resolves release metadata from the tag name and plugin header version, installs production dependencies, builds frontend assets, stages files using `.distignore`, creates `brasth-document-sync-for-google-docs-v<version>.zip`, uploads that ZIP as a workflow artifact, and attaches it to the GitHub Release with `gh release upload --clobber`.
 
 The release ZIP should include a single top-level `brasth-document-sync-for-google-docs/` directory containing `vendor/`, `build/`, `resources/`, `brasth-document-sync-for-google-docs.php`, `src/`, `uninstall.php`, `readme.txt`, `README.md`, `LICENSE`, `package.json`, `pnpm-lock.yaml`, `vite.config.ts`, and `composer.json`.
 

@@ -15,6 +15,7 @@ use DocSyncWP\Admin\AdminPage;
 use DocSyncWP\Admin\PostListActions;
 use DocSyncWP\Admin\PostSyncMetaBox;
 use DocSyncWP\Assets\AssetRegistry;
+use DocSyncWP\Auth\GoogleConnectionDirectory;
 use DocSyncWP\Auth\GoogleOAuthService;
 use DocSyncWP\Auth\TokenStore;
 use DocSyncWP\Cron\ScheduleBackfill;
@@ -30,6 +31,7 @@ use DocSyncWP\Rest\FeedbackController;
 use DocSyncWP\Rest\FolderWatchController;
 use DocSyncWP\Rest\OAuthController;
 use DocSyncWP\Rest\RestServiceProvider;
+use DocSyncWP\Rest\SettingsConnectionsController;
 use DocSyncWP\Rest\SettingsController;
 use DocSyncWP\Rest\SourceController;
 use DocSyncWP\Rest\SyncLogController;
@@ -142,18 +144,26 @@ final class Plugin {
 	private FolderWatchService $folder_watch_service;
 
 	/**
+	 * Settings connection directory controller.
+	 *
+	 * @var SettingsConnectionsController
+	 */
+	private SettingsConnectionsController $settings_connections;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param AdminPage           $admin_page        Admin page service.
-	 * @param AssetRegistry       $assets            Asset registry service.
-	 * @param RestServiceProvider $rest              REST service provider.
-	 * @param PostSyncMetaBox     $post_sync_meta_box Post sync meta box service.
-	 * @param PostListActions     $post_list_actions Post list table actions service.
-	 * @param SyncCron            $sync_cron         Sync cron service.
-	 * @param TelemetryCron       $telemetry_cron    Telemetry cron service.
-	 * @param TokenStore          $token_store          Token store service.
-	 * @param SourceRepository    $source_repository    Source repository service.
-	 * @param FolderWatchService  $folder_watch_service Folder watch service.
+	 * @param AdminPage                     $admin_page        Admin page service.
+	 * @param AssetRegistry                 $assets            Asset registry service.
+	 * @param RestServiceProvider           $rest              REST service provider.
+	 * @param PostSyncMetaBox               $post_sync_meta_box Post sync meta box service.
+	 * @param PostListActions               $post_list_actions Post list table actions service.
+	 * @param SyncCron                      $sync_cron         Sync cron service.
+	 * @param TelemetryCron                 $telemetry_cron    Telemetry cron service.
+	 * @param TokenStore                    $token_store          Token store service.
+	 * @param SourceRepository              $source_repository    Source repository service.
+	 * @param FolderWatchService            $folder_watch_service  Folder watch service.
+	 * @param SettingsConnectionsController $settings_connections Settings connection directory controller.
 	 */
 	public function __construct(
 		AdminPage $admin_page,
@@ -165,7 +175,8 @@ final class Plugin {
 		TelemetryCron $telemetry_cron,
 		TokenStore $token_store,
 		SourceRepository $source_repository,
-		FolderWatchService $folder_watch_service
+		FolderWatchService $folder_watch_service,
+		SettingsConnectionsController $settings_connections
 	) {
 		$this->admin_page           = $admin_page;
 		$this->assets               = $assets;
@@ -177,6 +188,7 @@ final class Plugin {
 		$this->token_store          = $token_store;
 		$this->source_repository    = $source_repository;
 		$this->folder_watch_service = $folder_watch_service;
+		$this->settings_connections = $settings_connections;
 	}
 
 	/**
@@ -244,6 +256,10 @@ final class Plugin {
 			$settings,
 			$schedule_resolver
 		);
+		$settings_connections        = new SettingsConnectionsController(
+			new GoogleConnectionDirectory( $encryption ),
+			RestServiceProvider::NAMESPACE
+		);
 
 		$plugin = new self(
 			new AdminPage( $settings, $source_repository ),
@@ -284,7 +300,8 @@ final class Plugin {
 			new TelemetryCron( $settings, $telemetry_service ),
 			$token_store,
 			$source_repository,
-			$folder_watch_service
+			$folder_watch_service,
+			$settings_connections
 		);
 
 		$plugin->register();
@@ -311,5 +328,6 @@ final class Plugin {
 		$this->folder_watch_service->register();
 		$this->telemetry_cron->register();
 		$this->rest->register();
+		$this->settings_connections->register();
 	}
 }

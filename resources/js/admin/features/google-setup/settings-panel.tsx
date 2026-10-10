@@ -1,23 +1,19 @@
-import { createElement, useEffect, useMemo, useState } from '@wordpress/element';
-import { __, sprintf } from '@wordpress/i18n';
+import { Fragment, createElement, useCallback, useEffect, useRef, useState } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
 
-import type { GoogleAccount, SettingsResponse } from '../../api';
+import type { FolderWatchRecord, GoogleAccount, SettingsResponse, SettingsUpdate, SourceRecord, WorkspaceResponse } from '../../api';
 import type { AvailablePostType } from '../../config';
-import { GoogleSetupActiveTaskPanel } from './google-setup-active-task-panel';
-import { GoogleSetupProgressRail } from './google-setup-progress-rail';
-import type { OAuthClientJsonCredentials } from './oauth-client-json';
-import { buildSetupChecks, type SetupCheck } from './google-setup-utils';
-import {
-  activeGoogleSetupTask,
-  buildGoogleSetupNextAction,
-  setupCredentialStepState
-} from './google-setup-task-state';
-import { buildSetupWizardSteps } from './setup-wizard-steps';
-import { OAuthConnectErrorPanel } from './oauth-connect-error-panel';
 import type { OAuthConnectErrorView } from './oauth-connect-error';
+import { ConfirmDialog } from '../../shared/ui/confirm-dialog';
+import { SetupAccountTaskPanel } from './setup-account-task-panel';
+import { SetupCredentialsPanel } from './setup-credentials-panel';
+import { resolveSetupJourney, resolveSetupJourneyView, type SetupJourneyOverride } from './setup-journey-state';
+import { SetupMaintenancePanel } from './setup-maintenance-panel';
+import { SetupNavigationGuard, useSetupLeaveGuard } from './setup-navigation-guard';
+import { SetupSourceTaskPanel } from './setup-source-task-panel';
+import { SetupTaskLayout } from './setup-task-layout';
 
 export type SettingsPanelLayoutMode = 'focus' | 'ready';
-
 type Props = {
   account: GoogleAccount;
   settings: SettingsResponse;
@@ -26,164 +22,54 @@ type Props = {
   canCreateSource?: boolean;
   creatablePostTypes?: string[];
   activated?: boolean;
-  /** focus = first-run single column; ready = maintenance layout with quieter rail. */
   layoutMode?: SettingsPanelLayoutMode;
   redirectUri: string;
   onClearOAuthConfiguration: () => Promise<boolean>;
   onConnect: () => Promise<void>;
+  onDisconnect?: () => Promise<void>;
   onCreateSource?: (intent?: 'folder' | 'document') => void;
-  onSave: (settings: Partial<SettingsResponse> & { clientSecret?: string }) => Promise<boolean>;
+  onSave: (settings: SettingsUpdate) => Promise<boolean>;
   onTargetPostTypeChange?: (postType: string) => void;
+  onRetrySource?: () => Promise<void>;
   oauthConnectError?: OAuthConnectErrorView | null;
   showTargetPicker?: boolean;
   targetPostType?: string;
+  workspace?: WorkspaceResponse | null;
+  source?: SourceRecord | null;
+  watch?: FolderWatchRecord | null;
 };
 
-export const SettingsPanel = ({
-  account,
-  settings,
-  busy,
-  availablePostTypes = [],
-  canCreateSource = true,
-  creatablePostTypes = [],
-  activated = false,
-  layoutMode = 'focus',
-  redirectUri,
-  onClearOAuthConfiguration,
-  onConnect,
-  onCreateSource = () => undefined,
-  onSave,
-  onTargetPostTypeChange,
-  oauthConnectError = null,
-  showTargetPicker = false,
-  targetPostType = ''
-}: Props): JSX.Element => {
-  const [clientId, setClientId] = useState(settings.clientId);
-  const [clientSecret, setClientSecret] = useState('');
-  const [copyMessage, setCopyMessage] = useState('');
-  const [testChecks, setTestChecks] = useState<SetupCheck[] | null>(null);
-  const setupChecks = useMemo(() => buildSetupChecks(settings, account), [settings, account]);
-  const canCreateDraft = settings.hasRequiredSettings && account.connected && account.hasRequiredScope;
-  const hasCredentialChanges = clientId !== settings.clientId || clientSecret.trim() !== '';
-  const canSaveCredentials = clientId.trim() !== '' && (clientSecret.trim() !== '' || settings.hasClientSecret);
-  const credentialStepState = setupCredentialStepState(settings, hasCredentialChanges);
+export const SettingsPanel = ({ account, settings, busy, availablePostTypes = [], canCreateSource = false, creatablePostTypes = [], activated = false, redirectUri, onClearOAuthConfiguration, onConnect, onDisconnect, onCreateSource, onSave, onTargetPostTypeChange, onRetrySource, oauthConnectError = null, showTargetPicker = true, targetPostType = '', workspace = null, source = null, watch = null }: Props): JSX.Element => {
+  const [disconnectOpen, setDisconnectOpen] = useState(false);
+  const [override, setOverride] = useState<SetupJourneyOverride>('derived');
+  const guard = useSetupLeaveGuard();
+  const taskRef = useRef<HTMLDivElement>(null);
+  const resolution = resolveSetupJourney({ hasRequiredSettings: settings.hasRequiredSettings, accountConnected: account.connected, accountHasRequiredScope: account.hasRequiredScope, source, watch, workspace: workspace || { sourceSummary: { activated } } });
+  const view = resolveSetupJourneyView(resolution, override, { forceCredentials: oauthConnectError?.code === 'oauth_invalid_credentials' });
+  const previousPhase = useRef(`${view.phase}:${view.editingCredentials}`);
+  const changeView = (next: SetupJourneyOverride) => guard.requestLeave(() => setOverride(next));
+  const saveCredentials = useCallback(async (next: SettingsUpdate) => {
+    const saved = await onSave(next);
+    if (saved) { guard.setDirty(false); setOverride('derived'); }
+    return saved;
+  }, [onSave, guard.setDirty]);
 
   useEffect(() => {
-    setClientId(settings.clientId);
-    setClientSecret('');
-    setTestChecks(null);
-  }, [settings]);
-
-  const copyValue = async (value: string, label: string) => {
-    setCopyMessage('');
-
-    if (!navigator.clipboard) {
-      setCopyMessage(sprintf(__('Copy the %s from the field.', 'brasth-document-sync-for-google-docs'), label));
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(value);
-      setCopyMessage(sprintf(__('%s copied.', 'brasth-document-sync-for-google-docs'), label));
-    } catch {
-      setCopyMessage(sprintf(__('Copy the %s from the field.', 'brasth-document-sync-for-google-docs'), label));
-    }
-  };
-
-  const submit = async () => {
-    const saved = await onSave({
-      clientId,
-      ...(clientSecret ? { clientSecret } : {}),
-      connectionMode: settings.connectionMode || 'self_managed',
-      defaultExportFormat: settings.defaultExportFormat,
-      defaultPostStatus: settings.defaultPostStatus,
-      scopeMode: settings.scopeMode
-    });
-
-    if (saved) {
-      setClientSecret('');
-    }
-  };
-
-  const testSetup = () => {
-    setTestChecks(setupChecks);
-  };
-
-  const nextAction = buildGoogleSetupNextAction({
-    account,
-    activated,
-    busy,
-    canSaveCredentials,
-    canCreateSource,
-    hasCredentialChanges,
-    settings,
-    onConnect,
-    onCreateSource,
-    onSaveCredentials: submit
-  });
-  const activeTask = oauthConnectError?.code === 'oauth_invalid_credentials'
-    ? 'credentials'
-    : activeGoogleSetupTask(settings, account, hasCredentialChanges);
-  const wizardSteps = buildSetupWizardSteps({
-    account,
-    activated,
-    canCreateDraft,
-    credentialStepState,
-    settings
-  });
-  const completedSteps = wizardSteps.filter((step) => step.state === 'complete').length;
-
-  const importCredentials = (credentials: OAuthClientJsonCredentials) => {
-    setClientId(credentials.clientId);
-    setClientSecret(credentials.clientSecret);
-    setTestChecks(null);
-  };
+    const next = `${view.phase}:${view.editingCredentials}`;
+    if (next === previousPhase.current) { return; }
+    previousPhase.current = next;
+    const heading = taskRef.current?.querySelector<HTMLElement>('h2');
+    heading?.setAttribute('tabindex', '-1');
+    heading?.focus({ preventScroll: true });
+  }, [view.phase, view.editingCredentials]);
 
   return (
-    <section className={`docsync-wp-setup-workspace docsync-wp-setup-workspace--${layoutMode}`}>
-      <GoogleSetupProgressRail
-        activeTask={activeTask}
-        activated={activated}
-        completedSteps={completedSteps}
-        wizardSteps={wizardSteps}
-      />
-
-      {oauthConnectError ? (
-        <OAuthConnectErrorPanel
-          error={oauthConnectError}
-          onCopyRedirectUri={(value) => void copyValue(value, __('Redirect URI', 'brasth-document-sync-for-google-docs'))}
-          onReconnect={onConnect}
-          onRetry={onConnect}
-          redirectUri={redirectUri}
-        />
-      ) : null}
-
-      <GoogleSetupActiveTaskPanel
-        account={account}
-        activeTask={activeTask}
-        availablePostTypes={availablePostTypes}
-        busy={busy}
-        creatablePostTypes={creatablePostTypes}
-        clientId={clientId}
-        clientSecret={clientSecret}
-        copyMessage={copyMessage}
-        hasClientSecret={settings.hasClientSecret}
-        hasSavedOAuthConfiguration={settings.hasRequiredSettings}
-        hasUnsavedChanges={hasCredentialChanges}
-        nextAction={nextAction}
-        onClearOAuthConfiguration={onClearOAuthConfiguration}
-        onClientIdChange={setClientId}
-        onClientSecretChange={setClientSecret}
-        onCopyValue={copyValue}
-        onImported={importCredentials}
-        onTargetPostTypeChange={onTargetPostTypeChange}
-        oauthConnectError={oauthConnectError}
-        onTestSetup={testSetup}
-        redirectUri={redirectUri}
-        showTargetPicker={showTargetPicker}
-        targetPostType={targetPostType}
-        testChecks={testChecks}
-      />
-    </section>
+    <>
+      {view.phase === 'maintenance' ? <div ref={taskRef}><SetupMaintenancePanel account={account} busy={busy} onClearOAuthConfiguration={onClearOAuthConfiguration} onConnect={onConnect} onDirtyChange={guard.setDirty} onDisconnect={onDisconnect} onEditCredentials={() => changeView('edit-credentials')} onSave={onSave} pendingActivation={view.pendingActivation} settings={settings} />{view.pendingActivation ? <button className="docsync-wp-setup-return" onClick={() => changeView('derived')} type="button">{__('Return to first import', 'brasth-document-sync-for-google-docs')}</button> : null}</div> : <SetupTaskLayout accountEmail={account.googleAccountEmail} onDisconnect={onDisconnect ? () => setDisconnectOpen(true) : undefined} onEditCredentials={() => changeView('edit-credentials')} rail={view.rail} taskRef={taskRef}>
+        {view.phase === 'credentials' ? <SetupCredentialsPanel busy={busy} editing={view.editingCredentials} onCancel={() => changeView('derived')} onDirtyChange={guard.setDirty} onSave={saveCredentials} redirectUri={redirectUri} settings={settings} /> : view.phase === 'account' ? <SetupAccountTaskPanel account={account} busy={busy} displayName={settings.currentUserDisplayName} oauthConnectError={oauthConnectError} onConnect={onConnect} onReviewCredentials={() => changeView('edit-credentials')} redirectUri={redirectUri} /> : <SetupSourceTaskPanel availablePostTypes={availablePostTypes} basis={resolution.basis} busy={busy} canChoose={canCreateSource} creatablePostTypes={creatablePostTypes} onChoose={onCreateSource} onOpenMaintenance={() => changeView('maintenance')} onRetrySource={onRetrySource} onTargetPostTypeChange={onTargetPostTypeChange} phase={view.phase} settings={settings} showTargetPicker={showTargetPicker} source={source} targetPostType={targetPostType} watch={watch} workspaceAttention={workspace?.sourceSummary.attention ?? 0} workspaceImporting={workspace?.folderWatches?.importing ?? 0} workspaceSyncing={workspace?.sourceSummary.syncing ?? 0} workspaceWatchAttention={workspace?.folderWatches?.attention ?? 0} />}
+      </SetupTaskLayout>}
+      <ConfirmDialog open={disconnectOpen} busy={busy} onOpenChange={setDisconnectOpen} title={__('Disconnect your Google account?', 'brasth-document-sync-for-google-docs')} description={__('Imported WordPress content is retained. Reconnect before importing or syncing more Docs.', 'brasth-document-sync-for-google-docs')} confirmLabel={__('Disconnect Google', 'brasth-document-sync-for-google-docs')} variant="danger" onConfirm={async () => { await onDisconnect?.(); setDisconnectOpen(false); }} />
+      <SetupNavigationGuard dirty={guard.dirty} onLeave={guard.confirmLeave} onStay={guard.stay} open={guard.open} />
+    </>
   );
 };

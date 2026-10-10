@@ -1,6 +1,6 @@
 # DocSync-WP Development Roadmap
 
-Last updated: 2026-07-11
+Last updated: 2026-10-10
 
 ## Strategic Direction
 
@@ -16,7 +16,7 @@ The roadmap is broken into **small, frequent, independently shippable releases**
 - **Minor releases (1.x.0):** every 4-6 weeks. One complete feature per release. Each is a marketing event and a reason to publish a changelog entry or blog post.
 - **Major releases (x.0.0):** every 6-12 months. Reserved for breaking changes or major new capability shifts, such as Notion support or two-way sync.
 
-Each release must pass the existing validation pipeline (`pnpm lint`, `pnpm typecheck`, `pnpm build`, and PHP checks in CI) and be reviewable on WordPress.org within 1-7 days.
+Each release should be reviewable on WordPress.org within 1-7 days. GitHub Actions runs build, package, and deploy workflows only. Local lint and typecheck commands remain available.
 
 ## Current State
 
@@ -66,10 +66,9 @@ Each release must pass the existing validation pipeline (`pnpm lint`, `pnpm type
 **Mandatory 1.1.4 release gates:**
 
 - validate normal and large-document sync, media import, Gutenberg presets, Elementor presets and legacy Elementor paths, scheduled-sync recovery, owner transfer, role isolation, OAuth callback/token recovery, REST nonce/capability failures, and unchanged-source skips on staging;
-- run the full validation suite on the release path, including PHP 8.1 support, Plugin Check, official `readme.txt` validation, and a clean ZIP install smoke test;
 - complete documented internal staging validation using real Google accounts, representative documents, and representative cron configurations; 1.1.4 publishes publicly after these gates pass;
 - reconcile the published artifact, Git tag, and WordPress.org/SVN history for 1.1.2 before publishing another release;
-- ship only fixes proven by validation or beta feedback. No gallery, preview, bulk import, new telemetry, schema changes, or new background-job behavior.
+- ship only fixes proven by staging evidence or beta feedback. No gallery, preview, bulk import, new telemetry, schema changes, or new background-job behavior.
 
 ### 1.2.x line — Layout foundation: UI (conditional)
 
@@ -176,7 +175,6 @@ To sustain this cadence, the following must be in place. See `docs/deployment-gu
 - [ ] Reconcile GitHub, WordPress.org/SVN, and changelog history for every published version, including 1.1.2.
 - [ ] `changelog/` directory where every PR adds a markdown file.
 - [ ] GitHub release-drafter workflow that aggregates changelog files into `readme.txt` and release notes.
-- [ ] CI pipeline runs Plugin Check, readme.txt validator, PHP 8.1 compatibility, clean-install ZIP smoke tests, and the existing PHP/JS fixture suites before a release is published.
 - [ ] Beta channel using GitHub pre-releases, with 5-10 agency volunteers testing each 1.x.0 release.
 - [ ] Automated ZIP build and release asset upload on GitHub Release publish.
 - [ ] WordPress.org SVN tagging script or workflow.

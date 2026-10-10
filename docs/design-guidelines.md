@@ -1,6 +1,6 @@
 # Brasth Admin Design Guidelines
 
-Last updated: 2026-07-11
+Last updated: 2026-10-10
 
 ## Purpose
 
@@ -72,14 +72,16 @@ Use this guide for Brasth Document Sync admin UI work. The product direction is 
 
 ## Setup Workspace
 
-- Present the responsibility sequence as Site connection -> Your Google account -> First publishing source; do not present account connection alone as completion.
-- Make the next action dominant.
-- Keep checklist/progress visible but visually quiet.
-- Keep Setup administrator-only. Site-wide credentials, defaults, telemetry, and destructive configuration actions must not appear in operator-facing Sources guidance.
-- When site and account readiness permit, open the shared Doc source flow directly and keep queued/terminal first-sync feedback in the activation context.
-- Group credential import, redirect URI copy, Google Cloud links, connection test, and sync defaults by job.
-- Dirty/saved state belongs near the panel it affects.
-- Long setup instructions belong in disclosures.
+- Journey 1 follows Google OAuth client -> Your Google account -> First Doc. Account readiness alone does not complete onboarding. Derive completion from retained successful source history or an imported folder member.
+- Keep Setup administrator-only. Site credentials, defaults, telemetry and the operator connection directory remain outside operator-facing Sources guidance.
+- Match the four administrator artboards: credential card, personal account card, Doc/folder choice, then full-width maintenance without the rail. The first-source cards put a single Doc before the folder option.
+- Setup uses a white masthead, teal tab underline, `#f0f0f1` background, navy current-step marker and blue primary controls. Controls use 4px corners and cards 6px. The scoped implementation owns its measurements in `resources/css/components/setup-journey.css`; do not change other screens’ tokens to achieve this design.
+- Keep one heading per card with no kicker. Put detailed Google troubleshooting in a disclosure and describe actual scope, token storage and verification behavior accurately.
+- Use actual client/date/account identity and saved defaults, including default-off diagnostics. Never copy prototype example data into production state.
+- Retain the permitted target-type selector and existing Doc/folder modal, polling, recovery, and destructive confirmations.
+- Guard unsaved credentials/defaults before internal navigation and browser unload. A blank secret keeps the saved secret; JSON import only fills local fields.
+- At narrow widths, show the compact three-step rail before the task and stack fields/cards. All controls, disclosures and Radix dialogs remain keyboard accessible.
+- Skip opens Sources without marking activation complete. Pending maintenance must retain a route back to the first import.
 
 ## Sources And Logs
 

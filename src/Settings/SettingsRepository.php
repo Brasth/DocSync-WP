@@ -220,20 +220,26 @@ final class SettingsRepository {
 			$settings['telemetry_site_id'] = '';
 		}
 
+		$credentials_changed = $settings['client_id'] !== $current['client_id'];
+
 		if ( array_key_exists( 'client_secret', $values ) ) {
-			$client_secret = sanitize_text_field( (string) $values['client_secret'] );
+			$encrypted_secret = $this->encryptedClientSecretForSave(
+				(string) $current['encrypted_client_secret'],
+				sanitize_text_field( (string) $values['client_secret'] )
+			);
 
-			if ( '' === $client_secret ) {
-				$settings['encrypted_client_secret'] = '';
-			} else {
-				$encrypted = $this->encryption->encrypt( $client_secret );
-
-				if ( is_wp_error( $encrypted ) ) {
-					return $encrypted;
-				}
-
-				$settings['encrypted_client_secret'] = $encrypted;
+			if ( is_wp_error( $encrypted_secret ) ) {
+				return $encrypted_secret;
 			}
+
+			if ( null !== $encrypted_secret ) {
+				$credentials_changed                 = true;
+				$settings['encrypted_client_secret'] = $encrypted_secret;
+			}
+		}
+
+		if ( $credentials_changed ) {
+			$settings['oauth_credentials_saved_at'] = $this->credentialsSavedAtForStoredCredentials( $settings );
 		}
 
 		$updated = update_option( self::OPTION_NAME, $settings, false );
@@ -262,12 +268,13 @@ final class SettingsRepository {
 
 		$settings['client_id']                      = '';
 		$settings['encrypted_client_secret']        = '';
+		$settings['oauth_credentials_saved_at']     = '';
 		$settings['oauth_configuration_generation'] = absint( $settings['oauth_configuration_generation'] ) + 1;
 
 		$updated   = update_option( self::OPTION_NAME, $settings, false );
 		$persisted = $this->get();
 
-		if ( ! $updated || '' !== $persisted['client_id'] || '' !== $persisted['encrypted_client_secret'] ) {
+		if ( ! $updated || '' !== $persisted['client_id'] || '' !== $persisted['encrypted_client_secret'] || '' !== $persisted['oauth_credentials_saved_at'] ) {
 			return new WP_Error(
 				'docsync_wp_oauth_configuration_not_cleared',
 				__( 'Brasth Document Sync could not clear the Google OAuth configuration.', 'brasth-document-sync-for-google-docs' ),
@@ -319,6 +326,7 @@ final class SettingsRepository {
 			'has_client_id'              => '' !== $settings['client_id'],
 			'has_client_secret'          => '' !== $settings['encrypted_client_secret'],
 			'has_required_settings'      => '' !== $settings['client_id'] && '' !== $settings['encrypted_client_secret'],
+			'oauth_credentials_saved_at' => $this->publicOAuthCredentialsSavedAt( $settings['oauth_credentials_saved_at'] ),
 		);
 	}
 
@@ -467,6 +475,63 @@ final class SettingsRepository {
 	}
 
 	/**
+	 * Encrypt a client secret only when its normalized plaintext changed.
+	 *
+	 * Stored ciphertext is randomized, so sameness is the decrypted plaintext.
+	 * A stored secret that cannot be decrypted counts as a change.
+	 *
+	 * @param string $current_encrypted Stored ciphertext.
+	 * @param string $new_plaintext     Normalized plaintext secret.
+	 * @return string|null|WP_Error Null when the plaintext is unchanged.
+	 */
+	private function encryptedClientSecretForSave( string $current_encrypted, string $new_plaintext ): string|null|WP_Error {
+		$current_plaintext = $this->encryption->decrypt( $current_encrypted );
+
+		if ( ! is_wp_error( $current_plaintext ) && $new_plaintext === $current_plaintext ) {
+			return null;
+		}
+
+		if ( '' === $new_plaintext ) {
+			return '';
+		}
+
+		return $this->encryption->encrypt( $new_plaintext );
+	}
+
+	/**
+	 * UTC timestamp recorded after a real credential change is persisted.
+	 *
+	 * Incomplete credentials clear the date. Complete credentials use UTC RFC3339.
+	 * Unchanged saves leave the previous value in place, so older installs stay empty.
+	 *
+	 * @param array<string,mixed> $settings Settings about to be stored.
+	 */
+	private function credentialsSavedAtForStoredCredentials( array $settings ): string {
+		if ( '' === $settings['client_id'] || '' === $settings['encrypted_client_secret'] ) {
+			return '';
+		}
+
+		return gmdate( 'Y-m-d\TH:i:s\Z' );
+	}
+
+	/**
+	 * Public UTC timestamp, or empty when the stored value is not UTC RFC3339.
+	 *
+	 * @param mixed $value Stored timestamp.
+	 */
+	private function publicOAuthCredentialsSavedAt( mixed $value ): string {
+		if ( ! is_string( $value ) ) {
+			return '';
+		}
+
+		if ( 1 !== preg_match( '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|\+00:00)$/', $value ) ) {
+			return '';
+		}
+
+		return $value;
+	}
+
+	/**
 	 * Default settings.
 	 *
 	 * @return array<string,mixed>
@@ -475,6 +540,7 @@ final class SettingsRepository {
 		return array(
 			'client_id'                      => '',
 			'encrypted_client_secret'        => '',
+			'oauth_credentials_saved_at'     => '',
 			'oauth_configuration_generation' => 0,
 			'scope_mode'                     => self::DEFAULT_SCOPE_MODE,
 			'enabled_post_types'             => array( 'post' ),
@@ -528,6 +594,7 @@ final class SettingsRepository {
 	private function sanitizeScalarSettings( array $settings ): array {
 		$settings['client_id']                      = sanitize_text_field( (string) $settings['client_id'] );
 		$settings['encrypted_client_secret']        = is_string( $settings['encrypted_client_secret'] ) ? $settings['encrypted_client_secret'] : '';
+		$settings['oauth_credentials_saved_at']     = is_string( $settings['oauth_credentials_saved_at'] ?? null ) ? $settings['oauth_credentials_saved_at'] : '';
 		$settings['oauth_configuration_generation'] = absint( $settings['oauth_configuration_generation'] ?? 0 );
 		$settings['scope_mode']                     = sanitize_key( (string) $settings['scope_mode'] );
 		$settings['default_post_status']            = sanitize_key( (string) $settings['default_post_status'] );

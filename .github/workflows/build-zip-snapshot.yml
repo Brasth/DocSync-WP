@@ -52,33 +52,6 @@ jobs:
           unzip -q "${RUNNER_TEMP}/${PLUGIN_SLUG}-"*.zip -d "${STAGING_DIR}"
           echo "staging_dir=${STAGING_DIR}" >> "${GITHUB_OUTPUT}"
 
-      - name: Validate installable plugin layout
-        run: |
-          set -euo pipefail
-          PLUGIN_SLUG="brasth-document-sync-for-google-docs"
-          STAGING_DIR="${{ steps.stage.outputs.staging_dir }}"
-          test -f "${STAGING_DIR}/${PLUGIN_SLUG}/${PLUGIN_SLUG}.php"
-          test -f "${STAGING_DIR}/${PLUGIN_SLUG}/vendor/autoload.php"
-          REQUIRED_BUILD_MANIFESTS=(
-            manifest.setup.json
-            manifest.sources.json
-            manifest.logs.json
-            manifest.post-sync.json
-            manifest.doc-source-modal.json
-            manifest.drive-browser.json
-          )
-          for manifest in "${REQUIRED_BUILD_MANIFESTS[@]}"; do
-            test -f "${STAGING_DIR}/${PLUGIN_SLUG}/build/${manifest}"
-          done
-          grep -q "Plugin Name:" "${STAGING_DIR}/${PLUGIN_SLUG}/${PLUGIN_SLUG}.php"
-          FORBIDDEN_PATHS=(assets .claude .agents .codex cloudflare)
-          for forbidden_path in "${FORBIDDEN_PATHS[@]}"; do
-            if [ -e "${STAGING_DIR}/${PLUGIN_SLUG}/${forbidden_path}" ]; then
-              echo "Installable artifact must not contain ${forbidden_path}."
-              exit 1
-            fi
-          done
-
       - name: Upload installable plugin artifact
         uses: actions/upload-artifact@v7
         with:

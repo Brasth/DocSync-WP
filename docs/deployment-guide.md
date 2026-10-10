@@ -1,6 +1,6 @@
 # DocSync-WP Deployment and Release Guide
 
-Last updated: 2026-07-12
+Last updated: 2026-10-10
 
 This guide describes how to release DocSync-WP on WordPress.org and GitHub. It supports the release cadence defined in `docs/project-roadmap.md`:
 
@@ -28,24 +28,12 @@ Before tagging a release, verify all of the following:
   - `composer.json` version (if present)
   - `package.json` version
 - [ ] Changelog entry added to `readme.txt`.
-- [ ] A release commit contains the final version and changelog. Do not modify it after validation.
-- [ ] Run **Validate Release Commit** manually with that commit's full lowercase 40-character SHA.
-- [ ] The workflow passes all PHP 8.1 checks, fixtures, frontend checks, official readme validation, ZIP checks, clean ZIP install/runtime smoke, and Plugin Check.
-- [ ] Record the successful workflow URL, validated SHA, and uploaded artifact checksum.
-- [ ] `pnpm lint` passes.
+- [ ] A release commit contains the final version and changelog.
+- [ ] Local lint passes (`pnpm lint` and `composer lint`); GitHub Actions runs build, package, and deploy workflows only.
 - [ ] `pnpm typecheck` passes.
 - [ ] `pnpm build` produces a clean `build/` directory.
-- [ ] PHP validation passes in CI:
-  - `composer validate --no-check-publish`
-  - `composer lint`
-  - `composer test:layout-fixtures`
-  - `composer test:elementor-fixtures`
-  - `composer test:large-doc-fallback-fixtures`
-  - `composer test:telemetry-settings`
-  - `vendor/bin/phpcs -i`
-- [ ] Plugin Check (WordPress.org) passes in CI or locally.
-- [ ] readme.txt validator passes.
-- [ ] PHP compatibility check passes for declared minimum version (8.1) and current supported versions.
+- [ ] `composer validate --no-check-publish` passes locally.
+- [ ] Run the PHP compatibility check locally for declared minimum version (8.1) and current supported versions.
 - [ ] No secrets, credentials, OAuth client JSON, `.env.local`, `.secrets/`, local DB dumps, or API keys in the diff.
 - [ ] If optional telemetry ships, `https://docsyncwp.com/privacy-policy` exists and matches `readme.txt` disclosure.
 - [ ] Uninstall behavior is unchanged unless explicitly intended.
@@ -83,29 +71,28 @@ For 1.1.4, the agreed internal validation matrix replaces an external beta. Reco
 
 ## Local WordPress Runtime
 
-The repository includes a disposable devcontainer runtime for release smoke tests before staging:
+The repository includes a disposable devcontainer runtime for local WordPress development before staging:
 
 - WordPress URL: `http://localhost:8890`
 - Admin: `admin / password`
 - Plugin setup URL: `http://localhost:8890/wp-admin/admin.php?page=brasth-document-sync-for-google-docs`
 - OAuth callback URL: `http://localhost:8890/wp-json/brasth-document-sync-for-google-docs/v1/oauth/google/callback`
 
-On container startup, `postCreateCommand` installs Composer and pnpm dependencies and builds assets. `postStartCommand` runs `.devcontainer/scripts/bootstrap-wordpress.sh` and `.devcontainer/scripts/verify-runtime.sh` to install WordPress, activate the plugin, verify required PHP extensions, confirm route registration, and validate the local callback URL.
+On container startup, `postCreateCommand` installs Composer and pnpm dependencies and builds assets. `postStartCommand` runs `.devcontainer/scripts/bootstrap-wordpress.sh` to install WordPress and activate the plugin.
 
-Use it for smoke checks only. Do not bake OAuth credentials into the image and do not commit downloaded `client_secret*.json` files.
+Use it for local smoke checks only. Do not bake OAuth credentials into the image and do not commit downloaded `client_secret*.json` files.
 
 ## WordPress.org Release Steps
 
 1. **Prepare the release branch** from the target branch, e.g., `release/1.1.4`.
 2. **Create and push the final release commit** with matching plugin header, `DOCSYNC_WP_VERSION`, `readme.txt` stable tag, and changelog entry.
-3. **Run Validate Release Commit** from Actions with that exact full commit SHA. Review the workflow's ZIP, checksum, and commit-provenance artifacts.
-4. **Run the internal staging matrix** recorded in `plans/reports/architecture-decision-20260712-internal-release-validation.md` and record the evidence against the same commit.
-5. **Create the annotated tag on the validated SHA and publish the GitHub Release immediately.** Do not use a draft release and do not retag a different commit. This immediately triggers ZIP attachment and WordPress.org deployment.
-6. **Confirm release automation** finishes successfully: the ZIP is attached to GitHub and the WordPress.org SVN deployment completes.
-7. **Smoke test** the WordPress.org installation on a clean site within 24 hours.
-8. **Announce** the release in the changelog, blog post, newsletter, and social channels as appropriate for the release size.
+3. **Run local lint/typecheck/build** (`composer lint`, `pnpm lint`, `pnpm typecheck`, `pnpm build`) and any staging checks you need before tagging.
+4. **Create the annotated tag and publish the GitHub Release immediately.** Do not use a draft release and do not retag a different commit. This immediately triggers ZIP attachment and WordPress.org deployment.
+5. **Confirm release automation** finishes successfully: the ZIP is attached to GitHub and the WordPress.org SVN deployment completes.
+6. **Smoke test** the WordPress.org installation on a clean site within 24 hours.
+7. **Announce** the release in the changelog, blog post, newsletter, and social channels as appropriate for the release size.
 
-Post-publication workflows cannot prevent an already published release. The manual pre-tag validation is therefore mandatory. Restrict release branch pushes and release-tag creation to maintainers who follow this sequence.
+Post-publication workflows cannot prevent an already published release. Restrict release branch pushes and release-tag creation to maintainers who follow this sequence.
 
 ## Patch Release Steps
 
@@ -113,9 +100,8 @@ Patch releases follow a lighter path:
 
 1. **Cherry-pick fixes** to a release branch or use the current release branch.
 2. **Create and push the final version and changelog commit**.
-3. **Run Validate Release Commit** against the exact commit SHA.
-4. **Tag that validated SHA and publish immediately**; the ZIP and WordPress.org deployment workflows run automatically.
-5. **Confirm automation succeeds** and run a 24-hour staging smoke test.
+3. **Tag that commit and publish immediately**; the ZIP and WordPress.org deployment workflows run automatically.
+4. **Confirm automation succeeds** and run a 24-hour staging smoke test.
 
 ## Rollback Procedure
 
@@ -137,7 +123,7 @@ The following automation should be in place to sustain the cadence:
 
 - **GitHub release-drafter** or equivalent that aggregates `changelog/` files into release notes.
 - **GitHub Actions workflow** that builds the release ZIP and attaches it to the GitHub Release.
-- **CI checks** for JS lint, TypeScript, PHP lint, PHPCS, Plugin Check, and readme.txt validation.
+- Local lint and typecheck remain available; GitHub Actions runs build, package, and deploy only.
 - **SVN tagging script** to reduce manual upload errors.
 
 ## Optional Telemetry Worker

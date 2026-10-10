@@ -21,7 +21,7 @@ export const TelemetryConsentPanel = ({
     <div className="docsync-wp-telemetry-consent__body">
       <h2 id="docsync-wp-telemetry-consent-title">{__('Help improve Brasth Document Sync', 'brasth-document-sync-for-google-docs')}</h2>
       <p>
-        {__('Share one anonymous weekly check-in so we can understand active installs and version compatibility. No Google data, site URL, user email, document IDs, or content is sent.', 'brasth-document-sync-for-google-docs')}
+        {__('Optional weekly diagnostics include a hash of the install ID, plugin slug, plugin, WordPress and PHP versions, and consent version. No Google data, site URL, user email, document IDs, or content is sent.', 'brasth-document-sync-for-google-docs')}
       </p>
       <div className="docsync-wp-telemetry-consent__actions">
         <AdminButton disabled={busy} onClick={async () => { await onAccept(); }} size="small" variant="primary">

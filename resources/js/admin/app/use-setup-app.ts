@@ -14,6 +14,7 @@ import {
   type FolderWatchRecord,
   type GoogleAccount,
   type SettingsResponse,
+  type SettingsUpdate,
   type SourceRecord,
   type SyncResult,
   type WorkspaceResponse
@@ -109,12 +110,13 @@ export const useSetupApp = () => {
       setNotice({ type: 'success', message });
       speak(message);
       clearedSuccessfully = true;
+      await refresh();
     });
 
     return clearedSuccessfully;
   };
 
-  const persistSettings = async (nextSettings: Partial<SettingsResponse> & { clientSecret?: string }) => {
+  const persistSettings = async (nextSettings: SettingsUpdate) => {
     let savedSuccessfully = false;
     const credentialOnlySave = (
       ('clientId' in nextSettings || 'clientSecret' in nextSettings)
@@ -135,6 +137,9 @@ export const useSetupApp = () => {
       setNotice({ type: 'success', message });
       speak(message);
       savedSuccessfully = true;
+      try { await refresh(); } catch {
+        setNotice({ type: 'warning', message: __('Settings saved, but connection status could not refresh. Reload to check the latest state.', 'brasth-document-sync-for-google-docs') });
+      }
     });
 
     return savedSuccessfully;

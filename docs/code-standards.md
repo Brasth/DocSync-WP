@@ -1,6 +1,6 @@
 # Code Standards
 
-Last updated: 2026-07-10
+Last updated: 2026-10-10
 
 ## Purpose
 
@@ -91,22 +91,18 @@ Rules:
 
 ## Verification Standards
 
-Use the project-local Composer and pnpm toolchains:
+Use the project-local Composer and pnpm toolchains. Local lint and typecheck remain available. GitHub Actions runs build, package, and deploy workflows only.
 
 - `composer install`
 - `vendor/bin/phpcs -i`
 - `composer validate --no-check-publish`
 - `composer lint`
-- `composer test:layout-fixtures`
-- `composer test:elementor-fixtures`
-- `composer test:large-doc-fallback-fixtures`
-- `composer test:telemetry-settings`
 - `pnpm install --frozen-lockfile`
 - `pnpm lint`
 - `pnpm typecheck`
 - `pnpm build`
 
-Run `composer lint:fix` only for safe automatic PHPCS fixes. Confirm `vendor/bin/phpcs -i` includes `WordPress`, `WordPress-Core`, `WordPress-Docs`, `WordPress-Extra`, and `PHPCompatibilityWP` after dependency installation. For full runtime verification, use the `.devcontainer/` WordPress stack and rerun `.devcontainer/scripts/bootstrap-wordpress.sh` plus `.devcontainer/scripts/verify-runtime.sh`.
+Run `composer lint:fix` only for safe automatic PHPCS fixes. Confirm `vendor/bin/phpcs -i` includes `WordPress`, `WordPress-Core`, `WordPress-Docs`, `WordPress-Extra`, and `PHPCompatibilityWP` after dependency installation. For a local WordPress runtime, use the `.devcontainer/` stack and rerun `.devcontainer/scripts/bootstrap-wordpress.sh`.
 
 ## File Organization
 

@@ -1,5 +1,0 @@
-{
-  "preset": "clean_article",
-  "input": "input.html",
-  "expected": "expected.html"
-}

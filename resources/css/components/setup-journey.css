@@ -1,0 +1,172 @@
+#docsync-wp-admin-root:has(.docsync-wp-admin-shell--setup) { margin: -10px -20px 0 -22px; }
+/* Setup-only styling, measured against the administrator Claude artboards. */
+#docsync-wp-admin-root .docsync-wp-admin-shell--setup {
+  --setup-ink: #17202a;
+  --setup-muted: #646970;
+  --setup-line: #cfded9;
+  --setup-teal: #007c73;
+  --setup-blue: #165dcc;
+  background: #f0f0f1;
+  color: var(--setup-ink);
+  font: 13px/1.5 -apple-system, system-ui, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  min-height: calc(100vh - 32px);
+  padding: 0 32px 48px;
+}
+#docsync-wp-admin-root .docsync-wp-admin-shell--setup .docsync-wp-admin-shell__container { max-width: 1180px; margin: 0 auto; }
+#docsync-wp-admin-root .docsync-wp-admin-shell--setup .docsync-wp-masthead { background: #fff; border: 0; border-radius: 0; box-shadow: 0 0 0 100vmax #fff; clip-path: inset(0 -100vmax); padding: 22px 0 0; margin: 0; height: 67px; box-sizing: border-box; }
+#docsync-wp-admin-root .docsync-wp-admin-shell--setup .docsync-wp-masthead__identity { gap: 12px; }
+#docsync-wp-admin-root .docsync-wp-admin-shell--setup .docsync-wp-masthead__mark { width: 36px; height: 36px; flex-basis: 36px; object-fit: contain; }
+#docsync-wp-admin-root .docsync-wp-admin-shell--setup .docsync-wp-masthead__copy { gap: 0; }
+#docsync-wp-admin-root .docsync-wp-admin-shell--setup .docsync-wp-masthead__copy h1 { font-size: 18px; line-height: 27px; margin: 0; font-weight: 600; color: #12213a; padding: 0 !important; margin: 0 !important; }
+#docsync-wp-admin-root .docsync-wp-admin-shell--setup .docsync-wp-masthead__copy p { color: var(--setup-muted); font-size: 12px; line-height: 18px; font-weight: 400; text-transform: none; letter-spacing: 0; margin: 0 !important; }
+#docsync-wp-admin-root .docsync-wp-setup-tabs { display: flex; gap: 28px; padding: 22px 0 0; border-bottom: 0; background: #fff; box-shadow: 0 0 0 100vmax #fff; clip-path: inset(0 -100vmax); margin-bottom: 32px; }
+#docsync-wp-admin-root .docsync-wp-setup-tabs a { color: var(--setup-muted); text-decoration: none; padding: 0 2px 14px; border-bottom: 2px solid transparent; font-size: 14px; line-height: 21px; }
+#docsync-wp-admin-root .docsync-wp-setup-tabs a[aria-current] { color: #12213a; border-color: var(--setup-teal); font-weight: 600; }
+#docsync-wp-admin-root .docsync-wp-setup-journey { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 40px; align-items: start; }
+#docsync-wp-admin-root .docsync-wp-setup-journey__task { min-width: 0; }
+#docsync-wp-admin-root .docsync-wp-setup-rail { background: transparent; border: 0; padding: 0; box-shadow: none; }
+#docsync-wp-admin-root .docsync-wp-setup-rail h2 { font-size: 20px; line-height: 30px; font-weight: 600; margin: 0 0 20px; color: #12213a; }
+#docsync-wp-admin-root .docsync-wp-setup-journey-steps { list-style: none; margin: 0; padding: 0; gap: 0; }
+#docsync-wp-admin-root .docsync-wp-setup-journey-steps li { position: relative; display: grid; grid-template-columns: 32px minmax(0, 1fr); column-gap: 14px; row-gap: 2px; margin: 0; padding: 0 0 28px; border: 0; }
+#docsync-wp-admin-root .docsync-wp-setup-journey-steps li:not(:last-child)::after { content: ''; position: absolute; width: 2px; background: #c0c7c4; left: 15px; top: 42px; bottom: 0; }
+#docsync-wp-admin-root .docsync-wp-setup-journey-steps__index { grid-row: 1 / 4; width: 36px; height: 36px; transform: translateX(-2px); box-sizing: border-box; display: grid; place-items: center; border: 1px solid #c0c7c4; background: #fff; border-radius: 4px; font-size: 13px; font-weight: 600; color: var(--setup-muted); }
+#docsync-wp-admin-root :is(.is-current, .is-attention) .docsync-wp-setup-journey-steps__index { background: #12213a; border-color: #12213a; box-shadow: 0 0 0 4px #d4d7da; color: #fff; }
+#docsync-wp-admin-root .is-complete .docsync-wp-setup-journey-steps__index { background: var(--setup-teal); border-color: var(--setup-teal); color: #fff; }
+#docsync-wp-admin-root .docsync-wp-setup-journey-steps__label { font-size: 13px; line-height: 19.5px; font-weight: 600; padding-top: 5px; }
+#docsync-wp-admin-root .is-upcoming .docsync-wp-setup-journey-steps__label { color: var(--setup-muted); font-weight: 400; }
+#docsync-wp-admin-root .docsync-wp-setup-journey-steps__state { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+#docsync-wp-admin-root .docsync-wp-setup-journey-steps small { grid-column: 2; color: var(--setup-muted); font-size: 12px; line-height: 18px; margin-top: 0; }
+#docsync-wp-admin-root .docsync-wp-setup-rail__help { font-size: 12px; color: var(--setup-muted); margin: 8px 0 0; }
+#docsync-wp-admin-root .docsync-wp-setup-rail button { border: 0; background: none; padding: 0; color: var(--setup-blue); font: inherit; cursor: pointer; }
+#docsync-wp-admin-root .docsync-wp-setup-card { background: #fff; border: 1px solid #e5edec; border-radius: 6px; padding: 28px 32px; box-shadow: 0 1px 2px rgba(23,32,42,.05), 0 8px 24px -16px rgba(18,33,58,.25); min-width: 0; max-width: 706px; box-sizing: border-box; }
+#docsync-wp-admin-root .docsync-wp-setup-card__header { margin-bottom: 20px; }
+#docsync-wp-admin-root .docsync-wp-setup-card h2 { color: #12213a; font-size: 18px; line-height: 27px; margin: 0 0 6px; font-weight: 600; }
+#docsync-wp-admin-root .docsync-wp-setup-card h2[tabindex="-1"]:focus { outline: none; box-shadow: none; }
+#docsync-wp-admin-root .docsync-wp-setup-card p { color: var(--setup-muted); font-size: 13px; line-height: 19.5px; margin: 0; }
+#docsync-wp-admin-root .docsync-wp-setup-card a { color: var(--setup-blue); text-decoration: none; }
+#docsync-wp-admin-root .docsync-wp-setup-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+#docsync-wp-admin-root :is(.docsync-wp-setup-fields label, .docsync-wp-setup-defaults > label, .docsync-wp-setup-target) { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600; }
+#docsync-wp-admin-root .docsync-wp-setup-card input:not([type="checkbox"]),
+#docsync-wp-admin-root .docsync-wp-setup-card select { width: 100%; min-width: 0; max-width: none; height: 40px; border: 1px solid var(--setup-line); border-radius: 4px; background-color: #fff; color: var(--setup-ink); font-size: 13px; padding: 0 12px; box-sizing: border-box; margin: 0; font-weight: 400; }
+#docsync-wp-admin-root .docsync-wp-setup-card input[type="checkbox"] { width: 16px; height: 16px; border-radius: 3px; flex-shrink: 0; margin: 0; }
+#docsync-wp-admin-root .docsync-wp-setup-callback { background: #f6f7f7; border: 0; border-radius: 4px; padding: 14px 16px; margin: 0 0 20px; }
+#docsync-wp-admin-root .docsync-wp-setup-callback label { display: block; font-size: 13px; margin-bottom: 8px; font-weight: 600; }
+#docsync-wp-admin-root .docsync-wp-setup-callback > div { display: flex; gap: 8px; margin-bottom: 8px; }
+#docsync-wp-admin-root .docsync-wp-setup-callback input { font-family: ui-monospace, SFMono-Regular, monospace; font-size: 12px !important; }
+#docsync-wp-admin-root .docsync-wp-setup-callback p { font-size: 12px; line-height: 18px; }
+#docsync-wp-admin-root .docsync-wp-admin-shell--setup .docsync-wp-button { min-height: 40px; border: 1px solid var(--setup-line); border-radius: 4px; box-shadow: none; padding: 0 18px; font-size: 13px; font-weight: 600; white-space: nowrap; background: #fff; color: var(--setup-ink); }
+#docsync-wp-admin-root .docsync-wp-admin-shell--setup .docsync-wp-button.button-primary { background: var(--setup-blue); border-color: var(--setup-blue); color: #fff; }
+#docsync-wp-admin-root .docsync-wp-admin-shell--setup .docsync-wp-button.button-primary:hover { background: #0f4dad; }
+#docsync-wp-admin-root .docsync-wp-admin-shell--setup .docsync-wp-button.button-link { padding: 0; border: 0; background: transparent; color: var(--setup-blue); font-weight: 400; }
+#docsync-wp-admin-root .docsync-wp-admin-shell--setup .docsync-wp-button:disabled { opacity: .5; }
+#docsync-wp-admin-root .docsync-wp-setup-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+#docsync-wp-admin-root .docsync-wp-setup-form-footer { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding-top: 4px; }
+#docsync-wp-admin-root .docsync-wp-setup-form-footer .docsync-wp-oauth-import { border: 0; background: transparent; padding: 0; margin: 0; min-width: 0; }
+#docsync-wp-admin-root .docsync-wp-setup-account-status { display: flex; align-items: center; gap: 14px; background: #f6f7f7; padding: 16px; border: 1px solid #e5edec; border-radius: 4px; margin-bottom: 20px; }
+#docsync-wp-admin-root .docsync-wp-setup-account-status > div { flex: 1; }
+#docsync-wp-admin-root .docsync-wp-setup-account-status p { font-size: 12px; margin-top: 4px; }
+#docsync-wp-admin-root .docsync-wp-setup-person { width: 32px; height: 32px; color: #646970; flex-shrink: 0; }
+#docsync-wp-admin-root .docsync-wp-setup-account-facts { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
+#docsync-wp-admin-root .docsync-wp-setup-account-facts > div { padding: 12px; border: 1px solid #e5edec; border-radius: 4px; }
+#docsync-wp-admin-root .docsync-wp-setup-account-facts strong { font-size: 12px; }
+#docsync-wp-admin-root .docsync-wp-setup-account-facts p { margin-top: 6px; font-size: 12px; line-height: 18px; }
+#docsync-wp-admin-root .docsync-wp-setup-account-facts code { font-size: 10px; overflow-wrap: anywhere; background: none; padding: 0; }
+#docsync-wp-admin-root .docsync-wp-setup-troubleshooting { border-top: 1px solid #e5edec; margin-top: 20px; padding-top: 16px; font-size: 13px; }
+#docsync-wp-admin-root .docsync-wp-setup-troubleshooting summary { cursor: pointer; font-weight: 600; }
+#docsync-wp-admin-root .docsync-wp-setup-warning-guide { display: grid; grid-template-columns: 220px minmax(0,1fr); gap: 20px; margin-top: 16px; }
+#docsync-wp-admin-root .docsync-wp-setup-warning-preview { border: 1px solid #dcdcde; border-radius: 4px; padding: 18px; background: #fff; }
+#docsync-wp-admin-root .docsync-wp-setup-warning-preview > span { display: grid; place-items: center; border-radius: 50%; width: 28px; height: 28px; color: #a54800; background: #fff2cf; margin-bottom: 12px; font-weight: 700; }
+#docsync-wp-admin-root .docsync-wp-setup-warning-preview strong { display: block; margin-bottom: 8px; }
+#docsync-wp-admin-root .docsync-wp-setup-warning-guide p { font-size: 12px; line-height: 18px; }
+#docsync-wp-admin-root .docsync-wp-setup-warning-guide ol { margin: 12px 0; padding-left: 18px; font-size: 12px; }
+#docsync-wp-admin-root .docsync-wp-setup-warning-guide li { margin-bottom: 6px; }
+#docsync-wp-admin-root .docsync-wp-setup-source { max-width: 760px; padding: 0; border: 0; background: transparent; box-shadow: none; }
+#docsync-wp-admin-root .docsync-wp-setup-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 0 0 20px; }
+#docsync-wp-admin-root .docsync-wp-setup-choice { text-align: left; display: flex; flex-direction: column; gap: 10px; padding: 20px; background: #fff; border: 1px solid var(--setup-line); border-radius: 6px; cursor: pointer; color: var(--setup-ink); font: inherit; }
+#docsync-wp-admin-root .docsync-wp-setup-choice strong { font-size: 16px; font-weight: 600; }
+#docsync-wp-admin-root .docsync-wp-setup-choice > span { color: var(--setup-muted); font-size: 13px; line-height: 19.5px; }
+#docsync-wp-admin-root .docsync-wp-setup-choice .docsync-wp-setup-choice__action { color: var(--setup-blue); font-weight: 600; margin-top: auto; }
+#docsync-wp-admin-root .docsync-wp-setup-choice .docsync-wp-setup-choice__icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 4px; background: #e5f1ee; color: var(--setup-teal); }
+#docsync-wp-admin-root .docsync-wp-setup-choice__icon svg { width: 20px; height: 20px; }
+#docsync-wp-admin-root .docsync-wp-setup-choice .is-folder { background: #e8f1ff; color: var(--setup-blue); }
+#docsync-wp-admin-root .docsync-wp-setup-choice:disabled { opacity: .6; cursor: default; }
+#docsync-wp-admin-root .docsync-wp-setup-target { max-width: 220px; margin-bottom: 20px; }
+#docsync-wp-admin-root .docsync-wp-setup-source-footer { display: flex; justify-content: space-between; gap: 20px; align-items: baseline; }
+#docsync-wp-admin-root .docsync-wp-setup-source-footer p { font-size: 12px; text-align: right; }
+#docsync-wp-admin-root .docsync-wp-setup-source-footer button { background: none; border: 0; padding: 0; font: inherit; color: var(--setup-blue); cursor: pointer; }
+#docsync-wp-admin-root .docsync-wp-setup-source-footer > a { color: var(--setup-muted); white-space: nowrap; font-size: 13px; }
+#docsync-wp-admin-root .docsync-wp-setup-maintenance { display: grid; gap: 20px; }
+#docsync-wp-admin-root .docsync-wp-setup-maintenance__cards { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+#docsync-wp-admin-root .docsync-wp-setup-maintenance__cards .docsync-wp-setup-card { padding: 24px; }
+#docsync-wp-admin-root .docsync-wp-setup-maintenance__cards h2 { font-size: 16px; line-height: 24px; }
+#docsync-wp-admin-root .docsync-wp-setup-maintenance__cards .docsync-wp-setup-card__header { margin-bottom: 0; }
+#docsync-wp-admin-root .docsync-wp-setup-complete { display: flex; align-items: center; gap: 12px; border: 1px solid #cfded9; border-left: 4px solid var(--setup-teal); border-radius: 4px; padding: 14px 16px; background: #fff; }
+#docsync-wp-admin-root .docsync-wp-setup-complete > span { color: var(--setup-teal); font-size: 20px; }
+#docsync-wp-admin-root .docsync-wp-setup-complete p { flex: 1; margin: 0; }
+#docsync-wp-admin-root :is(.docsync-wp-maintenance-row, .docsync-wp-editor-connections) { display: flex; justify-content: space-between; gap: 16px; align-items: center; padding: 16px 0; border-bottom: 1px solid #e5edec; }
+#docsync-wp-admin-root .docsync-wp-maintenance-row p, #docsync-wp-admin-root .docsync-wp-editor-connections p { font-size: 12px; margin: 4px 0 0; overflow-wrap: anywhere; }
+#docsync-wp-admin-root .docsync-wp-maintenance-row code { font-size: 12px; background: none; padding: 0; }
+#docsync-wp-admin-root .docsync-wp-maintenance-row small { color: var(--setup-muted); font-size: 12px; }
+#docsync-wp-admin-root .docsync-wp-maintenance-row .docsync-wp-button { min-height: 32px; padding: 0 12px; }
+#docsync-wp-admin-root .docsync-wp-maintenance-row .docsync-wp-setup-disconnect { color: #b32d2e; }
+#docsync-wp-admin-root .docsync-wp-connection-badge { font-size: 11px; color: #775318; }
+#docsync-wp-admin-root .docsync-wp-connection-badge.is-ready { color: var(--setup-teal); }
+#docsync-wp-admin-root .docsync-wp-setup-defaults { display: grid; gap: 18px; padding-top: 18px; background: transparent; }
+#docsync-wp-admin-root .docsync-wp-setup-defaults > p { font-size: 12px; margin-top: -12px; }
+#docsync-wp-admin-root .docsync-wp-setup-post-types { border: 0; margin: 0; padding: 0; }
+#docsync-wp-admin-root .docsync-wp-setup-post-types legend { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+#docsync-wp-admin-root .docsync-wp-setup-post-types label { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; }
+#docsync-wp-admin-root .docsync-wp-setup-defaults > label.docsync-wp-setup-check { flex-direction: row; align-items: center; gap: 10px; font-weight: 400; }
+#docsync-wp-admin-root .docsync-wp-setup-defaults-footer { justify-content: flex-end; border-top: 1px solid #e5edec; padding-top: 18px; }
+#docsync-wp-admin-root .docsync-wp-setup-pending { border: 1px solid #ead8ad; border-radius: 4px; background: #fffbef; padding: 16px; }
+#docsync-wp-admin-root .docsync-wp-setup-return { padding: 8px 0; border: 0; background: transparent; color: var(--setup-blue); cursor: pointer; }
+#docsync-wp-admin-root .docsync-wp-admin-shell--setup .docsync-wp-admin-shell__footer { border: 0; background: transparent; padding: 28px 0; }
+#docsync-wp-admin-root .docsync-wp-admin-shell--setup :is(a, button, input, select, summary):focus-visible { outline: 2px solid var(--setup-teal); outline-offset: 3px; box-shadow: none; }
+.docsync-wp-connections-dialog { max-height: 85vh; overflow-y: auto; }
+.docsync-wp-connections-table { border-collapse: collapse; width: 100%; margin: 20px 0; text-align: left; }
+.docsync-wp-connections-table th, .docsync-wp-connections-table td { padding: 12px 8px; border-bottom: 1px solid #dce2e6; }
+@media (max-width: 1100px) {
+  #docsync-wp-admin-root .docsync-wp-setup-journey { grid-template-columns: 240px minmax(0,1fr); gap: 28px; }
+}
+@media (max-width: 900px) {
+  #docsync-wp-admin-root .docsync-wp-setup-journey { grid-template-columns: minmax(0,1fr); gap: 24px; }
+  #docsync-wp-admin-root .docsync-wp-setup-journey-steps { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 14px; }
+  #docsync-wp-admin-root .docsync-wp-setup-journey-steps li { padding-bottom: 16px; }
+  #docsync-wp-admin-root .docsync-wp-setup-journey-steps li::after { display: none; }
+  #docsync-wp-admin-root .docsync-wp-setup-rail__help { display: none; }
+  #docsync-wp-admin-root .docsync-wp-setup-maintenance__cards { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  #docsync-wp-admin-root .docsync-wp-admin-shell--setup { padding: 0 16px 24px; }
+  #docsync-wp-admin-root .docsync-wp-setup-card { padding: 20px 16px; }
+  #docsync-wp-admin-root .docsync-wp-setup-source { padding: 0; }
+  #docsync-wp-admin-root :is(.docsync-wp-setup-fields, .docsync-wp-setup-choices, .docsync-wp-setup-account-facts, .docsync-wp-setup-warning-guide) { grid-template-columns: 1fr; }
+  #docsync-wp-admin-root .docsync-wp-setup-journey-steps li { grid-template-columns: 1fr; gap: 8px; }
+  #docsync-wp-admin-root .docsync-wp-setup-journey-steps__index { grid-row: auto; }
+  #docsync-wp-admin-root .docsync-wp-setup-journey-steps small { display: none; }
+  #docsync-wp-admin-root .docsync-wp-setup-journey-steps__label { font-size: 12px; }
+  #docsync-wp-admin-root :is(.docsync-wp-setup-form-footer, .docsync-wp-setup-account-status, .docsync-wp-setup-source-footer, .docsync-wp-setup-complete) { flex-wrap: wrap; }
+  #docsync-wp-admin-root .docsync-wp-setup-account-status .docsync-wp-button { width: 100%; }
+  #docsync-wp-admin-root .docsync-wp-setup-source-footer p { text-align: left; }
+  #docsync-wp-admin-root .docsync-wp-setup-callback > div { flex-wrap: wrap; }
+  #docsync-wp-admin-root :is(.docsync-wp-maintenance-row, .docsync-wp-editor-connections) { flex-wrap: wrap; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #docsync-wp-admin-root .docsync-wp-admin-shell--setup *, .docsync-wp-connections-dialog * { scroll-behavior: auto; transition: none; animation: none; }
+}
+
+#docsync-wp-admin-root .docsync-wp-setup-journey-steps li:last-child { padding-bottom: 0; }
+
+#docsync-wp-admin-root .docsync-wp-setup-row-actions { display: flex; align-items: center; gap: 8px; }
+#docsync-wp-admin-root .docsync-wp-setup-tick { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 4px; background: var(--setup-teal); color: #fff; font-size: 12px; }
+#docsync-wp-admin-root .docsync-wp-setup-maintenance__cards .docsync-wp-setup-troubleshooting { border-top: 0; margin-top: 0; }
+#docsync-wp-admin-root .docsync-wp-admin-shell__content:has(.docsync-wp-setup-maintenance) { margin-top: -8px; }
+#docsync-wp-admin-root .docsync-wp-setup-complete .docsync-wp-button { min-height: 38px; }
+#docsync-wp-admin-root .docsync-wp-setup-form-footer .button-link { text-decoration: none; font-weight: 600; }
+#docsync-wp-admin-root .docsync-wp-setup-callback .docsync-wp-button { gap: 8px; }
+#docsync-wp-admin-root .docsync-wp-setup-rail { order: 0; }
+#docsync-wp-admin-root .docsync-wp-setup-journey__task { order: 1; }
+#docsync-wp-admin-root .docsync-wp-setup-callback svg { fill: none; }
+@media (max-width: 782px) {
+  #docsync-wp-admin-root:has(.docsync-wp-admin-shell--setup) { margin: -10px -12px 0 -10px; }
+}
